@@ -14,7 +14,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	bl_description = "カスタムメイド3D2のmodelファイルを読み込みます"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	filepath = bpy.props.StringProperty(subtype="FILE_PATH")
+	filepath = bpy.props.StringProperty(subtype='FILE_PATH')
 	
 	def invoke(self, context, event):
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
@@ -148,7 +148,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		bpy.ops.object.select_all(action='DESELECT')
 		
 		# メッシュ作成
-		me = context.blend_data.meshes.new(model_name1)
+		me = context.blend_data.meshes.new(model_name1 + "." + model_name2)
 		verts, faces = [], []
 		for data in vertex_data:
 			verts.append(data['co'])
@@ -156,7 +156,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			faces.extend(data)
 		me.from_pydata(verts, [], faces)
 		# オブジェクト化
-		ob = context.blend_data.objects.new(model_name1, me)
+		ob = context.blend_data.objects.new(model_name1 + "." + model_name2, me)
 		context.scene.objects.link(ob)
 		ob.select = True
 		context.scene.objects.active = ob
@@ -195,9 +195,39 @@ class import_cm3d2_model(bpy.types.Operator):
 			name = data['name1'] + "." + data['name2'] + "." + data['name3']
 			mate = context.blend_data.materials.new(name)
 			ob.material_slots[-1].material = mate
+			# 面にマテリアル割り当て
 			for i in range(face_seek, face_seek + len(face_data[index])):
 				me.polygons[i].material_index = index
 			face_seek += len(face_data[index])
+			# テクスチャ追加
+			for tex_index, tex_data in enumerate(data['data']):
+				if tex_data['type'] == 'tex':
+					slot = mate.texture_slots.create(tex_index)
+					slot.use_map_color_diffuse = False
+					slot.color = tex_data['color'][:3]
+					slot.diffuse_color_factor = tex_data['color'][3]
+					tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
+					slot.texture = tex
+					img = context.blend_data.images.new(tex_data['name2'], 512, 512)
+					img.filepath = tex_data['path']
+					img.source = 'FILE'
+					tex.image = img
+				elif tex_data['type'] == 'col':
+					slot = mate.texture_slots.create(tex_index)
+					mate.use_textures[tex_index] = False
+					slot.use_map_color_diffuse = False
+					slot.color = tex_data['color'][:3]
+					slot.diffuse_color_factor = tex_data['color'][3]
+					slot.use_rgb_to_intensity = True
+					tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
+					slot.texture = tex
+				elif tex_data['type'] == 'f':
+					slot = mate.texture_slots.create(tex_index)
+					mate.use_textures[tex_index] = False
+					slot.use_map_color_diffuse = False
+					slot.diffuse_color_factor = tex_data['float']
+					tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
+					slot.texture = tex
 		
 		return {'FINISHED'}
 
