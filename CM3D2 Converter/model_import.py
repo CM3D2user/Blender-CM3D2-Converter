@@ -1,5 +1,5 @@
 # modelファイルのインポーター
-import bpy, struct, mathutils
+import bpy, struct, mathutils, bmesh
 
 def ReadStr(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
@@ -141,6 +141,10 @@ class import_cm3d2_model(bpy.types.Operator):
 			else:
 				break
 		
+		try:
+			bpy.ops.object.mode_set(mode='OBJECT')
+		except RuntimeError:
+			pass
 		bpy.ops.object.select_all(action='DESELECT')
 		
 		# メッシュ作成
@@ -163,6 +167,15 @@ class import_cm3d2_model(bpy.types.Operator):
 				if 0.0 < weight['value']:
 					vertex_group = ob.vertex_groups[weight['name']]
 					vertex_group.add([vert_index], weight['value'], 'REPLACE')
+		me.uv_textures.new("UVMap")
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		for face in bm.faces:
+			for loop in face.loops:
+				uv_co = vertex_data[loop.vert.index]['uv']
+				loop[bm.loops.layers.uv.active].uv = uv_co
+		bm.to_mesh(me)
+		bm.free()
 		
 		return {'FINISHED'}
 
