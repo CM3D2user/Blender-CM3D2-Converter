@@ -82,9 +82,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			vertex_data[i]['weights'] = [{}, {}, {}, {}]
 			for j in range(4):
 				vertex_data[i]['weights'][j]['index'] = struct.unpack('<h', file.read(2))[0]
-				vertex_data[i]['weights'][j]['name'] = bone_data[vertex_data[i]['weights'][j]['index']]['name']
+				vertex_data[i]['weights'][j]['name'] = local_bone_data[vertex_data[i]['weights'][j]['index']]['name']
 			for j in range(4):
-				vertex_data[i]['weights'][j]['weight'] = struct.unpack('<f', file.read(4))[0]
+				vertex_data[i]['weights'][j]['value'] = struct.unpack('<f', file.read(4))[0]
 		
 		# 面情報読み込み
 		face_data = []
@@ -156,6 +156,13 @@ class import_cm3d2_model(bpy.types.Operator):
 		ob.select = True
 		context.scene.objects.active = ob
 		bpy.ops.object.shade_smooth()
+		for data in local_bone_data:
+			ob.vertex_groups.new(data['name'])
+		for vert_index, data in enumerate(vertex_data):
+			for weight in data['weights']:
+				if 0.0 < weight['value']:
+					vertex_group = ob.vertex_groups[weight['name']]
+					vertex_group.add([vert_index], weight['value'], 'REPLACE')
 		
 		return {'FINISHED'}
 
