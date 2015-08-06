@@ -31,6 +31,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		ReadStr(file)
 		struct.unpack('<i', file.read(4))[0]
 		
+		# 何で名前2つあるの？
 		model_name1 = ReadStr(file)
 		model_name2 = ReadStr(file)
 		
@@ -136,7 +137,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				for i in range(morph_vert_count):
 					misc_data[-1]['data'].append({})
 					misc_data[-1]['data'][i]['index'] = struct.unpack('<h', file.read(2))[0]
-					misc_data[-1]['data'][i]['co'] = struct.unpack('<3f', file.read(3*4))
+					misc_data[-1]['data'][i]['co'] = mathutils.Vector(struct.unpack('<3f', file.read(3*4)))
 					misc_data[-1]['data'][i]['normal'] = struct.unpack('<3f', file.read(3*4))
 			else:
 				break
@@ -155,11 +156,13 @@ class import_cm3d2_model(bpy.types.Operator):
 		for data in face_data:
 			faces.extend(data)
 		me.from_pydata(verts, [], faces)
+		# オブジェクト化
 		ob = context.blend_data.objects.new(model_name1, me)
 		context.scene.objects.link(ob)
 		ob.select = True
 		context.scene.objects.active = ob
 		bpy.ops.object.shade_smooth()
+		# 頂点グループ作成
 		for data in local_bone_data:
 			ob.vertex_groups.new(data['name'])
 		for vert_index, data in enumerate(vertex_data):
@@ -168,14 +171,21 @@ class import_cm3d2_model(bpy.types.Operator):
 					vertex_group = ob.vertex_groups[weight['name']]
 					vertex_group.add([vert_index], weight['value'], 'REPLACE')
 		me.uv_textures.new("UVMap")
+		# UV作成
 		bm = bmesh.new()
 		bm.from_mesh(me)
 		for face in bm.faces:
 			for loop in face.loops:
-				uv_co = vertex_data[loop.vert.index]['uv']
-				loop[bm.loops.layers.uv.active].uv = uv_co
+				loop[bm.loops.layers.uv.active].uv = vertex_data[loop.vert.index]['uv']
 		bm.to_mesh(me)
 		bm.free()
+		# モーフ追加
+		ob.shape_key_add(name="Basis", from_mix=False)
+		for data in misc_data:
+			if data['type'] == 'morph':
+				shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
+				for vert in data['data']:
+					shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + vert['co']
 		
 		return {'FINISHED'}
 
