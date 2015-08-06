@@ -1,4 +1,3 @@
-# modelファイルのインポーター
 import bpy, struct, mathutils, bmesh
 
 def ReadStr(file):
@@ -170,8 +169,8 @@ class import_cm3d2_model(bpy.types.Operator):
 				if 0.0 < weight['value']:
 					vertex_group = ob.vertex_groups[weight['name']]
 					vertex_group.add([vert_index], weight['value'], 'REPLACE')
-		me.uv_textures.new("UVMap")
 		# UV作成
+		me.uv_textures.new("UVMap")
 		bm = bmesh.new()
 		bm.from_mesh(me)
 		for face in bm.faces:
@@ -186,6 +185,19 @@ class import_cm3d2_model(bpy.types.Operator):
 				shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
 				for vert in data['data']:
 					shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + vert['co']
+		
+		# マテリアル追加
+		face_seek = 0
+		for index, data in enumerate(material_data):
+			override = context.copy()
+			override['object'] = ob
+			bpy.ops.object.material_slot_add(override)
+			name = data['name1'] + "." + data['name2'] + "." + data['name3']
+			mate = context.blend_data.materials.new(name)
+			ob.material_slots[-1].material = mate
+			for i in range(face_seek, face_seek + len(face_data[index])):
+				me.polygons[i].material_index = index
+			face_seek += len(face_data[index])
 		
 		return {'FINISHED'}
 
