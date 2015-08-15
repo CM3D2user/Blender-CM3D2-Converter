@@ -27,13 +27,6 @@ class export_cm3d2_model(bpy.types.Operator):
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
 	def invoke(self, context, event):
-		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path
-		context.window_manager.fileselect_add(self)
-		return {'RUNNING_MODAL'}
-	
-	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
-		
 		# データの成否チェック
 		ob = context.active_object
 		if not ob:
@@ -69,6 +62,17 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
 			return {'CANCELLED'}
 		
+		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path
+		context.window_manager.fileselect_add(self)
+		return {'RUNNING_MODAL'}
+	
+	def execute(self, context):
+		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
+		
+		ob = context.active_object
+		ob_names = ArrangeName(ob.name).split('.')
+		me = ob.data
+		
 		# BoneData情報読み込み
 		bone_data = []
 		for line in context.blend_data.texts["BoneData"].lines:
@@ -92,6 +96,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# LocalBoneData情報読み込み
 		local_bone_data = []
+		local_bone_names = []
 		for line in context.blend_data.texts["LocalBoneData"].lines:
 			data = line.body.split(',')
 			if len(data) == 2:
@@ -101,6 +106,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				floats = data[1].split(' ')
 				for f in floats:
 					local_bone_data[-1]['matrix'].append(float(f))
+				local_bone_names.append(data[0])
 		if len(local_bone_data) <= 0:
 			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」に有効なデータがありません")
 			return {'CANCELLED'}
@@ -166,6 +172,8 @@ class export_cm3d2_model(bpy.types.Operator):
 				vgs = []
 				for vg in vert.groups:
 					name = ob.vertex_groups[vg.group].name
+					if name not in local_bone_names:
+						continue
 					weight = vg.weight
 					vgs.append((name, weight))
 				vgs.sort(key=lambda vg: vg[1])
@@ -181,6 +189,8 @@ class export_cm3d2_model(bpy.types.Operator):
 							if bone['name'] == name:
 								break
 							index += 1
+						else:
+							index = 0
 					file.write(struct.pack('<h', index))
 				for i in range(4):
 					try:
@@ -210,7 +220,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			for face in faces:
 				file.write(struct.pack('<h', face))
 		if 1 <= error_face_count:
-			self.report(type={'INFO'}, message="多角ポリゴンがいくつか見つかりました、正常に出力できなかった可能性があります")
+			self.report(type={'INFO'}, message="多角ポリゴンが%dつ見つかりました、正常に出力できなかった可能性があります" % error_face_count)
 		
 		# マテリアルを書き出し
 		file.write(struct.pack('<i', len(ob.material_slots)))

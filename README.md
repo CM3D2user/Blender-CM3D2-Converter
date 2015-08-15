@@ -2,8 +2,7 @@
 
 ## インストール (Installation)
 Windows7なら  
->C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts\addons\CM3D2 Converter\__init__.py  
-
+C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts\addons\CM3D2 Converter\__init__.py  
 となるように配置  
 
 ## 使い方 (How to Use)
