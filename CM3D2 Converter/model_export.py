@@ -42,9 +42,11 @@ class export_cm3d2_model(bpy.types.Operator):
 			if not slot:
 				self.report(type={'ERROR'}, message="空のマテリアルスロットがあります")
 				return {'CANCELLED'}
-			names = ArrangeName(slot.material.name).split('.')
-			if len(names) != 3:
-				self.report(type={'ERROR'}, message="マテリアル名は「○○.○○.○○」という形式にしてください")
+			try:
+				slot.material['shader1']
+				slot.material['shader2']
+			except KeyError:
+				self.report(type={'ERROR'}, message="マテリアルに「shader1」と「shader2」という名前のカスタムプロパティを用意してください")
 				return {'CANCELLED'}
 		me = ob.data
 		if not me.uv_layers.active:
@@ -226,10 +228,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.write(struct.pack('<i', len(ob.material_slots)))
 		for slot_index, slot in enumerate(ob.material_slots):
 			mate = slot.material
-			names = ArrangeName(mate.name).split('.')
-			WriteStr(file, names[0])
-			WriteStr(file, names[1])
-			WriteStr(file, names[2])
+			WriteStr(file, ArrangeName(mate.name))
+			WriteStr(file, mate['shader1'])
+			WriteStr(file, mate['shader2'])
 			for tindex, tslot in enumerate(mate.texture_slots):
 				if not tslot:
 					continue

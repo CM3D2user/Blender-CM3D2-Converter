@@ -203,8 +203,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				override = context.copy()
 				override['object'] = ob
 				bpy.ops.object.material_slot_add(override)
-				name = data['name1'] + "." + data['name2'] + "." + data['name3']
-				mate = context.blend_data.materials.new(name)
+				mate = context.blend_data.materials.new(data['name1'])
+				mate['shader1'] = data['name2']
+				mate['shader2'] = data['name3']
 				ob.material_slots[-1].material = mate
 				# 面にマテリアル割り当て
 				for i in range(face_seek, face_seek + len(face_data[index])):
