@@ -242,7 +242,10 @@ class export_cm3d2_model(bpy.types.Operator):
 						img = tex.image
 						WriteStr(file, 'tex2d')
 						WriteStr(file, ArrangeName(img.name))
-						WriteStr(file, img.filepath.replace('\\', '/'))
+						path = img.filepath
+						path = path.replace('//..\\..\\Assets\\', 'Assets/')
+						path = path.replace('\\', '/')
+						WriteStr(file, path)
 						col = tslot.color
 						file.write(struct.pack('<3f', col[0], col[1], col[2]))
 						file.write(struct.pack('<f', tslot.diffuse_color_factor))
