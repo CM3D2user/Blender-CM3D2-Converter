@@ -234,7 +234,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.tail = total / len(bone.children)
 					else:
 						if bone.parent:
-							v = bone.parent.tail - bone.parent.head
+							v = bone.head - bone.parent.head
 							bone.tail = bone.head + (v * 0.5)
 			
 			arm.draw_type = 'STICK'
