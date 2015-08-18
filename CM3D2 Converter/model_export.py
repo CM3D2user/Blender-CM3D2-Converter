@@ -72,7 +72,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
 		
 		ob = context.active_object
-		ob_names = ArrangeName(ob.name).split('.')
 		me = ob.data
 		
 		# BoneData情報読み込み
@@ -119,6 +118,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		WriteStr(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', 1000))
 		
+		ob_names = ArrangeName(ob.name).split('.')
 		WriteStr(file, ob_names[0])
 		WriteStr(file, ob_names[1])
 		
@@ -163,9 +163,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		for i, vert in enumerate(bm.verts):
 			for uv in vert_uvs[i]:
 				co = vert.co.copy()
-				file.write(struct.pack('<3f', co.x, co.y, co.z))
+				file.write(struct.pack('<3f', -co.x, co.y, co.z))
 				no = vert.normal.copy()
-				file.write(struct.pack('<3f', no.x, no.y, no.z))
+				file.write(struct.pack('<3f', -no.x, no.y, no.z))
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		# ウェイト情報を書き出し
 		file.write(struct.pack('<i', 0))

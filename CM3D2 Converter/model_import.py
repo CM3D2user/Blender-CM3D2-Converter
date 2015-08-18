@@ -18,8 +18,10 @@ class import_cm3d2_model(bpy.types.Operator):
 	filename_ext = ".model"
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
-	is_mesh = bpy.props.BoolProperty(name="メッシュデータの読み込み", default=True)
+	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
+	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
+	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
 	is_bone_data = bpy.props.BoolProperty(name="ボーン情報のテキスト読み込み", default=True)
 	is_local_bone_data = bpy.props.BoolProperty(name="ローカルボーン情報のテキスト読み込み", default=True)
 	
@@ -60,11 +62,11 @@ class import_cm3d2_model(bpy.types.Operator):
 			bone_data[i]['parent_name'] = parent_name
 		for i in range(bone_count):
 			x, y, z = struct.unpack('<3f', file.read(3*4))
-			bone_data[i]['co'] = [x, y, z]
+			bone_data[i]['co'] = mathutils.Vector((x, y, z))
 			
-			w = struct.unpack('<f', file.read(4))[0]
 			x, y, z = struct.unpack('<3f', file.read(3*4))
-			bone_data[i]['rot'] = [w, x, y, z]
+			w = struct.unpack('<f', file.read(4))[0]
+			bone_data[i]['rot'] = mathutils.Quaternion((w, x, y, z))
 		
 		vertex_count, mesh_count, local_bone_count = struct.unpack('<3i', file.read(3*4))
 		
@@ -157,12 +159,96 @@ class import_cm3d2_model(bpy.types.Operator):
 			pass
 		bpy.ops.object.select_all(action='DESELECT')
 		
+		if self.is_armature:
+			arm = bpy.data.armatures.new(model_name1 + "." + model_name2 + ".armature")
+			arm_ob = bpy.data.objects.new(model_name1 + "." + model_name2 + ".armature", arm)
+			bpy.context.scene.objects.link(arm_ob)
+			arm_ob.select = True
+			bpy.context.scene.objects.active = arm_ob
+			bpy.ops.object.mode_set(mode='EDIT')
+			
+			child_data = []
+			for data in bone_data:
+				if not data['parent_name']:
+					bone = arm.edit_bones.new(data['name'])
+					bone.head = (0, 0, 0)
+					bone.tail = (0, 0.1, 0)
+					
+					co = data['co'].copy()
+					co.x, co.y, co.z = -co.x, -co.z, co.y
+					
+					rot = data['rot'].copy()
+					
+					co_mat = mathutils.Matrix.Translation(co)
+					rot_mat = rot.to_matrix().to_4x4()
+					bone.matrix = co_mat * rot_mat
+				else:
+					child_data.append(data)
+			
+			for i in range(9**9):
+				if len(child_data) <= 0:
+					break
+				data = child_data.pop(0)
+				if data['parent_name'] in arm.edit_bones.keys():
+					bone = arm.edit_bones.new(data['name'])
+					parent = arm.edit_bones[data['parent_name']]
+					bone.parent = parent
+					if data['unknown']:
+						bone.bbone_segments = 2
+					bone.head = (0, 0, 0)
+					bone.tail = (0, 0.05, 0)
+					
+					temp_parent = bone
+					co = mathutils.Vector()
+					rot = mathutils.Quaternion()
+					for j in range(9**9):
+						for b in bone_data:
+							if b['name'] == temp_parent.name:
+								c = b['co'].copy()
+								r = b['rot'].copy()
+								break
+						
+						co = r * co
+						co += c
+						
+						rot.rotate(r)
+						
+						if temp_parent.parent == None:
+							break
+						temp_parent = temp_parent.parent
+					co.x, co.y, co.z = -co.x, -co.z, co.y
+					
+					co_mat = mathutils.Matrix.Translation(co)
+					rot_mat = rot.to_matrix().to_4x4()
+					
+					bone.matrix = co_mat * rot_mat
+				else:
+					child_data.append(data)
+			
+			if self.is_armature_arrange:
+				for bone in arm.edit_bones:
+					if 1 <= len(bone.children):
+						total = mathutils.Vector()
+						for child in bone.children:
+							total += child.head
+						bone.tail = total / len(bone.children)
+					else:
+						if bone.parent:
+							v = bone.parent.tail - bone.parent.head
+							bone.tail = bone.head + (v * 0.5)
+			
+			arm.draw_type = 'STICK'
+			arm_ob.show_x_ray = True
+			bpy.ops.object.mode_set(mode='OBJECT')
+		
 		if self.is_mesh:
 			# メッシュ作成
 			me = context.blend_data.meshes.new(model_name1 + "." + model_name2)
 			verts, faces = [], []
 			for data in vertex_data:
-				verts.append(data['co'])
+				co = list(data['co'][:])
+				co[0] = -co[0]
+				verts.append(co)
 			for data in face_data:
 				faces.extend(data)
 			me.from_pydata(verts, [], faces)
@@ -250,9 +336,14 @@ class import_cm3d2_model(bpy.types.Operator):
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
 				context.tool_settings.mesh_select_mode = pre_mesh_select_mode
 				bpy.ops.mesh.select_all(action='SELECT')
+				bpy.ops.mesh.flip_normals()
 				bpy.ops.uv.seams_from_islands()
 				bpy.ops.mesh.select_all(action='DESELECT')
 				bpy.ops.object.mode_set(mode='OBJECT')
+			
+			if self.is_armature:
+				mod = ob.modifiers.new("Armature", 'ARMATURE')
+				mod.object = arm_ob
 		
 		if self.is_bone_data:
 			if "BoneData" in context.blend_data.texts.keys():
