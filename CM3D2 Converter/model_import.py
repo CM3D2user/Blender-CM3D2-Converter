@@ -1,4 +1,4 @@
-import bpy, struct, mathutils, bmesh
+import bpy, math, struct, mathutils, bmesh
 
 def ReadStr(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
@@ -269,6 +269,17 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
+			co = bone_data[0]['co']
+			co.x, co.y, co.z = -co.x, -co.z, co.y
+			ob.location = co
+			"""
+			rot = bone_data[0]['rot']
+			ob.rotation_mode = 'QUATERNION'
+			eul = mathutils.Euler((math.radians(90), 0, 0), 'XYZ')
+			rot.rotate(eul)
+			rot.x, rot.y, rot.z = rot.y, -rot.z, -rot.x
+			ob.rotation_quaternion = rot
+			"""
 			# 頂点グループ作成
 			for data in local_bone_data:
 				ob.vertex_groups.new(data['name'])
