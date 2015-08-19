@@ -30,6 +30,17 @@ class import_cm3d2_model(bpy.types.Operator):
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
+	def draw(self, context):
+		box = self.layout.box()
+		box.prop(self, 'is_mesh')
+		box.prop(self, 'is_remove_doubles')
+		box = self.layout.box()
+		box.prop(self, 'is_armature')
+		box.prop(self, 'is_armature_arrange')
+		box = self.layout.box()
+		box.prop(self, 'is_bone_data')
+		box.prop(self, 'is_local_bone_data')
+	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = self.filepath
 		
