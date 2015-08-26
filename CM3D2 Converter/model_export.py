@@ -131,7 +131,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			file.write(struct.pack('<i', bone['parent_index']))
 		for bone in bone_data:
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
-			file.write(struct.pack('<4f', bone['rot'][0], bone['rot'][1], bone['rot'][2], bone['rot'][3]))
+			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
 		
 		# 正しい頂点数などを取得
 		bm = bmesh.new()
@@ -219,6 +219,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					faces.append(vert_index)
 				face_count += 1
 			file.write(struct.pack('<i', face_count * 3))
+			faces.reverse()
 			for face in faces:
 				file.write(struct.pack('<h', face))
 		if 1 <= error_face_count:
