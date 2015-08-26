@@ -206,22 +206,41 @@ class export_cm3d2_model(bpy.types.Operator):
 		for mate_index, slot in enumerate(ob.material_slots):
 			face_count = 0
 			faces = []
+			faces2 = []
 			for face in bm.faces:
-				if len(face.verts) != 3:
-					error_face_count += 1
-					continue
 				if face.material_index != mate_index:
 					continue
-				for loop in face.loops:
-					uv = loop[uv_lay].uv
-					index = loop.vert.index
-					vert_index = vert_iuv.index((index, uv.x, uv.y))
-					faces.append(vert_index)
-				face_count += 1
+				if len(face.verts) == 3:
+					for loop in face.loops:
+						uv = loop[uv_lay].uv
+						index = loop.vert.index
+						vert_index = vert_iuv.index((index, uv.x, uv.y))
+						faces.append(vert_index)
+					face_count += 1
+				elif len(face.verts) == 4:
+					for i, loop in enumerate(face.loops):
+						if i in [0, 1, 2]:
+							uv = loop[uv_lay].uv
+							index = loop.vert.index
+							vert_index = vert_iuv.index((index, uv.x, uv.y))
+							faces.append(vert_index)
+						if i in [2, 3, 0]:
+							uv = loop[uv_lay].uv
+							index = loop.vert.index
+							vert_index = vert_iuv.index((index, uv.x, uv.y))
+							faces2.append(vert_index)
+					face_count += 2
+				else:
+					error_face_count += 1
+					continue
 			file.write(struct.pack('<i', face_count * 3))
 			faces.reverse()
 			for face in faces:
 				file.write(struct.pack('<h', face))
+			if len(faces2):
+				faces2.reverse()
+				for face in faces2:
+					file.write(struct.pack('<h', face))
 		if 1 <= error_face_count:
 			self.report(type={'INFO'}, message="多角ポリゴンが%dつ見つかりました、正常に出力できなかった可能性があります" % error_face_count)
 		
