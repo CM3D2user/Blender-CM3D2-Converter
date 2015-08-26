@@ -168,6 +168,8 @@ class export_cm3d2_model(bpy.types.Operator):
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		# ウェイト情報を書き出し
+		is_over_one = 0
+		is_under_one = 0
 		file.write(struct.pack('<i', 0))
 		for vert in me.vertices:
 			for uv in vert_uvs[vert.index]:
@@ -194,12 +196,22 @@ class export_cm3d2_model(bpy.types.Operator):
 						else:
 							index = 0
 					file.write(struct.pack('<h', index))
+				total = 0
 				for i in range(4):
 					try:
 						weight = vgs[i][1]
 					except IndexError:
 						weight = 0
 					file.write(struct.pack('<f', weight))
+					total += weight
+				if 1.01 < total:
+					is_over_one += 1
+				if total < 0.99:
+					is_under_one += 1
+		if 1 <= is_over_one:
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が%dつ見つかりました" % is_over_one)
+		if 1 <= is_under_one:
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が%dつ見つかりました" % is_under_one)
 		
 		# 面情報を書き出し
 		error_face_count = 0
