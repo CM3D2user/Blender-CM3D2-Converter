@@ -303,7 +303,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				if data['type'] == 'morph':
 					shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
 					for vert in data['data']:
-						shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + vert['co']
+						co = vert['co']
+						co.x = -co.x
+						shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + co
 			
 			# マテリアル追加
 			face_seek = 0

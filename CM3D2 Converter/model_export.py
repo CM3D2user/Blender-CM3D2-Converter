@@ -279,6 +279,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						vert_index += 1
 				file.write(struct.pack('<i', len(morph)))
 				for index, vec in morph:
+					vec.x = -vec.x
 					file.write(struct.pack('<h', index))
 					file.write(struct.pack('<3f', vec.x, vec.y, vec.z))
 					file.write(struct.pack('<3f', 0, 0, 0))
