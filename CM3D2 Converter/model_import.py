@@ -239,7 +239,14 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			# ボーン整頓
 			if self.is_armature_arrange:
-				# 初期整頓
+				# 不要なボーンを削除
+				for bone in arm.edit_bones:
+					for b in local_bone_data:
+						if bone.name == b['name']:
+							break
+					else:
+						arm.edit_bones.remove(bone)
+				# 整頓
 				for bone in arm.edit_bones:
 					if 1 <= len(bone.children):
 						total = mathutils.Vector()
@@ -248,19 +255,8 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.tail = total / len(bone.children)
 					else:
 						if bone.parent:
-							v = bone.head - bone.parent.head
-							bone.tail = bone.head + (v * 0.5)
-				# 不要なボーンを削除
-				for bone in arm.edit_bones:
-					for b in local_bone_data:
-						if bone.name == b['name']:
-							break
-					else:
-						arm.edit_bones.remove(bone)
-				# 第二整頓
-				for bone in arm.edit_bones:
-					if 1 == len(bone.children):
-						bone.tail = bone.children[0].head
+							v = bone.parent.tail - bone.parent.head
+							bone.tail = bone.head + (v * 0.75)
 			
 			arm.draw_type = 'STICK'
 			arm_ob.show_x_ray = True
