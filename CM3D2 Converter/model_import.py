@@ -279,17 +279,14 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
-			co = bone_data[-1]['co'].copy()
-			co.x, co.y, co.z = -co.x, -co.z, co.y
-			ob.location = co
-			"""
-			rot = bone_data[0]['rot']
-			ob.rotation_mode = 'QUATERNION'
-			eul = mathutils.Euler((math.radians(90), 0, 0), 'XYZ')
-			rot.rotate(eul)
-			rot.x, rot.y, rot.z = rot.y, -rot.z, -rot.x
-			ob.rotation_quaternion = rot
-			"""
+			# オブジェクト移動
+			for bone in bone_data:
+				if bone['name'] == model_name2:
+					co = bone['co'].copy()
+					co.x, co.y, co.z = -co.x, -co.z, co.y
+					ob.location = co
+					break
+			
 			# 頂点グループ作成
 			for data in local_bone_data:
 				ob.vertex_groups.new(data['name'])
