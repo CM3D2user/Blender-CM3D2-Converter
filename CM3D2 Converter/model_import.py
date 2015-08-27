@@ -18,6 +18,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	filename_ext = ".model"
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
+	scale = bpy.props.FloatProperty(name="倍率", default=10, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
 	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
 	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
@@ -31,6 +32,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		return {'RUNNING_MODAL'}
 	
 	def draw(self, context):
+		self.layout.prop(self, 'scale')
 		box = self.layout.box()
 		box.prop(self, 'is_mesh')
 		box.prop(self, 'is_remove_doubles')
@@ -261,6 +263,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			arm.draw_type = 'STICK'
 			arm_ob.show_x_ray = True
 			bpy.ops.object.mode_set(mode='OBJECT')
+			arm_ob.scale *= self.scale
 		
 		if self.is_mesh:
 			# メッシュ作成
@@ -279,13 +282,14 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
-			# オブジェクト移動
+			# オブジェクト変形
 			for bone in bone_data:
 				if bone['name'] == model_name2:
 					co = bone['co'].copy()
 					co.x, co.y, co.z = -co.x, -co.z, co.y
 					ob.location = co
 					break
+			ob.scale *= self.scale
 			
 			# 頂点グループ作成
 			for data in local_bone_data:
