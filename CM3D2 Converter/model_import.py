@@ -366,17 +366,18 @@ class import_cm3d2_model(bpy.types.Operator):
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
 			
+			# メッシュ整頓
 			bpy.ops.object.mode_set(mode='EDIT')
 			bpy.ops.mesh.select_all(action='DESELECT')
 			pre_mesh_select_mode = context.tool_settings.mesh_select_mode[:]
-			pre_mesh_select_mode = (False, True, False)
+			context.tool_settings.mesh_select_mode = (False, True, False)
 			bpy.ops.mesh.select_non_manifold()
 			if self.is_remove_doubles:
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
-			context.tool_settings.mesh_select_mode = pre_mesh_select_mode
 			bpy.ops.mesh.select_all(action='SELECT')
 			bpy.ops.mesh.flip_normals()
 			bpy.ops.uv.seams_from_islands()
+			context.tool_settings.mesh_select_mode = pre_mesh_select_mode
 			bpy.ops.mesh.select_all(action='DESELECT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			
