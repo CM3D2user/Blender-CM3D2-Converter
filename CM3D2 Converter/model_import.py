@@ -287,6 +287,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				if bone['name'] == model_name2:
 					co = bone['co'].copy()
 					co.x, co.y, co.z = -co.x, -co.z, co.y
+					co *= self.scale
 					ob.location = co
 					break
 			ob.scale *= self.scale
