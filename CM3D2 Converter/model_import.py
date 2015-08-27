@@ -384,6 +384,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature:
 				mod = ob.modifiers.new("Armature", 'ARMATURE')
 				mod.object = arm_ob
+				context.scene.objects.active = arm_ob
+				bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
+				context.scene.objects.active = ob
 		
 		if self.is_bone_data:
 			if "BoneData" in context.blend_data.texts.keys():
