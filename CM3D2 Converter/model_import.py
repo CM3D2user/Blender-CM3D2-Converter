@@ -338,7 +338,7 @@ class import_cm3d2_model(bpy.types.Operator):
 							slot.use_map_color_diffuse = False
 							slot.color = tex_data['color'][:3]
 							slot.diffuse_color_factor = tex_data['color'][3]
-							img = context.blend_data.images.new(tex_data['name2'], 512, 512)
+							img = context.blend_data.images.new(tex_data['name2'], 128, 128)
 							img.filepath = tex_data['path']
 							img.source = 'FILE'
 							tex.image = img
@@ -361,19 +361,19 @@ class import_cm3d2_model(bpy.types.Operator):
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
 			
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.mesh.select_all(action='DESELECT')
+			pre_mesh_select_mode = context.tool_settings.mesh_select_mode[:]
+			pre_mesh_select_mode = (False, True, False)
+			bpy.ops.mesh.select_non_manifold()
 			if self.is_remove_doubles:
-				bpy.ops.object.mode_set(mode='EDIT')
-				bpy.ops.mesh.select_all(action='DESELECT')
-				pre_mesh_select_mode = context.tool_settings.mesh_select_mode[:]
-				pre_mesh_select_mode = (False, True, False)
-				bpy.ops.mesh.select_non_manifold()
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
-				context.tool_settings.mesh_select_mode = pre_mesh_select_mode
-				bpy.ops.mesh.select_all(action='SELECT')
-				bpy.ops.mesh.flip_normals()
-				bpy.ops.uv.seams_from_islands()
-				bpy.ops.mesh.select_all(action='DESELECT')
-				bpy.ops.object.mode_set(mode='OBJECT')
+			context.tool_settings.mesh_select_mode = pre_mesh_select_mode
+			bpy.ops.mesh.select_all(action='SELECT')
+			bpy.ops.mesh.flip_normals()
+			bpy.ops.uv.seams_from_islands()
+			bpy.ops.mesh.select_all(action='DESELECT')
+			bpy.ops.object.mode_set(mode='OBJECT')
 			
 			if self.is_armature:
 				mod = ob.modifiers.new("Armature", 'ARMATURE')
