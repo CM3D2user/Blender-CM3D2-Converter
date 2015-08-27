@@ -190,6 +190,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					
 					co = data['co'].copy()
 					co.x, co.y, co.z = -co.x, -co.z, co.y
+					co *= self.scale
 					
 					rot = data['rot'].copy()
 					
@@ -231,6 +232,7 @@ class import_cm3d2_model(bpy.types.Operator):
 							break
 						temp_parent = temp_parent.parent
 					co.x, co.y, co.z = -co.x, -co.z, co.y
+					co *= self.scale
 					
 					co_mat = mathutils.Matrix.Translation(co)
 					rot_mat = rot.to_matrix().to_4x4()
@@ -263,7 +265,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			arm.draw_type = 'STICK'
 			arm_ob.show_x_ray = True
 			bpy.ops.object.mode_set(mode='OBJECT')
-			arm_ob.scale *= self.scale
+			#arm_ob.scale *= self.scale
 		
 		if self.is_mesh:
 			# メッシュ作成
@@ -272,6 +274,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			for data in vertex_data:
 				co = list(data['co'][:])
 				co[0] = -co[0]
+				co[0] *= self.scale
+				co[1] *= self.scale
+				co[2] *= self.scale
 				verts.append(co)
 			for data in face_data:
 				faces.extend(data)
@@ -290,7 +295,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					co *= self.scale
 					ob.location = co
 					break
-			ob.scale *= self.scale
+			#ob.scale *= self.scale
 			
 			# 頂点グループ作成
 			for data in local_bone_data:
@@ -317,6 +322,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					for vert in data['data']:
 						co = vert['co']
 						co.x = -co.x
+						co *= self.scale
 						shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + co
 			
 			# マテリアル追加

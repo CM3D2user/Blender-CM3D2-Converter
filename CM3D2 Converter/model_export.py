@@ -26,6 +26,11 @@ class export_cm3d2_model(bpy.types.Operator):
 	filename_ext = ".model"
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
+	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'scale')
+	
 	def invoke(self, context, event):
 		# データの成否チェック
 		ob = context.active_object
@@ -163,6 +168,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		for i, vert in enumerate(bm.verts):
 			for uv in vert_uvs[i]:
 				co = vert.co.copy()
+				co *= self.scale
 				file.write(struct.pack('<3f', -co.x, co.y, co.z))
 				no = vert.normal.copy()
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
@@ -306,7 +312,9 @@ class export_cm3d2_model(bpy.types.Operator):
 				for i, vert in enumerate(me.vertices):
 					for d in vert_uvs[i]:
 						if shape_key.data[i].co != vert.co:
-							morph.append((vert_index, shape_key.data[i].co - vert.co))
+							co = shape_key.data[i].co - vert.co
+							co *= self.scale
+							morph.append((vert_index, co))
 						vert_index += 1
 				file.write(struct.pack('<i', len(morph)))
 				for index, vec in morph:
