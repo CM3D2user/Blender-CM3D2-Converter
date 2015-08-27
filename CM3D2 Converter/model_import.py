@@ -132,7 +132,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					material_data[i]['data'].append({'type':data_type})
 					material_data[i]['data'][-1]['name'] = ReadStr(file)
 					material_data[i]['data'][-1]['type2'] = ReadStr(file)
-					if material_data[i]['data'][-1]['type2'] != 'null':
+					if material_data[i]['data'][-1]['type2'] == 'tex2d':
 						material_data[i]['data'][-1]['name2'] = ReadStr(file)
 						material_data[i]['data'][-1]['path'] = ReadStr(file)
 						material_data[i]['data'][-1]['color'] = struct.unpack('<4f', file.read(4*4))
@@ -335,15 +335,16 @@ class import_cm3d2_model(bpy.types.Operator):
 				for tex_index, tex_data in enumerate(data['data']):
 					if tex_data['type'] == 'tex':
 						slot = mate.texture_slots.create(tex_index)
-						slot.use_map_color_diffuse = False
-						slot.color = tex_data['color'][:3]
-						slot.diffuse_color_factor = tex_data['color'][3]
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
-						img = context.blend_data.images.new(tex_data['name2'], 512, 512)
-						img.filepath = tex_data['path']
-						img.source = 'FILE'
-						tex.image = img
+						if tex_data['type2'] == 'tex2d':
+							slot.use_map_color_diffuse = False
+							slot.color = tex_data['color'][:3]
+							slot.diffuse_color_factor = tex_data['color'][3]
+							img = context.blend_data.images.new(tex_data['name2'], 512, 512)
+							img.filepath = tex_data['path']
+							img.source = 'FILE'
+							tex.image = img
 					elif tex_data['type'] == 'col':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
