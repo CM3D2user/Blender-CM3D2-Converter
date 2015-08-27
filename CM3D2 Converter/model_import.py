@@ -279,7 +279,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
-			co = bone_data[0]['co'].copy()
+			co = bone_data[-1]['co'].copy()
 			co.x, co.y, co.z = -co.x, -co.z, co.y
 			ob.location = co
 			"""
