@@ -21,6 +21,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
 	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
+	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True)
 	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
 	is_bone_data = bpy.props.BoolProperty(name="ボーン情報のテキスト読み込み", default=True)
@@ -36,6 +37,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		box = self.layout.box()
 		box.prop(self, 'is_mesh')
 		box.prop(self, 'is_remove_doubles')
+		box.prop(self, 'is_seam')
 		box = self.layout.box()
 		box.prop(self, 'is_armature')
 		box.prop(self, 'is_armature_arrange')
@@ -382,7 +384,8 @@ class import_cm3d2_model(bpy.types.Operator):
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
 			bpy.ops.mesh.select_all(action='SELECT')
 			bpy.ops.mesh.flip_normals()
-			bpy.ops.uv.seams_from_islands()
+			if self.is_seam:
+				bpy.ops.uv.seams_from_islands()
 			context.tool_settings.mesh_select_mode = pre_mesh_select_mode
 			bpy.ops.mesh.select_all(action='DESELECT')
 			bpy.ops.object.mode_set(mode='OBJECT')
