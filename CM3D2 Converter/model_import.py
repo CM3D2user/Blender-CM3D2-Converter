@@ -357,6 +357,8 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.use_rgb_to_intensity = True
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
+						if tex_data['name'] == "_RimColor":
+							mate.diffuse_color = tex_data['color'][:3]
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
