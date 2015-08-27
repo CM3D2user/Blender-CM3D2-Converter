@@ -18,7 +18,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	filename_ext = ".model"
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
-	scale = bpy.props.FloatProperty(name="倍率", default=10, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
+	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
 	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
 	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
