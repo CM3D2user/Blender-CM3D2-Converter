@@ -422,7 +422,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				
 				txt.write(s + "\n")
 				if self.is_armature and self.is_armature_custom_property:
-					arm_ob["BoneData:" + str(i)] = s
+					arm["BoneData:" + str(i)] = s
 		
 		if self.is_local_bone_data:
 			if "LocalBoneData" in context.blend_data.texts.keys():
@@ -455,7 +455,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				
 				txt.write(s + "\n")
 				if self.is_armature and self.is_armature_custom_property:
-					arm_ob["LocalBoneData:" + str(i)] = s
+					arm["LocalBoneData:" + str(i)] = s
 		
 		return {'FINISHED'}
 
