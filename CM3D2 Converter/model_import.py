@@ -19,11 +19,15 @@ class import_cm3d2_model(bpy.types.Operator):
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
 	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
+	
 	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True)
+	
 	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
+	is_armature_custom_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
+	
 	is_bone_data = bpy.props.BoolProperty(name="ボーン情報のテキスト読み込み", default=True)
 	is_local_bone_data = bpy.props.BoolProperty(name="ローカルボーン情報のテキスト読み込み", default=True)
 	
@@ -41,6 +45,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		box = self.layout.box()
 		box.prop(self, 'is_armature')
 		box.prop(self, 'is_armature_arrange')
+		box.prop(self, 'is_armature_custom_property')
 		box = self.layout.box()
 		box.prop(self, 'is_bone_data')
 		box.prop(self, 'is_local_bone_data')
@@ -416,7 +421,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				s = s + str(data['rot'][3])
 				
 				txt.write(s + "\n")
-				if self.is_armature:
+				if self.is_armature and self.is_armature_custom_property:
 					arm_ob["BoneData:" + str(i)] = s
 		
 		if self.is_local_bone_data:
@@ -449,7 +454,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				s = s + str(data['matrix'][3][3])
 				
 				txt.write(s + "\n")
-				if self.is_armature:
+				if self.is_armature and self.is_armature_custom_property:
 					arm_ob["LocalBoneData:" + str(i)] = s
 		
 		return {'FINISHED'}
