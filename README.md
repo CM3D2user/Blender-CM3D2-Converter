@@ -47,6 +47,7 @@ C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts
 
 ### その他
 元の.modelに上書きする必要はありません  
+データ名が「○○.001」のように末尾に連番が付いていても自動的に削除されます  
 
 ## 規約 (Agreement)
 >・「カスタムメイド3D2」本体を正規にご購入頂いた方のみが作成・配布・利用することができます。  
