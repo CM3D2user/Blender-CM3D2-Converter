@@ -403,18 +403,21 @@ class import_cm3d2_model(bpy.types.Operator):
 				txt.clear()
 			else:
 				txt = context.blend_data.texts.new("BoneData")
-			for data in bone_data:
-				txt.write(data['name'] + ",")
-				txt.write(str(data['unknown']) + ",")
-				txt.write(str(data['parent_index']) + ",")
-				txt.write(str(data['co'][0]) + " ")
-				txt.write(str(data['co'][1]) + " ")
-				txt.write(str(data['co'][2]) + ",")
-				txt.write(str(data['rot'][0]) + " ")
-				txt.write(str(data['rot'][1]) + " ")
-				txt.write(str(data['rot'][2]) + " ")
-				txt.write(str(data['rot'][3]))
-				txt.write("\n")
+			for i, data in enumerate(bone_data):
+				s = data['name'] + ","
+				s = s + str(data['unknown']) + ","
+				s = s + str(data['parent_index']) + ","
+				s = s + str(data['co'][0]) + " "
+				s = s + str(data['co'][1]) + " "
+				s = s + str(data['co'][2]) + ","
+				s = s + str(data['rot'][0]) + " "
+				s = s + str(data['rot'][1]) + " "
+				s = s + str(data['rot'][2]) + " "
+				s = s + str(data['rot'][3])
+				
+				txt.write(s + "\n")
+				if self.is_armature:
+					arm_ob["BoneData:" + str(i)] = s
 		
 		if self.is_local_bone_data:
 			if "LocalBoneData" in context.blend_data.texts.keys():
@@ -422,30 +425,32 @@ class import_cm3d2_model(bpy.types.Operator):
 				txt.clear()
 			else:
 				txt = context.blend_data.texts.new("LocalBoneData")
-			for data in local_bone_data:
-				txt.write(data['name'] + ",")
+			for i, data in enumerate(local_bone_data):
+				s = data['name'] + ","
 				
-				txt.write(str(data['matrix'][0][0]) + " ")
-				txt.write(str(data['matrix'][0][1]) + " ")
-				txt.write(str(data['matrix'][0][2]) + " ")
-				txt.write(str(data['matrix'][0][3]) + " ")
+				s = s + str(data['matrix'][0][0]) + " "
+				s = s + str(data['matrix'][0][1]) + " "
+				s = s + str(data['matrix'][0][2]) + " "
+				s = s + str(data['matrix'][0][3]) + " "
 				
-				txt.write(str(data['matrix'][1][0]) + " ")
-				txt.write(str(data['matrix'][1][1]) + " ")
-				txt.write(str(data['matrix'][1][2]) + " ")
-				txt.write(str(data['matrix'][1][3]) + " ")
+				s = s + str(data['matrix'][1][0]) + " "
+				s = s + str(data['matrix'][1][1]) + " "
+				s = s + str(data['matrix'][1][2]) + " "
+				s = s + str(data['matrix'][1][3]) + " "
 				
-				txt.write(str(data['matrix'][2][0]) + " ")
-				txt.write(str(data['matrix'][2][1]) + " ")
-				txt.write(str(data['matrix'][2][2]) + " ")
-				txt.write(str(data['matrix'][2][3]) + " ")
+				s = s + str(data['matrix'][2][0]) + " "
+				s = s + str(data['matrix'][2][1]) + " "
+				s = s + str(data['matrix'][2][2]) + " "
+				s = s + str(data['matrix'][2][3]) + " "
 				
-				txt.write(str(data['matrix'][3][0]) + " ")
-				txt.write(str(data['matrix'][3][1]) + " ")
-				txt.write(str(data['matrix'][3][2]) + " ")
-				txt.write(str(data['matrix'][3][3]))
+				s = s + str(data['matrix'][3][0]) + " "
+				s = s + str(data['matrix'][3][1]) + " "
+				s = s + str(data['matrix'][3][2]) + " "
+				s = s + str(data['matrix'][3][3])
 				
-				txt.write("\n")
+				txt.write(s + "\n")
+				if self.is_armature:
+					arm_ob["LocalBoneData:" + str(i)] = s
 		
 		return {'FINISHED'}
 

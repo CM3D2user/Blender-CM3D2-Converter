@@ -9,8 +9,8 @@ bl_info = {
 	"location" : "File => Import/Export => CM3D2...",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
 	"warning" : "",
-	"wiki_url" : "",
-	"tracker_url" : "",
+	"wiki_url" : "https://github.com/CM3Duser/Blender-CM3D2-Converter",
+	"tracker_url" : "http://jbbs.shitaraba.net/game/55179/",
 	"category" : "Import-Export"
 }
 
