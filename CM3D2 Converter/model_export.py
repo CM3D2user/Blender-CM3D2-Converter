@@ -34,9 +34,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		]
 	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='TEXT')
 	
+	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True)
+	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
 		self.layout.prop(self, 'bone_info_mode')
+		self.layout.prop(self, 'is_normalize_weight')
 	
 	def invoke(self, context, event):
 		# データの成否チェック
@@ -246,7 +249,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					if name not in local_bone_names:
 						continue
 					weight = vg.weight
-					vgs.append((name, weight))
+					vgs.append([name, weight])
 				vgs.sort(key=lambda vg: vg[1])
 				vgs.reverse()
 				for i in range(4):
@@ -263,18 +266,37 @@ class export_cm3d2_model(bpy.types.Operator):
 						else:
 							index = 0
 					file.write(struct.pack('<h', index))
-				total = 0
+				total = 0.0
 				for i in range(4):
 					try:
 						weight = vgs[i][1]
 					except IndexError:
-						weight = 0
-					file.write(struct.pack('<f', weight))
+						weight = 0.0
 					total += weight
-				if 1.01 < total:
-					is_over_one += 1
-				if total < 0.99:
-					is_under_one += 1
+				if self.is_normalize_weight:
+					for i in range(4):
+						try:
+							weight = vgs[i][1]
+						except IndexError:
+							pass
+						else:
+							weight /= total
+							vgs[i][1] = weight
+				else:
+					if 1.01 < total:
+						is_over_one += 1
+					if total < 0.99:
+						is_under_one += 1
+				for i in range(4):
+					try:
+						weight = vgs[i][1]
+					except IndexError:
+						if total <= 0.0:
+							if i == 0:
+								weight = 1.0
+						else:
+							weight = 0.0
+					file.write(struct.pack('<f', weight))
 		if 1 <= is_over_one:
 			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が%dつ見つかりました" % is_over_one)
 		if 1 <= is_under_one:
