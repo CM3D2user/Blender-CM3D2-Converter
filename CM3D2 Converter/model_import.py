@@ -26,6 +26,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True)
 	
 	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
+	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True)
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
 	is_armature_custom_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
 	
@@ -46,6 +47,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.prop(self, 'is_mate_color')
 		box = self.layout.box()
 		box.prop(self, 'is_armature')
+		box.prop(self, 'is_armature_clean')
 		box.prop(self, 'is_armature_arrange')
 		box.prop(self, 'is_armature_custom_property')
 		box = self.layout.box()
@@ -250,15 +252,17 @@ class import_cm3d2_model(bpy.types.Operator):
 				else:
 					child_data.append(data)
 			
-			# ボーン整頓
-			if self.is_armature_arrange:
-				# 不要なボーンを削除
+			# 一部ボーン削除
+			if self.is_armature_clean:
 				for bone in arm.edit_bones:
 					for b in local_bone_data:
 						if bone.name == b['name']:
 							break
 					else:
 						arm.edit_bones.remove(bone)
+			
+			# ボーン整頓
+			if self.is_armature_arrange:
 				# 整頓
 				for bone in arm.edit_bones:
 					if 1 <= len(bone.children):
