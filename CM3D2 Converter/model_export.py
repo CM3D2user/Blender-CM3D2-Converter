@@ -28,8 +28,15 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
 	
+	items = [
+		('TEXT', "テキスト", "", 1),
+		('PROPERTY', "カスタムプロパティ", "", 2),
+		]
+	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='TEXT')
+	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
+		self.layout.prop(self, 'bone_info_mode')
 	
 	def invoke(self, context, event):
 		# データの成否チェック
@@ -62,13 +69,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 			return {'CANCELLED'}
 		
-		if "BoneData" not in context.blend_data.texts.keys():
-			self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
-			return {'CANCELLED'}
-		if "LocalBoneData" not in context.blend_data.texts.keys():
-			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
-			return {'CANCELLED'}
-		
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
@@ -79,23 +79,69 @@ class export_cm3d2_model(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
+		if self.bone_info_mode == 'TEXT':
+			if "BoneData" not in context.blend_data.texts.keys():
+				self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
+				return {'CANCELLED'}
+			if "LocalBoneData" not in context.blend_data.texts.keys():
+				self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
+				return {'CANCELLED'}
+		elif self.bone_info_mode == 'PROPERTY':
+			if ob.parent:
+				if ob.parent.type == 'ARMATURE':
+					if "BoneData:0" not in ob.parent.data.keys():
+						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+						return {'CANCELLED'}
+					if "LocalBoneData:0" not in ob.parent.data.keys():
+						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+						return {'CANCELLED'}
+				else:
+					self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
+					return {'CANCELLED'}
+			else:
+				self.report(type={'ERROR'}, message="アーマチュアが見つかりません、メッシュオブジェクトの親にして下さい")
+				return {'CANCELLED'}
+		else:
+			self.report(type={'ERROR'}, message="ボーン情報元のモードがおかしいです")
+			return {'CANCELLED'}
+		
 		# BoneData情報読み込み
 		bone_data = []
-		for line in context.blend_data.texts["BoneData"].lines:
-			data = line.body.split(',')
-			if len(data) == 5:
-				bone_data.append({})
-				bone_data[-1]['name'] = data[0]
-				bone_data[-1]['unknown'] = int(data[1])
-				bone_data[-1]['parent_index'] = int(data[2])
-				bone_data[-1]['co'] = []
-				floats = data[3].split(' ')
-				for f in floats:
-					bone_data[-1]['co'].append(float(f))
-				bone_data[-1]['rot'] = []
-				floats = data[4].split(' ')
-				for f in floats:
-					bone_data[-1]['rot'].append(float(f))
+		if self.bone_info_mode == 'TEXT':
+			for line in context.blend_data.texts["BoneData"].lines:
+				data = line.body.split(',')
+				if len(data) == 5:
+					bone_data.append({})
+					bone_data[-1]['name'] = data[0]
+					bone_data[-1]['unknown'] = int(data[1])
+					bone_data[-1]['parent_index'] = int(data[2])
+					bone_data[-1]['co'] = []
+					floats = data[3].split(' ')
+					for f in floats:
+						bone_data[-1]['co'].append(float(f))
+					bone_data[-1]['rot'] = []
+					floats = data[4].split(' ')
+					for f in floats:
+						bone_data[-1]['rot'].append(float(f))
+		elif self.bone_info_mode == 'PROPERTY':
+			for i in range(9**9):
+				name = "BoneData:" + str(i)
+				if name not in ob.parent.data.keys():
+					break
+				data = ob.parent.data[name].split(',')
+				if len(data) == 5:
+					bone_data.append({})
+					bone_data[-1]['name'] = data[0]
+					bone_data[-1]['unknown'] = int(data[1])
+					bone_data[-1]['parent_index'] = int(data[2])
+					bone_data[-1]['co'] = []
+					floats = data[3].split(' ')
+					for f in floats:
+						bone_data[-1]['co'].append(float(f))
+					bone_data[-1]['rot'] = []
+					floats = data[4].split(' ')
+					for f in floats:
+						bone_data[-1]['rot'].append(float(f))
 		if len(bone_data) <= 0:
 			self.report(type={'ERROR'}, message="テキスト「BoneData」に有効なデータがありません")
 			return {'CANCELLED'}
@@ -103,16 +149,31 @@ class export_cm3d2_model(bpy.types.Operator):
 		# LocalBoneData情報読み込み
 		local_bone_data = []
 		local_bone_names = []
-		for line in context.blend_data.texts["LocalBoneData"].lines:
-			data = line.body.split(',')
-			if len(data) == 2:
-				local_bone_data.append({})
-				local_bone_data[-1]['name'] = data[0]
-				local_bone_data[-1]['matrix'] = []
-				floats = data[1].split(' ')
-				for f in floats:
-					local_bone_data[-1]['matrix'].append(float(f))
-				local_bone_names.append(data[0])
+		if self.bone_info_mode == 'TEXT':
+			for line in context.blend_data.texts["LocalBoneData"].lines:
+				data = line.body.split(',')
+				if len(data) == 2:
+					local_bone_data.append({})
+					local_bone_data[-1]['name'] = data[0]
+					local_bone_data[-1]['matrix'] = []
+					floats = data[1].split(' ')
+					for f in floats:
+						local_bone_data[-1]['matrix'].append(float(f))
+					local_bone_names.append(data[0])
+		elif self.bone_info_mode == 'PROPERTY':
+			for i in range(9**9):
+				name = "LocalBoneData:" + str(i)
+				if name not in ob.parent.data.keys():
+					break
+				data = ob.parent.data[name].split(',')
+				if len(data) == 2:
+					local_bone_data.append({})
+					local_bone_data[-1]['name'] = data[0]
+					local_bone_data[-1]['matrix'] = []
+					floats = data[1].split(' ')
+					for f in floats:
+						local_bone_data[-1]['matrix'].append(float(f))
+					local_bone_names.append(data[0])
 		if len(local_bone_data) <= 0:
 			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」に有効なデータがありません")
 			return {'CANCELLED'}
