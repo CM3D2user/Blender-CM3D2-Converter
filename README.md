@@ -3,7 +3,8 @@
 ## インストール (Installation)
 　まず、Blender 2.7以上がインストールされている事が前提です。  
 　画面右の「Download ZIP」からファイルをダウンロード・解凍し、  
-　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts\addons\CM3D2 Converter\～～.py」となるように配置してください。  
+　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\  
+　Blender\2.75\scripts\addons\CM3D2 Converter\～.py」となるように配置してください。  
 　![配置](http://i.imgur.com/QvbMDR1.jpg)  
 
 ## 使い方 (How to Use)
@@ -34,9 +35,10 @@
 
 ### マテリアル
 　マテリアル情報は、マテリアルとテクスチャと画像の設定値によって保管しています。  
-　・シェーダー(CM3D2/Toony_Lighted_Outlineなど)は、  
-　マテリアルのカスタムプロパティ「shader1」「shader2」で変更。  
+　シェーダー(CM3D2/Toony_Lighted_Outlineなど)は、  
+　マテリアルのカスタムプロパティ「shader1」「shader2」で変更可能です。  
 　![カスタムプロパティ](http://i.imgur.com/5fFEcw9.jpg)  
+　インポート時にマテリアルの色がつきますが、エクスポート時には関係ありません。  
 
 ### テクスチャ
 #### 　テクスチャが有効
