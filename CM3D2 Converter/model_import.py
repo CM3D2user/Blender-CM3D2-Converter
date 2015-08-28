@@ -206,6 +206,10 @@ class import_cm3d2_model(bpy.types.Operator):
 					co_mat = mathutils.Matrix.Translation(co)
 					rot_mat = rot.to_matrix().to_4x4()
 					bone.matrix = co_mat * rot_mat
+					
+					if data['unknown']:
+						bone.layers[16] = True
+						bone.layers[0] = False
 				else:
 					child_data.append(data)
 			
@@ -247,6 +251,10 @@ class import_cm3d2_model(bpy.types.Operator):
 					rot_mat = rot.to_matrix().to_4x4()
 					
 					bone.matrix = co_mat * rot_mat
+					
+					if data['unknown']:
+						bone.layers[16] = True
+						bone.layers[0] = False
 				else:
 					child_data.append(data)
 			
@@ -273,6 +281,7 @@ class import_cm3d2_model(bpy.types.Operator):
 							v = bone.parent.tail - bone.parent.head
 							bone.tail = bone.head + (v * 0.75)
 			
+			arm.layers[16] = True
 			arm.draw_type = 'STICK'
 			arm_ob.show_x_ray = True
 			bpy.ops.object.mode_set(mode='OBJECT')
