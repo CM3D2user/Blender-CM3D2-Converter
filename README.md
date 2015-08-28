@@ -6,6 +6,10 @@
 　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\  
 　Blender\2.75\scripts\addons\CM3D2 Converter\～.py」となるように配置してください。  
 　![配置](http://i.imgur.com/QvbMDR1.jpg)  
+　Blenderを起動しユーザー設定のアドオンタブで「cm3d」等で検索、  
+　「Import-Export: CM3D2 Converter」をオンにすれば一時的に有効になります。  
+　次回起動時からも有効にしておきたい場合は「ユーザー設定の保存」をクリックして下さい。  
+　![有効化](http://i.imgur.com/6jmFWxQ.jpg)  
 
 ## 使い方 (How to Use)
 　読み込みは  
