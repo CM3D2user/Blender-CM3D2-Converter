@@ -23,7 +23,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True)
-	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=False)
+	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True)
 	
 	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
@@ -373,6 +373,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.texture = tex
 						if tex_data['name'] == "_RimColor" and self.is_mate_color:
 							mate.diffuse_color = tex_data['color'][:3]
+							mate.diffuse_color.v += 0.5
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
