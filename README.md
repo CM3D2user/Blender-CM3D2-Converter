@@ -1,40 +1,38 @@
 # Blender-CM3D2-Converter
 
 ## インストール (Installation)
-Windows7なら  
-C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts\addons\CM3D2 Converter\～～.py  
-となるように配置してください  
-![配置](http://i.imgur.com/QvbMDR1.jpg)  
+　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts\addons\CM3D2 Converter\～～.py」となるように配置してください  
+　![配置](http://i.imgur.com/QvbMDR1.jpg)  
 
 ## 使い方 (How to Use)
-読み込みは  
-ファイル => インポート => CM3D2 Model (.model)  
-書き出しも同じように  
-ファイル => エクスポート => CM3D2 Model (.model)  
-![手順](http://i.imgur.com/p2V7D5m.jpg)  
+　読み込みは  
+　ファイル => インポート => CM3D2 Model (.model)  
+　書き出しも同じように  
+　ファイル => エクスポート => CM3D2 Model (.model)  
+　![手順](http://i.imgur.com/p2V7D5m.jpg)  
 
 ## メモ (Note)
 
 ### ボーン
-ボーン情報はまだ「BoneData」と「LocalBoneData」というテキストで扱っています  
-これらを編集すればボーン設定を変更することも可能ですが、慣れない内は変えない事をおすすめします  
-![BoneData](http://i.imgur.com/pvgSZy5.jpg)  
-インポート時にアーマチュアが作成されますが、ウェイト付けをやりやすくする為のもので消しても問題ありません  
+　ボーン情報はまだ「BoneData」と「LocalBoneData」というテキストで扱っています  
+　これらを編集すればボーン設定を変更することも可能ですが、慣れない内は変えない事をおすすめします  
+　![BoneData](http://i.imgur.com/pvgSZy5.jpg)  
+　インポート時にアーマチュアが作成されますが、ウェイト付けをやりやすくする為のもので消しても問題ありません  
 
 ### オブジェクト
-オブジェクト名は必ず「name.bone」のように、「.(ピリオド)」で区切った形式にして下さい  
-前半がmodel名、後半がメッシュの位置のベースになるボーンの名前です  
-![オブジェクト名エラー](http://i.imgur.com/lnLydVO.jpg)  
+　オブジェクト名は必ず「name.bone」のように、「.(ピリオド)」で区切った形式にして下さい  
+　前半がmodel名、後半がメッシュの位置のベースになるボーンの名前です  
+　![オブジェクト名エラー](http://i.imgur.com/lnLydVO.jpg)  
 
 ### メッシュ
-四角ポリゴンがあっても自動で三角ポリゴンに変換して出力します  
-ウェイト値の合計が1.0より大きく離れている場合警告を出します  
-![ウェイトエラー](http://i.imgur.com/QRP5GWE.jpg)  
+　四角ポリゴンがあっても自動で三角ポリゴンに変換して出力します  
+　ウェイト値の合計が1.0より大きく離れている場合警告を出します  
+　![ウェイトエラー](http://i.imgur.com/QRP5GWE.jpg)  
 
 ### マテリアル
-マテリアル情報は、マテリアルとテクスチャと画像の設定値によって保管しています  
-・シェーダー(CM3D2/Toony_Lighted_Outlineなど)は、マテリアルのカスタムプロパティ「shader1」「shader2」で変更  
-![カスタムプロパティ](http://i.imgur.com/5fFEcw9.jpg)  
+　マテリアル情報は、マテリアルとテクスチャと画像の設定値によって保管しています  
+　・シェーダー(CM3D2/Toony_Lighted_Outlineなど)は、マテリアルのカスタムプロパティ「shader1」「shader2」で変更  
+　![カスタムプロパティ](http://i.imgur.com/5fFEcw9.jpg)  
 
 ### テクスチャ
 #### 　テクスチャが有効
@@ -46,8 +44,8 @@ C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\Blender\2.75\scripts
 　　![テクスチャ群](http://i.imgur.com/Isw5rC2.jpg)  
 
 ### その他
-元の.modelに上書きする必要はありません  
-データ名が「○○.001」のように末尾に連番が付いていても自動的に削除されます  
+　元の.modelに上書きする必要はありません  
+　データ名が「○○.001」のように末尾に連番が付いていても自動的に削除されます  
 
 ## 規約 (Agreement)
 >・「カスタムメイド3D2」本体を正規にご購入頂いた方のみが作成・配布・利用することができます。  
