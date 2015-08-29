@@ -330,13 +330,21 @@ class export_cm3d2_model(bpy.types.Operator):
 						faces.append(vert_index)
 					face_count += 1
 				elif len(face.verts) == 4:
+					v1 = face.loops[0].vert.co - face.loops[2].vert.co
+					v2 = face.loops[1].vert.co - face.loops[3].vert.co
+					if v1.length < v2.length:
+						f1 = [0, 1, 2]
+						f2 = [0, 2, 3]
+					else:
+						f1 = [0, 1, 3]
+						f2 = [1, 2, 3]
 					for i, loop in enumerate(face.loops):
-						if i in [0, 1, 2]:
+						if i in f1:
 							uv = loop[uv_lay].uv
 							index = loop.vert.index
 							vert_index = vert_iuv.index((index, uv.x, uv.y))
 							faces.append(vert_index)
-						if i in [2, 3, 0]:
+						if i in f2:
 							uv = loop[uv_lay].uv
 							index = loop.vert.index
 							vert_index = vert_iuv.index((index, uv.x, uv.y))
