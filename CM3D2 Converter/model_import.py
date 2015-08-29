@@ -30,7 +30,8 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
 	
 	is_bone_data_text = bpy.props.BoolProperty(name="ボーン情報のテキスト読み込み", default=True)
-	is_bone_data_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
+	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトにボーン情報埋め込み", default=True)
+	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
 	
 	def invoke(self, context, event):
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
@@ -50,7 +51,8 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.prop(self, 'is_armature_arrange')
 		box = self.layout.box()
 		box.prop(self, 'is_bone_data_text')
-		box.prop(self, 'is_bone_data_property')
+		box.prop(self, 'is_bone_data_obj_property')
+		box.prop(self, 'is_bone_data_arm_property')
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = self.filepath
@@ -443,7 +445,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
-			if self.is_armature and self.is_bone_data_property:
+			if self.is_bone_data_obj_property:
+				ob["BoneData:" + str(i)] = s
+			if self.is_armature and self.is_bone_data_arm_property:
 				arm["BoneData:" + str(i)] = s
 		
 		if self.is_bone_data_text:
@@ -477,7 +481,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
-			if self.is_armature and self.is_bone_data_property:
+			if self.is_bone_data_obj_property:
+				ob["LocalBoneData:" + str(i)] = s
+			if self.is_armature and self.is_bone_data_arm_property:
 				arm["LocalBoneData:" + str(i)] = s
 		
 		return {'FINISHED'}

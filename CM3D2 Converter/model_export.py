@@ -30,9 +30,10 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	items = [
 		('TEXT', "テキスト", "", 1),
-		('PROPERTY', "カスタムプロパティ", "", 2),
+		('OBJECT', "オブジェクト内プロパティ", "", 2),
+		('ARMATURE', "アーマチュア内プロパティ", "", 3),
 		]
-	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='TEXT')
+	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT')
 	
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True)
 	
@@ -90,17 +91,24 @@ class export_cm3d2_model(bpy.types.Operator):
 			if "BoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
-			if "LocalBoneData" not in context.blend_data.texts.keys():
+			elif "LocalBoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
-		elif self.bone_info_mode == 'PROPERTY':
+		elif self.bone_info_mode == 'OBJECT':
+			if "BoneData:0" not in ob.keys():
+				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+				return {'CANCELLED'}
+			elif "LocalBoneData:0" not in ob.keys():
+				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+				return {'CANCELLED'}
+		elif self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
 			if arm_ob:
 				if arm_ob.type == 'ARMATURE':
 					if "BoneData:0" not in arm_ob.data.keys():
 						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 						return {'CANCELLED'}
-					if "LocalBoneData:0" not in arm_ob.data.keys():
+					elif "LocalBoneData:0" not in arm_ob.data.keys():
 						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 						return {'CANCELLED'}
 				else:
@@ -137,12 +145,16 @@ class export_cm3d2_model(bpy.types.Operator):
 					floats = data[4].split(' ')
 					for f in floats:
 						bone_data[-1]['rot'].append(float(f))
-		elif self.bone_info_mode == 'PROPERTY':
+		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
 			for i in range(9**9):
 				name = "BoneData:" + str(i)
-				if name not in arm_ob.data.keys():
+				if self.bone_info_mode == 'OBJECT':
+					target = ob
+				elif self.bone_info_mode == 'ARMATURE':
+					target = arm_ob.data
+				if name not in target.keys():
 					break
-				data = arm_ob.data[name].split(',')
+				data = target[name].split(',')
 				if len(data) == 5:
 					bone_data.append({})
 					bone_data[-1]['name'] = data[0]
@@ -174,12 +186,16 @@ class export_cm3d2_model(bpy.types.Operator):
 					for f in floats:
 						local_bone_data[-1]['matrix'].append(float(f))
 					local_bone_names.append(data[0])
-		elif self.bone_info_mode == 'PROPERTY':
+		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
 			for i in range(9**9):
 				name = "LocalBoneData:" + str(i)
-				if name not in arm_ob.data.keys():
+				if self.bone_info_mode == 'OBJECT':
+					target = ob
+				elif self.bone_info_mode == 'ARMATURE':
+					target = arm_ob.data
+				if name not in target.keys():
 					break
-				data = arm_ob.data[name].split(',')
+				data = target[name].split(',')
 				if len(data) == 2:
 					local_bone_data.append({})
 					local_bone_data[-1]['name'] = data[0]
