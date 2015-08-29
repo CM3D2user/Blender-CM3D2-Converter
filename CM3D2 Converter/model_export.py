@@ -1,4 +1,4 @@
-import bpy, re, struct, mathutils, bmesh
+import bpy, re, os, struct, mathutils, bmesh
 
 def ArrangeName(name):
 	name = re.sub(r'\.\d{3}$', "", name)
@@ -73,6 +73,10 @@ class export_cm3d2_model(bpy.types.Operator):
 			return {'CANCELLED'}
 		
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path
+		path = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
+		root, ext = os.path.splitext(os.path.basename(path))
+		if ob_names[0] == root:
+			self.filepath = path
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
