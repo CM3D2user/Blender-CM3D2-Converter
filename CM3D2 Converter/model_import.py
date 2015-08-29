@@ -29,7 +29,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True)
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
 	
-	is_bone_data_text = bpy.props.BoolProperty(name="ボーン情報のテキスト読み込み", default=True)
+	is_bone_data_text = bpy.props.BoolProperty(name="テキストにボーン情報埋め込み", default=True)
 	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトにボーン情報埋め込み", default=True)
 	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
 	
