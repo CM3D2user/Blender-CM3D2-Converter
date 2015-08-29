@@ -314,6 +314,13 @@ class import_cm3d2_model(bpy.types.Operator):
 					co.x, co.y, co.z = -co.x, -co.z, co.y
 					co *= self.scale
 					ob.location = co
+					
+					rot = bone['rot'].copy()
+					eul = mathutils.Euler((math.radians(90), 0, 0), 'XYZ')
+					rot.rotate(eul)
+					ob.rotation_mode = 'QUATERNION'
+					ob.rotation_quaternion = rot
+					
 					break
 			#ob.scale *= self.scale
 			
