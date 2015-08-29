@@ -96,10 +96,10 @@ class export_cm3d2_model(bpy.types.Operator):
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'OBJECT':
 			if "BoneData:0" not in ob.keys():
-				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
 			elif "LocalBoneData:0" not in ob.keys():
-				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
