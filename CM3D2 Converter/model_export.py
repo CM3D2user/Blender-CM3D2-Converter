@@ -105,12 +105,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			arm_ob = ob.parent
 			if arm_ob:
 				if arm_ob.type == 'ARMATURE':
-					if "BoneData:0" not in arm_ob.data.keys():
-						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-						return {'CANCELLED'}
-					elif "LocalBoneData:0" not in arm_ob.data.keys():
-						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-						return {'CANCELLED'}
+					pass
 				else:
 					self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
 					return {'CANCELLED'}
@@ -123,6 +118,12 @@ class export_cm3d2_model(bpy.types.Operator):
 				else:
 					self.report(type={'ERROR'}, message="アーマチュアが見つかりません、親にするかモディファイアにして下さい")
 					return {'CANCELLED'}
+			if "BoneData:0" not in arm_ob.data.keys():
+				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+				return {'CANCELLED'}
+			elif "LocalBoneData:0" not in arm_ob.data.keys():
+				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+				return {'CANCELLED'}
 		else:
 			self.report(type={'ERROR'}, message="ボーン情報元のモードがおかしいです")
 			return {'CANCELLED'}
