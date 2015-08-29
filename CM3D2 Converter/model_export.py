@@ -90,20 +90,27 @@ class export_cm3d2_model(bpy.types.Operator):
 				self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'PROPERTY':
-			if ob.parent:
-				if ob.parent.type == 'ARMATURE':
-					if "BoneData:0" not in ob.parent.data.keys():
+			arm_ob = ob.parent
+			if arm_ob:
+				if arm_ob.type == 'ARMATURE':
+					if "BoneData:0" not in arm_ob.data.keys():
 						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 						return {'CANCELLED'}
-					if "LocalBoneData:0" not in ob.parent.data.keys():
+					if "LocalBoneData:0" not in arm_ob.data.keys():
 						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 						return {'CANCELLED'}
 				else:
 					self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
 					return {'CANCELLED'}
 			else:
-				self.report(type={'ERROR'}, message="アーマチュアが見つかりません、メッシュオブジェクトの親にして下さい")
-				return {'CANCELLED'}
+				for mod in ob.modifiers:
+					if mod.type == 'ARMATURE':
+						if mod.object:
+							arm_ob = mod.object
+							break
+				else:
+					self.report(type={'ERROR'}, message="アーマチュアが見つかりません、親にするかモディファイアにして下さい")
+					return {'CANCELLED'}
 		else:
 			self.report(type={'ERROR'}, message="ボーン情報元のモードがおかしいです")
 			return {'CANCELLED'}
@@ -129,9 +136,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		elif self.bone_info_mode == 'PROPERTY':
 			for i in range(9**9):
 				name = "BoneData:" + str(i)
-				if name not in ob.parent.data.keys():
+				if name not in arm_ob.data.keys():
 					break
-				data = ob.parent.data[name].split(',')
+				data = arm_ob.data[name].split(',')
 				if len(data) == 5:
 					bone_data.append({})
 					bone_data[-1]['name'] = data[0]
@@ -166,9 +173,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		elif self.bone_info_mode == 'PROPERTY':
 			for i in range(9**9):
 				name = "LocalBoneData:" + str(i)
-				if name not in ob.parent.data.keys():
+				if name not in arm_ob.data.keys():
 					break
-				data = ob.parent.data[name].split(',')
+				data = arm_ob.data[name].split(',')
 				if len(data) == 2:
 					local_bone_data.append({})
 					local_bone_data[-1]['name'] = data[0]
