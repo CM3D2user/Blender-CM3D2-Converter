@@ -1,4 +1,4 @@
-import bpy, math, struct, mathutils, bmesh
+import bpy, os, math, struct, mathutils, bmesh
 
 def ReadStr(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
@@ -34,6 +34,15 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
 	
 	def invoke(self, context, event):
+		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path:
+			try:
+				import winreg
+				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+					path = winreg.QueryValueEx(key, 'InstallPath')[0]
+					path = os.path.join(path, 'GameData', ' ')
+					context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = path
+			except:
+				pass
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
