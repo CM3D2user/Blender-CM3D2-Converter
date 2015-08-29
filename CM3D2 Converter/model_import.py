@@ -20,12 +20,12 @@ class import_cm3d2_model(bpy.types.Operator):
 	
 	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
 	
-	is_mesh = bpy.props.BoolProperty(name="メッシュデータ読み込み", default=True)
+	is_mesh = bpy.props.BoolProperty(name="メッシュ生成", default=True)
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True)
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True)
 	
-	is_armature = bpy.props.BoolProperty(name="アーマチュア読み込み", default=True)
+	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True)
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True)
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
 	
@@ -42,11 +42,13 @@ class import_cm3d2_model(bpy.types.Operator):
 		self.layout.prop(self, 'scale')
 		box = self.layout.box()
 		box.prop(self, 'is_mesh')
+		box = box.box()
 		box.prop(self, 'is_remove_doubles')
 		box.prop(self, 'is_seam')
 		box.prop(self, 'is_mate_color')
 		box = self.layout.box()
 		box.prop(self, 'is_armature')
+		box = box.box()
 		box.prop(self, 'is_armature_clean')
 		box.prop(self, 'is_armature_arrange')
 		box = self.layout.box()
