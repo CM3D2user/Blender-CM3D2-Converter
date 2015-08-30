@@ -10,6 +10,8 @@
 　「Import-Export: CM3D2 Converter」をオンにすれば一時的に有効になります。  
 　次回起動時からも有効にしておきたい場合は「ユーザー設定の保存」をクリックして下さい。  
 　![有効化](http://i.imgur.com/6jmFWxQ.jpg)  
+　一度インストールしてしまえば、アドオン設定画面からアップデート可能です。  
+　![更新](http://i.imgur.com/4jQ358Q.jpg)  
 
 ## 使い方 (How to Use)
 　読み込みは  
