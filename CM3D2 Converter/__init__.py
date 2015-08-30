@@ -1,5 +1,7 @@
 ﻿# アドオンを読み込む時に最初にこのファイルが読み込まれます
 
+import os, urllib, zipfile
+
 # アドオン情報
 bl_info = {
 	"name" : "CM3D2 Converter",
@@ -34,6 +36,34 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	def draw(self, context):
 		self.layout.prop(self, 'model_import_path')
 		self.layout.prop(self, 'model_export_path')
+		self.layout.operator(update_cm3d2_converter.bl_idname, icon='TRIA_UP_BAR')
+
+# アドオンアップデート処理
+class update_cm3d2_converter(bpy.types.Operator):
+	bl_idname = "script.update_cm3d2_converter"
+	bl_label = "Blender-CM3D2-Converterを更新"
+	bl_options = {'REGISTER'}
+	
+	def execute(self, context):
+		response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip")
+		tempDir = bpy.app.tempdir
+		zipPath = os.path.join(tempDir, "Blender-CM3D2-Converter-master.zip")
+		addonDir = os.path.dirname(__file__)
+		f = open(zipPath, "wb")
+		f.write(response.read())
+		f.close()
+		zf = zipfile.ZipFile(zipPath, "r")
+		for f in zf.namelist():
+			if not os.path.basename(f):
+				pass
+			else:
+				if ("CM3D2 Converter" in f):
+					uzf = open(os.path.join(addonDir, os.path.basename(f)), 'wb')
+					uzf.write(zf.read(f))
+					uzf.close()
+		zf.close()
+		self.report(type={'INFO'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
+		return {'FINISHED'}
 
 # プラグインをインストールしたときの処理
 def register():
