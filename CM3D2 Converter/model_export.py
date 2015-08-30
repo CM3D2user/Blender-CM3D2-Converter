@@ -39,8 +39,8 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
-		self.layout.prop(self, 'bone_info_mode')
-		self.layout.prop(self, 'is_normalize_weight')
+		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
+		self.layout.prop(self, 'is_normalize_weight', icon='GROUP_VERTEX')
 	
 	def invoke(self, context, event):
 		# データの成否チェック
