@@ -34,9 +34,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	model_export_path = bpy.props.StringProperty(name="Modelエクスポート時のデフォルトパス", subtype="FILE_PATH")
 	
 	def draw(self, context):
-		self.layout.prop(self, 'model_import_path')
-		self.layout.prop(self, 'model_export_path')
-		self.layout.operator(update_cm3d2_converter.bl_idname, icon='TRIA_UP_BAR')
+		self.layout.prop(self, 'model_import_path', icon='IMPORT')
+		self.layout.prop(self, 'model_export_path', icon='EXPORT')
+		self.layout.operator(update_cm3d2_converter.bl_idname, icon='FILE_REFRESH')
 
 # アドオンアップデート処理
 class update_cm3d2_converter(bpy.types.Operator):
