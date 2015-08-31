@@ -188,6 +188,8 @@ class import_cm3d2_model(bpy.types.Operator):
 			else:
 				break
 		
+		file.close()
+		
 		try:
 			bpy.ops.object.mode_set(mode='OBJECT')
 		except RuntimeError:

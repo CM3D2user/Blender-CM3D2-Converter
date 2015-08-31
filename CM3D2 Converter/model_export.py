@@ -458,6 +458,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					file.write(struct.pack('<3f', 0, 0, 0))
 		WriteStr(file, 'end')
 		
+		file.close()
 		return {'FINISHED'}
 
 # メニューを登録する関数
