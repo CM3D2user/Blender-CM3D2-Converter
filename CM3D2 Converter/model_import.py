@@ -39,7 +39,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				import winreg
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
 					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', ' ')
+					path = os.path.join(path, 'GameData', '*.model')
 					context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = path
 			except:
 				pass
