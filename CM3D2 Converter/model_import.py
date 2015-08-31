@@ -29,9 +29,9 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True, description="ボーンを分かりやすい向きに変更します")
 	
-	is_bone_data_text = bpy.props.BoolProperty(name="テキストにボーン情報埋め込み", default=True, description="ボーン情報をテキストとして読み込みます")
-	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトにボーン情報埋め込み", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
-	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True, description="アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます")
+	is_bone_data_text = bpy.props.BoolProperty(name="テキスト", default=True, description="ボーン情報をテキストとして読み込みます")
+	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトのカスタムプロパティ", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
+	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアのカスタムプロパティ", default=True, description="アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます")
 	
 	def invoke(self, context, event):
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path:
@@ -52,15 +52,18 @@ class import_cm3d2_model(bpy.types.Operator):
 		box = self.layout.box()
 		box.prop(self, 'is_mesh', icon='MESH_DATA')
 		box = box.box()
+		box.label("メッシュオプション")
 		box.prop(self, 'is_remove_doubles', icon='STICKY_UVS_VERT')
 		box.prop(self, 'is_seam', icon='KEY_DEHLT')
 		box.prop(self, 'is_mate_color', icon='COLOR')
 		box = self.layout.box()
 		box.prop(self, 'is_armature', icon='ARMATURE_DATA')
 		box = box.box()
+		box.label("アーマチュアオプション")
 		box.prop(self, 'is_armature_clean', icon='X')
 		box.prop(self, 'is_armature_arrange', icon='HAIR')
 		box = self.layout.box()
+		box.label("ボーン情報埋め込み場所")
 		box.prop(self, 'is_bone_data_text', icon='TEXT')
 		box.prop(self, 'is_bone_data_obj_property', icon='OBJECT_DATA')
 		box.prop(self, 'is_bone_data_arm_property', icon='ARMATURE_DATA')

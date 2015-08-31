@@ -46,6 +46,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
 		box = self.layout.box()
+		box.label("メッシュオプション")
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
 		box.prop(self, 'is_normalize_weight', icon='GROUP_VERTEX')
 	
