@@ -8,7 +8,7 @@ bl_info = {
 	"author" : "",
 	"version" : (0, 1),
 	"blender" : (2, 7),
-	"location" : "File => Import/Export => CM3D2...",
+	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
 	"warning" : "",
 	"wiki_url" : "https://github.com/CM3Duser/Blender-CM3D2-Converter",
