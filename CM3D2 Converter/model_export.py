@@ -35,11 +35,15 @@ class export_cm3d2_model(bpy.types.Operator):
 		]
 	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT')
 	
+	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True)
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True)
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
+		
+		
+		self.layout.prop(self, 'is_convert_tris', icon='MESH_DATA')
 		self.layout.prop(self, 'is_normalize_weight', icon='GROUP_VERTEX')
 	
 	def invoke(self, context, event):
@@ -346,7 +350,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						vert_index = vert_iuv.index((index, uv.x, uv.y))
 						faces.append(vert_index)
 					face_count += 1
-				elif len(face.verts) == 4:
+				elif len(face.verts) == 4 and self.is_convert_tris:
 					v1 = face.loops[0].vert.co - face.loops[2].vert.co
 					v2 = face.loops[1].vert.co - face.loops[3].vert.co
 					if v1.length < v2.length:
