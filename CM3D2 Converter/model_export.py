@@ -1,7 +1,8 @@
 import bpy, re, os, struct, mathutils, bmesh
 
-def ArrangeName(name):
-	name = re.sub(r'\.\d{3}$', "", name)
+def ArrangeName(name, flag):
+	if flag:
+		return re.sub(r'\.\d{3}$', "", name)
 	return name
 
 def WriteStr(file, s):
@@ -35,16 +36,18 @@ class export_cm3d2_model(bpy.types.Operator):
 		]
 	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT')
 	
+	is_arrange_name = bpy.props.BoolProperty(name="データ名の連番を削除", default=True)
+	
 	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True)
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True)
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
-		
-		
-		self.layout.prop(self, 'is_convert_tris', icon='MESH_DATA')
-		self.layout.prop(self, 'is_normalize_weight', icon='GROUP_VERTEX')
+		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
+		box = self.layout.box()
+		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
+		box.prop(self, 'is_normalize_weight', icon='GROUP_VERTEX')
 	
 	def invoke(self, context, event):
 		# データの成否チェック
@@ -72,7 +75,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not me.uv_layers.active:
 			self.report(type={'ERROR'}, message="UVがありません")
 			return {'CANCELLED'}
-		ob_names = ArrangeName(ob.name).split('.')
+		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
 		if len(ob_names) != 2:
 			self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 			return {'CANCELLED'}
@@ -219,7 +222,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		WriteStr(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', 1000))
 		
-		ob_names = ArrangeName(ob.name).split('.')
+		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
 		WriteStr(file, ob_names[0])
 		WriteStr(file, ob_names[1])
 		
@@ -389,7 +392,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.write(struct.pack('<i', len(ob.material_slots)))
 		for slot_index, slot in enumerate(ob.material_slots):
 			mate = slot.material
-			WriteStr(file, ArrangeName(mate.name))
+			WriteStr(file, ArrangeName(mate.name, self.is_arrange_name))
 			WriteStr(file, mate['shader1'])
 			WriteStr(file, mate['shader2'])
 			for tindex, tslot in enumerate(mate.texture_slots):
@@ -398,11 +401,11 @@ class export_cm3d2_model(bpy.types.Operator):
 				tex = tslot.texture
 				if mate.use_textures[tindex]:
 					WriteStr(file, 'tex')
-					WriteStr(file, ArrangeName(tex.name))
+					WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
 					if tex.image:
 						img = tex.image
 						WriteStr(file, 'tex2d')
-						WriteStr(file, ArrangeName(img.name))
+						WriteStr(file, ArrangeName(img.name, self.is_arrange_name))
 						path = img.filepath
 						path = path.replace('//..\\..\\Assets\\', 'Assets/')
 						path = path.replace('\\', '/')
@@ -415,13 +418,13 @@ class export_cm3d2_model(bpy.types.Operator):
 				else:
 					if tslot.use_rgb_to_intensity:
 						WriteStr(file, 'col')
-						WriteStr(file, ArrangeName(tex.name))
+						WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
 						col = tslot.color
 						file.write(struct.pack('<3f', col[0], col[1], col[2]))
 						file.write(struct.pack('<f', tslot.diffuse_color_factor))
 					else:
 						WriteStr(file, 'f')
-						WriteStr(file, ArrangeName(tex.name))
+						WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
 						file.write(struct.pack('<f', tslot.diffuse_color_factor))
 			WriteStr(file, 'end')
 		
