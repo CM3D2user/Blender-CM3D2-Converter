@@ -9,7 +9,7 @@ def ReadStr(file):
 
 # メインオペレーター
 class import_cm3d2_model(bpy.types.Operator):
-	bl_idname = "import_mesh.import_cm3d2_model"
+	bl_idname = 'import_mesh.import_cm3d2_model'
 	bl_label = "CM3D2 Model (.model)"
 	bl_description = "カスタムメイド3D2のmodelファイルを読み込みます"
 	bl_options = {'REGISTER'}
@@ -18,20 +18,20 @@ class import_cm3d2_model(bpy.types.Operator):
 	filename_ext = ".model"
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
-	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1)
+	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1, description="インポート時のメッシュ等の拡大率です")
 	
-	is_mesh = bpy.props.BoolProperty(name="メッシュ生成", default=True)
-	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True)
-	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True)
-	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True)
+	is_mesh = bpy.props.BoolProperty(name="メッシュ生成", default=True, description="ポリゴンを読み込みます、大抵の場合オンでOKです")
+	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True, description="UVの切れ目でポリゴンが分かれている仕様なので、インポート時にくっつけます")
+	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True, description="UVの切れ目にシームをつけます")
+	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
 	
-	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True)
-	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True)
-	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True)
+	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
+	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
+	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True, description="ボーンを分かりやすい向きに変更します")
 	
-	is_bone_data_text = bpy.props.BoolProperty(name="テキストにボーン情報埋め込み", default=True)
-	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトにボーン情報埋め込み", default=True)
-	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True)
+	is_bone_data_text = bpy.props.BoolProperty(name="テキストにボーン情報埋め込み", default=True, description="ボーン情報をテキストとして読み込みます")
+	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトにボーン情報埋め込み", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
+	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアにボーン情報埋め込み", default=True, description="アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます")
 	
 	def invoke(self, context, event):
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path:

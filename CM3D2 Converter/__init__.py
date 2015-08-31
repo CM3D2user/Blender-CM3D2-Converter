@@ -30,8 +30,8 @@ import bpy
 class AddonPreferences(bpy.types.AddonPreferences):
 	bl_idname = __name__
 	
-	model_import_path = bpy.props.StringProperty(name="Modelインポート時のデフォルトパス", subtype="FILE_PATH")
-	model_export_path = bpy.props.StringProperty(name="Modelエクスポート時のデフォルトパス", subtype="FILE_PATH")
+	model_import_path = bpy.props.StringProperty(name="Modelインポート時のデフォルトパス", subtype='FILE_PATH', description="インポート時に最初はここが表示されます、インポート毎に保存されます")
+	model_export_path = bpy.props.StringProperty(name="Modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="エクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
 	def draw(self, context):
 		self.layout.prop(self, 'model_import_path', icon='IMPORT')
@@ -40,8 +40,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 
 # アドオンアップデート処理
 class update_cm3d2_converter(bpy.types.Operator):
-	bl_idname = "script.update_cm3d2_converter"
+	bl_idname = 'script.update_cm3d2_converter'
 	bl_label = "Blender-CM3D2-Converterを更新"
+	bl_description = "GitHubから最新版のBlender-CM3D2-Converterをダウンロードし上書きします、実行した後は再起動して下さい"
 	bl_options = {'REGISTER'}
 	
 	def execute(self, context):
@@ -62,7 +63,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 					uzf.write(zf.read(f))
 					uzf.close()
 		zf.close()
-		self.report(type={'INFO'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
+		self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
 		return {'FINISHED'}
 
 # プラグインをインストールしたときの処理

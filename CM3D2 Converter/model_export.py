@@ -18,7 +18,7 @@ def WriteStr(file, s):
 
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
-	bl_idname = "export_mesh.export_cm3d2_model"
+	bl_idname = 'export_mesh.export_cm3d2_model'
 	bl_label = "CM3D2 Model (.model)"
 	bl_description = "カスタムメイド3D2のmodelファイルを書き出します"
 	bl_options = {'REGISTER'}
@@ -27,19 +27,19 @@ class export_cm3d2_model(bpy.types.Operator):
 	filename_ext = ".model"
 	filter_glob = bpy.props.StringProperty(default="*.model", options={'HIDDEN'})
 	
-	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
+	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2, description="エクスポート時のメッシュ等の拡大率です")
 	
 	items = [
 		('TEXT', "テキスト", "", 1),
 		('OBJECT', "オブジェクト内プロパティ", "", 2),
 		('ARMATURE', "アーマチュア内プロパティ", "", 3),
 		]
-	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT')
+	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT', description="modelファイルに必要なボーン情報をどこから引っ張ってくるか選びます")
 	
-	is_arrange_name = bpy.props.BoolProperty(name="データ名の連番を削除", default=True)
+	is_arrange_name = bpy.props.BoolProperty(name="データ名の連番を削除", default=True, description="「○○.001」のような連番が付属したデータ名からこれらを削除します")
 	
-	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True)
-	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True)
+	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True, description="四角ポリゴンを三角ポリゴンに変換してから出力します、元のメッシュには影響ありません")
+	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
