@@ -271,6 +271,15 @@ class import_cm3d2_model(bpy.types.Operator):
 				else:
 					child_data.append(data)
 			
+			# ボーン整頓
+			if self.is_armature_arrange:
+				has_child = []
+				# 整頓
+				for bone in arm.edit_bones:
+					if 1 == len(bone.children):
+						bone.tail = bone.children[0].head
+						has_child.append(bone.name)
+			
 			# 一部ボーン削除
 			if self.is_armature_clean:
 				for bone in arm.edit_bones:
@@ -284,7 +293,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature_arrange:
 				# 整頓
 				for bone in arm.edit_bones:
-					if 1 <= len(bone.children):
+					if len(bone.children) == 0 and bone.name in has_child:
+						pass
+					elif 1 <= len(bone.children):
 						total = mathutils.Vector()
 						for child in bone.children:
 							total += child.head
