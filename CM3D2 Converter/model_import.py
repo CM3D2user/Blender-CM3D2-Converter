@@ -297,7 +297,10 @@ class import_cm3d2_model(bpy.types.Operator):
 				for bone in arm.edit_bones:
 					if len(bone.children) == 0 and bone.name in has_child:
 						pass
-					elif 1 <= len(bone.children):
+					elif 1 == len(bone.children):
+						bone.tail = bone.children[0].head
+						bone.children[0].use_connect = True
+					elif 2 <= len(bone.children):
 						total = mathutils.Vector()
 						for child in bone.children:
 							total += child.head
