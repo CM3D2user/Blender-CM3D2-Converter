@@ -154,6 +154,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					for f in floats:
 						bone_data[-1]['rot'].append(float(f))
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
+			pass_count = 0
 			for i in range(9**9):
 				name = "BoneData:" + str(i)
 				if self.bone_info_mode == 'OBJECT':
@@ -161,7 +162,10 @@ class export_cm3d2_model(bpy.types.Operator):
 				elif self.bone_info_mode == 'ARMATURE':
 					target = arm_ob.data
 				if name not in target.keys():
-					break
+					pass_count += 1
+					if 50 < pass_count:
+						break
+					continue
 				data = target[name].split(',')
 				if len(data) == 5:
 					bone_data.append({})
@@ -195,6 +199,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						local_bone_data[-1]['matrix'].append(float(f))
 					local_bone_names.append(data[0])
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
+			pass_count = 0
 			for i in range(9**9):
 				name = "LocalBoneData:" + str(i)
 				if self.bone_info_mode == 'OBJECT':
@@ -202,7 +207,10 @@ class export_cm3d2_model(bpy.types.Operator):
 				elif self.bone_info_mode == 'ARMATURE':
 					target = arm_ob.data
 				if name not in target.keys():
-					break
+					pass_count += 1
+					if 50 < pass_count:
+						break
+					continue
 				data = target[name].split(',')
 				if len(data) == 2:
 					local_bone_data.append({})
