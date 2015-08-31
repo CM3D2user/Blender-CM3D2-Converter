@@ -80,6 +80,15 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 			return {'CANCELLED'}
 		
+		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path:
+			try:
+				import winreg
+				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+					path = winreg.QueryValueEx(key, 'InstallPath')[0]
+					path = os.path.join(path, 'GameData', '*.model')
+					context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = path
+			except:
+				pass
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path
 		path = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
 		root, ext = os.path.splitext(os.path.basename(path))
