@@ -23,7 +23,9 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_mesh = bpy.props.BoolProperty(name="メッシュ生成", default=True, description="ポリゴンを読み込みます、大抵の場合オンでOKです")
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True, description="UVの切れ目でポリゴンが分かれている仕様なので、インポート時にくっつけます")
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True, description="UVの切れ目にシームをつけます")
+	
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
+	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
 	
 	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
@@ -55,7 +57,10 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.label("メッシュオプション")
 		box.prop(self, 'is_remove_doubles', icon='STICKY_UVS_VERT')
 		box.prop(self, 'is_seam', icon='KEY_DEHLT')
+		box = self.layout.box()
+		box.label("マテリアル")
 		box.prop(self, 'is_mate_color', icon='COLOR')
+		box.prop(self, 'is_mate_data_text', icon='TEXT')
 		box = self.layout.box()
 		box.prop(self, 'is_armature', icon='ARMATURE_DATA')
 		box = box.box()
@@ -455,6 +460,40 @@ class import_cm3d2_model(bpy.types.Operator):
 				bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
 				context.scene.objects.active = ob
 		
+		# マテリアル情報のテキスト埋め込み
+		if self.is_mate_data_text:
+			for index, data in enumerate(material_data):
+				txt_name = "Material:" + str(index)
+				if txt_name in context.blend_data.texts.keys():
+					txt = context.blend_data.texts[txt_name]
+					txt.clear()
+				else:
+					txt = context.blend_data.texts.new(txt_name)
+				txt.write("***\n")
+				txt.write("***\n")
+				txt.write(data['name1'] + "\n")
+				txt.write(data['name2'] + "\n")
+				txt.write(data['name3'] + "\n")
+				txt.write("\n")
+				for tex_data in data['data']:
+					txt.write(tex_data['type'] + "\n")
+					if tex_data['type'] == 'tex':
+						txt.write("\t" + tex_data['name'] + "\n")
+						txt.write("\t" + tex_data['type2'] + "\n")
+						if tex_data['type2'] == 'tex2d':
+							txt.write("\t" + tex_data['name2'] + "\n")
+							txt.write("\t" + tex_data['path'] + "\n")
+							col = str(tex_data['color'][0]) + " " + str(tex_data['color'][1]) + " " + str(tex_data['color'][2]) + " " + str(tex_data['color'][3])
+							txt.write("\t" + col + "\n")
+					elif tex_data['type'] == 'col':
+						txt.write("\t" + tex_data['name'] + "\n")
+						col = str(tex_data['color'][0]) + " " + str(tex_data['color'][1]) + " " + str(tex_data['color'][2]) + " " + str(tex_data['color'][3])
+						txt.write("\t" + col + "\n")
+					elif tex_data['type'] == 'f':
+						txt.write("\t" + tex_data['name'] + "\n")
+						txt.write("\t" + str(tex_data['float']) + "\n")
+		
+		# ボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
 			if "BoneData" in context.blend_data.texts.keys():
 				txt = context.blend_data.texts["BoneData"]
@@ -480,6 +519,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["BoneData:" + str(i)] = s
 		
+		# ローカルボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
 			if "LocalBoneData" in context.blend_data.texts.keys():
 				txt = context.blend_data.texts["LocalBoneData"]

@@ -16,6 +16,9 @@ def WriteStr(file, s):
 		file.write(struct.pack('<B', str_count))
 	file.write(s.encode('utf-8'))
 
+def SetMateLine(line):
+	return re.sub(r'^[\t ]*', "", line)
+
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
 	bl_idname = 'export_mesh.export_cm3d2_model'
@@ -36,6 +39,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		]
 	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT', description="modelファイルに必要なボーン情報をどこから引っ張ってくるか選びます")
 	
+	items = [
+		('TEXT', "テキスト", "", 1),
+		('MATERIAL', "マテリアル", "", 2),
+		]
+	mate_info_mode = bpy.props.EnumProperty(items=items, name="マテリアル情報元", default='MATERIAL', description="modelファイルに必要なマテリアル情報をどこから引っ張ってくるか選びます")
+	
 	is_arrange_name = bpy.props.BoolProperty(name="データ名の連番を削除", default=True, description="「○○.001」のような連番が付属したデータ名からこれらを削除します")
 	
 	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True, description="四角ポリゴンを三角ポリゴンに変換してから出力します、元のメッシュには影響ありません")
@@ -44,6 +53,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
+		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
 		box = self.layout.box()
 		box.label("メッシュオプション")
@@ -144,6 +154,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		else:
 			self.report(type={'ERROR'}, message="ボーン情報元のモードがおかしいです")
 			return {'CANCELLED'}
+		
+		if self.mate_info_mode == 'TEXT':
+			for index, slot in enumerate(ob.material_slots):
+				if "Material:" + str(index) not in context.blend_data.texts.keys():
+					self.report(type={'ERROR'}, message="マテリアル情報元のテキストが足りません")
+					return {'CANCELLED'}
 		
 		# BoneData情報読み込み
 		bone_data = []
@@ -409,41 +425,78 @@ class export_cm3d2_model(bpy.types.Operator):
 		# マテリアルを書き出し
 		file.write(struct.pack('<i', len(ob.material_slots)))
 		for slot_index, slot in enumerate(ob.material_slots):
-			mate = slot.material
-			WriteStr(file, ArrangeName(mate.name, self.is_arrange_name))
-			WriteStr(file, mate['shader1'])
-			WriteStr(file, mate['shader2'])
-			for tindex, tslot in enumerate(mate.texture_slots):
-				if not tslot:
-					continue
-				tex = tslot.texture
-				if mate.use_textures[tindex]:
-					WriteStr(file, 'tex')
-					WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
-					if tex.image:
-						img = tex.image
-						WriteStr(file, 'tex2d')
-						WriteStr(file, ArrangeName(img.name, self.is_arrange_name))
-						path = img.filepath
-						path = path.replace('//..\\..\\Assets\\', 'Assets/')
-						path = path.replace('\\', '/')
-						WriteStr(file, path)
-						col = tslot.color
-						file.write(struct.pack('<3f', col[0], col[1], col[2]))
-						file.write(struct.pack('<f', tslot.diffuse_color_factor))
-					else:
-						WriteStr(file, 'null')
-				else:
-					if tslot.use_rgb_to_intensity:
-						WriteStr(file, 'col')
+			if self.mate_info_mode == 'MATERIAL':
+				mate = slot.material
+				WriteStr(file, ArrangeName(mate.name, self.is_arrange_name))
+				WriteStr(file, mate['shader1'])
+				WriteStr(file, mate['shader2'])
+				for tindex, tslot in enumerate(mate.texture_slots):
+					if not tslot:
+						continue
+					tex = tslot.texture
+					if mate.use_textures[tindex]:
+						WriteStr(file, 'tex')
 						WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
-						col = tslot.color
-						file.write(struct.pack('<3f', col[0], col[1], col[2]))
-						file.write(struct.pack('<f', tslot.diffuse_color_factor))
+						if tex.image:
+							img = tex.image
+							WriteStr(file, 'tex2d')
+							WriteStr(file, ArrangeName(img.name, self.is_arrange_name))
+							path = img.filepath
+							path = path.replace('//..\\..\\Assets\\', 'Assets/')
+							path = path.replace('\\', '/')
+							WriteStr(file, path)
+							col = tslot.color
+							file.write(struct.pack('<3f', col[0], col[1], col[2]))
+							file.write(struct.pack('<f', tslot.diffuse_color_factor))
+						else:
+							WriteStr(file, 'null')
 					else:
-						WriteStr(file, 'f')
-						WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
-						file.write(struct.pack('<f', tslot.diffuse_color_factor))
+						if tslot.use_rgb_to_intensity:
+							WriteStr(file, 'col')
+							WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
+							col = tslot.color
+							file.write(struct.pack('<3f', col[0], col[1], col[2]))
+							file.write(struct.pack('<f', tslot.diffuse_color_factor))
+						else:
+							WriteStr(file, 'f')
+							WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
+							file.write(struct.pack('<f', tslot.diffuse_color_factor))
+			elif self.mate_info_mode == 'TEXT':
+				data = context.blend_data.texts["Material:" + str(slot_index)].as_string()
+				data = data.split('\n')
+				WriteStr(file, data[2])
+				WriteStr(file, data[3])
+				WriteStr(file, data[4])
+				seek = 5
+				for i in range(9**9):
+					if len(data) <= seek:
+						break
+					type = data[seek]
+					if type == 'tex':
+						WriteStr(file, type)
+						WriteStr(file, SetMateLine(data[seek + 1]))
+						WriteStr(file, SetMateLine(data[seek + 2]))
+						if SetMateLine(data[seek + 2]) == 'tex2d':
+							WriteStr(file, SetMateLine(data[seek + 3]))
+							WriteStr(file, SetMateLine(data[seek + 4]))
+							col = SetMateLine(data[seek + 5])
+							col = col.split(' ')
+							file.write(struct.pack('<4f', float(col[0]), float(col[1]), float(col[2]), float(col[3])))
+							seek += 3
+						seek += 2
+					elif type == 'col':
+						WriteStr(file, type)
+						WriteStr(file, SetMateLine(data[seek + 1]))
+						col = SetMateLine(data[seek + 2])
+						col = col.split(' ')
+						file.write(struct.pack('<4f', float(col[0]), float(col[1]), float(col[2]), float(col[3])))
+						seek += 2
+					elif type == 'f':
+						WriteStr(file, type)
+						WriteStr(file, SetMateLine(data[seek + 1]))
+						file.write(struct.pack('<f', float(SetMateLine(data[seek + 2]))))
+						seek += 2
+					seek += 1
 			WriteStr(file, 'end')
 		
 		# モーフを書き出し
