@@ -442,7 +442,7 @@ class export_cm3d2_model(bpy.types.Operator):
 							WriteStr(file, 'tex2d')
 							WriteStr(file, ArrangeName(img.name, self.is_arrange_name))
 							path = img.filepath
-							path = path.replace('//..\\..\\Assets\\', 'Assets/')
+							path = re.sub(r'^[\/\.]', "", path)
 							path = path.replace('\\', '/')
 							WriteStr(file, path)
 							col = tslot.color
