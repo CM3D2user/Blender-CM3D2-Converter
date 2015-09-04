@@ -384,8 +384,13 @@ class export_cm3d2_model(bpy.types.Operator):
 					for loop in face.loops:
 						uv = loop[uv_lay].uv
 						index = loop.vert.index
-						vert_index = vert_iuv.index((index, uv.x, uv.y))
-						faces.append(vert_index)
+						try:
+							vert_index = vert_iuv.index((index, uv.x, uv.y))
+						except ValueError:
+							self.report(type={'ERROR'}, message="UV展開をしていない頂点が見つかりました、中止します")
+							return {'CANCELLED'}
+						else:
+							faces.append(vert_index)
 					face_count += 1
 				elif len(face.verts) == 4 and self.is_convert_tris:
 					v1 = face.loops[0].vert.co - face.loops[2].vert.co
