@@ -91,6 +91,24 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 			return {'CANCELLED'}
 		
+		# ボーン情報元のデフォルトオプションを取得
+		if self.bone_info_mode == 'OBJECT':
+			if "BoneData:0" not in ob.keys():
+				if "BoneData" in context.blend_data.texts.keys():
+					if "LocalBoneData" in context.blend_data.texts.keys():
+						self.bone_info_mode = 'TEXT'
+				arm_ob = ob.parent
+				if arm_ob:
+					if arm_ob.type == 'ARMATURE':
+						self.bone_info_mode = 'ARMATURE'
+				else:
+					for mod in ob.modifiers:
+						if mod.type == 'ARMATURE':
+							if mod.object:
+								self.bone_info_mode = 'ARMATURE'
+								break
+		
+		# エクスポート時のデフォルトパスを取得
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path:
 			try:
 				import winreg
@@ -117,6 +135,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
+		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
 			if "BoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
@@ -135,7 +154,12 @@ class export_cm3d2_model(bpy.types.Operator):
 			arm_ob = ob.parent
 			if arm_ob:
 				if arm_ob.type == 'ARMATURE':
-					pass
+					if "BoneData:0" not in arm_ob.data.keys():
+						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+						return {'CANCELLED'}
+					elif "LocalBoneData:0" not in arm_ob.data.keys():
+						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+						return {'CANCELLED'}
 				else:
 					self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
 					return {'CANCELLED'}
@@ -144,6 +168,12 @@ class export_cm3d2_model(bpy.types.Operator):
 					if mod.type == 'ARMATURE':
 						if mod.object:
 							arm_ob = mod.object
+							if "BoneData:0" not in arm_ob.data.keys():
+								self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+								return {'CANCELLED'}
+							elif "LocalBoneData:0" not in arm_ob.data.keys():
+								self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+								return {'CANCELLED'}
 							break
 				else:
 					self.report(type={'ERROR'}, message="アーマチュアが見つかりません、親にするかモディファイアにして下さい")
