@@ -105,6 +105,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		root, ext = os.path.splitext(os.path.basename(path))
 		if ob_names[0] == root:
 			self.filepath = path
+		else:
+			dir = os.path.dirname(self.filepath)
+			self.filepath = os.path.join(dir, ob_names[0] + ".model")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
