@@ -194,6 +194,8 @@ class export_cm3d2_model(bpy.types.Operator):
 					self.report(type={'ERROR'}, message="マテリアル情報元のテキストが足りません")
 					return {'CANCELLED'}
 		
+		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
+		
 		# BoneData情報読み込み
 		bone_data = []
 		if self.bone_info_mode == 'TEXT':
@@ -241,6 +243,13 @@ class export_cm3d2_model(bpy.types.Operator):
 						bone_data[-1]['rot'].append(float(f))
 		if len(bone_data) <= 0:
 			self.report(type={'ERROR'}, message="テキスト「BoneData」に有効なデータがありません")
+			return {'CANCELLED'}
+		
+		for bone in bone_data:
+			if bone['name'] == ob_names[1]:
+				break
+		else:
+			self.report(type={'ERROR'}, message="オブジェクト名の後半は存在するボーン名にして下さい")
 			return {'CANCELLED'}
 		
 		# LocalBoneData情報読み込み
