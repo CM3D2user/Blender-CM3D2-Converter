@@ -503,7 +503,11 @@ class import_cm3d2_model(bpy.types.Operator):
 		for i, data in enumerate(bone_data):
 			s = data['name'] + ","
 			s = s + str(data['unknown']) + ","
-			s = s + str(data['parent_index']) + ","
+			parent_index = data['parent_index']
+			if -1 < parent_index:
+				s = s + bone_data[parent_index]['name'] + ","
+			else:
+				s = s + "None" + ","
 			s = s + str(data['co'][0]) + " "
 			s = s + str(data['co'][1]) + " "
 			s = s + str(data['co'][2]) + ","

@@ -205,7 +205,15 @@ class export_cm3d2_model(bpy.types.Operator):
 					bone_data.append({})
 					bone_data[-1]['name'] = data[0]
 					bone_data[-1]['unknown'] = int(data[1])
-					bone_data[-1]['parent_index'] = int(data[2])
+					if re.search(data[2], r'^\d+$'):
+						bone_data[-1]['parent_index'] = int(data[2])
+					else:
+						for i, b in enumerate(bone_data):
+							if b['name'] == data[2]:
+								bone_data[-1]['parent_index'] = i
+								break
+						else:
+							bone_data[-1]['parent_index'] = -1
 					bone_data[-1]['co'] = []
 					floats = data[3].split(' ')
 					for f in floats:
@@ -232,7 +240,15 @@ class export_cm3d2_model(bpy.types.Operator):
 					bone_data.append({})
 					bone_data[-1]['name'] = data[0]
 					bone_data[-1]['unknown'] = int(data[1])
-					bone_data[-1]['parent_index'] = int(data[2])
+					if re.search(data[2], r'^\d+$'):
+						bone_data[-1]['parent_index'] = int(data[2])
+					else:
+						for i, b in enumerate(bone_data):
+							if b['name'] == data[2]:
+								bone_data[-1]['parent_index'] = i
+								break
+						else:
+							bone_data[-1]['parent_index'] = -1
 					bone_data[-1]['co'] = []
 					floats = data[3].split(' ')
 					for f in floats:
