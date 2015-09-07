@@ -498,6 +498,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if "BoneData" in context.blend_data.texts.keys():
 				txt = context.blend_data.texts["BoneData"]
 				txt.clear()
+				self.report(type={'INFO'}, message="テキスト「BoneData」が上書きされました")
 			else:
 				txt = context.blend_data.texts.new("BoneData")
 		for i, data in enumerate(bone_data):
@@ -528,6 +529,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if "LocalBoneData" in context.blend_data.texts.keys():
 				txt = context.blend_data.texts["LocalBoneData"]
 				txt.clear()
+				self.report(type={'INFO'}, message="テキスト「LocalBoneData」が上書きされました")
 			else:
 				txt = context.blend_data.texts.new("LocalBoneData")
 		for i, data in enumerate(local_bone_data):
