@@ -17,9 +17,9 @@
 
 ## 使い方 (How to Use)
 　読み込みは  
-　ファイル => インポート => CM3D2 Model (.model)  
+　ファイル > インポート > CM3D2 Model (.model)  
 　書き出しも同じように  
-　ファイル => エクスポート => CM3D2 Model (.model)  
+　ファイル > エクスポート > CM3D2 Model (.model)  
 　![手順](http://i.imgur.com/p2V7D5m.jpg)  
 
 ## メモ (Note)
@@ -86,3 +86,70 @@
 >　「カスタムメイド3D2上で表示する目的以外の利用は禁止します。」  
 >　「カスタムメイド3D2」本体を正規にご購入頂いた方のみが作成・配布・利用することができます。  
 >　「カスタムメイド3D2」上で表示する目的以外にツールの利用やデータの配布・利用をすることはできません。  
+
+## .modelのフォーマット (.model Format)
+* (String) 「CM3D2_MESH」固定
+* (Int) バージョン番号
+* (String) モデル名
+* (String) 基点ボーン名
+* (Int) ボーン数
+* for ボーン数
+	- (String) ボーン名
+	- (Char) フラグ？
+* for ボーン数
+	- (Int) 親番号
+* for ボーン数
+	- (Float×3) ボーン位置
+	- (Float×4) ボーン回転
+* (Int) 頂点数
+* (Int) メッシュ数 (マテリアル数)
+* (Int) 使用ボーン数
+* for 使用ボーン数
+	- (String) ボーン名
+* for 使用ボーン数
+	- (Float×16) ボーン変換行列
+* for 頂点数
+	- (Float×3) 頂点位置
+	- (Float×3) 法線方向
+	- (Float×2) UV位置
+* (Int) 不明 (大抵0)
+* for 頂点数
+	- (Short×4) 割り当てるボーン番号×4
+	- (Float×4) 割り当てるウェイト×4
+* for メッシュ数
+	- (Int) 面数
+	- for 面数
+		(Short) 頂点番号
+* (Int) マテリアル数 (メッシュ数)
+* for マテリアル数
+	- (String) マテリアル名
+	- (String) 使用シェーダー
+	- (String) 使用シェーダー
+	- while
+		* (String) 設定値タイプ
+		* if 設定値タイプ == "tex"
+			- (String) テクスチャ名
+			- (String) テクスチャタイプ
+			- if テクスチャタイプ == "tex2d"
+				* (String) 画像名
+				* (String) 画像パス
+				* (Float×4) 色 (RGBA)
+		* else if 設定値タイプ == "col"
+			- (String) 色名
+			- (Float×4) 色 (RGBA)
+		* else if 設定値タイプ == "f"
+			- (String) 値名
+			- (Float) 値
+		* else if 設定値タイプ == "end"
+			- break
+* while
+	- (String) 設定値タイプ
+	- if 設定値タイプ == "morph"
+		* (String) モーフ名
+		* (Int) 変更頂点数
+		* for 変更頂点数
+			- (Short) 頂点番号
+			- (Float×3) 頂点位置
+			- (Float×3) 法線方向
+	- else if 設定値タイプ == "end"
+		* break
