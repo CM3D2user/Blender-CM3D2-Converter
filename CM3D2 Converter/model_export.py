@@ -376,7 +376,11 @@ class export_cm3d2_model(bpy.types.Operator):
 					if name not in local_bone_names:
 						continue
 					weight = vg.weight
-					vgs.append([name, weight])
+					if 0.0 < weight:
+						vgs.append([name, weight])
+				if len(vgs) == 0:
+					self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、終了します")
+					return {'CANCELLED'}
 				vgs.sort(key=lambda vg: vg[1])
 				vgs.reverse()
 				for i in range(4):
