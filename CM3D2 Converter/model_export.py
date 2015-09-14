@@ -329,6 +329,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
 		
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
 		# 正しい頂点数などを取得
 		bm = bmesh.new()
 		bm.from_mesh(me)
