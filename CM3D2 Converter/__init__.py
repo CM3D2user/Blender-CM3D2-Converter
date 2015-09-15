@@ -21,9 +21,11 @@ if "bpy" in locals():
 	import imp
 	imp.reload(model_import)
 	imp.reload(model_export)
+	imp.reload(misc_tools)
 else:
 	from . import model_import
 	from . import model_export
+	from . import misc_tools
 import bpy
 
 # アドオン設定
@@ -71,12 +73,14 @@ def register():
 	bpy.utils.register_module(__name__)
 	bpy.types.INFO_MT_file_import.append(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
+	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
 	bpy.utils.unregister_module(__name__)
 	bpy.types.INFO_MT_file_import.remove(model_import.menu_func)
-	bpy.types.INFO_MT_file_export.remove(model_export.menu_func)
+	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
+	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
 
 # メイン関数
 if __name__ == "__main__":
