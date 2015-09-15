@@ -87,13 +87,6 @@ class shape_key_transfer_ex(bpy.types.Operator):
 					return False
 		return True
 	
-	def invoke(self, context, event):
-		return context.window_manager.invoke_props_dialog(self)
-	
-	def draw(self, context):
-		self.layout.label("計算に非常に時間が掛かる場合があります")
-		self.layout.label("可能であれば参考メッシュを削ってから実行を")
-	
 	def execute(self, context):
 		target_ob = context.active_object
 		for ob in context.selected_objects:
@@ -102,6 +95,10 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		bm = bmesh.new()
 		bm.from_mesh(source_ob.data)
 		bm.faces.ensure_lookup_table()
+		kd = mathutils.kdtree.KDTree(len(bm.faces))
+		for i, face in enumerate(bm.faces):
+			kd.insert(face.calc_center_median(), i)
+		kd.balance()
 		for key_block in source_ob.data.shape_keys.key_blocks:
 			if not target_ob.data.shape_keys:
 				target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
@@ -111,14 +108,8 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				else:
 					target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
 			for target_vert in target_ob.data.vertices:
-				min_len = 999999999
-				min_index = None
-				for face in bm.faces:
-					vec = target_vert.co - face.calc_center_median()
-					if vec.length < min_len:
-						min_len = vec.length
-						min_index = face.index
-				face = bm.faces[min_index]
+				co, index, dist = kd.find(target_vert.co)
+				face = bm.faces[index]
 				total_len = 0
 				for vert in face.verts:
 					vec = target_vert.co - vert.co
