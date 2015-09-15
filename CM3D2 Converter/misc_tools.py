@@ -80,6 +80,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		('FACE', "面", "", 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="参照先", default='VERT')
+	remove_empty_shape = bpy.props.BoolProperty(name="変形のないシェイプを削除", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -95,6 +96,10 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'remove_empty_shape')
 	
 	def execute(self, context):
 		target_ob = context.active_object
@@ -112,14 +117,18 @@ class shape_key_transfer_ex(bpy.types.Operator):
 			for i, vert in enumerate(bm.verts):
 				kd.insert(vert.co.copy(), i)
 		kd.balance()
+		is_first = True
 		for key_block in source_ob.data.shape_keys.key_blocks:
-			if not target_ob.data.shape_keys:
+			if is_first:
+				is_first = False
+				if not target_ob.data.shape_keys:
+					target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
+				continue
+			if key_block.name not in target_ob.data.shape_keys.key_blocks.keys():
 				target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
 			else:
-				if key_block.name not in target_ob.data.shape_keys.key_blocks.keys():
-					target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
-				else:
-					target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
+				target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
+			is_shaped = False
 			for target_vert in target_ob.data.vertices:
 				if self.mode == 'FACE':
 					co, index, dist = kd.find(target_vert.co)
@@ -140,6 +149,10 @@ class shape_key_transfer_ex(bpy.types.Operator):
 					co, index, dist = kd.find(target_vert.co)
 					total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
 				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
+				if not is_shaped and 0.001 <= total_diff.length:
+					is_shaped = True
+			if not is_shaped and self.remove_empty_shape:
+				target_ob.shape_key_remove(target_shape)
 		return {'FINISHED'}
 
 # 頂点グループメニューに項目追加
