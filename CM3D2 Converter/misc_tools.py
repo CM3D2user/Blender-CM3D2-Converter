@@ -75,6 +75,12 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	bl_description = "頂点数の違うメッシュ同士でも一番近い頂点からシェイプキーを強制転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	items = [
+		('VERT', "頂点", "", 1),
+		('FACE', "面", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="参照先", default='VERT')
+	
 	@classmethod
 	def poll(cls, context):
 		if len(context.selected_objects) != 2:
@@ -87,6 +93,9 @@ class shape_key_transfer_ex(bpy.types.Operator):
 					return False
 		return True
 	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
 	def execute(self, context):
 		target_ob = context.active_object
 		for ob in context.selected_objects:
@@ -96,8 +105,12 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		bm.from_mesh(source_ob.data)
 		bm.faces.ensure_lookup_table()
 		kd = mathutils.kdtree.KDTree(len(bm.faces))
-		for i, face in enumerate(bm.faces):
-			kd.insert(face.calc_center_median(), i)
+		if self.mode == 'FACE':
+			for i, face in enumerate(bm.faces):
+				kd.insert(face.calc_center_median(), i)
+		elif self.mode == 'VERT':
+			for i, vert in enumerate(bm.verts):
+				kd.insert(vert.co.copy(), i)
 		kd.balance()
 		for key_block in source_ob.data.shape_keys.key_blocks:
 			if not target_ob.data.shape_keys:
@@ -108,20 +121,24 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				else:
 					target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
 			for target_vert in target_ob.data.vertices:
-				co, index, dist = kd.find(target_vert.co)
-				face = bm.faces[index]
-				total_len = 0
-				for vert in face.verts:
-					vec = target_vert.co - vert.co
-					total_len += vec.length
-				total_diff = mathutils.Vector((0, 0, 0))
-				total_multi = 0
-				for vert in face.verts:
-					diff = key_block.data[vert.index].co - source_ob.data.vertices[vert.index].co
-					multi = total_len - vec.length
-					total_diff += diff * multi
-					total_multi += multi
-				total_diff /= total_multi
+				if self.mode == 'FACE':
+					co, index, dist = kd.find(target_vert.co)
+					face = bm.faces[index]
+					total_len = 0
+					for vert in face.verts:
+						vec = target_vert.co - vert.co
+						total_len += vec.length
+					total_diff = mathutils.Vector((0, 0, 0))
+					total_multi = 0
+					for vert in face.verts:
+						diff = key_block.data[vert.index].co - source_ob.data.vertices[vert.index].co
+						multi = total_len - vec.length
+						total_diff += diff * multi
+						total_multi += multi
+					total_diff /= total_multi
+				elif self.mode == 'VERT':
+					co, index, dist = kd.find(target_vert.co)
+					total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
 				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
 		return {'FINISHED'}
 
