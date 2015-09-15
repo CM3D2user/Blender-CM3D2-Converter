@@ -1,4 +1,4 @@
-import bpy
+import bpy, bmesh, mathutils
 
 # シェイプキー強制転送
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -19,27 +19,51 @@ class shape_key_transfer_ex(bpy.types.Operator):
 					return False
 		return True
 	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label("計算に非常に時間が掛かる場合があります")
+		self.layout.label("可能であれば参考メッシュを削ってから実行を")
+	
 	def execute(self, context):
 		target_ob = context.active_object
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
 				source_ob = ob
+		bm = bmesh.new()
+		bm.from_mesh(source_ob.data)
+		bm.faces.ensure_lookup_table()
 		for key_block in source_ob.data.shape_keys.key_blocks:
 			if not target_ob.data.shape_keys:
 				target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
 			else:
 				if key_block.name not in target_ob.data.shape_keys.key_blocks.keys():
 					target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
+				else:
+					target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
 			for target_vert in target_ob.data.vertices:
 				min_len = 999999999
 				min_index = None
-				for source_vert in source_ob.data.vertices:
-					vec = target_vert.co - source_vert.co
+				for face in bm.faces:
+					vec = target_vert.co - face.calc_center_median()
 					if vec.length < min_len:
 						min_len = vec.length
-						min_index = source_vert.index
-				vec = key_block.data[min_index].co - source_ob.data.vertices[min_index].co
-				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + vec
+						min_index = face.index
+				face = bm.faces[min_index]
+				total_len = 0
+				for vert in face.verts:
+					vec = target_vert.co - vert.co
+					total_len += vec.length
+				total_diff = mathutils.Vector((0, 0, 0))
+				total_multi = 0
+				for vert in face.verts:
+					diff = key_block.data[vert.index].co - source_ob.data.vertices[vert.index].co
+					multi = total_len - vec.length
+					total_diff += diff * multi
+					total_multi += multi
+				total_diff /= total_multi
+				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
 		return {'FINISHED'}
 
 # シェイプメニューに項目追加
