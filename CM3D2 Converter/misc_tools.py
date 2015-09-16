@@ -92,6 +92,8 @@ class shape_key_transfer_ex(bpy.types.Operator):
 			if ob.name != context.active_object.name:
 				if not ob.data.shape_keys:
 					return False
+		if context.active_object.mode != 'OBJECT':
+			return False
 		return True
 	
 	def invoke(self, context, event):
@@ -156,6 +158,52 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				target_ob.shape_key_remove(target_shape)
 		return {'FINISHED'}
 
+class scale_shape_key(bpy.types.Operator):
+	bl_idname = 'object.scale_shape_key'
+	bl_label = "シェイプキーの変形を拡大/縮小"
+	bl_description = "シェイプキーの変形を強力にしたり、もしくは弱くできます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	multi = bpy.props.FloatProperty(name="倍率", description="シェイプキーの拡大率です", default=1, min=0, max=10, soft_min=0, soft_max=10, step=10, precision=2)
+	items = [
+		('ACTIVE', "アクティブのみ", "", 1),
+		('ALL', "全て", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	
+	@classmethod
+	def poll(cls, context):
+		if context.active_object:
+			ob = context.active_object
+			if ob.type == 'MESH':
+				if ob.active_shape_key:
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		shape_keys = me.shape_keys
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		if self.mode == 'ACTIVE':
+			target_shapes = [ob.active_shape_key]
+		elif self.mode == 'ALL':
+			target_shapes = []
+			for key_block in shape_keys.key_blocks:
+				target_shapes.append(key_block)
+		for shape in target_shapes:
+			data = shape.data
+			for i, vert in enumerate(me.vertices):
+				diff = data[i].co - vert.co
+				diff *= self.multi
+				data[i].co = vert.co + diff
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
@@ -165,3 +213,4 @@ def MESH_MT_vertex_group_specials(self, context):
 def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon='SPACE2')
+	self.layout.operator(scale_shape_key.bl_idname, icon='SPACE2')
