@@ -410,7 +410,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
 						if tex_data['type2'] == 'tex2d':
-							slot.use_map_color_diffuse = False
+							#slot.use_map_color_diffuse = False
 							slot.color = tex_data['color'][:3]
 							slot.diffuse_color_factor = tex_data['color'][3]
 							img = context.blend_data.images.new(tex_data['name2'], 128, 128)
@@ -420,7 +420,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					elif tex_data['type'] == 'col':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
-						slot.use_map_color_diffuse = False
+						#slot.use_map_color_diffuse = False
 						slot.color = tex_data['color'][:3]
 						slot.diffuse_color_factor = tex_data['color'][3]
 						slot.use_rgb_to_intensity = True
@@ -432,7 +432,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
-						slot.use_map_color_diffuse = False
+						#slot.use_map_color_diffuse = False
 						slot.diffuse_color_factor = tex_data['float']
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
