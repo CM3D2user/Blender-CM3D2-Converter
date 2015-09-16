@@ -1,4 +1,4 @@
-import bpy, re, os, struct, mathutils, bmesh
+import bpy, re, os, struct, shutil, mathutils, bmesh
 
 def ArrangeName(name, flag):
 	if flag:
@@ -32,6 +32,8 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2, description="エクスポート時のメッシュ等の拡大率です")
 	
+	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
+	
 	items = [
 		('TEXT', "テキスト", "", 1),
 		('OBJECT', "オブジェクト内プロパティ", "", 2),
@@ -52,6 +54,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
+		self.layout.prop(self, 'is_backup')
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
 		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
@@ -307,6 +310,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		if len(local_bone_data) <= 0:
 			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」に有効なデータがありません")
 			return {'CANCELLED'}
+		
+		# バックアップ
+		if self.is_backup:
+			if os.path.exists(self.filepath):
+				root, ext = os.path.splitext(self.filepath)
+				shutil.copyfile(self.filepath, root + ".bak")
 		
 		# ファイル先頭
 		file = open(self.filepath, 'wb')
