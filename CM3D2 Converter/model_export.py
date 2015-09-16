@@ -54,7 +54,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
-		self.layout.prop(self, 'is_backup')
+		self.layout.prop(self, 'is_backup', icon='FILE_BACKUP')
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
 		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
