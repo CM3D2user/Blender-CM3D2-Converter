@@ -164,7 +164,7 @@ class scale_shape_key(bpy.types.Operator):
 	bl_description = "シェイプキーの変形を強力にしたり、もしくは弱くできます"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	multi = bpy.props.FloatProperty(name="倍率", description="シェイプキーの拡大率です", default=1, min=0, max=10, soft_min=0, soft_max=10, step=10, precision=2)
+	multi = bpy.props.FloatProperty(name="倍率", description="シェイプキーの拡大率です", default=1, min=-10, max=10, soft_min=-10, soft_max=10, step=10, precision=2)
 	items = [
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
