@@ -109,11 +109,12 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		bm = bmesh.new()
 		bm.from_mesh(source_ob.data)
 		bm.faces.ensure_lookup_table()
-		kd = mathutils.kdtree.KDTree(len(bm.faces))
 		if self.mode == 'FACE':
+			kd = mathutils.kdtree.KDTree(len(bm.faces))
 			for i, face in enumerate(bm.faces):
 				kd.insert(face.calc_center_median(), i)
 		elif self.mode == 'VERT':
+			kd = mathutils.kdtree.KDTree(len(bm.verts))
 			for i, vert in enumerate(bm.verts):
 				kd.insert(vert.co.copy(), i)
 		kd.balance()
