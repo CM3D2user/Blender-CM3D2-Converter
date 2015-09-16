@@ -158,6 +158,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				target_ob.shape_key_remove(target_shape)
 		return {'FINISHED'}
 
+# シェイプキーの変形を拡大/縮小
 class scale_shape_key(bpy.types.Operator):
 	bl_idname = 'object.scale_shape_key'
 	bl_label = "シェイプキーの変形を拡大/縮小"
@@ -204,6 +205,65 @@ class scale_shape_key(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
+# シェイプキーをぼかす
+class blur_shape_key(bpy.types.Operator):
+	bl_idname = 'object.blur_shape_key'
+	bl_label = "シェイプキーをぼかす"
+	bl_description = "シェイプキーの変形をぼかしてなめらかにします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	strength = bpy.props.IntProperty(name="ぼかし強度", description="ぼかしの強度(回数)を設定します", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	items = [
+		('ACTIVE', "アクティブのみ", "", 1),
+		('ALL', "全て", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	
+	@classmethod
+	def poll(cls, context):
+		if context.active_object:
+			ob = context.active_object
+			if ob.type == 'MESH':
+				if ob.active_shape_key:
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		shape_keys = me.shape_keys
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		if self.mode == 'ACTIVE':
+			target_shapes = [ob.active_shape_key]
+		elif self.mode == 'ALL':
+			target_shapes = []
+			for key_block in shape_keys.key_blocks:
+				target_shapes.append(key_block)
+		for i, vert in enumerate(bm.verts):
+			near_verts = []
+			for edge in vert.link_edges:
+				for v in edge.verts:
+					if vert.index != v.index:
+						near_verts.append(v)
+						break
+			for shape in target_shapes:
+				for s in range(self.strength):
+					data = shape.data
+					average = mathutils.Vector((0, 0, 0))
+					for v in near_verts:
+						average += data[v.index].co - me.vertices[v.index].co
+					average /= len(near_verts)
+					co = data[i].co - vert.co
+					data[i].co = ((co * 2) + average) / 3 + vert.co
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
@@ -214,3 +274,4 @@ def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon='SPACE2')
 	self.layout.operator(scale_shape_key.bl_idname, icon='SPACE2')
+	self.layout.operator(blur_shape_key.bl_idname, icon='SPACE2')
