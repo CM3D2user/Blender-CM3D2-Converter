@@ -1,7 +1,7 @@
 import bpy, bmesh, mathutils
 
 class vertex_group_transfer(bpy.types.Operator):
-	bl_idname = "object.vertex_group_transfer"
+	bl_idname = 'object.vertex_group_transfer'
 	bl_label = "クイック・ウェイト転送"
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを転送します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -67,6 +67,87 @@ class vertex_group_transfer(bpy.types.Operator):
 				else:
 					obj.vertex_groups.remove(vg)
 		return {'FINISHED'}
+
+class blur_vertex_group(bpy.types.Operator):
+	bl_idname = 'object.blur_vertex_group'
+	bl_label = "頂点グループぼかし"
+	bl_description = "アクティブ、もしくは全ての頂点グループをぼかします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	items = [
+		('ACTIVE', "アクティブのみ", "", 1),
+		('ALL', "全て", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は削除", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				if ob.vertex_groups.active:
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def execute(self, context):
+		activeObj = context.active_object
+		pre_mode = activeObj.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		me = activeObj.data
+		target_weights = []
+		if (self.mode == 'ACTIVE'):
+			target_weights.append(activeObj.vertex_groups.active)
+		elif (self.mode == 'ALL'):
+			for vg in activeObj.vertex_groups:
+				target_weights.append(vg)
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		for count in range(self.blur_count):
+			for vg in target_weights:
+				vg_index = vg.index
+				new_weights = []
+				for vert in bm.verts:
+					for group in me.vertices[vert.index].groups:
+						if (group.group == vg_index):
+							my_weight = group.weight
+							break
+					else:
+						my_weight = 0.0
+					near_weights = []
+					for edge in vert.link_edges:
+						for v in edge.verts:
+							if (v.index != vert.index):
+								edges_vert = v
+								break
+						for group in me.vertices[edges_vert.index].groups:
+							if (group.group == vg_index):
+								near_weights.append(group.weight)
+								break
+						else:
+							near_weights.append(0.0)
+					near_weight_average = 0
+					for weight in near_weights:
+						near_weight_average += weight
+					try:
+						near_weight_average /= len(near_weights)
+					except ZeroDivisionError:
+						near_weight_average = 0.0
+					new_weights.append( (my_weight*2 + near_weight_average) / 3 )
+				for vert, weight in zip(me.vertices, new_weights):
+					if (self.use_clean and weight <= 0.000001):
+						vg.remove([vert.index])
+					else:
+						vg.add([vert.index], weight, 'REPLACE')
+		bm.free()
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
+
 
 # シェイプキー強制転送
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -268,6 +349,7 @@ class blur_shape_key(bpy.types.Operator):
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
+	self.layout.operator(blur_vertex_group.bl_idname, icon='SPACE2')
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
