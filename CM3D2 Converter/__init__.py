@@ -78,6 +78,7 @@ def register():
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
 	bpy.types.MESH_MT_vertex_group_specials.append(misc_tools.MESH_MT_vertex_group_specials)
 	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
+	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -86,6 +87,7 @@ def unregister():
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
 	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
 	bpy.types.MESH_MT_vertex_group_specials.append(misc_tools.MESH_MT_vertex_group_specials)
+	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
 
 # メイン関数
 if __name__ == "__main__":

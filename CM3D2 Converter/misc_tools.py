@@ -345,6 +345,79 @@ class blur_shape_key(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
+# CM3D2用マテリアルを新規作成
+class new_cm3d2(bpy.types.Operator):
+	bl_idname = 'material.new_cm3d2'
+	bl_label = "CM3D2用マテリアルを新規作成"
+	bl_description = "Blender-CM3D2-Converterで使用できるマテリアルを新規で作成します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	items = [
+		('COMMON', "汎用", "", 1),
+		]
+	type = bpy.props.EnumProperty(items=items, name="タイプ", default='COMMON')
+	
+	@classmethod
+	def poll(cls, context):
+		if not context.material:
+			return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def execute(self, context):
+		ob = context.active_object
+		ob_names = ob.name.split('.')
+		if not context.material_slot:
+			bpy.ops.object.material_slot_add()
+		mate = context.blend_data.materials.new(ob_names[0])
+		context.material_slot.material = mate
+		if self.type == 'COMMON':
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline'
+			tex_list = [("_MainTex", ob_names[0], r"Assets\texture\texture\***.png")]
+			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***.png"))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			col_list = [("_Color", (1, 1, 1, 1))]
+			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_OutlineColor", (1, 1, 1, 1)))
+			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
+			f_list = [("_Shininess", 0)]
+			f_list.append(("_OutlineWidth", 0.002))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
+		slot_count = 0
+		for data in tex_list:
+			slot = mate.texture_slots.create(slot_count)
+			tex = context.blend_data.textures.new(data[0], 'IMAGE')
+			slot.texture = tex
+			slot.color = [0, 0, 1]
+			img = context.blend_data.images.new(data[1], 128, 128)
+			img.filepath = data[2]
+			img.source = 'FILE'
+			tex.image = img
+			slot_count += 1
+		for data in col_list:
+			slot = mate.texture_slots.create(slot_count)
+			mate.use_textures[slot_count] = False
+			slot.color = data[1][:3]
+			slot.diffuse_color_factor = data[1][3]
+			slot.use_rgb_to_intensity = True
+			tex = context.blend_data.textures.new(data[0], 'IMAGE')
+			slot.texture = tex
+			slot_count += 1
+		for data in f_list:
+			slot = mate.texture_slots.create(slot_count)
+			mate.use_textures[slot_count] = False
+			slot.diffuse_color_factor = data[1]
+			tex = context.blend_data.textures.new(data[0], 'IMAGE')
+			slot.texture = tex
+			slot_count += 1
+		return {'FINISHED'}
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
@@ -357,3 +430,8 @@ def MESH_MT_shape_key_specials(self, context):
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon='SPACE2')
 	self.layout.operator(scale_shape_key.bl_idname, icon='SPACE2')
 	self.layout.operator(blur_shape_key.bl_idname, icon='SPACE2')
+
+# マテリアルタブに項目追加
+def MATERIAL_PT_context_material(self, context):
+	if not context.material:
+		self.layout.operator(new_cm3d2.bl_idname, icon='SPACE2')
