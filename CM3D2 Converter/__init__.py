@@ -35,9 +35,12 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	model_import_path = bpy.props.StringProperty(name="Modelインポート時のデフォルトパス", subtype='FILE_PATH', description="インポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="Modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="エクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
+	
 	def draw(self, context):
 		self.layout.prop(self, 'model_import_path', icon='IMPORT')
 		self.layout.prop(self, 'model_export_path', icon='EXPORT')
+		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		self.layout.operator(update_cm3d2_converter.bl_idname, icon='FILE_REFRESH')
 
 # アドオンアップデート処理

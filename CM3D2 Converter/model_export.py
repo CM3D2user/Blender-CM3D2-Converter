@@ -129,6 +129,13 @@ class export_cm3d2_model(bpy.types.Operator):
 		else:
 			dir = os.path.dirname(self.filepath)
 			self.filepath = os.path.join(dir, ob_names[0] + ".model")
+		
+		# バックアップ関係
+		if context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
+			self.is_backup = True
+		else:
+			self.is_backup = False
+		
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -312,10 +319,12 @@ class export_cm3d2_model(bpy.types.Operator):
 			return {'CANCELLED'}
 		
 		# バックアップ
-		if self.is_backup:
+		if self.is_backup and context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
 			if os.path.exists(self.filepath):
 				root, ext = os.path.splitext(self.filepath)
-				shutil.copyfile(self.filepath, root + ".bak")
+				backup_path = root + "." + context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
+				shutil.copyfile(self.filepath, backup_path)
+				self.report(type={'INFO'}, message="上書き時にバックアップを複製しました")
 		
 		# ファイル先頭
 		file = open(self.filepath, 'wb')
