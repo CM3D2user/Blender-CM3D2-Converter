@@ -469,8 +469,10 @@ class export_cm3d2_model(bpy.types.Operator):
 						try:
 							vert_index = vert_iuv.index((index, uv.x, uv.y))
 						except ValueError:
-							self.report(type={'ERROR'}, message="UV展開をしていない頂点が見つかりました、中止します")
-							return {'CANCELLED'}
+							for i in vert_iuv:
+								if i[0] == index:
+									vert_index = i[0]
+									break
 						else:
 							faces.append(vert_index)
 					face_count += 1
