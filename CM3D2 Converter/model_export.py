@@ -469,9 +469,10 @@ class export_cm3d2_model(bpy.types.Operator):
 						try:
 							vert_index = vert_iuv.index((index, uv.x, uv.y))
 						except ValueError:
-							for i in vert_iuv:
-								if i[0] == index:
-									vert_index = i[0]
+							vert_index = 0
+							for i, v in enumerate(vert_iuv):
+								if v[0] == index:
+									vert_index = i
 									break
 						else:
 							faces.append(vert_index)
