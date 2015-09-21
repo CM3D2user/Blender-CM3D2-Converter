@@ -354,6 +354,8 @@ class new_cm3d2(bpy.types.Operator):
 	
 	items = [
 		('COMMON', "汎用", "", 1),
+		('TRANS', "透過", "", 2),
+		('HAIR', "髪", "", 3),
 		]
 	type = bpy.props.EnumProperty(items=items, name="タイプ", default='COMMON')
 	
@@ -373,22 +375,56 @@ class new_cm3d2(bpy.types.Operator):
 			bpy.ops.object.material_slot_add()
 		mate = context.blend_data.materials.new(ob_names[0])
 		context.material_slot.material = mate
+		tex_list, col_list, f_list = [], [], []
 		if self.type == 'COMMON':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline'
-			tex_list = [("_MainTex", ob_names[0], r"Assets\texture\texture\***.png")]
+			tex_list.append(("_MainTex", ob_names[0], r"Assets\texture\texture\***.png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***_shadow.png"))
 			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
-			col_list = [("_Color", (1, 1, 1, 1))]
+			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
 			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
 			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
-			f_list = [("_Shininess", 0)]
+			f_list.append(("_Shininess", 0))
 			f_list.append(("_OutlineWidth", 0.002))
 			f_list.append(("_RimPower", 25))
 			f_list.append(("_RimShift", 0))
+		elif self.type == 'TRANS':
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans'
+			tex_list.append(("_MainTex", ob_names[0], r"Assets\texture\texture\***.png"))
+			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***_shadow.png"))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
+			f_list.append(("_Shininess", 0))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
+		elif self.type == 'HAIR':
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
+			tex_list.append(("_MainTex", ob_names[0], r"Assets\texture\texture\***.png"))
+			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***_shadow.png"))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			tex_list.append(("_HiTex", ob_names[0] + "_s", r"Assets\texture\texture\***_s.png"))
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
+			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
+			f_list.append(("_Shininess", 0))
+			f_list.append(("_OutlineWidth", 0.002))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
+			f_list.append(("_HiRate", 0.5))
+			f_list.append(("_HiPow", 0.001))
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
