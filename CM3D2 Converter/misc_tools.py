@@ -383,7 +383,7 @@ class new_cm3d2(bpy.types.Operator):
 			col_list = [("_Color", (1, 1, 1, 1))]
 			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (1, 1, 1, 1)))
+			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
 			col_list.append(("_ShadowColor", (0.5, 0.5, 0.5, 1)))
 			f_list = [("_Shininess", 0)]
 			f_list.append(("_OutlineWidth", 0.002))
