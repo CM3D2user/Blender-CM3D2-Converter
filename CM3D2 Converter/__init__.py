@@ -1,6 +1,6 @@
 ﻿# アドオンを読み込む時に最初にこのファイルが読み込まれます
 
-import os, urllib, zipfile
+import os, urllib, zipfile, urllib.request
 
 # アドオン情報
 bl_info = {
