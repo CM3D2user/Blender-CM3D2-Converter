@@ -1,6 +1,6 @@
 ﻿# アドオンを読み込む時に最初にこのファイルが読み込まれます
 
-import os, urllib, zipfile, urllib.request
+import os, sys, urllib, zipfile, subprocess, urllib.request
 
 # アドオン情報
 bl_info = {
@@ -50,6 +50,14 @@ class update_cm3d2_converter(bpy.types.Operator):
 	bl_description = "GitHubから最新版のBlender-CM3D2-Converterをダウンロードし上書きします、実行した後は再起動して下さい"
 	bl_options = {'REGISTER'}
 	
+	is_restart = bpy.props.BoolProperty(name="更新後にBlenderを再起動", description="アドオン更新後にBlenderを再起動します", default=True)
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_restart')
+	
 	def execute(self, context):
 		response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip")
 		tempDir = bpy.app.tempdir
@@ -68,7 +76,11 @@ class update_cm3d2_converter(bpy.types.Operator):
 					uzf.write(zf.read(f))
 					uzf.close()
 		zf.close()
-		self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
+		if self.is_restart:
+			subprocess.Popen([sys.argv[0]])
+			bpy.ops.wm.quit_blender()
+		else:
+			self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
 		return {'FINISHED'}
 
 # ヘルプメニューに項目追加
