@@ -71,9 +71,15 @@ class update_cm3d2_converter(bpy.types.Operator):
 		self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
 		return {'FINISHED'}
 
+# ヘルプメニューに項目追加
+def INFO_MT_help(self, context):
+	self.layout.separator()
+	self.layout.operator(update_cm3d2_converter.bl_idname, icon='SPACE2')
+
 # プラグインをインストールしたときの処理
 def register():
 	bpy.utils.register_module(__name__)
+	bpy.types.INFO_MT_help.append(INFO_MT_help)
 	bpy.types.INFO_MT_file_import.append(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
 	bpy.types.MESH_MT_vertex_group_specials.append(misc_tools.MESH_MT_vertex_group_specials)
@@ -83,6 +89,7 @@ def register():
 # プラグインをアンインストールしたときの処理
 def unregister():
 	bpy.utils.unregister_module(__name__)
+	bpy.types.INFO_MT_help.remove(INFO_MT_help)
 	bpy.types.INFO_MT_file_import.remove(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
 	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
