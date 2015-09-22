@@ -361,8 +361,9 @@ class new_cm3d2(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if not context.material:
-			return True
+		if 'material' in dir(context):
+			if not context.material:
+				return True
 		return False
 	
 	def invoke(self, context, event):
