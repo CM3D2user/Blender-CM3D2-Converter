@@ -356,6 +356,7 @@ class new_cm3d2(bpy.types.Operator):
 		('COMMON', "汎用", "", 1),
 		('TRANS', "透過", "", 2),
 		('HAIR', "髪", "", 3),
+		('MOZA', "モザイク", "", 4),
 		]
 	type = bpy.props.EnumProperty(items=items, name="タイプ", default='COMMON')
 	
@@ -426,11 +427,19 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_RimShift", 0))
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
+		elif self.type == 'MOZA':
+			mate['shader1'] = 'CM3D2/Mosaic'
+			mate['shader2'] = 'CM3D2__Mosaic'
+			tex_list.append(("_RenderTex", ""))
+			f_list.append(("_FloatValue1", 30))
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
 			tex = context.blend_data.textures.new(data[0], 'IMAGE')
 			slot.texture = tex
+			if data[1] == "":
+				slot_count += 1
+				continue
 			slot.color = [0, 0, 1]
 			img = context.blend_data.images.new(data[1], 128, 128)
 			img.filepath = data[2]
