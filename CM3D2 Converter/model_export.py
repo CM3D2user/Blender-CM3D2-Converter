@@ -93,6 +93,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		if len(ob_names) != 2:
 			self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 			return {'CANCELLED'}
+		for face in me.polygons:
+			if 5 <= len(face.vertices):
+				self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
+				return {'CANCELLED'}
 		
 		# ボーン情報元のデフォルトオプションを取得
 		if self.bone_info_mode == 'OBJECT':
