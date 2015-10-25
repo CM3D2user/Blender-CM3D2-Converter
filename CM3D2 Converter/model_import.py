@@ -132,7 +132,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			vertex_data[i]['co'] = struct.unpack('<3f', file.read(3*4))
 			vertex_data[i]['normal'] = struct.unpack('<3f', file.read(3*4))
 			vertex_data[i]['uv'] = struct.unpack('<2f', file.read(2*4))
-		struct.unpack('<i', file.read(4))[0]
+		unknown_count = struct.unpack('<i', file.read(4))[0]
+		for i in range(unknown_count):
+			struct.unpack('<4f', file.read(4*4))
 		for i in range(vertex_count):
 			vertex_data[i]['weights'] = [{}, {}, {}, {}]
 			for j in range(4):
