@@ -478,8 +478,7 @@ class export_cm3d2_model(bpy.types.Operator):
 								if v[0] == index:
 									vert_index = i
 									break
-						else:
-							faces.append(vert_index)
+						faces.append(vert_index)
 					face_count += 1
 				elif len(face.verts) == 4 and self.is_convert_tris:
 					v1 = face.loops[0].vert.co - face.loops[2].vert.co
