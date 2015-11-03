@@ -419,7 +419,7 @@ class export_cm3d2_model(bpy.types.Operator):
 							index += 1
 						else:
 							index = 0
-					file.write(struct.pack('<h', index))
+					file.write(struct.pack('<H', index))
 				total = 0.0
 				for i in range(4):
 					try:
@@ -506,11 +506,11 @@ class export_cm3d2_model(bpy.types.Operator):
 			file.write(struct.pack('<i', face_count * 3))
 			faces.reverse()
 			for face in faces:
-				file.write(struct.pack('<h', face))
+				file.write(struct.pack('<H', face))
 			if len(faces2):
 				faces2.reverse()
 				for face in faces2:
-					file.write(struct.pack('<h', face))
+					file.write(struct.pack('<H', face))
 		if 1 <= error_face_count:
 			self.report(type={'INFO'}, message="多角ポリゴンが%dつ見つかりました、正常に出力できなかった可能性があります" % error_face_count)
 		
@@ -609,7 +609,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					file.write(struct.pack('<i', len(morph)))
 					for index, vec in morph:
 						vec.x = -vec.x
-						file.write(struct.pack('<h', index))
+						file.write(struct.pack('<H', index))
 						file.write(struct.pack('<3f', vec.x, vec.y, vec.z))
 						file.write(struct.pack('<3f', 0, 0, 0))
 		WriteStr(file, 'end')

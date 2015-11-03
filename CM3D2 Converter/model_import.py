@@ -138,7 +138,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		for i in range(vertex_count):
 			vertex_data[i]['weights'] = [{}, {}, {}, {}]
 			for j in range(4):
-				vertex_data[i]['weights'][j]['index'] = struct.unpack('<h', file.read(2))[0]
+				vertex_data[i]['weights'][j]['index'] = struct.unpack('<H', file.read(2))[0]
 				vertex_data[i]['weights'][j]['name'] = local_bone_data[vertex_data[i]['weights'][j]['index']]['name']
 			for j in range(4):
 				vertex_data[i]['weights'][j]['value'] = struct.unpack('<f', file.read(4))[0]
@@ -192,7 +192,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				misc_data[-1]['data'] = []
 				for i in range(morph_vert_count):
 					misc_data[-1]['data'].append({})
-					misc_data[-1]['data'][i]['index'] = struct.unpack('<h', file.read(2))[0]
+					misc_data[-1]['data'][i]['index'] = struct.unpack('<H', file.read(2))[0]
 					misc_data[-1]['data'][i]['co'] = mathutils.Vector(struct.unpack('<3f', file.read(3*4)))
 					misc_data[-1]['data'][i]['normal'] = struct.unpack('<3f', file.read(3*4))
 			else:
