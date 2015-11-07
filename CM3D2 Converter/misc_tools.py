@@ -159,11 +159,6 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	bl_description = "頂点数の違うメッシュ同士でも一番近い頂点からシェイプキーを強制転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	items = [
-		('VERT', "頂点", "", 1),
-		('FACE', "面", "", 2),
-		]
-	mode = bpy.props.EnumProperty(items=items, name="参照先", default='VERT')
 	remove_empty_shape = bpy.props.BoolProperty(name="変形のないシェイプを削除", default=True)
 	
 	@classmethod
@@ -184,7 +179,6 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode')
 		self.layout.prop(self, 'remove_empty_shape')
 	
 	def execute(self, context):
@@ -195,14 +189,9 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		bm = bmesh.new()
 		bm.from_mesh(source_ob.data)
 		bm.faces.ensure_lookup_table()
-		if self.mode == 'FACE':
-			kd = mathutils.kdtree.KDTree(len(bm.faces))
-			for i, face in enumerate(bm.faces):
-				kd.insert(face.calc_center_median(), i)
-		elif self.mode == 'VERT':
-			kd = mathutils.kdtree.KDTree(len(bm.verts))
-			for i, vert in enumerate(bm.verts):
-				kd.insert(vert.co.copy(), i)
+		kd = mathutils.kdtree.KDTree(len(bm.verts))
+		for i, vert in enumerate(bm.verts):
+			kd.insert(vert.co.copy(), i)
 		kd.balance()
 		is_first = True
 		for key_block in source_ob.data.shape_keys.key_blocks:
@@ -217,24 +206,8 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
 			is_shaped = False
 			for target_vert in target_ob.data.vertices:
-				if self.mode == 'FACE':
-					co, index, dist = kd.find(target_vert.co)
-					face = bm.faces[index]
-					total_len = 0
-					for vert in face.verts:
-						vec = target_vert.co - vert.co
-						total_len += vec.length
-					total_diff = mathutils.Vector((0, 0, 0))
-					total_multi = 0
-					for vert in face.verts:
-						diff = key_block.data[vert.index].co - source_ob.data.vertices[vert.index].co
-						multi = total_len - vec.length
-						total_diff += diff * multi
-						total_multi += multi
-					total_diff /= total_multi
-				elif self.mode == 'VERT':
-					co, index, dist = kd.find(target_vert.co)
-					total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
+				co, index, dist = kd.find(target_vert.co)
+				total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
 				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
 				if not is_shaped and 0.001 <= total_diff.length:
 					is_shaped = True
