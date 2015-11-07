@@ -97,6 +97,11 @@ class blur_vertex_group(bpy.types.Operator):
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
+	def draw(self, context):
+		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'blur_count')
+		self.layout.prop(self, 'use_clean')
+	
 	def execute(self, context):
 		activeObj = context.active_object
 		pre_mode = activeObj.mode
@@ -150,9 +155,89 @@ class blur_vertex_group(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
+class radius_blur_vertex_group(bpy.types.Operator):
+	bl_idname = 'object.radius_blur_vertex_group'
+	bl_label = "頂点グループ範囲ぼかし"
+	bl_description = "アクティブ、もしくは全ての頂点グループを一定の範囲でぼかします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	items = [
+		('ACTIVE', "アクティブのみ", "", 1),
+		('ALL', "全て", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	radius = bpy.props.FloatProperty(name="対象範囲", default=0.5, min=0.01, max=10, soft_min=0.01, soft_max=10, step=10, precision=2)
+	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は削除", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				if ob.vertex_groups.active:
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'radius')
+		self.layout.prop(self, 'blur_count')
+		self.layout.prop(self, 'use_clean')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		target_weights = []
+		if (self.mode == 'ACTIVE'):
+			target_weights.append(ob.vertex_groups.active)
+		elif (self.mode == 'ALL'):
+			for vg in ob.vertex_groups:
+				target_weights.append(vg)
+		kd = mathutils.kdtree.KDTree(len(me.vertices))
+		for i, v in enumerate(me.vertices):
+			kd.insert(v.co, i)
+		kd.balance()
+		for count in range(self.blur_count):
+			for vg in target_weights:
+				new_weights = []
+				for vert in me.vertices:
+					for group in vert.groups:
+						if group.group == vg.index:
+							active_weight = group.weight
+							break
+					else:
+						active_weight = 0.0
+					near_weights = []
+					for co, index, dist in kd.find_range(vert.co, self.radius):
+						if index != vert.index:
+							for group in me.vertices[index].groups:
+								if group.group == vg.index:
+									near_weights.append(group.weight)
+									break
+							else:
+								near_weights.append(0.0)
+					near_weight_average = 0.0
+					for weight in near_weights:
+						near_weight_average += weight
+					try:
+						near_weight_average /= len(near_weights)
+					except ZeroDivisionError:
+						near_weight_average = 0.0
+					new_weights.append( (active_weight*2 + near_weight_average) / 3 )
+				for vert, weight in zip(me.vertices, new_weights):
+					if (self.use_clean and weight <= 0.000001):
+						vg.remove([vert.index])
+					else:
+						vg.add([vert.index], weight, 'REPLACE')
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
 
-
-# シェイプキー強制転送
 class shape_key_transfer_ex(bpy.types.Operator):
 	bl_idname = 'object.shape_key_transfer_ex'
 	bl_label = "シェイプキー強制転送"
@@ -215,7 +300,6 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				target_ob.shape_key_remove(target_shape)
 		return {'FINISHED'}
 
-# シェイプキーの変形を拡大/縮小
 class scale_shape_key(bpy.types.Operator):
 	bl_idname = 'object.scale_shape_key'
 	bl_label = "シェイプキーの変形を拡大/縮小"
@@ -241,6 +325,10 @@ class scale_shape_key(bpy.types.Operator):
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
+	def draw(self, context):
+		self.layout.prop(self, 'multi')
+		self.layout.prop(self, 'mode')
+	
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
@@ -262,19 +350,18 @@ class scale_shape_key(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
-# シェイプキーをぼかす
 class blur_shape_key(bpy.types.Operator):
 	bl_idname = 'object.blur_shape_key'
-	bl_label = "シェイプキーをぼかす"
+	bl_label = "シェイプキーぼかし"
 	bl_description = "シェイプキーの変形をぼかしてなめらかにします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	strength = bpy.props.IntProperty(name="ぼかし強度", description="ぼかしの強度(回数)を設定します", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	items = [
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	strength = bpy.props.IntProperty(name="ぼかし強度", description="ぼかしの強度(回数)を設定します", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	
 	@classmethod
 	def poll(cls, context):
@@ -287,6 +374,10 @@ class blur_shape_key(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'strength')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -321,7 +412,67 @@ class blur_shape_key(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
-# CM3D2用マテリアルを新規作成
+class radius_blur_shape_key(bpy.types.Operator):
+	bl_idname = 'object.radius_blur_shape_key'
+	bl_label = "シェイプキー範囲ぼかし"
+	bl_description = "シェイプキーの変形を範囲でぼかしてなめらかにします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	items = [
+		('ACTIVE', "アクティブのみ", "", 1),
+		('ALL', "全て", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	radius = bpy.props.FloatProperty(name="対象範囲", default=0.5, min=0.01, max=10, soft_min=0.01, soft_max=10, step=10, precision=2)
+	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	
+	@classmethod
+	def poll(cls, context):
+		if context.active_object:
+			ob = context.active_object
+			if ob.type == 'MESH':
+				if ob.active_shape_key:
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'radius')
+		self.layout.prop(self, 'blur_count')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		shape_keys = me.shape_keys
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		if self.mode == 'ACTIVE':
+			target_shapes = [ob.active_shape_key]
+		elif self.mode == 'ALL':
+			target_shapes = []
+			for key_block in shape_keys.key_blocks:
+				target_shapes.append(key_block)
+		kd = mathutils.kdtree.KDTree(len(me.vertices))
+		for i, v in enumerate(me.vertices):
+			kd.insert(v.co, i)
+		kd.balance()
+		for count in range(self.blur_count):
+			for shape in target_shapes:
+				data = shape.data
+				for vert in me.vertices:
+					average_co = mathutils.Vector((0, 0, 0))
+					nears = kd.find_range(vert.co, self.radius)
+					for co, index, dist in nears:
+						average_co += data[index].co - me.vertices[index].co
+					average_co /= len(nears)
+					co = data[vert.index].co - vert.co
+					data[vert.index].co = ((co * 2) + average_co) / 3 + vert.co
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
 class new_cm3d2(bpy.types.Operator):
 	bl_idname = 'material.new_cm3d2'
 	bl_label = "CM3D2用マテリアルを新規作成"
@@ -345,6 +496,9 @@ class new_cm3d2(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'type')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -444,14 +598,18 @@ class new_cm3d2(bpy.types.Operator):
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
+	self.layout.separator()
 	self.layout.operator(blur_vertex_group.bl_idname, icon='SPACE2')
+	self.layout.operator(radius_blur_vertex_group.bl_idname, icon='SPACE2')
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon='SPACE2')
 	self.layout.operator(scale_shape_key.bl_idname, icon='SPACE2')
+	self.layout.separator()
 	self.layout.operator(blur_shape_key.bl_idname, icon='SPACE2')
+	self.layout.operator(radius_blur_shape_key.bl_idname, icon='SPACE2')
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):
