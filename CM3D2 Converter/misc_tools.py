@@ -384,9 +384,9 @@ class new_cm3d2(bpy.types.Operator):
 		if self.type == 'COMMON':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline'
-			tex_list.append(("_MainTex", ob_names[0], r"Assets\texture\texture\***.png"))
+			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***_shadow.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
 			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
@@ -400,9 +400,9 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'TRANS':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans'
-			tex_list.append(("_MainTex", ob_names[0], r"Assets\texture\texture\***.png"))
+			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***_shadow.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
 			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
@@ -414,9 +414,9 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'HAIR':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
-			tex_list.append(("_MainTex", ob_names[0], r"Assets\texture\texture\***.png"))
+			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", r"Assets\texture\texture\***_shadow.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
 			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
 			tex_list.append(("_HiTex", ob_names[0] + "_s", r"Assets\texture\texture\***_s.png"))
 			col_list.append(("_Color", (1, 1, 1, 1)))
