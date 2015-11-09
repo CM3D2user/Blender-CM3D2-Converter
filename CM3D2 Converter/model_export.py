@@ -593,6 +593,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# モーフを書き出し
 		if me.shape_keys:
+			temp_me = me.copy()
 			if 2 <= len(me.shape_keys.key_blocks):
 				for shape_key in me.shape_keys.key_blocks[1:]:
 					WriteStr(file, 'morph')
@@ -604,14 +605,16 @@ class export_cm3d2_model(bpy.types.Operator):
 							if shape_key.data[i].co != vert.co:
 								co = shape_key.data[i].co - vert.co
 								co *= self.scale
-								morph.append((vert_index, co))
+								morph.append((vert_index, co, i))
+								temp_me.vertices[i].co = shape_key.data[i].co.copy()
 							vert_index += 1
 					file.write(struct.pack('<i', len(morph)))
-					for index, vec in morph:
+					for index, vec, raw_index in morph:
 						vec.x = -vec.x
 						file.write(struct.pack('<H', index))
 						file.write(struct.pack('<3f', vec.x, vec.y, vec.z))
-						file.write(struct.pack('<3f', 0, 0, 0))
+						normal = temp_me.vertices[raw_index].normal.copy() - me.vertices[raw_index].normal.copy()
+						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 		WriteStr(file, 'end')
 		
 		file.close()
