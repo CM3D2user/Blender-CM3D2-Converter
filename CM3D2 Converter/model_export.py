@@ -609,16 +609,19 @@ class export_cm3d2_model(bpy.types.Operator):
 					WriteStr(file, shape_key.name)
 					morph = []
 					vert_index = 0
+					for i in range(len(me.vertices)):
+						temp_me.vertices[i].co = shape_key.data[i].co.copy()
+					temp_me.update()
 					for i, vert in enumerate(me.vertices):
 						for d in vert_uvs[i]:
-							if shape_key.data[i].co != vert.co:
-								co = shape_key.data[i].co - vert.co
+							co_diff = shape_key.data[i].co - vert.co
+							no_diff = temp_me.vertices[i].normal - vert.normal
+							if 0.001 < co_diff.length or 0.001 < no_diff.length:
+								co = co_diff
 								co *= self.scale
 								morph.append((vert_index, co, i))
-								temp_me.vertices[i].co = shape_key.data[i].co.copy()
 							vert_index += 1
 					file.write(struct.pack('<i', len(morph)))
-					temp_me.update()
 					for index, vec, raw_index in morph:
 						vec.x = -vec.x
 						file.write(struct.pack('<H', index))
