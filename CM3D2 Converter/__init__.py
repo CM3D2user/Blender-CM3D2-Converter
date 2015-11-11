@@ -37,7 +37,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	model_import_path = bpy.props.StringProperty(name="Modelインポート時のデフォルトパス", subtype='FILE_PATH', description="インポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="Modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="エクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
-	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
+	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale', icon='MAN_SCALE')
