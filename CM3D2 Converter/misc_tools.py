@@ -169,6 +169,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 	radius = bpy.props.FloatProperty(name="対象範囲", default=0.5, min=0.01, max=10, soft_min=0.01, soft_max=10, step=10, precision=2)
 	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は削除", default=True)
+	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
 	
 	@classmethod
 	def poll(cls, context):
@@ -187,6 +188,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		self.layout.prop(self, 'radius')
 		self.layout.prop(self, 'blur_count')
 		self.layout.prop(self, 'use_clean')
+		self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -214,8 +216,12 @@ class radius_blur_vertex_group(bpy.types.Operator):
 					else:
 						active_weight = 0.0
 					near_weights = []
+					near_weights_len = []
 					for co, index, dist in kd.find_range(vert.co, self.radius):
 						if index != vert.index:
+							if self.fadeout:
+								vec = co - vert.co
+								near_weights_len.append(self.radius - vec.length)
 							for group in me.vertices[index].groups:
 								if group.group == vg.index:
 									near_weights.append(group.weight)
@@ -223,10 +229,17 @@ class radius_blur_vertex_group(bpy.types.Operator):
 							else:
 								near_weights.append(0.0)
 					near_weight_average = 0.0
-					for weight in near_weights:
-						near_weight_average += weight
+					near_weights_total = 0
+					for weight_index, weight in enumerate(near_weights):
+						if not self.fadeout:
+							near_weight_average += weight
+							near_weights_total += 1
+						else:
+							multi = near_weights_len[weight_index] / self.radius
+							near_weight_average += weight * multi
+							near_weights_total += multi
 					try:
-						near_weight_average /= len(near_weights)
+						near_weight_average /= near_weights_total
 					except ZeroDivisionError:
 						near_weight_average = 0.0
 					new_weights.append( (active_weight*2 + near_weight_average) / 3 )
@@ -425,6 +438,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	radius = bpy.props.FloatProperty(name="対象範囲", default=0.5, min=0.01, max=10, soft_min=0.01, soft_max=10, step=10, precision=2)
 	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
 	
 	@classmethod
 	def poll(cls, context):
@@ -442,6 +456,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		self.layout.prop(self, 'mode')
 		self.layout.prop(self, 'radius')
 		self.layout.prop(self, 'blur_count')
+		self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -465,9 +480,17 @@ class radius_blur_shape_key(bpy.types.Operator):
 				for vert in me.vertices:
 					average_co = mathutils.Vector((0, 0, 0))
 					nears = kd.find_range(vert.co, self.radius)
+					nears_total = 0
 					for co, index, dist in nears:
-						average_co += data[index].co - me.vertices[index].co
-					average_co /= len(nears)
+						if self.fadeout:
+							diff = co - vert.co
+							multi = (self.radius - diff.length) / self.radius
+							average_co += (data[index].co - me.vertices[index].co) * multi
+							nears_total += multi
+						else:
+							average_co += data[index].co - me.vertices[index].co
+							nears_total += 1
+					average_co /= nears_total
 					co = data[vert.index].co - vert.co
 					data[vert.index].co = ((co * 2) + average_co) / 3 + vert.co
 		bpy.ops.object.mode_set(mode=pre_mode)
