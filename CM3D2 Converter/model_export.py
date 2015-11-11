@@ -625,6 +625,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						file.write(struct.pack('<3f', vec.x, vec.y, vec.z))
 						normal = temp_me.vertices[raw_index].normal.copy() - me.vertices[raw_index].normal.copy()
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
+			context.blend_data.meshes.remove(temp_me)
 		WriteStr(file, 'end')
 		
 		file.close()
