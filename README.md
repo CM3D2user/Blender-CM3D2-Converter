@@ -3,7 +3,7 @@
 　フリー3D統合環境である「Blender」で扱うためのアドオンです。  
 
 ## インストール (Installation)
-　まず、Blender 2.7以上がインストールされており日本語化している事が前提です。  
+　まず、Blender2.7以上(2.75推奨)がインストールされており日本語化している事が前提です。  
 　画面右の「Download ZIP」からファイルをダウンロード・解凍し、  
 　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\  
 　Blender\2.75\scripts\addons\CM3D2 Converter\～.py」となるように配置してください。  
