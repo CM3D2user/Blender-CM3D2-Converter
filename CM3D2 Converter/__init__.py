@@ -32,12 +32,15 @@ import bpy
 class AddonPreferences(bpy.types.AddonPreferences):
 	bl_idname = __name__
 	
+	scale = bpy.props.FloatProperty(name="倍率", description="Blenderでモデルを扱うときの拡大率", default=5, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
+	
 	model_import_path = bpy.props.StringProperty(name="Modelインポート時のデフォルトパス", subtype='FILE_PATH', description="インポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="Modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="エクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
 	def draw(self, context):
+		self.layout.prop(self, 'scale', icon='MAN_SCALE')
 		self.layout.prop(self, 'model_import_path', icon='IMPORT')
 		self.layout.prop(self, 'model_export_path', icon='EXPORT')
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')

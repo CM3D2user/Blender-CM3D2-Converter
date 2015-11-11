@@ -141,6 +141,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.is_backup = False
 		
 		context.window_manager.fileselect_add(self)
+		self.scale = 1.0 / context.user_preferences.addons[__name__.split('.')[0]].preferences.scale
 		return {'RUNNING_MODAL'}
 	
 	def execute(self, context):

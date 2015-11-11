@@ -47,6 +47,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				pass
 		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
 		context.window_manager.fileselect_add(self)
+		self.scale = context.user_preferences.addons[__name__.split('.')[0]].preferences.scale
 		return {'RUNNING_MODAL'}
 	
 	def draw(self, context):
