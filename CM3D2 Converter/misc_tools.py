@@ -7,7 +7,7 @@ class vertex_group_transfer(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	vertex_group_remove_all = bpy.props.BoolProperty(name="最初に頂点グループ全削除", default=True)
-	vertex_group_clean = bpy.props.BoolProperty(name="頂点グループのクリーン", default=True)
+	vertex_group_clean = bpy.props.BoolProperty(name="ウェイト0.0の頂点はグループから除外", default=True)
 	vertex_group_delete = bpy.props.BoolProperty(name="割り当ての無い頂点グループ削除", default=True)
 	
 	@classmethod
@@ -81,9 +81,9 @@ class blur_vertex_group(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
-	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は削除", default=True)
+	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
+	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	use_clean = bpy.props.BoolProperty(name="ウェイト0.0の頂点は頂点グループから除外", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -165,10 +165,10 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
-	radius = bpy.props.FloatProperty(name="対象範囲", default=0.5, min=0.01, max=10, soft_min=0.01, soft_max=10, step=10, precision=2)
-	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は削除", default=True)
+	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
+	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は頂点グループから除外", default=True)
 	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
 	
 	@classmethod
@@ -185,7 +185,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
-		#self.layout.prop(self, 'radius')
+		self.layout.prop(self, 'radius_multi')
 		self.layout.prop(self, 'blur_count')
 		self.layout.prop(self, 'use_clean')
 		self.layout.prop(self, 'fadeout')
@@ -199,7 +199,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		total_len = 0.0
 		for edge in bm.edges:
 			total_len += edge.calc_length()
-		self.radius = (total_len / len(bm.edges)) * 2
+		radius = (total_len / len(bm.edges)) * self.radius_multi
 		bm.free()
 		
 		pre_mode = ob.mode
@@ -226,11 +226,11 @@ class radius_blur_vertex_group(bpy.types.Operator):
 						active_weight = 0.0
 					near_weights = []
 					near_weights_len = []
-					for co, index, dist in kd.find_range(vert.co, self.radius):
+					for co, index, dist in kd.find_range(vert.co, radius):
 						if index != vert.index:
 							if self.fadeout:
 								vec = co - vert.co
-								near_weights_len.append(self.radius - vec.length)
+								near_weights_len.append(radius - vec.length)
 							for group in me.vertices[index].groups:
 								if group.group == vg.index:
 									near_weights.append(group.weight)
@@ -244,7 +244,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 							near_weight_average += weight
 							near_weights_total += 1
 						else:
-							multi = near_weights_len[weight_index] / self.radius
+							multi = near_weights_len[weight_index] / radius
 							near_weight_average += weight * multi
 							near_weights_total += multi
 					try:
@@ -266,7 +266,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	bl_description = "頂点数の違うメッシュ同士でも一番近い頂点からシェイプキーを強制転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	remove_empty_shape = bpy.props.BoolProperty(name="変形のないシェイプを削除", default=True)
+	remove_empty_shape = bpy.props.BoolProperty(name="全頂点に変形のないシェイプを削除", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -333,7 +333,7 @@ class scale_shape_key(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
 	
 	@classmethod
 	def poll(cls, context):
@@ -382,8 +382,8 @@ class blur_shape_key(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
-	strength = bpy.props.IntProperty(name="ぼかし強度", description="ぼかしの強度(回数)を設定します", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
+	strength = bpy.props.IntProperty(name="処理回数", description="ぼかしの強度(回数)を設定します", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	
 	@classmethod
 	def poll(cls, context):
@@ -444,9 +444,9 @@ class radius_blur_shape_key(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
-	radius = bpy.props.FloatProperty(name="対象範囲", default=0.5, min=0.01, max=10, soft_min=0.01, soft_max=10, step=10, precision=2)
-	blur_count = bpy.props.IntProperty(name="繰り返し回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
+	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
 	
 	@classmethod
@@ -463,7 +463,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
-		#self.layout.prop(self, 'radius')
+		self.layout.prop(self, 'radius_multi')
 		self.layout.prop(self, 'blur_count')
 		self.layout.prop(self, 'fadeout')
 	
@@ -476,7 +476,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		total_len = 0.0
 		for edge in bm.edges:
 			total_len += edge.calc_length()
-		self.radius = (total_len / len(bm.edges)) * 2
+		radius = (total_len / len(bm.edges)) * self.radius_multi
 		bm.free()
 		
 		shape_keys = me.shape_keys
@@ -498,12 +498,12 @@ class radius_blur_shape_key(bpy.types.Operator):
 				new_co = []
 				for vert in me.vertices:
 					average_co = mathutils.Vector((0, 0, 0))
-					nears = kd.find_range(vert.co, self.radius)
+					nears = kd.find_range(vert.co, radius)
 					nears_total = 0
 					for co, index, dist in nears:
 						if self.fadeout:
 							diff = co - vert.co
-							multi = (self.radius - diff.length) / self.radius
+							multi = (radius - diff.length) / radius
 							average_co += (data[index].co - me.vertices[index].co) * multi
 							nears_total += multi
 						else:
@@ -530,7 +530,7 @@ class new_cm3d2(bpy.types.Operator):
 		('HAIR', "髪", "", 3),
 		('MOZA', "モザイク", "", 4),
 		]
-	type = bpy.props.EnumProperty(items=items, name="タイプ", default='COMMON')
+	type = bpy.props.EnumProperty(items=items, name="マテリアルのタイプ", default='COMMON')
 	
 	@classmethod
 	def poll(cls, context):
