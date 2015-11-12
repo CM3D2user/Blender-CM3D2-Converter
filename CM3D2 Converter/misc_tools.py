@@ -188,11 +188,20 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		self.layout.prop(self, 'radius')
 		self.layout.prop(self, 'blur_count')
 		self.layout.prop(self, 'use_clean')
-		self.layout.prop(self, 'fadeout')
+		#self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		total_len = 0.0
+		for edge in bm.edges:
+			total_len += edge.calc_length()
+		self.fadeout = (total_len / len(bm.edges)) * 3
+		bm.free()
+		
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		target_weights = []
@@ -456,11 +465,20 @@ class radius_blur_shape_key(bpy.types.Operator):
 		self.layout.prop(self, 'mode')
 		self.layout.prop(self, 'radius')
 		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'fadeout')
+		#self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		total_len = 0.0
+		for edge in bm.edges:
+			total_len += edge.calc_length()
+		self.fadeout = (total_len / len(bm.edges)) * 2
+		bm.free()
+		
 		shape_keys = me.shape_keys
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
@@ -477,6 +495,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		for count in range(self.blur_count):
 			for shape in target_shapes:
 				data = shape.data
+				new_co = []
 				for vert in me.vertices:
 					average_co = mathutils.Vector((0, 0, 0))
 					nears = kd.find_range(vert.co, self.radius)
@@ -492,7 +511,10 @@ class radius_blur_shape_key(bpy.types.Operator):
 							nears_total += 1
 					average_co /= nears_total
 					co = data[vert.index].co - vert.co
-					data[vert.index].co = ((co * 2) + average_co) / 3 + vert.co
+					new_co.append(((co * 2) + average_co) / 3 + vert.co)
+					#data[vert.index].co = ((co * 2) + average_co) / 3 + vert.co
+				for i, co in enumerate(new_co):
+					data[i].co = co.copy()
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
