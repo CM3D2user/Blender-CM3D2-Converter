@@ -185,10 +185,10 @@ class radius_blur_vertex_group(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
-		self.layout.prop(self, 'radius')
+		#self.layout.prop(self, 'radius')
 		self.layout.prop(self, 'blur_count')
 		self.layout.prop(self, 'use_clean')
-		#self.layout.prop(self, 'fadeout')
+		self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -199,7 +199,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		total_len = 0.0
 		for edge in bm.edges:
 			total_len += edge.calc_length()
-		self.fadeout = (total_len / len(bm.edges)) * 3
+		self.radius = (total_len / len(bm.edges)) * 2
 		bm.free()
 		
 		pre_mode = ob.mode
@@ -463,9 +463,9 @@ class radius_blur_shape_key(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
-		self.layout.prop(self, 'radius')
+		#self.layout.prop(self, 'radius')
 		self.layout.prop(self, 'blur_count')
-		#self.layout.prop(self, 'fadeout')
+		self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -476,7 +476,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		total_len = 0.0
 		for edge in bm.edges:
 			total_len += edge.calc_length()
-		self.fadeout = (total_len / len(bm.edges)) * 2
+		self.radius = (total_len / len(bm.edges)) * 2
 		bm.free()
 		
 		shape_keys = me.shape_keys
