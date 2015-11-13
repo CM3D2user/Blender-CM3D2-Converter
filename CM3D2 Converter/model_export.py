@@ -19,6 +19,15 @@ def WriteStr(file, s):
 def SetMateLine(line):
 	return re.sub(r'^[\t ]*', "", line)
 
+def ConvertBoneName(name, enable=True):
+	if not enable:
+		return name
+	direction = re.search(r'\.([rRlL])$', name)
+	if direction:
+		direction = direction.groups()[0]
+		name = re.sub(r'\.[rRlL]$', '', name).replace('*', direction)
+	return name
+
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
 	bl_idname = 'export_mesh.export_cm3d2_model'
@@ -51,6 +60,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True, description="四角ポリゴンを三角ポリゴンに変換してから出力します、元のメッシュには影響ありません")
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
+	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
@@ -61,7 +71,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		box = self.layout.box()
 		box.label("メッシュオプション")
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
-		box.prop(self, 'is_normalize_weight', icon='GROUP_VERTEX')
+		box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
+		box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 	
 	def invoke(self, context, event):
 		# データの成否チェック
@@ -396,7 +407,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			for uv in vert_uvs[vert.index]:
 				vgs = []
 				for vg in vert.groups:
-					name = ob.vertex_groups[vg.group].name
+					name = ConvertBoneName(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+					print(name)
 					if name not in local_bone_names:
 						continue
 					weight = vg.weight

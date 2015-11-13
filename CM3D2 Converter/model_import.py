@@ -1,4 +1,4 @@
-import bpy, os, math, struct, mathutils, bmesh
+import bpy, os, re, math, struct, mathutils, bmesh
 
 def ReadStr(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
@@ -6,6 +6,15 @@ def ReadStr(file):
 		i = struct.unpack('<B', file.read(1))[0]
 		str_index += (i * 128) - 128
 	return file.read(str_index).decode('utf-8')
+
+def ConvertBoneName(name, enable=True):
+	if not enable:
+		return name
+	direction = re.search(r'[_ ]([rRlL])[_ ]', name)
+	if direction:
+		direction = direction.groups()[0]
+		name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', name) + "." + direction
+	return name
 
 # メインオペレーター
 class import_cm3d2_model(bpy.types.Operator):
@@ -23,6 +32,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_mesh = bpy.props.BoolProperty(name="メッシュ生成", default=True, description="ポリゴンを読み込みます、大抵の場合オンでOKです")
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True, description="UVの切れ目でポリゴンが分かれている仕様なので、インポート時にくっつけます")
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True, description="UVの切れ目にシームをつけます")
+	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をBlender用に変換", default=True, description="全ての頂点グループ名をBlenderの左右対称編集で使えるように変換してから読み込みます")
 	
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
 	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
@@ -30,6 +40,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True, description="ボーンを分かりやすい向きに変更します")
+	is_convert_bone_names = bpy.props.BoolProperty(name="ボーン名をBlender用に変換", default=True, description="全てのボーン名をBlenderの左右対称編集で使えるように変換してから読み込みます")
 	
 	is_bone_data_text = bpy.props.BoolProperty(name="テキスト", default=True, description="ボーン情報をテキストとして読み込みます")
 	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトのカスタムプロパティ", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
@@ -58,6 +69,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.label("メッシュオプション")
 		box.prop(self, 'is_remove_doubles', icon='STICKY_UVS_VERT')
 		box.prop(self, 'is_seam', icon='KEY_DEHLT')
+		box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 		box = self.layout.box()
 		box.label("マテリアル")
 		box.prop(self, 'is_mate_color', icon='COLOR')
@@ -68,6 +80,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.label("アーマチュアオプション")
 		box.prop(self, 'is_armature_clean', icon='X')
 		box.prop(self, 'is_armature_arrange', icon='HAIR')
+		box.prop(self, 'is_convert_bone_names', icon='BONE_DATA')
 		box = self.layout.box()
 		box.label("ボーン情報埋め込み場所")
 		box.prop(self, 'is_bone_data_text', icon='TEXT')
@@ -219,7 +232,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			child_data = []
 			for data in bone_data:
 				if not data['parent_name']:
-					bone = arm.edit_bones.new(data['name'])
+					bone = arm.edit_bones.new(ConvertBoneName(data['name'], self.is_convert_bone_names))
 					bone.head = (0, 0, 0)
 					bone.tail = (0, 0.1, 0)
 					
@@ -243,9 +256,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				if len(child_data) <= 0:
 					break
 				data = child_data.pop(0)
-				if data['parent_name'] in arm.edit_bones.keys():
-					bone = arm.edit_bones.new(data['name'])
-					parent = arm.edit_bones[data['parent_name']]
+				if ConvertBoneName(data['parent_name'], self.is_convert_bone_names) in arm.edit_bones.keys():
+					bone = arm.edit_bones.new(ConvertBoneName(data['name'], self.is_convert_bone_names))
+					parent = arm.edit_bones[ConvertBoneName(data['parent_name'], self.is_convert_bone_names)]
 					bone.parent = parent
 					if data['unknown']:
 						bone.bbone_segments = 2
@@ -257,7 +270,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					rot = mathutils.Quaternion()
 					for j in range(9**9):
 						for b in bone_data:
-							if b['name'] == temp_parent.name:
+							if ConvertBoneName(b['name'], self.is_convert_bone_names) == temp_parent.name:
 								c = b['co'].copy()
 								r = b['rot'].copy()
 								break
@@ -297,7 +310,8 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature_clean:
 				for bone in arm.edit_bones:
 					for b in local_bone_data:
-						if bone.name == b['name']:
+						name = ConvertBoneName(b['name'], self.is_convert_bone_names)
+						if bone.name == name:
 							break
 					else:
 						arm.edit_bones.remove(bone)
@@ -366,11 +380,11 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			# 頂点グループ作成
 			for data in local_bone_data:
-				ob.vertex_groups.new(data['name'])
+				ob.vertex_groups.new(ConvertBoneName(data['name'], self.is_convert_vertex_group_names))
 			for vert_index, data in enumerate(vertex_data):
 				for weight in data['weights']:
 					if 0.0 < weight['value']:
-						vertex_group = ob.vertex_groups[weight['name']]
+						vertex_group = ob.vertex_groups[ConvertBoneName(weight['name'], self.is_convert_vertex_group_names)]
 						vertex_group.add([vert_index], weight['value'], 'REPLACE')
 			# UV作成
 			me.uv_textures.new("UVMap")
