@@ -288,12 +288,14 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 					self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
 					vg.name = vg_name
 			else:
-				direction = re.search(r'\.([rRlL])$', vg.name)
-				if direction:
-					direction = direction.groups()[0]
-					vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
-					self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
-					vg.name = vg_name
+				if vg.name.count('*') == 1:
+					direction = re.search(r'\.([rRlL])$', vg.name)
+					if direction:
+						direction = direction.groups()[0]
+						vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
+						vg_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', vg_name)
+						self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+						vg.name = vg_name
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -703,12 +705,14 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 					self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
 					bone.name = bone_name
 			else:
-				direction = re.search(r'\.([rRlL])$', bone.name)
-				if direction:
-					direction = direction.groups()[0]
-					bone_name = re.sub(r'\.[rRlL]$', '', bone.name).replace('*', direction)
-					self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
-					bone.name = bone_name
+				if bone.name.count('*') == 1:
+					direction = re.search(r'\.([rRlL])$', bone.name)
+					if direction:
+						direction = direction.groups()[0]
+						bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
+						bone_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', bone_name)
+						self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+						bone.name = bone_name
 		return {'FINISHED'}
 
 # 頂点グループメニューに項目追加

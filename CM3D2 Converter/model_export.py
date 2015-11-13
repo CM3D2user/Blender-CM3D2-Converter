@@ -22,10 +22,12 @@ def SetMateLine(line):
 def ConvertBoneName(name, enable=True):
 	if not enable:
 		return name
-	direction = re.search(r'\.([rRlL])$', name)
-	if direction:
-		direction = direction.groups()[0]
-		name = re.sub(r'\.[rRlL]$', '', name).replace('*', direction)
+	if name.count('*') == 1:
+		direction = re.search(r'\.([rRlL])$', name)
+		if direction:
+			direction = direction.groups()[0]
+			name = re.sub(r'\.[rRlL]$', '', name)
+			name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', name)
 	return name
 
 # メインオペレーター
