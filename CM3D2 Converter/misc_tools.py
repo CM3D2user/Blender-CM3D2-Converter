@@ -284,14 +284,16 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 				direction = re.search(r'[_ ]([rRlL])[_ ]', vg.name)
 				if direction:
 					direction = direction.groups()[0]
-					vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name)
-					vg.name = vg_name + "." + direction
+					vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name) + "." + direction
+					self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+					vg.name = vg_name
 			else:
 				direction = re.search(r'\.([rRlL])$', vg.name)
 				if direction:
 					direction = direction.groups()[0]
-					vg_name = re.sub(r'\.[rRlL]$', '', vg.name)
-					vg.name = vg_name.replace('*', direction)
+					vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
+					self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+					vg.name = vg_name
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -697,21 +699,23 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 				direction = re.search(r'[_ ]([rRlL])[_ ]', bone.name)
 				if direction:
 					direction = direction.groups()[0]
-					bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name)
-					bone.name = bone_name + "." + direction
+					bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name) + "." + direction
+					self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+					bone.name = bone_name
 			else:
 				direction = re.search(r'\.([rRlL])$', bone.name)
 				if direction:
 					direction = direction.groups()[0]
-					bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
-					bone.name = bone_name.replace('*', direction)
+					bone_name = re.sub(r'\.[rRlL]$', '', bone.name).replace('*', direction)
+					self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+					bone.name = bone_name
 		return {'FINISHED'}
 
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名をCM3D2→Blender").restore = False
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名をBlender→CM3D2").restore = True
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を CM3D2 → Blender").restore = False
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を Blender → CM3D2").restore = True
 	self.layout.separator()
 	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
 	self.layout.separator()
@@ -737,5 +741,7 @@ def DATA_PT_context_arm(self, context):
 	if context.active_object:
 		if context.active_object.type == 'ARMATURE':
 			col = self.layout.column(align=True)
-			col.operator(convert_cm3d2_bone_names.bl_idname, icon='SPACE2', text="ボーン名をCM3D2→Blender").restore = False
-			col.operator(convert_cm3d2_bone_names.bl_idname, icon='SPACE2', text="ボーン名をBlender→CM3D2").restore = True
+			col.label(text="CM3D2用 ボーン名変換", icon='SPACE2')
+			row = col.row(align=True)
+			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender").restore = False
+			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2").restore = True
