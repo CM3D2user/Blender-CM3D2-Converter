@@ -33,6 +33,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True, description="UVの切れ目でポリゴンが分かれている仕様なので、インポート時にくっつけます")
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True, description="UVの切れ目にシームをつけます")
 	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をBlender用に変換", default=True, description="全ての頂点グループ名をBlenderの左右対称編集で使えるように変換してから読み込みます")
+	is_vertex_group_sort = bpy.props.BoolProperty(name="頂点グループを名前順ソート", default=True, description="頂点グループを名前順でソートします")
 	
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
 	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
@@ -70,6 +71,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.prop(self, 'is_remove_doubles', icon='STICKY_UVS_VERT')
 		box.prop(self, 'is_seam', icon='KEY_DEHLT')
 		box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
+		box.prop(self, 'is_vertex_group_sort', icon='SORTALPHA')
 		box = self.layout.box()
 		box.label("マテリアル")
 		box.prop(self, 'is_mate_color', icon='COLOR')
@@ -386,6 +388,8 @@ class import_cm3d2_model(bpy.types.Operator):
 					if 0.0 < weight['value']:
 						vertex_group = ob.vertex_groups[ConvertBoneName(weight['name'], self.is_convert_vertex_group_names)]
 						vertex_group.add([vert_index], weight['value'], 'REPLACE')
+			if self.is_vertex_group_sort:
+				bpy.ops.object.vertex_group_sort(sort_type='NAME')
 			# UV作成
 			me.uv_textures.new("UVMap")
 			bm = bmesh.new()
