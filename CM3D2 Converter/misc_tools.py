@@ -1,4 +1,4 @@
-import bpy, bmesh, mathutils
+import re, bpy, bmesh, mathutils
 
 class vertex_group_transfer(bpy.types.Operator):
 	bl_idname = 'object.vertex_group_transfer'
@@ -258,6 +258,40 @@ class radius_blur_vertex_group(bpy.types.Operator):
 					else:
 						vg.add([vert.index], weight, 'REPLACE')
 		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
+class convert_cm3d2_vertex_group_names(bpy.types.Operator):
+	bl_idname = "object.convert_cm3d2_vertex_group_names"
+	bl_label = "頂点グループ名をCM3D2用←→Blender用に変換"
+	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)をBlenderで左右対称編集できるように相互変換します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	restore = bpy.props.BoolProperty(name="復元", default=False)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				if ob.vertex_groups.active:
+					return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		for vg in ob.vertex_groups:
+			if not self.restore:
+				direction = re.search(r'[_ ]([rRlL])[_ ]', vg.name)
+				if direction:
+					direction = direction.groups()[0]
+					vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name)
+					vg.name = vg_name + "." + direction
+			else:
+				direction = re.search(r'\.([rRlL])$', vg.name)
+				if direction:
+					direction = direction.groups()[0]
+					vg_name = re.sub(r'\.[rRlL]$', '', vg.name)
+					vg.name = vg_name.replace('*', direction)
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -639,8 +673,45 @@ class new_cm3d2(bpy.types.Operator):
 			slot_count += 1
 		return {'FINISHED'}
 
+class convert_cm3d2_bone_names(bpy.types.Operator):
+	bl_idname = "armature.convert_cm3d2_bone_names"
+	bl_label = "ボーン名をCM3D2用←→Blender用に変換"
+	bl_description = "CM3D2で使われてるボーン名をBlenderで左右対称編集できるように相互変換します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	restore = bpy.props.BoolProperty(name="復元", default=False)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'ARMATURE':
+				return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		arm = ob.data
+		for bone in arm.bones:
+			if not self.restore:
+				direction = re.search(r'[_ ]([rRlL])[_ ]', bone.name)
+				if direction:
+					direction = direction.groups()[0]
+					bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name)
+					bone.name = bone_name + "." + direction
+			else:
+				direction = re.search(r'\.([rRlL])$', bone.name)
+				if direction:
+					direction = direction.groups()[0]
+					bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
+					bone.name = bone_name.replace('*', direction)
+		return {'FINISHED'}
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
+	self.layout.separator()
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名をCM3D2→Blender").restore = False
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名をBlender→CM3D2").restore = True
 	self.layout.separator()
 	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
 	self.layout.separator()
@@ -660,3 +731,11 @@ def MESH_MT_shape_key_specials(self, context):
 def MATERIAL_PT_context_material(self, context):
 	if not context.material:
 		self.layout.operator(new_cm3d2.bl_idname, icon='SPACE2')
+
+# アーマチュアタブに項目追加
+def DATA_PT_context_arm(self, context):
+	if context.active_object:
+		if context.active_object.type == 'ARMATURE':
+			col = self.layout.column(align=True)
+			col.operator(convert_cm3d2_bone_names.bl_idname, icon='SPACE2', text="ボーン名をCM3D2→Blender").restore = False
+			col.operator(convert_cm3d2_bone_names.bl_idname, icon='SPACE2', text="ボーン名をBlender→CM3D2").restore = True
