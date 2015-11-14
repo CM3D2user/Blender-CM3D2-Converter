@@ -723,10 +723,10 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
+	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
+	self.layout.separator()
 	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を CM3D2 → Blender").restore = False
 	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を Blender → CM3D2").restore = True
-	self.layout.separator()
-	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
 	self.layout.separator()
 	self.layout.operator(blur_vertex_group.bl_idname, icon='SPACE2')
 	self.layout.operator(radius_blur_vertex_group.bl_idname, icon='SPACE2')
@@ -735,6 +735,7 @@ def MESH_MT_vertex_group_specials(self, context):
 def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon='SPACE2')
+	self.layout.separator()
 	self.layout.operator(scale_shape_key.bl_idname, icon='SPACE2')
 	self.layout.separator()
 	self.layout.operator(blur_shape_key.bl_idname, icon='SPACE2')
