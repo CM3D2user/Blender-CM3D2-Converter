@@ -1,5 +1,10 @@
 import re, bpy, bmesh, mathutils
 
+def ArrangeName(name, flag=True):
+	if flag:
+		return re.sub(r'\.\d{3}$', "", name)
+	return name
+
 class vertex_group_transfer(bpy.types.Operator):
 	bl_idname = 'object.vertex_group_transfer'
 	bl_label = "クイック・ウェイト転送"
@@ -804,3 +809,29 @@ def TEXTURE_PT_context_texture(self, context):
 		box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度")
 	elif type == "f":
 		box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+	
+	base_name = ArrangeName(tex.name)
+	description = ""
+	if base_name == '_MainTex':
+		description = "面の色を決定するテクスチャを指定"
+	elif base_name == '_ShadowTex':
+		description = "陰部分の面の色を決定するテクスチャを指定"
+	elif base_name == '_Color':
+		description = "面の色を指定"
+	elif base_name == '_ShadowColor':
+		description = "影の色を指定"
+	elif base_name == '_RimColor':
+		description = "縁にできる光の反射の色を指定"
+	elif base_name == '_OutlineColor':
+		description = "輪郭線の色を指定"
+	elif base_name == '_Shininess':
+		description = "スペキュラーの強さを指定"
+	elif base_name == '_OutlineWidth':
+		description = "輪郭線の太さを指定"
+	elif base_name == '_RimPower':
+		description = "縁にできる光の反射の強さを指定"
+	elif base_name == '_RimShift':
+		description = "縁にできる光の反射の幅を指定"
+	if description != "":
+		sub_box = box.box()
+		sub_box.label(text=description, icon='TEXT')
