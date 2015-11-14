@@ -1,4 +1,4 @@
-import re, bpy, bmesh, mathutils
+import re, bpy, bmesh, mathutils, webbrowser
 
 def ArrangeName(name, flag=True):
 	if flag:
@@ -720,6 +720,16 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 						bone.name = bone_name
 		return {'FINISHED'}
 
+class show_apply_modifier_addon_web(bpy.types.Operator):
+	bl_idname = "object.show_apply_modifier_addon_web"
+	bl_label = "モディファイアを適用できない場合"
+	bl_description = "Apply ModifierのWEBサイトを開きます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	def execute(self, context):
+		webbrowser.open("https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier")
+		return {'FINISHED'}
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
@@ -773,6 +783,17 @@ def OBJECT_PT_context_object(self, context):
 	if ob:
 		if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
 			self.layout.label(text="CM3D2用ボーン情報が存在", icon='CHECKBOX_HLT')
+
+# モディファイアタブに項目追加
+def DATA_PT_modifiers(self, context):
+	if 'apply_all_modifier' not in dir(bpy.ops.object):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if me.shape_keys:
+					if len(ob.modifiers):
+						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon='SPACE2')
 
 # テクスチャタブに項目追加
 def TEXTURE_PT_context_texture(self, context):
