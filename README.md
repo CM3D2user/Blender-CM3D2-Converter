@@ -18,10 +18,12 @@
 　![更新](http://i.imgur.com/3c0avlw.jpg)  
 
 ## 使い方 (How to Use)
+　.modelファイルは「model.arc」や「model2.arc」から[CM3D2 Tool](http://www.hongfire.com/forum/showthread.php/445616)等で取り出しておいて下さい。  
+　  
 　読み込みは  
-　ファイル > インポート > CM3D2 Model (.model)  
+　　ファイル > インポート > CM3D2 Model (.model)  
 　書き出しも同じように  
-　ファイル > エクスポート > CM3D2 Model (.model)  
+　　ファイル > エクスポート > CM3D2 Model (.model)  
 　![手順](http://i.imgur.com/p2V7D5m.jpg)  
 　どちらも、ファイル選択時の左下にオプションがあります。  
 
