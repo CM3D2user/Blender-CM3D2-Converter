@@ -1,7 +1,8 @@
 # Blender-CM3D2-Converter
 　3Dアダルトゲーム「[カスタムメイド3D2](http://kisskiss.tv/cm3d2/)」で使用されるモデルファイル形式(.model)を  
 　フリー3D統合環境である「[Blender](https://www.blender.org/)」で扱うためのアドオンです。  
-　ある程度Blenderの基本操作をできる人を対象にしています、初めての人は[チュートリアル](https://www.google.co.jp/#q=Blender+%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB)などから始めましょう。  
+　ある程度Blenderの基本操作をできる人を対象にしています、  
+　初めての人は[チュートリアル](https://www.google.co.jp/#q=Blender+%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB)などから始めましょう。  
 
 ## インストール (Installation)
 　まず、Blender2.7以上([2.75](http://download.blender.org/release/Blender2.75/)推奨)がインストールされており[日本語化](http://ch.nicovideo.jp/hiiragik/blomaga/ar501365)している事が前提です。  
@@ -139,7 +140,8 @@
 　　![シェイプキーをぼかす](http://i.imgur.com/P69O44k.jpg)  
 ### ボーン/頂点グループ名をCM3D2用←→Blender用に変換
 　　ボーンと頂点グループの名前をBlenderで左右対称編集できるように変換したり元に戻せます。  
-　　メッシュを選択し「メッシュデータ」タブ > 「頂点グループ」パネル > 「▼」ボタン > 「頂点グループ名を～」ボタン。  
+　　メッシュを選択し「メッシュデータ」タブ > 「頂点グループ」パネル >  
+　　> 「▼」ボタン > 「頂点グループ名を～」ボタン。  
 　　もしくはアーマチュアを選択し「アーマチュアデータ」タブ > 「ボーン名を～」ボタン。  
 　　![ボーン/頂点グループ名をCM3D2用←→Blender用に変換](http://i.imgur.com/6O5K5gm.jpg)
 
