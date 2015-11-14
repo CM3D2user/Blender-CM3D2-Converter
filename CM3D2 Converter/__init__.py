@@ -101,6 +101,7 @@ def register():
 	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
 	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
 	bpy.types.DATA_PT_context_arm.append(misc_tools.DATA_PT_context_arm)
+	bpy.types.TEXTURE_PT_context_texture.append(misc_tools.TEXTURE_PT_context_texture)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -112,6 +113,7 @@ def unregister():
 	bpy.types.MESH_MT_vertex_group_specials.append(misc_tools.MESH_MT_vertex_group_specials)
 	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
 	bpy.types.DATA_PT_context_arm.append(misc_tools.DATA_PT_context_arm)
+	bpy.types.TEXTURE_PT_context_texture.append(misc_tools.TEXTURE_PT_context_texture)
 
 # メイン関数
 if __name__ == "__main__":

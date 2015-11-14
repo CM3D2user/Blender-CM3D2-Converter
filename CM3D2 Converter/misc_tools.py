@@ -749,3 +749,40 @@ def DATA_PT_context_arm(self, context):
 			row = col.row(align=True)
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender").restore = False
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2").restore = True
+
+# テクスチャタブに項目追加
+def TEXTURE_PT_context_texture(self, context):
+	try:
+		tex_slot = context.texture_slot
+		tex = context.texture
+	except:
+		return
+	if tex.name[0] != '_':
+		return
+	is_use = tex_slot.use
+	is_rgb = tex_slot.use_rgb_to_intensity
+	if is_use:
+		type = "tex"
+	else:
+		if is_rgb:
+			type = "col"
+		else:
+			type = "f"
+	box = self.layout.box()
+	box.label(text="CM3D2用", icon='SPACE2')
+	box.label(text="設定値タイプ: " + type)
+	box.prop(tex, 'name', icon='SORTALPHA', text="設定値名")
+	if type == "tex":
+		if tex.type == 'IMAGE':
+			img = tex.image
+			if img:
+				if img.source == 'FILE':
+					box.prop(img, 'name', icon='IMAGE_DATA', text="テクスチャ名")
+					box.prop(img, 'filepath', text="テクスチャパス")
+				box.prop(tex_slot, 'color', text="")
+				box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度")
+	elif type == "col":
+		box.prop(tex_slot, 'color', text="")
+		box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度")
+	elif type == "f":
+		box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
