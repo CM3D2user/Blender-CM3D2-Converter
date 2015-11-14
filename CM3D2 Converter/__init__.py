@@ -102,6 +102,7 @@ def register():
 	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
 	bpy.types.DATA_PT_context_arm.append(misc_tools.DATA_PT_context_arm)
 	bpy.types.TEXTURE_PT_context_texture.append(misc_tools.TEXTURE_PT_context_texture)
+	bpy.types.OBJECT_PT_context_object.append(misc_tools.OBJECT_PT_context_object)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -114,6 +115,7 @@ def unregister():
 	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
 	bpy.types.DATA_PT_context_arm.append(misc_tools.DATA_PT_context_arm)
 	bpy.types.TEXTURE_PT_context_texture.append(misc_tools.TEXTURE_PT_context_texture)
+	bpy.types.OBJECT_PT_context_object.append(misc_tools.OBJECT_PT_context_object)
 
 # メイン関数
 if __name__ == "__main__":

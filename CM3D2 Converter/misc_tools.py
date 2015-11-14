@@ -749,13 +749,28 @@ def MATERIAL_PT_context_material(self, context):
 
 # アーマチュアタブに項目追加
 def DATA_PT_context_arm(self, context):
-	if context.active_object:
-		if context.active_object.type == 'ARMATURE':
+	ob = context.active_object
+	if ob:
+		if ob.type == 'ARMATURE':
 			col = self.layout.column(align=True)
 			col.label(text="CM3D2用 ボーン名変換", icon='SPACE2')
 			row = col.row(align=True)
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender").restore = False
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2").restore = True
+		arm = ob.data
+		if 'BoneData:0' in arm.keys():
+			self.layout.label(text="CM3D2用ボーン情報が存在", icon='RADIOBUT_ON')
+		if 'LocalBoneData:0' in arm.keys():
+			self.layout.label(text="CM3D2用ローカルボーン情報が存在", icon='RADIOBUT_ON')
+
+# オブジェクトタブに項目追加
+def OBJECT_PT_context_object(self, context):
+	ob = context.active_object
+	if ob:
+		if 'BoneData:0' in ob.keys():
+			self.layout.label(text="CM3D2用ボーン情報が存在", icon='RADIOBUT_ON')
+		if 'LocalBoneData:0' in ob.keys():
+			self.layout.label(text="CM3D2用ローカルボーン情報が存在", icon='RADIOBUT_ON')
 
 # テクスチャタブに項目追加
 def TEXTURE_PT_context_texture(self, context):
