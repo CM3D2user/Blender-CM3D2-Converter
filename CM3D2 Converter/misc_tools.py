@@ -737,8 +737,15 @@ def MESH_MT_shape_key_specials(self, context):
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):
-	if not context.material:
+	mate = context.material
+	if not mate:
 		self.layout.operator(new_cm3d2.bl_idname, icon='SPACE2')
+	else:
+		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+			box = self.layout.box()
+			box.label(text="CM3D2用", icon='SPACE2')
+			box.prop(mate, '["shader1"]', icon='TEXTURE_SHADED', text="shader1")
+			box.prop(mate, '["shader2"]', icon='TEXTURE_SHADED', text="shader2")
 
 # アーマチュアタブに項目追加
 def DATA_PT_context_arm(self, context):
