@@ -104,20 +104,22 @@ def register():
 	bpy.types.TEXTURE_PT_context_texture.append(misc_tools.TEXTURE_PT_context_texture)
 	bpy.types.OBJECT_PT_context_object.append(misc_tools.OBJECT_PT_context_object)
 	bpy.types.DATA_PT_modifiers.append(misc_tools.DATA_PT_modifiers)
+	bpy.types.TEXT_HT_header.append(misc_tools.TEXT_HT_header)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
 	bpy.utils.unregister_module(__name__)
 	bpy.types.INFO_MT_help.remove(INFO_MT_help)
 	bpy.types.INFO_MT_file_import.remove(model_import.menu_func)
-	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
-	bpy.types.MESH_MT_shape_key_specials.append(misc_tools.MESH_MT_shape_key_specials)
-	bpy.types.MESH_MT_vertex_group_specials.append(misc_tools.MESH_MT_vertex_group_specials)
-	bpy.types.MATERIAL_PT_context_material.append(misc_tools.MATERIAL_PT_context_material)
-	bpy.types.DATA_PT_context_arm.append(misc_tools.DATA_PT_context_arm)
-	bpy.types.TEXTURE_PT_context_texture.append(misc_tools.TEXTURE_PT_context_texture)
-	bpy.types.OBJECT_PT_context_object.append(misc_tools.OBJECT_PT_context_object)
-	bpy.types.DATA_PT_modifiers.append(misc_tools.DATA_PT_modifiers)
+	bpy.types.INFO_MT_file_export.remove(model_export.menu_func)
+	bpy.types.MESH_MT_shape_key_specials.remove(misc_tools.MESH_MT_shape_key_specials)
+	bpy.types.MESH_MT_vertex_group_specials.remove(misc_tools.MESH_MT_vertex_group_specials)
+	bpy.types.MATERIAL_PT_context_material.remove(misc_tools.MATERIAL_PT_context_material)
+	bpy.types.DATA_PT_context_arm.remove(misc_tools.DATA_PT_context_arm)
+	bpy.types.TEXTURE_PT_context_texture.remove(misc_tools.TEXTURE_PT_context_texture)
+	bpy.types.OBJECT_PT_context_object.remove(misc_tools.OBJECT_PT_context_object)
+	bpy.types.DATA_PT_modifiers.remove(misc_tools.DATA_PT_modifiers)
+	bpy.types.TEXT_HT_header.remove(misc_tools.TEXT_HT_header)
 
 # メイン関数
 if __name__ == "__main__":

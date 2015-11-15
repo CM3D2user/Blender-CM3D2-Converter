@@ -720,6 +720,24 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 						bone.name = bone_name
 		return {'FINISHED'}
 
+class show_text(bpy.types.Operator):
+	bl_idname = "text.show_text"
+	bl_label = "テキストを表示"
+	bl_description = "指定したテキストをこの領域に表示します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	name = bpy.props.StringProperty(name="テキスト名")
+	
+	@classmethod
+	def poll(cls, context):
+		if 'text' in dir(context.space_data):
+			return True
+		return False
+	
+	def execute(self, context):
+		context.space_data.text = bpy.data.texts[self.name]
+		return {'FINISHED'}
+
 class show_apply_modifier_addon_web(bpy.types.Operator):
 	bl_idname = "object.show_apply_modifier_addon_web"
 	bl_label = "モディファイアを適用できない場合"
@@ -794,6 +812,15 @@ def DATA_PT_modifiers(self, context):
 				if me.shape_keys:
 					if len(ob.modifiers):
 						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon='SPACE2')
+
+# テキストヘッダーに項目追加
+def TEXT_HT_header(self, context):
+	texts = bpy.data.texts
+	text_keys = texts.keys()
+	if 'BoneData' in text_keys:
+		self.layout.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData").name = 'BoneData'
+	if 'LocalBoneData' in text_keys:
+		self.layout.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData").name = 'LocalBoneData'
 
 # テクスチャタブに項目追加
 def TEXTURE_PT_context_texture(self, context):
