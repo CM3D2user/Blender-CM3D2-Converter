@@ -882,6 +882,49 @@ class paste_object_bone_data_property(bpy.types.Operator):
 		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
 		return {'FINISHED'}
 
+class remove_object_bone_data_property(bpy.types.Operator):
+	bl_idname = "object.remove_object_bone_data_property"
+	bl_label = "ボーン情報を削除"
+	bl_description = "カスタムプロパティのボーン情報を全て削除します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+				return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="カスタムプロパティのボーン情報を全て削除します", icon='CANCEL')
+	
+	def execute(self, context):
+		ob = context.active_object
+		pass_count = 0
+		for i in range(99999):
+			name = "BoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		pass_count = 0
+		for i in range(99999):
+			name = "LocalBoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		self.report(type={'INFO'}, message="ボーン情報を削除しました")
+		return {'FINISHED'}
+
 class copy_armature_bone_data_property(bpy.types.Operator):
 	bl_idname = "object.copy_armature_bone_data_property"
 	bl_label = "ボーン情報をコピー"
@@ -979,6 +1022,53 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
 		return {'FINISHED'}
 
+class remove_armature_bone_data_property(bpy.types.Operator):
+	bl_idname = "object.remove_armature_bone_data_property"
+	bl_label = "ボーン情報を削除"
+	bl_description = "カスタムプロパティのボーン情報を全て削除します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'ARMATURE':
+				arm = ob.data
+				if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="カスタムプロパティのボーン情報を全て削除します", icon='CANCEL')
+	
+	def execute(self, context):
+		ob = context.active_object.data
+		pass_count = 0
+		for i in range(99999):
+			name = "BoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		pass_count = 0
+		for i in range(99999):
+			name = "LocalBoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		self.report(type={'INFO'}, message="ボーン情報を削除しました")
+		return {'FINISHED'}
+
+
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
@@ -1032,6 +1122,7 @@ def DATA_PT_context_arm(self, context):
 		row = col.row(align=True)
 		row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 		row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
+		row.operator(remove_armature_bone_data_property.bl_idname, icon='X', text="")
 
 # オブジェクトタブに項目追加
 def OBJECT_PT_context_object(self, context):
@@ -1046,6 +1137,7 @@ def OBJECT_PT_context_object(self, context):
 			row = col.row(align=True)
 			row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 			row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
+			row.operator(remove_object_bone_data_property.bl_idname, icon='X', text="")
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
