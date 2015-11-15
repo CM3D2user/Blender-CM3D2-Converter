@@ -47,7 +47,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		self.layout.prop(self, 'model_export_path', icon='EXPORT')
 		self.layout.prop(self, 'tex_import_path', icon='IMAGE_DATA')
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
-		self.layout.operator(update_cm3d2_converter.bl_idname, icon='FILE_REFRESH')
+		self.layout.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 
 # プラグインをインストールしたときの処理
 def register():
