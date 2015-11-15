@@ -1196,7 +1196,10 @@ def TEXTURE_PT_context_texture(self, context):
 	row = box.row(align=True)
 	row.label(text="設定値タイプ: " + type)
 	row.prop(tex_slot, 'use', text="")
-	row.prop(tex_slot, 'use_rgb_to_intensity', text="")
+	sub_row = row.row(align=True)
+	sub_row.prop(tex_slot, 'use_rgb_to_intensity', text="")
+	if tex_slot.use:
+		sub_row.enabled = False
 	box.prop(tex, 'name', icon='SORTALPHA', text="設定値名")
 	if type == "tex":
 		if tex.type == 'IMAGE':
