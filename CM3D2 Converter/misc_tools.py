@@ -1184,18 +1184,19 @@ def TEXTURE_PT_context_texture(self, context):
 		return
 	if tex.name[0] != '_':
 		return
-	is_use = tex_slot.use
-	is_rgb = tex_slot.use_rgb_to_intensity
-	if is_use:
+	if tex_slot.use:
 		type = "tex"
 	else:
-		if is_rgb:
+		if tex_slot.use_rgb_to_intensity:
 			type = "col"
 		else:
 			type = "f"
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon='SPACE2')
-	box.label(text="設定値タイプ: " + type)
+	row = box.row(align=True)
+	row.label(text="設定値タイプ: " + type)
+	row.prop(tex_slot, 'use', text="")
+	row.prop(tex_slot, 'use_rgb_to_intensity', text="")
 	box.prop(tex, 'name', icon='SORTALPHA', text="設定値名")
 	if type == "tex":
 		if tex.type == 'IMAGE':
