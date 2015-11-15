@@ -1,9 +1,49 @@
-import re, bpy, bmesh, mathutils, webbrowser
+import re, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request
 
 def ArrangeName(name, flag=True):
 	if flag:
 		return re.sub(r'\.\d{3}$', "", name)
 	return name
+
+# アドオンアップデート処理
+class update_cm3d2_converter(bpy.types.Operator):
+	bl_idname = 'script.update_cm3d2_converter'
+	bl_label = "Blender-CM3D2-Converterを更新"
+	bl_description = "GitHubから最新版のBlender-CM3D2-Converterをダウンロードし上書きします、実行した後は再起動して下さい"
+	bl_options = {'REGISTER'}
+	
+	is_restart = bpy.props.BoolProperty(name="更新後にBlenderを再起動", description="アドオン更新後にBlenderを再起動します", default=True)
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_restart')
+	
+	def execute(self, context):
+		response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip")
+		tempDir = bpy.app.tempdir
+		zipPath = os.path.join(tempDir, "Blender-CM3D2-Converter-master.zip")
+		addonDir = os.path.dirname(__file__)
+		f = open(zipPath, "wb")
+		f.write(response.read())
+		f.close()
+		zf = zipfile.ZipFile(zipPath, "r")
+		for f in zf.namelist():
+			if not os.path.basename(f):
+				pass
+			else:
+				if ("CM3D2 Converter" in f):
+					uzf = open(os.path.join(addonDir, os.path.basename(f)), 'wb')
+					uzf.write(zf.read(f))
+					uzf.close()
+		zf.close()
+		if self.is_restart:
+			subprocess.Popen([sys.argv[0]])
+			bpy.ops.wm.quit_blender()
+		else:
+			self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
+		return {'FINISHED'}
 
 class vertex_group_transfer(bpy.types.Operator):
 	bl_idname = 'object.vertex_group_transfer'
@@ -1105,3 +1145,8 @@ def TEXTURE_PT_context_texture(self, context):
 	if description != "":
 		sub_box = box.box()
 		sub_box.label(text=description, icon='TEXT')
+
+# ヘルプメニューに項目追加
+def INFO_MT_help(self, context):
+	self.layout.separator()
+	self.layout.operator(update_cm3d2_converter.bl_idname, icon='SPACE2')
