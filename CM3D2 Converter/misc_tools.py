@@ -983,10 +983,11 @@ def DATA_PT_context_arm(self, context):
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender").restore = False
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2").restore = True
 		arm = ob.data
-		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
-			self.layout.label(text="CM3D2用ボーン情報が存在", icon='CHECKBOX_HLT')
 		col = self.layout.column(align=True)
-		col.label(text="CM3D2用ボーン情報操作", icon='SPACE2')
+		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+			col.label(text="CM3D2用ボーン情報 (○)", icon='SPACE2')
+		else:
+			col.label(text="CM3D2用ボーン情報 (×)", icon='SPACE2')
 		row = col.row(align=True)
 		row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 		row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
@@ -995,14 +996,15 @@ def DATA_PT_context_arm(self, context):
 def OBJECT_PT_context_object(self, context):
 	ob = context.active_object
 	if ob:
-		if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
-			self.layout.label(text="CM3D2用ボーン情報が存在", icon='CHECKBOX_HLT')
-	if ob.type == 'MESH':
-		col = self.layout.column(align=True)
-		col.label(text="CM3D2用ボーン情報操作", icon='SPACE2')
-		row = col.row(align=True)
-		row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
-		row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
+		if ob.type == 'MESH':
+			col = self.layout.column(align=True)
+			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+				col.label(text="CM3D2用ボーン情報 (○)", icon='SPACE2')
+			else:
+				col.label(text="CM3D2用ボーン情報 (×)", icon='SPACE2')
+			row = col.row(align=True)
+			row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
+			row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
