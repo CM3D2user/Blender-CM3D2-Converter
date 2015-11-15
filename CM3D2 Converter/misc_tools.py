@@ -748,6 +748,197 @@ class show_apply_modifier_addon_web(bpy.types.Operator):
 		webbrowser.open("https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier")
 		return {'FINISHED'}
 
+class copy_object_bone_data_property(bpy.types.Operator):
+	bl_idname = "object.copy_object_bone_data_property"
+	bl_label = "ボーン情報をコピー"
+	bl_description = "カスタムプロパティのボーン情報をクリップボードにコピーします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+				return True
+		return False
+	
+	def execute(self, context):
+		output_text = ""
+		ob = context.active_object
+		pass_count = 0
+		for i in range(99999):
+			name = "BoneData:" + str(i)
+			if name in ob.keys():
+				output_text = output_text + "BoneData:" + ob[name] + "\n"
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		pass_count = 0
+		for i in range(99999):
+			name = "LocalBoneData:" + str(i)
+			if name in ob.keys():
+				output_text = output_text + "LocalBoneData:" + ob[name] + "\n"
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		context.window_manager.clipboard = output_text
+		self.report(type={'INFO'}, message="ボーン情報をクリップボードにコピーしました")
+		return {'FINISHED'}
+
+class paste_object_bone_data_property(bpy.types.Operator):
+	bl_idname = "object.paste_object_bone_data_property"
+	bl_label = "ボーン情報を貼り付け"
+	bl_description = "カスタムプロパティのボーン情報をクリップボードから貼り付けます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			clipboard = context.window_manager.clipboard
+			if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+				return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		pass_count = 0
+		for i in range(99999):
+			name = "BoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		pass_count = 0
+		for i in range(99999):
+			name = "LocalBoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		bone_data_count = 0
+		local_bone_data_count = 0
+		for line in context.window_manager.clipboard.split("\n"):
+			r = re.search('^BoneData:(.+)$', line)
+			if r:
+				if line.count(',') == 4:
+					info = r.groups()[0]
+					name = "BoneData:" + str(bone_data_count)
+					ob[name] = info
+					bone_data_count += 1
+			r = re.search('^LocalBoneData:(.+)$', line)
+			if r:
+				if line.count(',') == 1:
+					info = r.groups()[0]
+					name = "LocalBoneData:" + str(local_bone_data_count)
+					ob[name] = info
+					local_bone_data_count += 1
+		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
+		return {'FINISHED'}
+
+class copy_armature_bone_data_property(bpy.types.Operator):
+	bl_idname = "object.copy_armature_bone_data_property"
+	bl_label = "ボーン情報をコピー"
+	bl_description = "カスタムプロパティのボーン情報をクリップボードにコピーします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'ARMATURE':
+				arm = ob.data
+				if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+					return True
+		return False
+	
+	def execute(self, context):
+		output_text = ""
+		ob = context.active_object.data
+		pass_count = 0
+		for i in range(99999):
+			name = "BoneData:" + str(i)
+			if name in ob.keys():
+				output_text = output_text + "BoneData:" + ob[name] + "\n"
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		pass_count = 0
+		for i in range(99999):
+			name = "LocalBoneData:" + str(i)
+			if name in ob.keys():
+				output_text = output_text + "LocalBoneData:" + ob[name] + "\n"
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		context.window_manager.clipboard = output_text
+		self.report(type={'INFO'}, message="ボーン情報をクリップボードにコピーしました")
+		return {'FINISHED'}
+
+class paste_armature_bone_data_property(bpy.types.Operator):
+	bl_idname = "object.paste_armature_bone_data_property"
+	bl_label = "ボーン情報を貼り付け"
+	bl_description = "カスタムプロパティのボーン情報をクリップボードから貼り付けます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'ARMATURE':
+				clipboard = context.window_manager.clipboard
+				if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+					return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object.data
+		pass_count = 0
+		for i in range(99999):
+			name = "BoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		pass_count = 0
+		for i in range(99999):
+			name = "LocalBoneData:" + str(i)
+			if name in ob.keys():
+				del ob[name]
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		bone_data_count = 0
+		local_bone_data_count = 0
+		for line in context.window_manager.clipboard.split("\n"):
+			r = re.search('^BoneData:(.+)$', line)
+			if r:
+				if line.count(',') == 4:
+					info = r.groups()[0]
+					name = "BoneData:" + str(bone_data_count)
+					ob[name] = info
+					bone_data_count += 1
+			r = re.search('^LocalBoneData:(.+)$', line)
+			if r:
+				if line.count(',') == 1:
+					info = r.groups()[0]
+					name = "LocalBoneData:" + str(local_bone_data_count)
+					ob[name] = info
+					local_bone_data_count += 1
+		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
+		return {'FINISHED'}
+
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
@@ -794,6 +985,11 @@ def DATA_PT_context_arm(self, context):
 		arm = ob.data
 		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
 			self.layout.label(text="CM3D2用ボーン情報が存在", icon='CHECKBOX_HLT')
+		col = self.layout.column(align=True)
+		col.label(text="CM3D2用ボーン情報操作", icon='SPACE2')
+		row = col.row(align=True)
+		row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
+		row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
 
 # オブジェクトタブに項目追加
 def OBJECT_PT_context_object(self, context):
@@ -801,6 +997,12 @@ def OBJECT_PT_context_object(self, context):
 	if ob:
 		if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
 			self.layout.label(text="CM3D2用ボーン情報が存在", icon='CHECKBOX_HLT')
+	if ob.type == 'MESH':
+		col = self.layout.column(align=True)
+		col.label(text="CM3D2用ボーン情報操作", icon='SPACE2')
+		row = col.row(align=True)
+		row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
+		row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
