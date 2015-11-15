@@ -381,7 +381,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		bm.faces.ensure_lookup_table()
 		kd = mathutils.kdtree.KDTree(len(bm.verts))
 		for i, vert in enumerate(bm.verts):
-			kd.insert(vert.co.copy(), i)
+			kd.insert(source_ob.matrix_world * vert.co.copy(), i)
 		kd.balance()
 		is_first = True
 		for key_block in source_ob.data.shape_keys.key_blocks:
@@ -396,7 +396,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
 			is_shaped = False
 			for target_vert in target_ob.data.vertices:
-				co, index, dist = kd.find(target_vert.co)
+				co, index, dist = kd.find(target_ob.matrix_world * target_vert.co)
 				total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
 				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
 				if not is_shaped and 0.001 <= total_diff.length:
