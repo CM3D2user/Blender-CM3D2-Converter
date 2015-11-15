@@ -1019,18 +1019,22 @@ def DATA_PT_modifiers(self, context):
 def TEXT_HT_header(self, context):
 	texts = bpy.data.texts
 	text_keys = texts.keys()
+	self.layout.label(text="CM3D2用:", icon='SPACE2')
+	row = self.layout.row(align=True)
 	if 'BoneData' in text_keys:
-		self.layout.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData").name = 'BoneData'
+		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData").name = 'BoneData'
 	if 'LocalBoneData' in text_keys:
-		self.layout.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData").name = 'LocalBoneData'
+		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData").name = 'LocalBoneData'
 	if 'Material:0' in text_keys:
+		self.layout.label(text="", icon='MATERIAL_DATA')
 		row = self.layout.row(align=True)
-		row.label(text="CM3D2用マテリアル", icon='MATERIAL_DATA')
 		pass_count = 0
 		for i in range(99):
 			name = "Material:" + str(i)
 			if name in text_keys:
-				row.operator(show_text.bl_idname, text=str(i)).name = name
+				sub_row = row.row(align=True)
+				sub_row.scale_x = 0.5
+				sub_row.operator(show_text.bl_idname, text=str(i)).name = name
 			else:
 				pass_count += 1
 			if 9 < pass_count:
