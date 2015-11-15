@@ -1,4 +1,4 @@
-import re, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request
+import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request
 
 def ArrangeName(name, flag=True):
 	if flag:

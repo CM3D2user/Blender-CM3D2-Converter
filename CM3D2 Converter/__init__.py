@@ -1,7 +1,5 @@
 ﻿# アドオンを読み込む時に最初にこのファイルが読み込まれます
 
-import os, sys
-
 # アドオン情報
 bl_info = {
 	"name" : "CM3D2 Converter",
