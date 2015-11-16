@@ -408,7 +408,8 @@ class import_cm3d2_model(bpy.types.Operator):
 					else:
 						ob.vertex_groups.remove(vg)
 			# UV作成
-			me.uv_textures.new("UVMap")
+			#me.uv_textures.new("UVMap")
+			bpy.ops.mesh.uv_texture_add()
 			bm = bmesh.new()
 			bm.from_mesh(me)
 			for face in bm.faces:
@@ -421,7 +422,8 @@ class import_cm3d2_model(bpy.types.Operator):
 			for data in misc_data:
 				if data['type'] == 'morph':
 					if morph_count == 0:
-						ob.shape_key_add(name="Basis", from_mix=False)
+						#ob.shape_key_add(name="Basis", from_mix=False)
+						bpy.ops.object.shape_key_add(from_mix=False)
 					shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
 					for vert in data['data']:
 						co = vert['co']
