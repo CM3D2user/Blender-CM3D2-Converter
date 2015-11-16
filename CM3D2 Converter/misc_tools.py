@@ -1111,8 +1111,8 @@ def DATA_PT_context_arm(self, context):
 			col = self.layout.column(align=True)
 			col.label(text="CM3D2用 ボーン名変換", icon='SPACE2')
 			row = col.row(align=True)
-			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender").restore = False
-			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2").restore = True
+			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER').restore = False
+			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2", icon='POSE_DATA').restore = True
 		arm = ob.data
 		col = self.layout.column(align=True)
 		row = col.row(align=True)
