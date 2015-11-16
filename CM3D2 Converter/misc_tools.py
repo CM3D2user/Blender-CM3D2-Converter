@@ -778,12 +778,12 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 			if convert_count == 0:
 				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 			else:
-				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+				self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をBlender用に変換しました")
 		else:
 			if convert_count == 0:
 				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 			else:
-				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をCM3D2用に戻しました")
+				self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をCM3D2用に戻しました")
 		return {'FINISHED'}
 
 class show_text(bpy.types.Operator):
