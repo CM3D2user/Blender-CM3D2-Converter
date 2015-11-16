@@ -64,18 +64,6 @@ class export_cm3d2_model(bpy.types.Operator):
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
 	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
 	
-	def draw(self, context):
-		self.layout.prop(self, 'scale')
-		self.layout.prop(self, 'is_backup', icon='FILE_BACKUP')
-		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
-		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
-		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
-		box = self.layout.box()
-		box.label("メッシュオプション")
-		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
-		box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
-		box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
-	
 	def invoke(self, context, event):
 		# データの成否チェック
 		ob = context.active_object
@@ -156,6 +144,21 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.scale = 1.0 / context.user_preferences.addons[__name__.split('.')[0]].preferences.scale
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
+	
+	def draw(self, context):
+		self.layout.prop(self, 'scale')
+		row = self.layout.row()
+		row.prop(self, 'is_backup', icon='FILE_BACKUP')
+		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
+			row.enabled = False
+		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
+		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
+		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
+		box = self.layout.box()
+		box.label("メッシュオプション")
+		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
+		box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
+		box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
