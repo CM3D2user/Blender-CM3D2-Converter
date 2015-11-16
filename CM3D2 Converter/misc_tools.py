@@ -1115,10 +1115,18 @@ def DATA_PT_context_arm(self, context):
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2").restore = True
 		arm = ob.data
 		col = self.layout.column(align=True)
+		row = col.row(align=True)
+		row.label(text="CM3D2用ボーン情報", icon='SPACE2')
+		sub_row = row.row()
+		sub_row.alignment = 'RIGHT'
 		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
-			col.label(text="CM3D2用ボーン情報 (○)", icon='SPACE2')
+			bone_data_count = 0
+			for key in arm.keys():
+				if re.search(r'^(Local)BoneData:\d+$', key):
+					bone_data_count += 1
+			sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
 		else:
-			col.label(text="CM3D2用ボーン情報 (×)", icon='SPACE2')
+			sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
 		row = col.row(align=True)
 		row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 		row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
@@ -1130,10 +1138,18 @@ def OBJECT_PT_context_object(self, context):
 	if ob:
 		if ob.type == 'MESH':
 			col = self.layout.column(align=True)
+			row = col.row(align=True)
+			row.label(text="CM3D2用ボーン情報", icon='SPACE2')
+			sub_row = row.row()
+			sub_row.alignment = 'RIGHT'
 			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
-				col.label(text="CM3D2用ボーン情報 (○)", icon='SPACE2')
+				bone_data_count = 0
+				for key in ob.keys():
+					if re.search(r'^(Local)BoneData:\d+$', key):
+						bone_data_count += 1
+				sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
 			else:
-				col.label(text="CM3D2用ボーン情報 (×)", icon='SPACE2')
+				sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
 			row = col.row(align=True)
 			row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 			row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
