@@ -417,15 +417,18 @@ class import_cm3d2_model(bpy.types.Operator):
 			bm.to_mesh(me)
 			bm.free()
 			# モーフ追加
-			ob.shape_key_add(name="Basis", from_mix=False)
+			morph_count = 0
 			for data in misc_data:
 				if data['type'] == 'morph':
+					if morph_count == 0:
+						ob.shape_key_add(name="Basis", from_mix=False)
 					shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
 					for vert in data['data']:
 						co = vert['co']
 						co.x = -co.x
 						co *= self.scale
 						shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + co
+					morph_count += 1
 			
 			# マテリアル追加
 			face_seek = 0
