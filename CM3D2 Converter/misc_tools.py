@@ -1122,7 +1122,7 @@ def DATA_PT_context_arm(self, context):
 		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
 			bone_data_count = 0
 			for key in arm.keys():
-				if re.search(r'^(Local)BoneData:\d+$', key):
+				if re.search(r'^(Local)?BoneData:\d+$', key):
 					bone_data_count += 1
 			sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
 		else:
@@ -1145,7 +1145,7 @@ def OBJECT_PT_context_object(self, context):
 			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
 				bone_data_count = 0
 				for key in ob.keys():
-					if re.search(r'^(Local)BoneData:\d+$', key):
+					if re.search(r'^(Local)?BoneData:\d+$', key):
 						bone_data_count += 1
 				sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
 			else:
