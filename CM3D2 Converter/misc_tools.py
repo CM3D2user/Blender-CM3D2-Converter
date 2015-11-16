@@ -1099,9 +1099,9 @@ def MATERIAL_PT_context_material(self, context):
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
 			box.label(text="CM3D2用", icon='SPACE2')
-			box.prop(mate, 'name', icon='MATERIAL', text="マテリアル名")
-			box.prop(mate, '["shader1"]', icon='SMOOTH', text="シェーダー1")
-			box.prop(mate, '["shader2"]', icon='POTATO', text="シェーダー2")
+			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
+			box.prop(mate, '["shader1"]', icon='MATERIAL', text="シェーダー1")
+			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
 
 # アーマチュアタブに項目追加
 def DATA_PT_context_arm(self, context):
