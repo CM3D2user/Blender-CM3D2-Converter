@@ -542,6 +542,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					elif tex_data['type'] == 'f':
 						txt.write("\t" + tex_data['name'] + "\n")
 						txt.write("\t" + str(tex_data['float']) + "\n")
+				txt.current_line_index = 0
 		
 		# ボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
@@ -573,6 +574,8 @@ class import_cm3d2_model(bpy.types.Operator):
 				ob["BoneData:" + str(i)] = s
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["BoneData:" + str(i)] = s
+		if self.is_bone_data_text:
+			txt.current_line_index = 0
 		
 		# ローカルボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
@@ -611,6 +614,8 @@ class import_cm3d2_model(bpy.types.Operator):
 				ob["LocalBoneData:" + str(i)] = s
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["LocalBoneData:" + str(i)] = s
+		if self.is_bone_data_text:
+			txt.current_line_index = 0
 		
 		return {'FINISHED'}
 
