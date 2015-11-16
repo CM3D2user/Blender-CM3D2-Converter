@@ -424,7 +424,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					if morph_count == 0:
 						#ob.shape_key_add(name="Basis", from_mix=False)
 						bpy.ops.object.shape_key_add(from_mix=False)
-						me.shape_keys.name = model_name1 + "." + model_name2 + ".key"
+						me.shape_keys.name = model_name1 + "." + model_name2 + ".shape_keys"
 					shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
 					for vert in data['data']:
 						co = vert['co']
