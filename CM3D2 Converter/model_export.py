@@ -1,4 +1,4 @@
-import bpy, re, os, struct, shutil, mathutils, bmesh
+import bpy, re, os, os.path, struct, shutil, mathutils, bmesh
 
 def ArrangeName(name, flag):
 	if flag:
@@ -554,6 +554,8 @@ class export_cm3d2_model(bpy.types.Operator):
 							path = img.filepath
 							path = path.replace('\\', '/')
 							path = re.sub(r'^[\/\.]*', "", path)
+							if not re.search(r'^assets/texture/', path, re.I):
+								path = "Assets/texture/texture/" + os.path.basename(path)
 							WriteStr(file, path)
 							col = tslot.color
 							file.write(struct.pack('<3f', col[0], col[1], col[2]))
