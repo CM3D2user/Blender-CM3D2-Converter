@@ -40,6 +40,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 			png_file.write(file.read(png_size))
 			png_file.close()
 			bpy.ops.image.open(filepath=png_path)
+			context.edit_image.name = os.path.basename(self.filepath)
 		else:
 			bpy.ops.image.open(filepath=self.filepath)
 		file.close()
