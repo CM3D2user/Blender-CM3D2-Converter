@@ -41,6 +41,15 @@ class export_cm3d2_tex(bpy.types.Operator):
 		if img.filepath:
 			self.filepath = img.filepath
 		else:
+			if not context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path:
+				try:
+					import winreg
+					with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+						path = winreg.QueryValueEx(key, 'InstallPath')[0]
+						path = os.path.join(path, 'GameData', '*.tex')
+						context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = path
+				except:
+					pass
 			head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path)
 			self.filepath = os.path.join(head, ArrangeName(img.name))
 		root, ext = os.path.splitext(self.filepath)
