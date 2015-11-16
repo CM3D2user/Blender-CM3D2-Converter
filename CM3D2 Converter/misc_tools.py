@@ -324,6 +324,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 	
 	def execute(self, context):
 		ob = context.active_object
+		convert_count = 0
 		for vg in ob.vertex_groups:
 			if not self.restore:
 				direction = re.search(r'[_ ]([rRlL])[_ ]', vg.name)
@@ -332,6 +333,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 					vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name) + "." + direction
 					self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
 					vg.name = vg_name
+					convert_count += 1
 			else:
 				if vg.name.count('*') == 1:
 					direction = re.search(r'\.([rRlL])$', vg.name)
@@ -341,6 +343,17 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 						vg_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', vg_name)
 						self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
 						vg.name = vg_name
+						convert_count += 1
+		if not self.restore:
+			if convert_count == 0:
+				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
+			else:
+				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+		else:
+			if convert_count == 0:
+				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
+			else:
+				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をCM3D2用に戻しました")
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -741,6 +754,7 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		arm = ob.data
+		convert_count = 0
 		for bone in arm.bones:
 			if not self.restore:
 				direction = re.search(r'[_ ]([rRlL])[_ ]', bone.name)
@@ -749,6 +763,7 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 					bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name) + "." + direction
 					self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
 					bone.name = bone_name
+					convert_count += 1
 			else:
 				if bone.name.count('*') == 1:
 					direction = re.search(r'\.([rRlL])$', bone.name)
@@ -758,6 +773,17 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 						bone_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', bone_name)
 						self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
 						bone.name = bone_name
+						convert_count += 1
+		if not self.restore:
+			if convert_count == 0:
+				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
+			else:
+				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+		else:
+			if convert_count == 0:
+				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
+			else:
+				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をCM3D2用に戻しました")
 		return {'FINISHED'}
 
 class show_text(bpy.types.Operator):
