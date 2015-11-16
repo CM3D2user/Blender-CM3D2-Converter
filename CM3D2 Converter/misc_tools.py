@@ -1224,8 +1224,8 @@ def TEXTURE_PT_context_texture(self, context):
 				if img.source == 'FILE':
 					box.prop(img, 'name', icon='IMAGE_DATA', text="テクスチャ名")
 					box.prop(img, 'filepath', text="テクスチャパス")
-				box.prop(tex_slot, 'color', text="")
-				box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度")
+				#box.prop(tex_slot, 'color', text="")
+				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度")
 	elif type == "col":
 		box.prop(tex_slot, 'color', text="")
 		box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度")
