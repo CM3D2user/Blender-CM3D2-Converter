@@ -331,7 +331,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 				if direction:
 					direction = direction.groups()[0]
 					vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name) + "." + direction
-					self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+					#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
 					vg.name = vg_name
 					convert_count += 1
 			else:
@@ -341,7 +341,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 						direction = direction.groups()[0]
 						vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
 						vg_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', vg_name)
-						self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+						#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
 						vg.name = vg_name
 						convert_count += 1
 		if not self.restore:
@@ -761,7 +761,7 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 				if direction:
 					direction = direction.groups()[0]
 					bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name) + "." + direction
-					self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+					#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
 					bone.name = bone_name
 					convert_count += 1
 			else:
@@ -771,7 +771,7 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 						direction = direction.groups()[0]
 						bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
 						bone_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', bone_name)
-						self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+						#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
 						bone.name = bone_name
 						convert_count += 1
 		if not self.restore:
