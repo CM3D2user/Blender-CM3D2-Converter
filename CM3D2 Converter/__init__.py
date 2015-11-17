@@ -45,9 +45,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
 	def draw(self, context):
-		self.layout.prop(self, 'scale', icon='MAN_SCALE')
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_MONKEY')
+		box.prop(self, 'scale', icon='MAN_SCALE')
 		box.prop(self, 'model_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'model_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
 		box = self.layout.box()
