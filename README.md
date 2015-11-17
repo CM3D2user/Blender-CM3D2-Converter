@@ -16,6 +16,7 @@
 　![有効化](http://i.imgur.com/6jmFWxQ.jpg)  
 　一度インストールしてしまえば、アドオン設定画面かヘルプメニューからアップデート可能です。  
 　![更新](http://i.imgur.com/3c0avlw.jpg)  
+　更新が気になる人は[RSS](https://github.com/CM3Duser/Blender-CM3D2-Converter/commits/master.atom)への登録もどうぞ。  
 
 ## 使い方 (How to Use)
 　.modelファイルは「model.arc」や「model2.arc」から[CM3D2 Tool](http://www.hongfire.com/forum/showthread.php/445616)等で取り出しておいて下さい。  
