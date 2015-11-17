@@ -127,7 +127,7 @@ class blur_vertex_group(bpy.types.Operator):
 		('ALL', "全て", "", 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
-	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	use_clean = bpy.props.BoolProperty(name="ウェイト0.0の頂点は頂点グループから除外", default=True)
 	
 	@classmethod
@@ -217,7 +217,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
 	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
-	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は頂点グループから除外", default=True)
 	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
 	
@@ -494,7 +494,7 @@ class blur_shape_key(bpy.types.Operator):
 		('ALL', "全て", "", 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
-	strength = bpy.props.IntProperty(name="処理回数", description="ぼかしの強度(回数)を設定します", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	strength = bpy.props.IntProperty(name="処理回数", description="ぼかしの強度(回数)を設定します", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	
 	@classmethod
 	def poll(cls, context):
@@ -562,7 +562,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
 	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
-	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
 	
 	@classmethod
