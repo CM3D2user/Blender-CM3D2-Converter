@@ -23,9 +23,9 @@ class import_cm3d2_tex(bpy.types.Operator):
 	
 	items = [
 		('PACK', "内部にパックする", "", 1),
-		('PNG', "変換してPNGを開く", "", 2),
+		('PNG', "PNGに変換してPNGを開く", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="", default='PNG')
+	mode = bpy.props.EnumProperty(items=items, name="展開方法", default='PNG')
 	
 	def invoke(self, context, event):
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path:
