@@ -28,6 +28,9 @@ class export_cm3d2_tex(bpy.types.Operator):
 	
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
+	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	path = bpy.props.StringProperty(name="パス", default="assets/texture/texture/*.png")
+	
 	@classmethod
 	def poll(cls, context):
 		img = context.edit_image
@@ -55,6 +58,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".tex"
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
+		self.path = "assets/texture/texture/" + os.path.basename(self.filepath)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -63,6 +67,8 @@ class export_cm3d2_tex(bpy.types.Operator):
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
 			row.enabled = False
+		self.layout.prop(self, 'version', icon='LINENUMBERS_ON')
+		self.layout.prop(self, 'path', icon='ANIM')
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = self.filepath
@@ -94,8 +100,8 @@ class export_cm3d2_tex(bpy.types.Operator):
 		# 本命ファイルに書き込み
 		file = open(self.filepath, 'wb')
 		WriteStr(file, 'CM3D2_TEX')
-		file.write(struct.pack('<i', 1000))
-		WriteStr(file, "assets/texture/texture/" + os.path.basename(self.filepath))
+		file.write(struct.pack('<i', self.version))
+		WriteStr(file, self.path)
 		file.write(struct.pack('<i', len(temp_data)))
 		file.write(temp_data)
 		file.close()
