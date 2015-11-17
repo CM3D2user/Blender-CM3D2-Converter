@@ -160,11 +160,15 @@ class blur_vertex_group(bpy.types.Operator):
 				target_weights.append(vg)
 		bm = bmesh.new()
 		bm.from_mesh(me)
+		context.window_manager.progress_begin(0, self.blur_count * len(target_weights) * len(bm.verts))
+		total_count = 0
 		for count in range(self.blur_count):
 			for vg in target_weights:
 				vg_index = vg.index
 				new_weights = []
 				for vert in bm.verts:
+					context.window_manager.progress_update(total_count)
+					total_count += 1
 					for group in me.vertices[vert.index].groups:
 						if (group.group == vg_index):
 							my_weight = group.weight
@@ -198,6 +202,7 @@ class blur_vertex_group(bpy.types.Operator):
 						vg.add([vert.index], weight, 'REPLACE')
 		bm.free()
 		bpy.ops.object.mode_set(mode=pre_mode)
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class radius_blur_vertex_group(bpy.types.Operator):
@@ -259,10 +264,14 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		for i, v in enumerate(me.vertices):
 			kd.insert(v.co, i)
 		kd.balance()
+		context.window_manager.progress_begin(0, self.blur_count * len(target_weights) * len(me.vertices))
+		total_count = 0
 		for count in range(self.blur_count):
 			for vg in target_weights:
 				new_weights = []
 				for vert in me.vertices:
+					total_count += 1
+					context.window_manager.progress_update(total_count)
 					for group in vert.groups:
 						if group.group == vg.index:
 							active_weight = group.weight
@@ -303,6 +312,7 @@ class radius_blur_vertex_group(bpy.types.Operator):
 					else:
 						vg.add([vert.index], weight, 'REPLACE')
 		bpy.ops.object.mode_set(mode=pre_mode)
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class convert_cm3d2_vertex_group_names(bpy.types.Operator):
@@ -516,6 +526,8 @@ class blur_shape_key(bpy.types.Operator):
 			target_shapes = []
 			for key_block in shape_keys.key_blocks:
 				target_shapes.append(key_block)
+		context.window_manager.progress_begin(0, len(bm.verts) * len(target_shapes) * self.strength)
+		total_count = 0
 		for i, vert in enumerate(bm.verts):
 			near_verts = []
 			for edge in vert.link_edges:
@@ -525,6 +537,8 @@ class blur_shape_key(bpy.types.Operator):
 						break
 			for shape in target_shapes:
 				for s in range(self.strength):
+					context.window_manager.progress_update(total_count)
+					total_count += 1
 					data = shape.data
 					average = mathutils.Vector((0, 0, 0))
 					for v in near_verts:
@@ -533,6 +547,7 @@ class blur_shape_key(bpy.types.Operator):
 					co = data[i].co - vert.co
 					data[i].co = ((co * 2) + average) / 3 + vert.co
 		bpy.ops.object.mode_set(mode=pre_mode)
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class radius_blur_shape_key(bpy.types.Operator):
@@ -593,11 +608,15 @@ class radius_blur_shape_key(bpy.types.Operator):
 		for i, v in enumerate(me.vertices):
 			kd.insert(v.co, i)
 		kd.balance()
+		context.window_manager.progress_begin(0, self.blur_count * len(target_shapes) * len(me.vertices))
+		total_count = 0
 		for count in range(self.blur_count):
 			for shape in target_shapes:
 				data = shape.data
 				new_co = []
 				for vert in me.vertices:
+					context.window_manager.progress_update(total_count)
+					total_count += 1
 					average_co = mathutils.Vector((0, 0, 0))
 					nears = kd.find_range(vert.co, radius)
 					nears_total = 0
@@ -617,6 +636,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 				for i, co in enumerate(new_co):
 					data[i].co = co.copy()
 		bpy.ops.object.mode_set(mode=pre_mode)
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class new_cm3d2(bpy.types.Operator):
