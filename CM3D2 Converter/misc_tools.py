@@ -804,6 +804,75 @@ class show_text(bpy.types.Operator):
 		context.space_data.text = bpy.data.texts[self.name]
 		return {'FINISHED'}
 
+class copy_text_bone_data(bpy.types.Operator):
+	bl_idname = "text.copy_text_bone_data"
+	bl_label = "テキストのボーン情報をコピー"
+	bl_description = "テキストのボーン情報をカスタムプロパティへ貼り付ける形にしてクリップボードにコピーします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		if 'BoneData' in context.blend_data.texts.keys():
+			if 'LocalBoneData' in context.blend_data.texts.keys():
+				return True
+		return False
+	
+	def execute(self, context):
+		output_text = ""
+		for line in context.blend_data.texts['BoneData'].as_string().split('\n'):
+			if not line:
+				continue
+			output_text = output_text + "BoneData:" + line + "\n"
+		for line in context.blend_data.texts['LocalBoneData'].as_string().split('\n'):
+			if not line:
+				continue
+			output_text = output_text + "LocalBoneData:" + line + "\n"
+		context.window_manager.clipboard = output_text
+		self.report(type={'INFO'}, message="ボーン情報をクリップボードにコピーしました")
+		return {'FINISHED'}
+
+class paste_text_bone_data(bpy.types.Operator):
+	bl_idname = "text.paste_text_bone_data"
+	bl_label = "テキストのボーン情報を貼り付け"
+	bl_description = "クリップボード内のボーン情報をテキストデータに貼り付けます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		clipboard = context.window_manager.clipboard
+		if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+			return True
+		return False
+	
+	def execute(self, context):
+		clipboard = context.window_manager.clipboard
+		if "BoneData" in context.blend_data.texts.keys():
+			bone_data_text = context.blend_data.texts["BoneData"]
+			bone_data_text.clear()
+		else:
+			bone_data_text = context.blend_data.texts.new("BoneData")
+		if "LocalBoneData" in context.blend_data.texts.keys():
+			local_bone_data_text = context.blend_data.texts["LocalBoneData"]
+			local_bone_data_text.clear()
+		else:
+			local_bone_data_text = context.blend_data.texts.new("LocalBoneData")
+		
+		for line in context.window_manager.clipboard.split("\n"):
+			r = re.search('^BoneData:(.+)$', line)
+			if r:
+				if line.count(',') == 4:
+					info = r.groups()[0]
+					bone_data_text.write(info + "\n")
+			r = re.search('^LocalBoneData:(.+)$', line)
+			if r:
+				if line.count(',') == 1:
+					info = r.groups()[0]
+					local_bone_data_text.write(info + "\n")
+		bone_data_text.current_line_index = 0
+		local_bone_data_text.current_line_index = 0
+		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
+		return {'FINISHED'}
+
 class show_apply_modifier_addon_web(bpy.types.Operator):
 	bl_idname = "object.show_apply_modifier_addon_web"
 	bl_label = "モディファイアを適用できない場合"
@@ -1202,6 +1271,9 @@ def TEXT_HT_header(self, context):
 		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData").name = 'BoneData'
 	if 'LocalBoneData' in text_keys:
 		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData").name = 'LocalBoneData'
+	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
+		row.operator(copy_text_bone_data.bl_idname, icon='COPYDOWN', text="")
+		row.operator(paste_text_bone_data.bl_idname, icon='PASTEDOWN', text="")
 	if 'Material:0' in text_keys:
 		self.layout.label(text="", icon='MATERIAL_DATA')
 		row = self.layout.row(align=True)
