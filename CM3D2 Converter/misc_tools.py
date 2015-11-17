@@ -8,7 +8,7 @@ def ArrangeName(name, flag=True):
 # アドオンアップデート処理
 class update_cm3d2_converter(bpy.types.Operator):
 	bl_idname = 'script.update_cm3d2_converter'
-	bl_label = "Blender-CM3D2-Converterを更新"
+	bl_label = "CM3D2 Converterを更新"
 	bl_description = "GitHubから最新版のBlender-CM3D2-Converterをダウンロードし上書きします、実行した後は再起動して下さい"
 	bl_options = {'REGISTER'}
 	
@@ -1288,3 +1288,21 @@ def TEXTURE_PT_context_texture(self, context):
 def INFO_MT_help(self, context):
 	self.layout.separator()
 	self.layout.operator(update_cm3d2_converter.bl_idname, icon='SPACE2')
+	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon='SPACE2')
+class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
+	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS"
+	bl_label = "CM3D2 Converter 更新情報"
+	
+	def draw(self, context):
+		try:
+			import re, urllib, urllib.request
+			response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/commits/master.atom")
+			html = response.read().decode('utf-8')
+			titles = re.findall(r'\<title\>[ 　\t\r\n]*([^ 　\t\<\>\r\n][^\<]*[^ 　\t\<\>\r\n])[ 　\t\r\n]*\<\/title\>', html)[1:]
+			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
+			for title, update in zip(titles, updates):
+				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
+				text = "(" + update + ") " + title
+				self.layout.label(text=text, icon='DOT')
+		except:
+			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')

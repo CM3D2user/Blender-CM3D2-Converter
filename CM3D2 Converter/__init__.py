@@ -55,7 +55,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.prop(self, 'tex_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'tex_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
-		self.layout.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
+		row = self.layout.row()
+		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
+		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
 
 # プラグインをインストールしたときの処理
 def register():
