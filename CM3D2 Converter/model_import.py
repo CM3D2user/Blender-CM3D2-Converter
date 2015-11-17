@@ -96,6 +96,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = self.filepath
+		context.window_manager.progress_begin(0, 100)
 		
 		file = open(self.filepath, 'rb')
 		
@@ -220,6 +221,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				break
 		
 		file.close()
+		context.window_manager.progress_update(1)
 		
 		try:
 			bpy.ops.object.mode_set(mode='OBJECT')
@@ -347,6 +349,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			arm_ob.show_x_ray = True
 			bpy.ops.object.mode_set(mode='OBJECT')
 			#arm_ob.scale *= self.scale
+		context.window_manager.progress_update(2)
 		
 		if self.is_mesh:
 			# メッシュ作成
@@ -384,6 +387,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					
 					break
 			#ob.scale *= self.scale
+			context.window_manager.progress_update(3)
 			
 			# 頂点グループ作成
 			for data in local_bone_data:
@@ -407,6 +411,8 @@ class import_cm3d2_model(bpy.types.Operator):
 						break
 					else:
 						ob.vertex_groups.remove(vg)
+			context.window_manager.progress_update(4)
+			
 			# UV作成
 			#me.uv_textures.new("UVMap")
 			bpy.ops.mesh.uv_texture_add()
@@ -417,6 +423,8 @@ class import_cm3d2_model(bpy.types.Operator):
 					loop[bm.loops.layers.uv.active].uv = vertex_data[loop.vert.index]['uv']
 			bm.to_mesh(me)
 			bm.free()
+			context.window_manager.progress_update(5)
+			
 			# モーフ追加
 			morph_count = 0
 			for data in misc_data:
@@ -432,6 +440,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						co *= self.scale
 						shape_key.data[vert['index']].co = shape_key.data[vert['index']].co + co
 					morph_count += 1
+			context.window_manager.progress_update(6)
 			
 			# マテリアル追加
 			face_seek = 0
@@ -480,6 +489,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.diffuse_color_factor = tex_data['float']
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
+			context.window_manager.progress_update(7)
 			
 			# メッシュ整頓
 			bpy.ops.object.mode_set(mode='EDIT')
@@ -509,6 +519,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				context.scene.objects.active = arm_ob
 				bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
 				context.scene.objects.active = ob
+		context.window_manager.progress_update(8)
 		
 		# マテリアル情報のテキスト埋め込み
 		if self.is_mate_data_text:
@@ -543,6 +554,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						txt.write("\t" + tex_data['name'] + "\n")
 						txt.write("\t" + str(tex_data['float']) + "\n")
 				txt.current_line_index = 0
+		context.window_manager.progress_update(9)
 		
 		# ボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
@@ -576,6 +588,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				arm["BoneData:" + str(i)] = s
 		if self.is_bone_data_text:
 			txt.current_line_index = 0
+		context.window_manager.progress_update(10)
 		
 		# ローカルボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
@@ -617,6 +630,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		if self.is_bone_data_text:
 			txt.current_line_index = 0
 		
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 # メニューを登録する関数
