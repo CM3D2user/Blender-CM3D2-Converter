@@ -162,6 +162,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
+		context.window_manager.progress_begin(0, 100)
 		
 		ob = context.active_object
 		me = ob.data
@@ -224,6 +225,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				if "Material:" + str(index) not in context.blend_data.texts.keys():
 					self.report(type={'ERROR'}, message="マテリアル情報元のテキストが足りません")
 					return {'CANCELLED'}
+		context.window_manager.progress_update(1)
 		
 		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
 		
@@ -298,6 +300,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		else:
 			self.report(type={'ERROR'}, message="オブジェクト名の後半は存在するボーン名にして下さい")
 			return {'CANCELLED'}
+		context.window_manager.progress_update(2)
 		
 		# LocalBoneData情報読み込み
 		local_bone_data = []
@@ -338,6 +341,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if len(local_bone_data) <= 0:
 			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」に有効なデータがありません")
 			return {'CANCELLED'}
+		context.window_manager.progress_update(3)
 		
 		# バックアップ
 		if self.is_backup and context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
@@ -366,6 +370,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		for bone in bone_data:
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
+		context.window_manager.progress_update(4)
 		
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
@@ -384,6 +389,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vert_uvs[-1].append(uv)
 					vert_iuv.append((vert.index, uv.x, uv.y))
 					vert_count += 1
+		context.window_manager.progress_update(5)
 		
 		file.write(struct.pack('<2i', vert_count, len(ob.material_slots)))
 		
@@ -404,6 +410,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				no = vert.normal.copy()
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
 				file.write(struct.pack('<2f', uv.x, uv.y))
+		context.window_manager.progress_update(6)
 		# ウェイト情報を書き出し
 		is_over_one = 0
 		is_under_one = 0
@@ -473,6 +480,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が%dつ見つかりました" % is_over_one)
 		if 1 <= is_under_one:
 			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が%dつ見つかりました" % is_under_one)
+		context.window_manager.progress_update(7)
 		
 		# 面情報を書き出し
 		error_face_count = 0
@@ -531,6 +539,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					file.write(struct.pack('<H', face))
 		if 1 <= error_face_count:
 			self.report(type={'INFO'}, message="多角ポリゴンが%dつ見つかりました、正常に出力できなかった可能性があります" % error_face_count)
+		context.window_manager.progress_update(8)
 		
 		# マテリアルを書き出し
 		file.write(struct.pack('<i', len(ob.material_slots)))
@@ -610,6 +619,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						seek += 2
 					seek += 1
 			WriteStr(file, 'end')
+		context.window_manager.progress_update(9)
 		
 		# モーフを書き出し
 		if me.shape_keys:
@@ -651,6 +661,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		WriteStr(file, 'end')
 		
 		file.close()
+		context.window_manager.progress_update(10)
 		return {'FINISHED'}
 
 # メニューを登録する関数
