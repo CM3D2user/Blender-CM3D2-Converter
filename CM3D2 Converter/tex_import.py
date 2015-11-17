@@ -1,4 +1,4 @@
-import bpy, struct, os.path
+import os, os.path, bpy, struct, os.path
 
 def ReadStr(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
@@ -21,6 +21,12 @@ class import_cm3d2_tex(bpy.types.Operator):
 	filename_ext = ".tex;.png"
 	filter_glob = bpy.props.StringProperty(default="*.tex;*.png", options={'HIDDEN'})
 	
+	items = [
+		('PACK', "内部にパックする", "", 1),
+		('PNG', "変換してPNGを開く", "", 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="", default='PNG')
+	
 	def invoke(self, context, event):
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path:
 			try:
@@ -35,6 +41,9 @@ class import_cm3d2_tex(bpy.types.Operator):
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
+	def draw(self, context):
+		self.layout.prop(self, 'mode', icon='FILESEL')
+	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path = self.filepath
 		file = open(self.filepath, 'rb')
@@ -45,14 +54,23 @@ class import_cm3d2_tex(bpy.types.Operator):
 			png_size = struct.unpack('<i', file.read(4))[0]
 			root, ext = os.path.splitext(self.filepath)
 			png_path = root + ".png"
+			is_png_overwrite = os.path.exists(png_path)
+			if self.mode == 'PACK' and is_png_overwrite:
+				png_path = png_path + ".temp.png"
 			png_file = open(png_path, 'wb')
 			png_file.write(file.read(png_size))
 			png_file.close()
 			bpy.ops.image.open(filepath=png_path)
-			context.edit_image.name = os.path.basename(self.filepath)
+			img = context.edit_image
+			img.name = os.path.basename(self.filepath)
 		else:
 			bpy.ops.image.open(filepath=self.filepath)
+			img = context.edit_image
 		file.close()
+		if self.mode == 'PACK':
+			img.pack(as_png=True)
+			if header_ext == 'CM3D2_TEX':
+				os.remove(png_path)
 		return {'FINISHED'}
 
 # メニューを登録する関数
