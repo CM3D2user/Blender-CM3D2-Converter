@@ -10,7 +10,7 @@ bl_info = {
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
 	"warning" : "",
 	"wiki_url" : "https://github.com/CM3Duser/Blender-CM3D2-Converter",
-	"tracker_url" : "http://jbbs.shitaraba.net/game/55179/",
+	"tracker_url" : "http://jbbs.shitaraba.net/bbs/subject.cgi/game/55179/?q=%A1%D6%A5%AB%A5%B9%A5%BF%A5%E0%A5%E1%A5%A4%A5%C93D2%A1%D7%B2%FE%C2%A4%A5%B9%A5%EC%A5%C3%A5%C9",
 	"category" : "Import-Export"
 }
 
