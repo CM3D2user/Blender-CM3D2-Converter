@@ -519,8 +519,8 @@ class import_cm3d2_model(bpy.types.Operator):
 					txt.clear()
 				else:
 					txt = context.blend_data.texts.new(txt_name)
-				txt.write("***\n")
-				txt.write("***\n")
+				txt.write("1000" + "\n")
+				txt.write(data['name1'].lower() + "\n")
 				txt.write(data['name1'] + "\n")
 				txt.write(data['name2'] + "\n")
 				txt.write(data['name3'] + "\n")
