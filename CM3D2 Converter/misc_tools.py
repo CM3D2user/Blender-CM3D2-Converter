@@ -1300,10 +1300,15 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			html = response.read().decode('utf-8')
 			titles = re.findall(r'\<title\>[ 　\t\r\n]*([^ 　\t\<\>\r\n][^\<]*[^ 　\t\<\>\r\n])[ 　\t\r\n]*\<\/title\>', html)[1:]
 			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
+			count = 0
 			for title, update in zip(titles, updates):
 				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
-				self.layout.label(text=text, icon='DOT')
+				icon = 'SPACE2'
+				if (count % 2):
+					icon = 'SPACE3'
+				self.layout.label(text=text, icon=icon)
+				count += 1
 		except:
 			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')
