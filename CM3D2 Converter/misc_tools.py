@@ -1295,12 +1295,13 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	
 	def draw(self, context):
 		try:
-			import re, urllib, urllib.request
+			import re, urllib, urllib.request, xml.sax.saxutils
 			response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/commits/master.atom")
 			html = response.read().decode('utf-8')
 			titles = re.findall(r'\<title\>[ 　\t\r\n]*([^ 　\t\<\>\r\n][^\<]*[^ 　\t\<\>\r\n])[ 　\t\r\n]*\<\/title\>', html)[1:]
 			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
 			for title, update in zip(titles, updates):
+				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
 				self.layout.label(text=text, icon='DOT')
