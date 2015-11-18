@@ -672,8 +672,10 @@ class new_cm3d2(bpy.types.Operator):
 		('TRANS', "透過", "", 2),
 		('HAIR', "髪", "", 3),
 		('MOZA', "モザイク", "", 4),
-		('Unlit/Texture', "Unlit/Texture", "", 5),
-		('Unlit/Transparent', "Unlit/Transparent", "", 6),
+		('Unlit/Texture', "発光", "", 5),
+		('Unlit/Transparent', "発光+透過", "", 6),
+		('CM3D2/Man', "ご主人様", "", 7),
+		('Diffuse', "リアル", "", 8),
 		]
 	type = bpy.props.EnumProperty(items=items, name="マテリアルのタイプ", default='COMMON')
 	
@@ -790,6 +792,20 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_Shininess", 1))
 			f_list.append(("_RimPower", 25))
 			f_list.append(("_RimShift", 0))
+		elif self.type == 'CM3D2/Man':
+			mate['shader1'] = 'CM3D2/Man'
+			mate['shader2'] = 'CM3D2__Man'
+			mate.use_shadeless = True
+			mate.use_transparency = True
+			mate.alpha = 0.5
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			f_list.append(("_FloatValue2", 0.5))
+			f_list.append(("_FloatValue3", 1))
+		elif self.type == 'Diffuse':
+			mate['shader1'] = 'Diffuse'
+			mate['shader2'] = 'Diffuse'
+			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			col_list.append(("_Color", (1, 1, 1, 1)))
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
