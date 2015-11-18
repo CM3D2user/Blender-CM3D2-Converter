@@ -1366,7 +1366,7 @@ def TEXTURE_PT_context_texture(self, context):
 	elif base_name == '_ShadowColor':
 		description = "影の色を指定、白色で無効。\n別の物体に遮られてできた「影」の色です。"
 	elif base_name == '_RimColor':
-		description = "リムライトの反射の色を指定。\nリムライトとは縁にできる光の反射のことです。"
+		description = "リムライトの色を指定。\nリムライトとは縁にできる光の反射のことです。"
 	elif base_name == '_OutlineColor':
 		description = "輪郭線の色を指定。\n面の色が単色の場合は、\nそれを少し暗くしたものを指定してもいいかも。"
 	elif base_name == '_Shininess':
@@ -1374,9 +1374,9 @@ def TEXTURE_PT_context_texture(self, context):
 	elif base_name == '_OutlineWidth':
 		description = "輪郭線の太さを指定。\n0.002は太め、0.001は細め。"
 	elif base_name == '_RimPower':
-		description = "リムライトの反射の強さを指定。\nこの値は1.0以上なことが多いです。\nこのアドオンではデフォルトは25としています。"
+		description = "リムライトの強さを指定。\nこの値は1.0以上なことが多いです。\nこのアドオンではデフォルトは25としています。"
 	elif base_name == '_RimShift':
-		description = "リムライトの反射の幅を指定。\n0.0～1.0で指定。0.5でもかなり強い。"
+		description = "リムライトの幅を指定。\n0.0～1.0で指定。0.5でもかなり強い。"
 	if description != "":
 		sub_box = box.box()
 		col = sub_box.column(align=True)
