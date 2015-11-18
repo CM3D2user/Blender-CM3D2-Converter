@@ -1407,7 +1407,38 @@ def MATERIAL_PT_context_material(self, context):
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
-			box.label(text="CM3D2用", icon='SPACE2')
+			row = box.row()
+			row.label(text="CM3D2用", icon='SPACE2')
+			
+			type_name = "不明"
+			if mate['shader1'] == 'CM3D2/Toony_Lighted':
+				type_name = "トゥーン"
+			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Hair':
+				type_name = "トゥーン 髪"
+			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Trans':
+				type_name = "トゥーン 透過"
+			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Trans_NoZ':
+				type_name = "トゥーン 透過 NoZ"
+			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Outline':
+				type_name = "トゥーン 輪郭線"
+			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Hair_Outline':
+				type_name = "トゥーン 輪郭線 髪"
+			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Outline_Trans':
+				type_name = "トゥーン 輪郭線 透過"
+			elif mate['shader1'] == 'CM3D2/Lighted_Trans':
+				type_name = "透過"
+			elif mate['shader1'] == 'Unlit/Texture':
+				type_name = "発光"
+			elif mate['shader1'] == 'Unlit/Transparent':
+				type_name = "発光 透過"
+			elif mate['shader1'] == 'CM3D2/Mosaic':
+				type_name = "モザイク"
+			elif mate['shader1'] == 'CM3D2/Man':
+				type_name = "ご主人様"
+			elif mate['shader1'] == 'Diffuse':
+				type_name = "リアル"
+			
+			row.label(text="種類: " + type_name, icon='ALIASED')
 			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
 			box.prop(mate, '["shader1"]', icon='MATERIAL', text="シェーダー1")
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
