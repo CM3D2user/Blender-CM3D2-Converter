@@ -1348,9 +1348,19 @@ def TEXT_HT_header(self, context):
 	self.layout.label(text="CM3D2用:", icon='SPACE2')
 	row = self.layout.row(align=True)
 	if 'BoneData' in text_keys:
-		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData").name = 'BoneData'
+		txt = bpy.data.texts['BoneData']
+		line_count = 0
+		for line in txt.as_string().split('\n'):
+			if line:
+				line_count += 1
+		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData (" + str(line_count) + "行)").name = 'BoneData'
 	if 'LocalBoneData' in text_keys:
-		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData").name = 'LocalBoneData'
+		txt = bpy.data.texts['LocalBoneData']
+		line_count = 0
+		for line in txt.as_string().split('\n'):
+			if line:
+				line_count += 1
+		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData (" + str(line_count) + "行)").name = 'LocalBoneData'
 	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
 		row.operator(copy_text_bone_data.bl_idname, icon='COPYDOWN', text="")
 		row.operator(paste_text_bone_data.bl_idname, icon='PASTEDOWN', text="")
