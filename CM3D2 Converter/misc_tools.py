@@ -450,6 +450,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				count += 1
 			if not is_shaped and self.remove_empty_shape:
 				target_ob.shape_key_remove(target_shape)
+		target_ob.active_shape_key_index = 0
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 

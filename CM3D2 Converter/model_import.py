@@ -372,6 +372,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
+			context.window_manager.progress_update(3.5)
 			# オブジェクト変形
 			for bone in bone_data:
 				if bone['name'] == model_name2:
