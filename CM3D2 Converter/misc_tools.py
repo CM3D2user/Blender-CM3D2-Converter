@@ -317,11 +317,9 @@ class radius_blur_vertex_group(bpy.types.Operator):
 
 class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 	bl_idname = "object.convert_cm3d2_vertex_group_names"
-	bl_label = "頂点グループ名をCM3D2用←→Blender用に変換"
-	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)をBlenderで左右対称編集できるように相互変換します"
+	bl_label = "頂点グループ名をCM3D2用→Blender用に変換"
+	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)をBlenderで左右対称編集できるように変換します"
 	bl_options = {'REGISTER', 'UNDO'}
-	
-	restore = bpy.props.BoolProperty(name="復元", default=False)
 	
 	@classmethod
 	def poll(cls, context):
@@ -329,41 +327,63 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 		if ob:
 			if ob.type == 'MESH':
 				if ob.vertex_groups.active:
-					return True
+					for vg in ob.vertex_groups:
+						if re.search(r'[_ ]([rRlL])[_ ]', vg.name):
+							return True
 		return False
 	
 	def execute(self, context):
 		ob = context.active_object
 		convert_count = 0
 		for vg in ob.vertex_groups:
-			if not self.restore:
-				direction = re.search(r'[_ ]([rRlL])[_ ]', vg.name)
+			direction = re.search(r'[_ ]([rRlL])[_ ]', vg.name)
+			if direction:
+				direction = direction.groups()[0]
+				vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name) + "." + direction
+				#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+				vg.name = vg_name
+				convert_count += 1
+		if convert_count == 0:
+			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
+		else:
+			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+		return {'FINISHED'}
+
+class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
+	bl_idname = "object.convert_cm3d2_vertex_group_names_restore"
+	bl_label = "頂点グループ名をBlender用→CM3D2用に変換"
+	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)に戻します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				if ob.vertex_groups.active:
+					for vg in ob.vertex_groups:
+						if vg.name.count('*') == 1:
+							if re.search(r'\.([rRlL])$', vg.name):
+								return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		convert_count = 0
+		for vg in ob.vertex_groups:
+			if vg.name.count('*') == 1:
+				direction = re.search(r'\.([rRlL])$', vg.name)
 				if direction:
 					direction = direction.groups()[0]
-					vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name) + "." + direction
+					vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
+					vg_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', vg_name)
 					#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
 					vg.name = vg_name
 					convert_count += 1
-			else:
-				if vg.name.count('*') == 1:
-					direction = re.search(r'\.([rRlL])$', vg.name)
-					if direction:
-						direction = direction.groups()[0]
-						vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
-						vg_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', vg_name)
-						#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
-						vg.name = vg_name
-						convert_count += 1
-		if not self.restore:
-			if convert_count == 0:
-				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
-			else:
-				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+		if convert_count == 0:
+			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			if convert_count == 0:
-				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
-			else:
-				self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をCM3D2用に戻しました")
+			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をCM3D2用に戻しました")
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
@@ -762,18 +782,19 @@ class new_cm3d2(bpy.types.Operator):
 
 class convert_cm3d2_bone_names(bpy.types.Operator):
 	bl_idname = "armature.convert_cm3d2_bone_names"
-	bl_label = "ボーン名をCM3D2用←→Blender用に変換"
-	bl_description = "CM3D2で使われてるボーン名をBlenderで左右対称編集できるように相互変換します"
+	bl_label = "ボーン名をCM3D2用→Blender用に変換"
+	bl_description = "CM3D2で使われてるボーン名をBlenderで左右対称編集できるように変換します"
 	bl_options = {'REGISTER', 'UNDO'}
-	
-	restore = bpy.props.BoolProperty(name="復元", default=False)
 	
 	@classmethod
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
 			if ob.type == 'ARMATURE':
-				return True
+				arm = ob.data
+				for bone in arm.bones:
+					if re.search(r'[_ ]([rRlL])[_ ]', bone.name):
+						return True
 		return False
 	
 	def execute(self, context):
@@ -781,34 +802,55 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 		arm = ob.data
 		convert_count = 0
 		for bone in arm.bones:
-			if not self.restore:
-				direction = re.search(r'[_ ]([rRlL])[_ ]', bone.name)
+			direction = re.search(r'[_ ]([rRlL])[_ ]', bone.name)
+			if direction:
+				direction = direction.groups()[0]
+				bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name) + "." + direction
+				#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+				bone.name = bone_name
+				convert_count += 1
+		if convert_count == 0:
+			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
+		else:
+			self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をBlender用に変換しました")
+		return {'FINISHED'}
+
+class convert_cm3d2_bone_names_restore(bpy.types.Operator):
+	bl_idname = "armature.convert_cm3d2_bone_names_restore"
+	bl_label = "ボーン名をBlender用→CM3D2用に変換"
+	bl_description = "CM3D2で使われてるボーン名に元に戻します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'ARMATURE':
+				arm = ob.data
+				for bone in arm.bones:
+					if bone.name.count('*') == 1:
+						if re.search(r'\.([rRlL])$', bone.name):
+							return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		arm = ob.data
+		convert_count = 0
+		for bone in arm.bones:
+			if bone.name.count('*') == 1:
+				direction = re.search(r'\.([rRlL])$', bone.name)
 				if direction:
 					direction = direction.groups()[0]
-					bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name) + "." + direction
+					bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
+					bone_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', bone_name)
 					#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
 					bone.name = bone_name
 					convert_count += 1
-			else:
-				if bone.name.count('*') == 1:
-					direction = re.search(r'\.([rRlL])$', bone.name)
-					if direction:
-						direction = direction.groups()[0]
-						bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
-						bone_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', bone_name)
-						#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
-						bone.name = bone_name
-						convert_count += 1
-		if not self.restore:
-			if convert_count == 0:
-				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
-			else:
-				self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をBlender用に変換しました")
+		if convert_count == 0:
+			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			if convert_count == 0:
-				self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
-			else:
-				self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をCM3D2用に戻しました")
+			self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をCM3D2用に戻しました")
 		return {'FINISHED'}
 
 class show_text(bpy.types.Operator):
@@ -1197,8 +1239,8 @@ def MESH_MT_vertex_group_specials(self, context):
 	self.layout.operator(blur_vertex_group.bl_idname, icon='SPACE2')
 	self.layout.operator(radius_blur_vertex_group.bl_idname, icon='SPACE2')
 	self.layout.separator()
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を CM3D2 → Blender").restore = False
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を Blender → CM3D2").restore = True
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を CM3D2 → Blender")
+	self.layout.operator(convert_cm3d2_vertex_group_names_restore.bl_idname, icon='SPACE2', text="頂点グループ名を Blender → CM3D2")
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
@@ -1231,8 +1273,8 @@ def DATA_PT_context_arm(self, context):
 			col = self.layout.column(align=True)
 			col.label(text="CM3D2用 ボーン名変換", icon='SPACE2')
 			row = col.row(align=True)
-			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER').restore = False
-			row.operator(convert_cm3d2_bone_names.bl_idname, text="Blender → CM3D2", icon='POSE_DATA').restore = True
+			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER')
+			row.operator(convert_cm3d2_bone_names_restore.bl_idname, text="Blender → CM3D2", icon='POSE_DATA')
 		arm = ob.data
 		col = self.layout.column(align=True)
 		row = col.row(align=True)
