@@ -114,6 +114,7 @@ class vertex_group_transfer(bpy.types.Operator):
 						pass
 				else:
 					obj.vertex_groups.remove(vg)
+		context.active_object.vertex_groups.active_index = 0
 		return {'FINISHED'}
 
 class blur_vertex_group(bpy.types.Operator):
