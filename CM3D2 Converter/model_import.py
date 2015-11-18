@@ -97,6 +97,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = self.filepath
 		context.window_manager.progress_begin(0, 100)
+		context.window_manager.progress_update(0)
 		
 		file = open(self.filepath, 'rb')
 		
@@ -106,10 +107,12 @@ class import_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="これはカスタムメイド3D2のモデルファイルではありません")
 			return {'CANCELLED'}
 		struct.unpack('<i', file.read(4))[0]
+		context.window_manager.progress_update(0.1)
 		
 		# 何で名前2つあるの？
 		model_name1 = ReadStr(file)
 		model_name2 = ReadStr(file)
+		context.window_manager.progress_update(0.2)
 		
 		# ボーン情報読み込み
 		bone_data = []
@@ -132,6 +135,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			x, y, z = struct.unpack('<3f', file.read(3*4))
 			w = struct.unpack('<f', file.read(4))[0]
 			bone_data[i]['rot'] = mathutils.Quaternion((w, x, y, z))
+		context.window_manager.progress_update(0.3)
 		
 		vertex_count, mesh_count, local_bone_count = struct.unpack('<3i', file.read(3*4))
 		
@@ -146,6 +150,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			row2 = struct.unpack('<4f', file.read(4*4))
 			row3 = struct.unpack('<4f', file.read(4*4))
 			local_bone_data[i]['matrix'] = mathutils.Matrix([row0, row1, row2, row3])
+		context.window_manager.progress_update(0.4)
 		
 		# 頂点情報読み込み
 		vertex_data = []
@@ -164,6 +169,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				vertex_data[i]['weights'][j]['name'] = local_bone_data[vertex_data[i]['weights'][j]['index']]['name']
 			for j in range(4):
 				vertex_data[i]['weights'][j]['value'] = struct.unpack('<f', file.read(4))[0]
+		context.window_manager.progress_update(0.5)
 		
 		# 面情報読み込み
 		face_data = []
@@ -172,6 +178,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			face_count = int( struct.unpack('<i', file.read(4))[0] / 3 )
 			for j in range(face_count):
 				face_data[i].append(struct.unpack('<3h', file.read(3*2)))
+		context.window_manager.progress_update(0.6)
 		
 		# マテリアル情報読み込み
 		material_data = []
@@ -202,6 +209,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					material_data[i]['data'][-1]['float'] = struct.unpack('<f', file.read(4))[0]
 				else:
 					break
+		context.window_manager.progress_update(0.7)
 		
 		# その他情報読み込み
 		misc_data = []
@@ -260,6 +268,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.layers[0] = False
 				else:
 					child_data.append(data)
+			context.window_manager.progress_update(1.1)
 			
 			for i in range(9**9):
 				if len(child_data) <= 0:
@@ -305,6 +314,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.layers[0] = False
 				else:
 					child_data.append(data)
+			context.window_manager.progress_update(1.2)
 			
 			# ボーン整頓
 			if self.is_armature_arrange:
@@ -314,6 +324,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					if 1 == len(bone.children):
 						bone.tail = bone.children[0].head
 						has_child.append(bone.name)
+			context.window_manager.progress_update(1.3)
 			
 			# 一部ボーン削除
 			if self.is_armature_clean:
@@ -324,6 +335,7 @@ class import_cm3d2_model(bpy.types.Operator):
 							break
 					else:
 						arm.edit_bones.remove(bone)
+			context.window_manager.progress_update(1.4)
 			
 			# ボーン整頓
 			if self.is_armature_arrange:
@@ -343,6 +355,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						if bone.parent:
 							v = bone.parent.tail - bone.parent.head
 							bone.tail = bone.head + (v * 0.75)
+			context.window_manager.progress_update(1.5)
 			
 			arm.layers[16] = True
 			arm.draw_type = 'STICK'
@@ -363,8 +376,10 @@ class import_cm3d2_model(bpy.types.Operator):
 				co[1] *= self.scale
 				co[2] *= self.scale
 				verts.append(co)
+			context.window_manager.progress_update(2.1)
 			for data in face_data:
 				faces.extend(data)
+			context.window_manager.progress_update(2.2)
 			me.from_pydata(verts, [], faces)
 			# オブジェクト化
 			ob = context.blend_data.objects.new(model_name1 + "." + model_name2, me)
@@ -372,7 +387,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
-			context.window_manager.progress_update(3.5)
+			context.window_manager.progress_update(2.3)
 			# オブジェクト変形
 			for bone in bone_data:
 				if bone['name'] == model_name2:
@@ -394,11 +409,13 @@ class import_cm3d2_model(bpy.types.Operator):
 			# 頂点グループ作成
 			for data in local_bone_data:
 				ob.vertex_groups.new(ConvertBoneName(data['name'], self.is_convert_vertex_group_names))
+			context.window_manager.progress_update(3.1)
 			for vert_index, data in enumerate(vertex_data):
 				for weight in data['weights']:
 					if 0.0 < weight['value']:
 						vertex_group = ob.vertex_groups[ConvertBoneName(weight['name'], self.is_convert_vertex_group_names)]
 						vertex_group.add([vert_index], weight['value'], 'REPLACE')
+			context.window_manager.progress_update(3.2)
 			if self.is_vertex_group_sort:
 				bpy.ops.object.vertex_group_sort(sort_type='NAME')
 			if self.is_remove_empty_vertex_group:

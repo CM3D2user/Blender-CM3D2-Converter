@@ -180,6 +180,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
 		context.window_manager.progress_begin(0, 100)
+		context.window_manager.progress_update(0)
 		
 		ob = context.active_object
 		me = ob.data
@@ -382,8 +383,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		for bone in bone_data:
 			WriteStr(file, bone['name'])
 			file.write(struct.pack('<b', bone['unknown']))
+		context.window_manager.progress_update(3.1)
 		for bone in bone_data:
 			file.write(struct.pack('<i', bone['parent_index']))
+		context.window_manager.progress_update(3.2)
 		for bone in bone_data:
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
@@ -414,9 +417,11 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.write(struct.pack('<i', len(local_bone_data)))
 		for bone in local_bone_data:
 			WriteStr(file, bone['name'])
+		context.window_manager.progress_update(5.1)
 		for bone in local_bone_data:
 			for f in bone['matrix']:
 				file.write(struct.pack('<f', f))
+		context.window_manager.progress_update(5.2)
 		
 		# 頂点情報を書き出し
 		for i, vert in enumerate(bm.verts):
@@ -432,8 +437,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		is_over_one = 0
 		is_under_one = 0
 		file.write(struct.pack('<i', 0))
+		progress_plus_value = 1.0 / len(me.vertices)
+		progress_count = 6.0
 		for vert in me.vertices:
 			for uv in vert_uvs[vert.index]:
+				progress_count += progress_plus_value
+				context.window_manager.progress_update(progress_count)
 				vgs = []
 				for vg in vert.groups:
 					name = ConvertBoneName(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
@@ -501,11 +510,15 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# 面情報を書き出し
 		error_face_count = 0
+		progress_plus_value = 1.0 / (len(ob.material_slots) * len(bm.faces))
+		progress_count = 7.0
 		for mate_index, slot in enumerate(ob.material_slots):
 			face_count = 0
 			faces = []
 			faces2 = []
 			for face in bm.faces:
+				progress_count += progress_plus_value
+				context.window_manager.progress_update(progress_count)
 				if face.material_index != mate_index:
 					continue
 				if len(face.verts) == 3:
