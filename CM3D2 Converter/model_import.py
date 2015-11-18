@@ -347,6 +347,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			arm.layers[16] = True
 			arm.draw_type = 'STICK'
 			arm_ob.show_x_ray = True
+			bpy.ops.armature.select_all(action='DESELECT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			#arm_ob.scale *= self.scale
 		context.window_manager.progress_update(2)
@@ -411,6 +412,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						break
 					else:
 						ob.vertex_groups.remove(vg)
+			ob.vertex_groups.active_index = 0
 			context.window_manager.progress_update(4)
 			
 			# UV作成
@@ -489,6 +491,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.diffuse_color_factor = tex_data['float']
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
+			ob.active_material_index = 0
 			context.window_manager.progress_update(7)
 			
 			# メッシュ整頓
@@ -512,6 +515,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				bpy.ops.mesh.select_all(action='SELECT')
 				bpy.ops.uv.seams_from_islands()
 				bpy.ops.object.mode_set(mode='OBJECT')
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.mesh.select_all(action='DESELECT')
+			bpy.ops.object.mode_set(mode='OBJECT')
 			
 			if self.is_armature:
 				mod = ob.modifiers.new("Armature", 'ARMATURE')
