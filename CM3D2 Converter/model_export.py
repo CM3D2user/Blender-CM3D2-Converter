@@ -45,6 +45,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
+	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
 	model_name = bpy.props.StringProperty(name="model名", default="*")
 	base_bone_name = bpy.props.StringProperty(name="基点ボーン名", default="*")
 	
@@ -161,16 +162,20 @@ class export_cm3d2_model(bpy.types.Operator):
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
 			row.enabled = False
-		self.layout.prop(self, 'model_name', icon='SORTALPHA')
-		self.layout.prop(self, 'base_bone_name', icon='CONSTRAINT_BONE')
-		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
-		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
+		box = self.layout.box()
+		box.prop(self, 'version', icon='LINENUMBERS_ON')
+		box.prop(self, 'model_name', icon='SORTALPHA')
+		box.prop(self, 'base_bone_name', icon='CONSTRAINT_BONE')
+		box = self.layout.box()
+		box.prop(self, 'bone_info_mode', icon='BONE_DATA')
+		box.prop(self, 'mate_info_mode', icon='MATERIAL')
 		box = self.layout.box()
 		box.label("メッシュオプション")
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
-		box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
-		box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
+		sub_box = box.box()
+		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
+		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
@@ -367,7 +372,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		file = open(self.filepath, 'wb')
 		
 		WriteStr(file, 'CM3D2_MESH')
-		file.write(struct.pack('<i', 1000))
+		file.write(struct.pack('<i', self.version))
 		
 		WriteStr(file, ob_names[0])
 		WriteStr(file, ob_names[1])
