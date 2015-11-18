@@ -77,7 +77,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if ob.type != 'MESH':
 			self.report(type={'ERROR'}, message="メッシュオブジェクトを選択した状態で実行してください")
 			return {'CANCELLED'}
-		if not ob.active_material:
+		if not len(ob.material_slots):
 			self.report(type={'ERROR'}, message="マテリアルがありません")
 			return {'CANCELLED'}
 		for slot in ob.material_slots:
@@ -87,7 +87,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			try:
 				slot.material['shader1']
 				slot.material['shader2']
-			except KeyError:
+			except:
 				self.report(type={'ERROR'}, message="マテリアルに「shader1」と「shader2」という名前のカスタムプロパティを用意してください")
 				return {'CANCELLED'}
 		me = ob.data
