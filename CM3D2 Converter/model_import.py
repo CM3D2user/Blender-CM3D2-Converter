@@ -502,11 +502,17 @@ class import_cm3d2_model(bpy.types.Operator):
 			bpy.ops.object.mode_set(mode='OBJECT')
 			if self.is_remove_doubles:
 				comparison_data = []
+				progress_plus_value = 1.0 / (len(vertex_data) + len(me.vertices))
+				progress_count = 7.0
 				for data in vertex_data:
 					comparison_data.append((data['co'], data['normal']))
+					progress_count += progress_plus_value
+					context.window_manager.progress_update(progress_count)
 				for i, vert in enumerate(me.vertices):
 					if 2 <= comparison_data.count(comparison_data[i]):
 						vert.select = True
+					progress_count += progress_plus_value
+					context.window_manager.progress_update(progress_count)
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
 				bpy.ops.object.mode_set(mode='OBJECT')
