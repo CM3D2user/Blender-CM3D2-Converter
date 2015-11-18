@@ -1435,7 +1435,7 @@ def INFO_MT_help(self, context):
 	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon='SPACE2')
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS"
-	bl_label = "CM3D2 Converterの更新履歴"
+	bl_label = "CM3D2 Converterの更新履歴 (取得に数秒)"
 	
 	def draw(self, context):
 		try:
