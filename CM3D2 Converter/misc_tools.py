@@ -1358,28 +1358,31 @@ def TEXTURE_PT_context_texture(self, context):
 	base_name = ArrangeName(tex.name)
 	description = ""
 	if base_name == '_MainTex':
-		description = "面の色を決定するテクスチャを指定"
+		description = "面の色を決定するテクスチャを指定。\n普段テスクチャと呼んでいるものは基本コレです。\nテクスチャパスは適当でも動いたりしますが、\nテクスチャ名はきちんと決めましょう。"
 	elif base_name == '_ShadowTex':
-		description = "陰部分の面の色を決定するテクスチャを指定"
+		description = "陰部分の面の色を決定するテクスチャを指定。\n「陰」とは光の当たる面の反対側のことで、\n別の物体に遮られてできるのは「影」とします。"
 	elif base_name == '_Color':
-		description = "面の色を指定"
+		description = "面の色を指定、白色で無効。\n_MainTexへ追加で色付けしたり、\n単色でよければここを設定しましょう。"
 	elif base_name == '_ShadowColor':
-		description = "影の色を指定"
+		description = "影の色を指定、白色で無効。\n別の物体に遮られてできた「影」の色です。"
 	elif base_name == '_RimColor':
-		description = "縁にできる光の反射の色を指定"
+		description = "リムライトの反射の色を指定。\nリムライトとは縁にできる光の反射のことです。"
 	elif base_name == '_OutlineColor':
-		description = "輪郭線の色を指定"
+		description = "輪郭線の色を指定。\n面の色が単色の場合は、\nそれを少し暗くしたものを指定してもいいかも。"
 	elif base_name == '_Shininess':
-		description = "スペキュラーの強さを指定"
+		description = "スペキュラーの強さを指定。\nスペキュラーとは面の角度と光源の角度によって\nできるハイライトのことです。\n金属、皮、ガラスなどに使うと良いでしょう。"
 	elif base_name == '_OutlineWidth':
-		description = "輪郭線の太さを指定"
+		description = "輪郭線の太さを指定。\n0.002は太め、0.001は細め。"
 	elif base_name == '_RimPower':
-		description = "縁にできる光の反射の強さを指定"
+		description = "リムライトの反射の強さを指定。\nこの値は1.0以上なことが多いです。\nこのアドオンではデフォルトは25としています。"
 	elif base_name == '_RimShift':
-		description = "縁にできる光の反射の幅を指定"
+		description = "リムライトの反射の幅を指定。\n0.0～1.0で指定。0.5でもかなり強い。"
 	if description != "":
 		sub_box = box.box()
-		sub_box.label(text=description, icon='TEXT')
+		col = sub_box.column(align=True)
+		col.label(text="解説", icon='TEXT')
+		for line in description.split('\n'):
+			col.label(text=line)
 
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
