@@ -672,6 +672,8 @@ class new_cm3d2(bpy.types.Operator):
 		('TRANS', "透過", "", 2),
 		('HAIR', "髪", "", 3),
 		('MOZA', "モザイク", "", 4),
+		('Unlit/Texture', "Unlit/Texture", "", 5),
+		('Unlit/Transparent', "Unlit/Transparent", "", 6),
 		]
 	type = bpy.props.EnumProperty(items=items, name="マテリアルのタイプ", default='COMMON')
 	
@@ -749,11 +751,45 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
 		elif self.type == 'MOZA':
-			mate.use_shadeless = True
 			mate['shader1'] = 'CM3D2/Mosaic'
 			mate['shader2'] = 'CM3D2__Mosaic'
+			mate.use_shadeless = True
 			tex_list.append(("_RenderTex", ""))
 			f_list.append(("_FloatValue1", 30))
+		elif self.type == 'Unlit/Texture':
+			mate['shader1'] = 'Unlit/Texture'
+			mate['shader2'] = 'Unlit__Texture'
+			mate.emit = 1.0
+			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
+			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
+			f_list.append(("_Shininess", 1))
+			f_list.append(("_OutlineWidth", 0.002))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
+		elif self.type == 'Unlit/Transparent':
+			mate['shader1'] = 'Unlit/Transparent'
+			mate['shader2'] = 'Unlit__Transparent'
+			mate.emit = 1.0
+			mate.use_transparency = True
+			mate.alpha = 0.5
+			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
+			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
+			f_list.append(("_Shininess", 1))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
