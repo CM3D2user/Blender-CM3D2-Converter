@@ -454,6 +454,12 @@ class import_cm3d2_model(bpy.types.Operator):
 				mate = context.blend_data.materials.new(data['name1'])
 				mate['shader1'] = data['name2']
 				mate['shader2'] = data['name3']
+				if data['name2'] == 'CM3D2/Toony_Lighted_Trans':
+					mate.use_transparency = True
+					mate.alpha = 0.5
+				elif data['name2'] == 'CM3D2/Mosaic':
+					mate.use_shadeless = True
+				mate.use_face_texture = True
 				ob.material_slots[-1].material = mate
 				# 面にマテリアル割り当て
 				for i in range(face_seek, face_seek + len(face_data[index])):
