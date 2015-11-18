@@ -45,6 +45,9 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
+	model_name = bpy.props.StringProperty(name="model名", default="*")
+	base_bone_name = bpy.props.StringProperty(name="基点ボーン名", default="*")
+	
 	items = [
 		('TEXT', "テキスト", "", 1),
 		('OBJECT', "オブジェクト内プロパティ", "", 2),
@@ -91,13 +94,20 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="UVがありません")
 			return {'CANCELLED'}
 		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
-		if len(ob_names) != 2:
-			self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
-			return {'CANCELLED'}
+		#if len(ob_names) != 2:
+		#	self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
+		#	return {'CANCELLED'}
 		for face in me.polygons:
 			if 5 <= len(face.vertices):
 				self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
 				return {'CANCELLED'}
+		
+		# model名とか
+		self.model_name = ob_names[0]
+		if 2 <= len(ob_names):
+			self.base_bone_name = ob_names[1]
+		else:
+			self.base_bone_name = 'body'
 		
 		# ボーン情報元のデフォルトオプションを取得
 		if self.bone_info_mode == 'OBJECT':
@@ -151,6 +161,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
 			row.enabled = False
+		self.layout.prop(self, 'model_name', icon='SORTALPHA')
+		self.layout.prop(self, 'base_bone_name', icon='CONSTRAINT_BONE')
 		self.layout.prop(self, 'bone_info_mode', icon='BONE_DATA')
 		self.layout.prop(self, 'mate_info_mode', icon='MATERIAL')
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
@@ -228,6 +240,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_update(1)
 		
 		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
+		ob_names = [self.model_name, self.base_bone_name]
 		
 		# BoneData情報読み込み
 		bone_data = []
@@ -356,7 +369,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		WriteStr(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', 1000))
 		
-		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
 		WriteStr(file, ob_names[0])
 		WriteStr(file, ob_names[1])
 		
