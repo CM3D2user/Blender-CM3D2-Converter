@@ -409,6 +409,9 @@ class export_cm3d2_model(bpy.types.Operator):
 					vert_uvs[-1].append(uv)
 					vert_iuv.append((vert.index, uv.x, uv.y))
 					vert_count += 1
+		if 65535 < vert_count:
+			self.report(type={'ERROR'}, message="頂点数が多過ぎます、中止します")
+			return {'CANCELLED'}
 		context.window_manager.progress_update(5)
 		
 		file.write(struct.pack('<2i', vert_count, len(ob.material_slots)))
@@ -453,7 +456,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					if 0.0 < weight:
 						vgs.append([name, weight])
 				if len(vgs) == 0:
-					self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、終了します")
+					self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、中止します")
 					return {'CANCELLED'}
 				vgs.sort(key=lambda vg: vg[1])
 				vgs.reverse()
