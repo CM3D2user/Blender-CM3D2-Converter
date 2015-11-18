@@ -1305,6 +1305,13 @@ def OBJECT_PT_context_object(self, context):
 	ob = context.active_object
 	if ob:
 		if ob.type == 'MESH':
+			row = self.layout.row(align=True)
+			if re.search(r'^[^\.]+\.[^\.]+$', ob.name):
+				name, base = ob.name.split('.')
+				row.label(text="model名: " + name, icon='SORTALPHA')
+				row.label(text="基点ボーン名: " + base, icon='CONSTRAINT_BONE')
+			else:
+				row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
 			col = self.layout.column(align=True)
 			row = col.row(align=True)
 			row.label(text="CM3D2用ボーン情報", icon='SPACE2')
