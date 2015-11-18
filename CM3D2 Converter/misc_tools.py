@@ -1407,7 +1407,7 @@ def MATERIAL_PT_context_material(self, context):
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
-			row = box.row()
+			row = box.split(percentage=0.3)
 			row.label(text="CM3D2用", icon='SPACE2')
 			
 			type_name = "不明"
