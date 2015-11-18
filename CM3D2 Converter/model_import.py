@@ -471,6 +471,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				mate = context.blend_data.materials.new(data['name1'])
 				mate['shader1'] = data['name2']
 				mate['shader2'] = data['name3']
+				mate.use_face_texture = True
 				
 				if '/Toony_' in data['name2']:
 					mate.diffuse_shader = 'TOON'
