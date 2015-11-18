@@ -410,7 +410,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vert_iuv.append((vert.index, uv.x, uv.y))
 					vert_count += 1
 		if 65535 < vert_count:
-			self.report(type={'ERROR'}, message="頂点数が多過ぎます、中止します")
+			self.report(type={'ERROR'}, message="頂点数が多過ぎます。多くても65535未満にして下さい、中止します")
 			return {'CANCELLED'}
 		context.window_manager.progress_update(5)
 		
