@@ -715,6 +715,8 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'TRANS':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans'
+			mate.use_transparency = True
+			mate.alpha = 0.5
 			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
 			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
@@ -746,6 +748,7 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
 		elif self.type == 'MOZA':
+			mate.use_shadeless = True
 			mate['shader1'] = 'CM3D2/Mosaic'
 			mate['shader2'] = 'CM3D2__Mosaic'
 			tex_list.append(("_RenderTex", ""))
