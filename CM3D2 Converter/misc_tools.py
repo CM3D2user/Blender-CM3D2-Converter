@@ -99,7 +99,7 @@ class vertex_group_transfer(bpy.types.Operator):
 			vert_mapping = 'POLYINTERP_NEAREST'
 		try:
 			bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=vert_mapping, layers_select_src='ALL', layers_select_dst='NAME')
-		except TypeError:
+		except:
 			bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping='NEAREST', layers_select_src='NAME', layers_select_dst='ALL')
 		if (self.vertex_group_clean):
 			bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0, keep_single=False)
