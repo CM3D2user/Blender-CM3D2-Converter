@@ -677,7 +677,7 @@ class new_cm3d2(bpy.types.Operator):
 		('CM3D2/Man', "ご主人様", "", 7),
 		('Diffuse', "リアル", "", 8),
 		]
-	type = bpy.props.EnumProperty(items=items, name="マテリアルのタイプ", default='COMMON')
+	type = bpy.props.EnumProperty(items=items, name="種類", default='COMMON')
 	
 	@classmethod
 	def poll(cls, context):
