@@ -731,7 +731,7 @@ class new_cm3d2(bpy.types.Operator):
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
 			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
 			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
-			tex_list.append(("_HiTex", ob_names[0] + "_s", r"Assets\texture\texture\***_s.png"))
+			tex_list.append(("_HiTex", ob_names[0] + "_s", "Assets\\texture\\texture\\" + ob_names[0] + "_s.png"))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
