@@ -706,7 +706,10 @@ class new_cm3d2(bpy.types.Operator):
 		context.material_slot.material = mate
 		tex_list, col_list, f_list = [], [], []
 		mate.use_face_texture = True
-		if self.type == 'CM3D2/Toony_Lighted_Outline':
+		
+		if False:
+			pass
+		elif self.type == 'CM3D2/Toony_Lighted_Outline':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline'
 			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
@@ -725,8 +728,6 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Toony_Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans'
-			mate.use_transparency = True
-			mate.alpha = 0.5
 			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
 			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
@@ -760,13 +761,11 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Mosaic':
 			mate['shader1'] = 'CM3D2/Mosaic'
 			mate['shader2'] = 'CM3D2__Mosaic'
-			mate.use_shadeless = True
 			tex_list.append(("_RenderTex", ""))
 			f_list.append(("_FloatValue1", 30))
 		elif self.type == 'Unlit/Texture':
 			mate['shader1'] = 'Unlit/Texture'
 			mate['shader2'] = 'Unlit__Texture'
-			mate.emit = 1.0
 			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
 			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
@@ -783,9 +782,6 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'Unlit/Transparent':
 			mate['shader1'] = 'Unlit/Transparent'
 			mate['shader2'] = 'Unlit__Transparent'
-			mate.emit = 1.0
-			mate.use_transparency = True
-			mate.alpha = 0.5
 			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
 			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
 			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
@@ -800,9 +796,6 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Man':
 			mate['shader1'] = 'CM3D2/Man'
 			mate['shader2'] = 'CM3D2__Man'
-			mate.use_shadeless = True
-			mate.use_transparency = True
-			mate.alpha = 0.5
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			f_list.append(("_FloatValue2", 0.5))
 			f_list.append(("_FloatValue3", 1))
@@ -882,6 +875,26 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_RimShift", 0))
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
+		
+		if '/Toony_' in self.type:
+			mate.diffuse_shader = 'TOON'
+			mate.diffuse_toon_smooth = 0.01
+			mate.diffuse_toon_size = 1
+		if 'Trans' in  self.type:
+			mate.use_transparency = True
+			mate.alpha = 0.5
+		if 'CM3D2/Man' in self.type:
+			mate.use_shadeless = True
+		if 'Unlit/' in self.type:
+			mate.emit = 0.5
+		if '_NoZ' in self.type:
+			mate.offset_z = 9999
+		if 'CM3D2/Mosaic' in self.type:
+			mate.use_transparency = True
+			mate.transparency_method = 'RAYTRACE'
+			mate.alpha = 0
+			mate.raytrace_transparency.ior = 2
+		
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
