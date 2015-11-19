@@ -683,6 +683,7 @@ class new_cm3d2(bpy.types.Operator):
 		('Diffuse', "リアル", "", 12),
 		]
 	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
+	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -696,6 +697,7 @@ class new_cm3d2(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'type')
+		self.layout.prop(self, 'is_decorate')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -876,24 +878,25 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
 		
-		if '/Toony_' in self.type:
-			mate.diffuse_shader = 'TOON'
-			mate.diffuse_toon_smooth = 0.01
-			mate.diffuse_toon_size = 1
-		if 'Trans' in  self.type:
-			mate.use_transparency = True
-			mate.alpha = 0.5
-		if 'CM3D2/Man' in self.type:
-			mate.use_shadeless = True
-		if 'Unlit/' in self.type:
-			mate.emit = 0.5
-		if '_NoZ' in self.type:
-			mate.offset_z = 9999
-		if 'CM3D2/Mosaic' in self.type:
-			mate.use_transparency = True
-			mate.transparency_method = 'RAYTRACE'
-			mate.alpha = 0
-			mate.raytrace_transparency.ior = 2
+		if self.is_decorate:
+			if '/Toony_' in self.type:
+				mate.diffuse_shader = 'TOON'
+				mate.diffuse_toon_smooth = 0.01
+				mate.diffuse_toon_size = 1
+			if 'Trans' in  self.type:
+				mate.use_transparency = True
+				mate.alpha = 0.5
+			if 'CM3D2/Man' in self.type:
+				mate.use_shadeless = True
+			if 'Unlit/' in self.type:
+				mate.emit = 0.5
+			if '_NoZ' in self.type:
+				mate.offset_z = 9999
+			if 'CM3D2/Mosaic' in self.type:
+				mate.use_transparency = True
+				mate.transparency_method = 'RAYTRACE'
+				mate.alpha = 0
+				mate.raytrace_transparency.ior = 2
 		
 		slot_count = 0
 		for data in tex_list:

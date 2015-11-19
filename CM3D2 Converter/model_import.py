@@ -38,6 +38,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_remove_empty_vertex_group = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True, description="全ての頂点に割り当てのない頂点グループを削除します")
 	
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
+	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
 	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
 	
 	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
@@ -80,6 +81,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.label("マテリアル")
 		sub_box.prop(self, 'is_mate_color', icon='COLOR')
+		sub_box.prop(self, 'is_decorate', icon='TEXTURE_SHADED')
 		sub_box.prop(self, 'is_mate_data_text', icon='TEXT')
 		box = self.layout.box()
 		box.prop(self, 'is_armature', icon='ARMATURE_DATA')
@@ -473,24 +475,25 @@ class import_cm3d2_model(bpy.types.Operator):
 				mate['shader2'] = data['name3']
 				#mate.use_face_texture = True
 				
-				if '/Toony_' in data['name2']:
-					mate.diffuse_shader = 'TOON'
-					mate.diffuse_toon_smooth = 0.01
-					mate.diffuse_toon_size = 1
-				if 'Trans' in  data['name2']:
-					mate.use_transparency = True
-					mate.alpha = 0.5
-				if 'CM3D2/Man' in data['name2']:
-					mate.use_shadeless = True
-				if 'Unlit/' in data['name2']:
-					mate.emit = 0.5
-				if '_NoZ' in data['name2']:
-					mate.offset_z = 9999
-				if 'CM3D2/Mosaic' in data['name2']:
-					mate.use_transparency = True
-					mate.transparency_method = 'RAYTRACE'
-					mate.alpha = 0
-					mate.raytrace_transparency.ior = 2
+				if self.is_decorate:
+					if '/Toony_' in data['name2']:
+						mate.diffuse_shader = 'TOON'
+						mate.diffuse_toon_smooth = 0.01
+						mate.diffuse_toon_size = 1
+					if 'Trans' in  data['name2']:
+						mate.use_transparency = True
+						mate.alpha = 0.5
+					if 'CM3D2/Man' in data['name2']:
+						mate.use_shadeless = True
+					if 'Unlit/' in data['name2']:
+						mate.emit = 0.5
+					if '_NoZ' in data['name2']:
+						mate.offset_z = 9999
+					if 'CM3D2/Mosaic' in data['name2']:
+						mate.use_transparency = True
+						mate.transparency_method = 'RAYTRACE'
+						mate.alpha = 0
+						mate.raytrace_transparency.ior = 2
 				
 				ob.material_slots[-1].material = mate
 				# 面にマテリアル割り当て
