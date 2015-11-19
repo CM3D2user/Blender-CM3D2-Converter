@@ -1,4 +1,4 @@
-import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request
+import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request, datetime
 
 def ArrangeName(name, flag=True):
 	if flag:
@@ -1653,12 +1653,25 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			count = 0
 			for title, update, link in zip(titles, updates, links):
 				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
+				
+				rss_datetime = datetime.datetime.strptime(update[:-6], '%Y-%m-%dT%H:%M:%S')
+				diff_seconds = datetime.datetime.now() - rss_datetime
+				icon = 'SORTTIME'
+				if 7 < diff_seconds.days:
+					icon = 'NLA'
+				elif 3 < diff_seconds.days:
+					icon = 'COLLAPSEMENU'
+				elif 1 <= diff_seconds.days:
+					icon = 'TIME'
+				elif diff_seconds.days == 0 and 60 * 60 < diff_seconds.seconds:
+					icon = 'RECOVER_LAST'
+				elif diff_seconds.seconds <= 60 * 60:
+					icon = 'PREVIEW_RANGE'
+				print(diff_seconds.days)
+				
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
-				icon = 'SPACE2'
-				if (count % 2):
-					icon = 'SPACE3'
 				self.layout.operator(open_url.bl_idname, text=text, icon=icon).url = link
 				count += 1
-		except:
+		except TypeError:
 			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')
