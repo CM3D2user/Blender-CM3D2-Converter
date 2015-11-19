@@ -19,14 +19,22 @@ if "bpy" in locals():
 	import imp
 	imp.reload(model_import)
 	imp.reload(model_export)
+	
 	imp.reload(tex_import)
 	imp.reload(tex_export)
+	
+	imp.reload(mate_export)
+	
 	imp.reload(misc_tools)
 else:
 	from . import model_import
 	from . import model_export
+	
 	from . import tex_import
 	from . import tex_export
+	
+	from . import mate_export
+	
 	from . import misc_tools
 import bpy
 
@@ -42,6 +50,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	tex_import_path = bpy.props.StringProperty(name="texインポート時のデフォルトパス", subtype='FILE_PATH', description="texインポート時に最初はここが表示されます、インポート毎に保存されます")
 	tex_export_path = bpy.props.StringProperty(name="texエクスポート時のデフォルトパス", subtype='FILE_PATH', description="texエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	mate_import_path = bpy.props.StringProperty(name="mateインポート時のデフォルトパス", subtype='FILE_PATH', description="mateインポート時に最初はここが表示されます、インポート毎に保存されます")
+	mate_export_path = bpy.props.StringProperty(name="mateエクスポート時のデフォルトパス", subtype='FILE_PATH', description="mateエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
+	
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
 	def draw(self, context):
@@ -54,6 +65,10 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.label(text="texファイル", icon='FILE_IMAGE')
 		box.prop(self, 'tex_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'tex_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box = self.layout.box()
+		box.label(text="mateファイル", icon='MATERIAL')
+		box.prop(self, 'mate_import_path', icon='IMPORT', text="インポート時デフォルトパス")
+		box.prop(self, 'mate_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
@@ -65,8 +80,11 @@ def register():
 	
 	bpy.types.INFO_MT_file_import.append(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
+	
 	bpy.types.IMAGE_MT_image.append(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.append(tex_export.menu_func)
+	
+	bpy.types.TEXT_MT_text.append(mate_export.TEXT_MT_text)
 	
 	bpy.types.INFO_MT_help.append(misc_tools.INFO_MT_help)
 	bpy.types.MESH_MT_vertex_group_specials.append(misc_tools.MESH_MT_vertex_group_specials)
@@ -84,8 +102,11 @@ def unregister():
 	
 	bpy.types.INFO_MT_file_import.remove(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.remove(model_export.menu_func)
+	
 	bpy.types.IMAGE_MT_image.remove(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.remove(tex_export.menu_func)
+	
+	bpy.types.TEXT_MT_text.remove(mate_export.TEXT_MT_text)
 	
 	bpy.types.INFO_MT_help.remove(misc_tools.INFO_MT_help)
 	bpy.types.MESH_MT_shape_key_specials.remove(misc_tools.MESH_MT_shape_key_specials)
