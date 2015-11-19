@@ -67,8 +67,7 @@ class text_save_mate(bpy.types.Operator):
 		try:
 			self.version = int(lines[0])
 		except:
-			self.report(type={'ERROR'}, message="バージョンの取得に失敗しました")
-			return {'CANCELLED'}
+			self.version = 1000
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
