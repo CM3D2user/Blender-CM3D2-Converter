@@ -1667,7 +1667,6 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 					icon = 'RECOVER_LAST'
 				elif diff_seconds.seconds <= 60 * 60:
 					icon = 'PREVIEW_RANGE'
-				print(diff_seconds.days)
 				
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
