@@ -21,7 +21,7 @@ class text_import_mate(bpy.types.Operator):
 	filename_ext = ".mate"
 	filter_glob = bpy.props.StringProperty(default="*.mate", options={'HIDDEN'})
 	
-	is_overwrite = bpy.props.BoolProperty(name="現在のテキストに上書き", default=True)
+	is_overwrite = bpy.props.BoolProperty(name="現在のテキストに上書き", default=False)
 	
 	@classmethod
 	def poll(cls, context):
