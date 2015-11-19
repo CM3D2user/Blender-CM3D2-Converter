@@ -1376,6 +1376,18 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 		self.report(type={'INFO'}, message="ボーン情報を削除しました")
 		return {'FINISHED'}
 
+class open_url(bpy.types.Operator):
+	bl_idname = "wm.open_url"
+	bl_label = "URLを開く"
+	bl_description = "URLをブラウザで開きます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	url = bpy.props.StringProperty(name="URL")
+	
+	def execute(self, context):
+		webbrowser.open(self.url)
+		return {'FINISHED'}
+
 
 
 # 頂点グループメニューに項目追加
@@ -1637,15 +1649,16 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			html = response.read().decode('utf-8')
 			titles = re.findall(r'\<title\>[ 　\t\r\n]*([^ 　\t\<\>\r\n][^\<]*[^ 　\t\<\>\r\n])[ 　\t\r\n]*\<\/title\>', html)[1:]
 			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
+			links = re.findall(r'<link [^\<\>]*href="([^"]+)"/>', html)[2:]
 			count = 0
-			for title, update in zip(titles, updates):
+			for title, update, link in zip(titles, updates, links):
 				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
 				icon = 'SPACE2'
 				if (count % 2):
 					icon = 'SPACE3'
-				self.layout.label(text=text, icon=icon)
+				self.layout.operator(open_url.bl_idname, text=text, icon=icon).url = link
 				count += 1
 		except:
 			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')
