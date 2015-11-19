@@ -61,7 +61,7 @@ class text_export_mate(bpy.types.Operator):
 		if lines[2] and lines[2] != '***':
 			self.filepath = os.path.join(head, lines[2])
 		else:
-			self.filepath = os.path.join(head, txt.name)
+			self.filepath = os.path.join(head, ArrangeName(txt.name))
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
 		try:
