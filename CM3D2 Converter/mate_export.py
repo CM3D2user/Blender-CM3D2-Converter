@@ -16,8 +16,8 @@ def WriteStr(file, s):
 		file.write(struct.pack('<B', str_count))
 	file.write(s.encode('utf-8'))
 
-class text_save_mate(bpy.types.Operator):
-	bl_idname = 'text.text_save_mate'
+class text_export_mate(bpy.types.Operator):
+	bl_idname = 'text.text_export_mate'
 	bl_label = "mateとして保存"
 	bl_description = "表示しているテキストデータをmateファイルとして保存します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -149,5 +149,4 @@ class text_save_mate(bpy.types.Operator):
 
 # テキストメニューに項目を登録
 def TEXT_MT_text(self, context):
-	self.layout.separator()
-	self.layout.operator(text_save_mate.bl_idname, icon='SPACE2')
+	self.layout.operator(text_export_mate.bl_idname, icon='SPACE2')

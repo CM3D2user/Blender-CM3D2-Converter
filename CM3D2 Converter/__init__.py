@@ -23,6 +23,7 @@ if "bpy" in locals():
 	imp.reload(tex_import)
 	imp.reload(tex_export)
 	
+	imp.reload(mate_import)
 	imp.reload(mate_export)
 	
 	imp.reload(misc_tools)
@@ -33,6 +34,7 @@ else:
 	from . import tex_import
 	from . import tex_export
 	
+	from . import mate_import
 	from . import mate_export
 	
 	from . import misc_tools
@@ -84,6 +86,7 @@ def register():
 	bpy.types.IMAGE_MT_image.append(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.append(tex_export.menu_func)
 	
+	bpy.types.TEXT_MT_text.append(mate_import.TEXT_MT_text)
 	bpy.types.TEXT_MT_text.append(mate_export.TEXT_MT_text)
 	
 	bpy.types.INFO_MT_help.append(misc_tools.INFO_MT_help)
@@ -106,6 +109,7 @@ def unregister():
 	bpy.types.IMAGE_MT_image.remove(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.remove(tex_export.menu_func)
 	
+	bpy.types.TEXT_MT_text.remove(mate_import.TEXT_MT_text)
 	bpy.types.TEXT_MT_text.remove(mate_export.TEXT_MT_text)
 	
 	bpy.types.INFO_MT_help.remove(misc_tools.INFO_MT_help)
