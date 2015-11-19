@@ -476,20 +476,21 @@ class import_cm3d2_model(bpy.types.Operator):
 				#mate.use_face_texture = True
 				
 				if self.is_decorate:
+					shader_type = self.type
 					if '/Toony_' in data['name2']:
 						mate.diffuse_shader = 'TOON'
 						mate.diffuse_toon_smooth = 0.01
 						mate.diffuse_toon_size = 1
-					if 'Trans' in  data['name2']:
+					if 'Trans' in  shader_type:
 						mate.use_transparency = True
 						mate.alpha = 0.5
-					if 'CM3D2/Man' in data['name2']:
+					if 'CM3D2/Man' in shader_type:
 						mate.use_shadeless = True
-					if 'Unlit/' in data['name2']:
+					if 'Unlit/' in shader_type:
 						mate.emit = 0.5
-					if '_NoZ' in data['name2']:
+					if '_NoZ' in shader_type:
 						mate.offset_z = 9999
-					if 'CM3D2/Mosaic' in data['name2']:
+					if 'CM3D2/Mosaic' in shader_type:
 						mate.use_transparency = True
 						mate.transparency_method = 'RAYTRACE'
 						mate.alpha = 0

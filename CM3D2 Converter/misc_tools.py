@@ -879,20 +879,21 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_HiPow", 0.001))
 		
 		if self.is_decorate:
-			if '/Toony_' in self.type:
+			shader_type = self.type
+			if '/Toony_' in shader_type:
 				mate.diffuse_shader = 'TOON'
 				mate.diffuse_toon_smooth = 0.01
 				mate.diffuse_toon_size = 1
-			if 'Trans' in  self.type:
+			if 'Trans' in  shader_type:
 				mate.use_transparency = True
 				mate.alpha = 0.5
-			if 'CM3D2/Man' in self.type:
+			if 'CM3D2/Man' in shader_type:
 				mate.use_shadeless = True
-			if 'Unlit/' in self.type:
+			if 'Unlit/' in shader_type:
 				mate.emit = 0.5
-			if '_NoZ' in self.type:
+			if '_NoZ' in shader_type:
 				mate.offset_z = 9999
-			if 'CM3D2/Mosaic' in self.type:
+			if 'CM3D2/Mosaic' in shader_type:
 				mate.use_transparency = True
 				mate.transparency_method = 'RAYTRACE'
 				mate.alpha = 0
