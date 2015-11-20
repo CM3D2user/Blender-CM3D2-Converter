@@ -493,7 +493,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					if 'CM3D2/Mosaic' in shader_type:
 						mate.use_transparency = True
 						mate.transparency_method = 'RAYTRACE'
-						mate.alpha = 0.5
+						mate.alpha = 0.25
 						mate.raytrace_transparency.ior = 2
 				
 				ob.material_slots[-1].material = mate
@@ -534,6 +534,9 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.diffuse_color_factor = tex_data['float']
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
+						
+						if tex_data['name'] == '_Shininess':
+							mate.specular_intensity = tex_data['float']
 			ob.active_material_index = 0
 			context.window_manager.progress_update(7)
 			

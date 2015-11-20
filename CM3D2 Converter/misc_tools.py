@@ -906,7 +906,7 @@ class new_cm3d2(bpy.types.Operator):
 			if 'CM3D2/Mosaic' in shader_type:
 				mate.use_transparency = True
 				mate.transparency_method = 'RAYTRACE'
-				mate.alpha = 0.5
+				mate.alpha = 0.25
 				mate.raytrace_transparency.ior = 2
 		
 		slot_count = 0
