@@ -179,7 +179,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			face_data.append([])
 			face_count = int( struct.unpack('<i', file.read(4))[0] / 3 )
 			for j in range(face_count):
-				face_data[i].append(struct.unpack('<3h', file.read(3*2)))
+				face_data[i].append(struct.unpack('<3H', file.read(3*2)))
 		context.window_manager.progress_update(0.6)
 		
 		# マテリアル情報読み込み
