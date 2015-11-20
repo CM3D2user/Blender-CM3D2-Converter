@@ -20,6 +20,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'is_restart')
+		self.layout.prop(self, 'is_toggle_console')
 	
 	def execute(self, context):
 		response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip")
