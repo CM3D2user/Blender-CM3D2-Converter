@@ -61,7 +61,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	
 	def draw(self, context):
 		box = self.layout.box()
-		box.label(text="modelファイル", icon_value=bpy.context.user_preferences.addons[__name__].preferences.kiss_icon_value)
+		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
 		box.prop(self, 'scale', icon='MAN_SCALE')
 		box.prop(self, 'model_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'model_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
