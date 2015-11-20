@@ -1586,9 +1586,10 @@ def TEXTURE_PT_context_texture(self, context):
 	try:
 		tex_slot = context.texture_slot
 		tex = context.texture
+		mate = context.active_object.active_material
+		mate['shader1']
+		mate['shader2']
 	except:
-		return
-	if tex.name[0] != '_':
 		return
 	if tex_slot.use:
 		type = "tex"
