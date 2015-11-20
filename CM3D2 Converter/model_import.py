@@ -476,7 +476,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				#mate.use_face_texture = True
 				
 				if self.is_decorate:
-					shader_type = mate['shader2']
+					shader_type = mate['shader1']
 					if '/Toony_' in shader_type:
 						mate.diffuse_shader = 'TOON'
 						mate.diffuse_toon_smooth = 0.01
