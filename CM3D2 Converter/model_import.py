@@ -480,7 +480,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					if '/Toony_' in shader_type:
 						mate.diffuse_shader = 'TOON'
 						mate.diffuse_toon_smooth = 0.01
-						mate.diffuse_toon_size = 1
+						mate.diffuse_toon_size = 1.2
 					if 'Trans' in  shader_type:
 						mate.use_transparency = True
 						mate.alpha = 0.5
@@ -493,7 +493,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					if 'CM3D2/Mosaic' in shader_type:
 						mate.use_transparency = True
 						mate.transparency_method = 'RAYTRACE'
-						mate.alpha = 0
+						mate.alpha = 0.5
 						mate.raytrace_transparency.ior = 2
 				
 				ob.material_slots[-1].material = mate

@@ -893,7 +893,7 @@ class new_cm3d2(bpy.types.Operator):
 			if '/Toony_' in shader_type:
 				mate.diffuse_shader = 'TOON'
 				mate.diffuse_toon_smooth = 0.01
-				mate.diffuse_toon_size = 1
+				mate.diffuse_toon_size = 1.2
 			if 'Trans' in  shader_type:
 				mate.use_transparency = True
 				mate.alpha = 0.5
@@ -906,7 +906,7 @@ class new_cm3d2(bpy.types.Operator):
 			if 'CM3D2/Mosaic' in shader_type:
 				mate.use_transparency = True
 				mate.transparency_method = 'RAYTRACE'
-				mate.alpha = 0
+				mate.alpha = 0.5
 				mate.raytrace_transparency.ior = 2
 		
 		slot_count = 0
