@@ -1456,7 +1456,9 @@ def MATERIAL_PT_context_material(self, context):
 			elif mate['shader1'] == 'Diffuse':
 				type_name = "リアル"
 			
-			box.label(text="種類: " + type_name, icon='ALIASED')
+			row = box.split(percentage=0.3)
+			row.label(text="種類:", icon='ANTIALIASED')
+			row.label(text=type_name)
 			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
 			box.prop(mate, '["shader1"]', icon='MATERIAL', text="シェーダー1")
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
