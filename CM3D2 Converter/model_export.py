@@ -147,10 +147,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.filepath = os.path.join(dir, ob_names[0] + ".model")
 		
 		# バックアップ関係
-		if context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
-			self.is_backup = True
-		else:
-			self.is_backup = False
+		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
 		
 		self.scale = 1.0 / context.user_preferences.addons[__name__.split('.')[0]].preferences.scale
 		context.window_manager.fileselect_add(self)
