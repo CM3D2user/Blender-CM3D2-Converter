@@ -13,6 +13,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 	bl_options = {'REGISTER'}
 	
 	is_restart = bpy.props.BoolProperty(name="更新後にBlenderを再起動", description="アドオン更新後にBlenderを再起動します", default=True)
+	is_toggle_console = bpy.props.BoolProperty(name="再起動後にコンソールを閉じる", default=True)
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
@@ -39,7 +40,14 @@ class update_cm3d2_converter(bpy.types.Operator):
 					uzf.close()
 		zf.close()
 		if self.is_restart:
-			subprocess.Popen([sys.argv[0]])
+			filepath = bpy.data.filepath
+			command_line = [sys.argv[0]]
+			if filepath:
+				command_line.append(filepath)
+			if self.is_toggle_console:
+				py = os.path.join(os.path.dirname(__file__), "console_toggle.py")
+				command_line.append('-P')
+				command_line.append(py)
 			bpy.ops.wm.quit_blender()
 		else:
 			self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
