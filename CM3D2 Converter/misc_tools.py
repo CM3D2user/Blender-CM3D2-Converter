@@ -45,8 +45,8 @@ class update_cm3d2_converter(bpy.types.Operator):
 			self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
 		return {'FINISHED'}
 
-class vertex_group_transfer(bpy.types.Operator):
-	bl_idname = 'object.vertex_group_transfer'
+class quick_vertex_group_transfer(bpy.types.Operator):
+	bl_idname = 'object.quick_vertex_group_transfer'
 	bl_label = "クイック・ウェイト転送"
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを転送します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1397,7 +1397,7 @@ class open_url(bpy.types.Operator):
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(vertex_group_transfer.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(quick_vertex_group_transfer.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	self.layout.separator()
 	self.layout.operator(blur_vertex_group.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
