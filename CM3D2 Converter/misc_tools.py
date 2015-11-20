@@ -706,6 +706,8 @@ class new_cm3d2(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		self.layout.label(text="オブジェクト名を設定してからの作成を推奨", icon='INFO')
+		self.layout.separator()
 		self.layout.prop(self, 'type')
 		self.layout.prop(self, 'is_decorate')
 	
