@@ -54,6 +54,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 		self.filepath = os.path.join(head, ArrangeName(mate.name))
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
+		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
