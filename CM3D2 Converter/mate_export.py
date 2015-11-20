@@ -262,4 +262,4 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 
 # テキストメニューに項目を登録
 def TEXT_MT_text(self, context):
-	self.layout.operator(export_cm3d2_mate_text.bl_idname, icon='SPACE2')
+	self.layout.operator(export_cm3d2_mate_text.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)

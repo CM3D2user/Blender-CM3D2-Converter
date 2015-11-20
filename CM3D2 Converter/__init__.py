@@ -38,7 +38,7 @@ else:
 	from . import mate_export
 	
 	from . import misc_tools
-import bpy
+import bpy, os.path, bpy.utils.previews
 
 # アドオン設定
 class AddonPreferences(bpy.types.AddonPreferences):
@@ -57,9 +57,11 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
+	kiss_icon_value = bpy.props.IntProperty()
+	
 	def draw(self, context):
 		box = self.layout.box()
-		box.label(text="modelファイル", icon='MESH_MONKEY')
+		box.label(text="modelファイル", icon_value=bpy.context.user_preferences.addons[__name__].preferences.kiss_icon_value)
 		box.prop(self, 'scale', icon='MAN_SCALE')
 		box.prop(self, 'model_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'model_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
@@ -98,6 +100,11 @@ def register():
 	bpy.types.OBJECT_PT_context_object.append(misc_tools.OBJECT_PT_context_object)
 	bpy.types.DATA_PT_modifiers.append(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.append(misc_tools.TEXT_HT_header)
+	
+	pcoll = bpy.utils.previews.new()
+	dir = os.path.dirname(__file__)
+	pcoll.load('KISS', os.path.join(dir, "kiss.png"), 'IMAGE')
+	bpy.context.user_preferences.addons[__name__].preferences.kiss_icon_value = pcoll['KISS'].icon_id
 
 # プラグインをアンインストールしたときの処理
 def unregister():

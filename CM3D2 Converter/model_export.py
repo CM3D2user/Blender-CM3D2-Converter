@@ -699,4 +699,4 @@ class export_cm3d2_model(bpy.types.Operator):
 
 # メニューを登録する関数
 def menu_func(self, context):
-	self.layout.operator(export_cm3d2_model.bl_idname, icon='SPACE2')
+	self.layout.operator(export_cm3d2_model.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)

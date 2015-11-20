@@ -1397,35 +1397,35 @@ class open_url(bpy.types.Operator):
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(vertex_group_transfer.bl_idname, icon='SPACE2')
+	self.layout.operator(vertex_group_transfer.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	self.layout.separator()
-	self.layout.operator(blur_vertex_group.bl_idname, icon='SPACE2')
-	self.layout.operator(radius_blur_vertex_group.bl_idname, icon='SPACE2')
+	self.layout.operator(blur_vertex_group.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	self.layout.separator()
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon='SPACE2', text="頂点グループ名を CM3D2 → Blender")
-	self.layout.operator(convert_cm3d2_vertex_group_names_restore.bl_idname, icon='SPACE2', text="頂点グループ名を Blender → CM3D2")
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value, text="頂点グループ名を CM3D2 → Blender")
+	self.layout.operator(convert_cm3d2_vertex_group_names_restore.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value, text="頂点グループ名を Blender → CM3D2")
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(shape_key_transfer_ex.bl_idname, icon='SPACE2')
+	self.layout.operator(shape_key_transfer_ex.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	self.layout.separator()
-	self.layout.operator(scale_shape_key.bl_idname, icon='SPACE2')
+	self.layout.operator(scale_shape_key.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	self.layout.separator()
-	self.layout.operator(blur_shape_key.bl_idname, icon='SPACE2')
-	self.layout.operator(radius_blur_shape_key.bl_idname, icon='SPACE2')
+	self.layout.operator(blur_shape_key.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(radius_blur_shape_key.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):
 	mate = context.material
 	if not mate:
-		self.layout.operator(new_cm3d2.bl_idname, icon='SPACE2')
+		self.layout.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
 			#row = box.split(percentage=0.3)
 			row = box.row()
-			row.label(text="CM3D2用", icon='SPACE2')
+			row.label(text="CM3D2用", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 			row.operator('material.export_cm3d2_mate', icon='SAVE_AS', text="")
 			
 			type_name = "不明"
@@ -1469,14 +1469,14 @@ def DATA_PT_context_arm(self, context):
 	if ob:
 		if ob.type == 'ARMATURE':
 			col = self.layout.column(align=True)
-			col.label(text="CM3D2用 ボーン名変換", icon='SPACE2')
+			col.label(text="CM3D2用 ボーン名変換", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 			row = col.row(align=True)
 			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER')
 			row.operator(convert_cm3d2_bone_names_restore.bl_idname, text="Blender → CM3D2", icon='POSE_DATA')
 		arm = ob.data
 		col = self.layout.column(align=True)
 		row = col.row(align=True)
-		row.label(text="CM3D2用ボーン情報", icon='SPACE2')
+		row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 		sub_row = row.row()
 		sub_row.alignment = 'RIGHT'
 		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
@@ -1506,7 +1506,7 @@ def OBJECT_PT_context_object(self, context):
 				row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
 			col = self.layout.column(align=True)
 			row = col.row(align=True)
-			row.label(text="CM3D2用ボーン情報", icon='SPACE2')
+			row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 			sub_row = row.row()
 			sub_row.alignment = 'RIGHT'
 			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
@@ -1531,13 +1531,13 @@ def DATA_PT_modifiers(self, context):
 				me = ob.data
 				if me.shape_keys:
 					if len(ob.modifiers):
-						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon='SPACE2')
+						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 
 # テキストヘッダーに項目追加
 def TEXT_HT_header(self, context):
 	texts = bpy.data.texts
 	text_keys = texts.keys()
-	self.layout.label(text="CM3D2用:", icon='SPACE2')
+	self.layout.label(text="CM3D2用:", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	row = self.layout.row(align=True)
 	if 'BoneData' in text_keys:
 		txt = bpy.data.texts['BoneData']
@@ -1588,7 +1588,7 @@ def TEXTURE_PT_context_texture(self, context):
 		else:
 			type = "f"
 	box = self.layout.box()
-	box.label(text="CM3D2用", icon='SPACE2')
+	box.label(text="CM3D2用", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 	row = box.row(align=True)
 	row.label(text="設定値タイプ: " + type)
 	row.prop(tex_slot, 'use', text="")
@@ -1644,8 +1644,8 @@ def TEXTURE_PT_context_texture(self, context):
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
 	self.layout.separator()
-	self.layout.operator(update_cm3d2_converter.bl_idname, icon='SPACE2')
-	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon='SPACE2')
+	self.layout.operator(update_cm3d2_converter.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS"
 	bl_label = "CM3D2 Converterの更新履歴 (取得に数秒)"
