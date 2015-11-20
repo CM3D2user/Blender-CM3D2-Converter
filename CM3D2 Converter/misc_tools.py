@@ -49,6 +49,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 				py = os.path.join(os.path.dirname(__file__), "console_toggle.py")
 				command_line.append('-P')
 				command_line.append(py)
+			subprocess.Popen(command_line)
 			bpy.ops.wm.quit_blender()
 		else:
 			self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
