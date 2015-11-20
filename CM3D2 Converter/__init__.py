@@ -78,6 +78,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
 
+preview_collections = {}
+
 # プラグインをインストールしたときの処理
 def register():
 	bpy.utils.register_module(__name__)
@@ -105,6 +107,7 @@ def register():
 	dir = os.path.dirname(__file__)
 	pcoll.load('KISS', os.path.join(dir, "kiss.png"), 'IMAGE')
 	bpy.context.user_preferences.addons[__name__].preferences.kiss_icon_value = pcoll['KISS'].icon_id
+	preview_collections["main"] = pcoll
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -128,6 +131,10 @@ def unregister():
 	bpy.types.OBJECT_PT_context_object.remove(misc_tools.OBJECT_PT_context_object)
 	bpy.types.DATA_PT_modifiers.remove(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.remove(misc_tools.TEXT_HT_header)
+	
+	for pcoll in preview_collections.values():
+		bpy.utils.previews.remove(pcoll)
+	preview_collections.clear()
 
 # メイン関数
 if __name__ == "__main__":

@@ -1478,29 +1478,47 @@ def DATA_PT_context_arm(self, context):
 	ob = context.active_object
 	if ob:
 		if ob.type == 'ARMATURE':
-			col = self.layout.column(align=True)
-			col.label(text="CM3D2用 ボーン名変換", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-			row = col.row(align=True)
-			row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER')
-			row.operator(convert_cm3d2_bone_names_restore.bl_idname, text="Blender → CM3D2", icon='POSE_DATA')
-		arm = ob.data
-		col = self.layout.column(align=True)
-		row = col.row(align=True)
-		row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-		sub_row = row.row()
-		sub_row.alignment = 'RIGHT'
-		if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+			arm = ob.data
+			
+			flag = False
+			for bone in arm.bones:
+				if not flag and re.search(r'[_ ]([rRlL])[_ ]', bone.name):
+					flag = True
+				if not flag and bone.name.count('*') == 1:
+					if re.search(r'\.([rRlL])$', bone.name):
+						flag = True
+				if flag:
+					col = self.layout.column(align=True)
+					col.label(text="CM3D2用 ボーン名変換", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+					row = col.row(align=True)
+					row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER')
+					row.operator(convert_cm3d2_bone_names_restore.bl_idname, text="Blender → CM3D2", icon='POSE_DATA')
+					break
+			
 			bone_data_count = 0
-			for key in arm.keys():
-				if re.search(r'^(Local)?BoneData:\d+$', key):
-					bone_data_count += 1
-			sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
-		else:
-			sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
-		row = col.row(align=True)
-		row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
-		row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
-		row.operator(remove_armature_bone_data_property.bl_idname, icon='X', text="")
+			if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+				for key in arm.keys():
+					if re.search(r'^(Local)?BoneData:\d+$', key):
+						bone_data_count += 1
+			enabled_clipboard = False
+			clipboard = context.window_manager.clipboard
+			if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+				enabled_clipboard = True
+			
+			if bone_data_count or enabled_clipboard:
+				col = self.layout.column(align=True)
+				row = col.row(align=True)
+				row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+				sub_row = row.row()
+				sub_row.alignment = 'RIGHT'
+				if bone_data_count:
+					sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
+				else:
+					sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
+				row = col.row(align=True)
+				row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
+				row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
+				row.operator(remove_armature_bone_data_property.bl_idname, icon='X', text="")
 
 # オブジェクトタブに項目追加
 def OBJECT_PT_context_object(self, context):
@@ -1513,24 +1531,37 @@ def OBJECT_PT_context_object(self, context):
 				row.label(text="model名: " + name, icon='SORTALPHA')
 				row.label(text="基点ボーン名: " + base, icon='CONSTRAINT_BONE')
 			else:
-				row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
-			col = self.layout.column(align=True)
-			row = col.row(align=True)
-			row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-			sub_row = row.row()
-			sub_row.alignment = 'RIGHT'
+				#row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
+				pass
+			
+			bone_data_count = 0
 			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
-				bone_data_count = 0
 				for key in ob.keys():
 					if re.search(r'^(Local)?BoneData:\d+$', key):
 						bone_data_count += 1
-				sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
-			else:
-				sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
-			row = col.row(align=True)
-			row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
-			row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
-			row.operator(remove_object_bone_data_property.bl_idname, icon='X', text="")
+			enabled_clipboard = False
+			clipboard = context.window_manager.clipboard
+			if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+				enabled_clipboard = True
+			
+			if bone_data_count or enabled_clipboard:
+				col = self.layout.column(align=True)
+				row = col.row(align=True)
+				row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+				sub_row = row.row()
+				sub_row.alignment = 'RIGHT'
+				if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+					bone_data_count = 0
+					for key in ob.keys():
+						if re.search(r'^(Local)?BoneData:\d+$', key):
+							bone_data_count += 1
+					sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
+				else:
+					sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
+				row = col.row(align=True)
+				row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
+				row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
+				row.operator(remove_object_bone_data_property.bl_idname, icon='X', text="")
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
