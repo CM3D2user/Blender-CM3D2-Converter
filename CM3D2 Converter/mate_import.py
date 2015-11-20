@@ -11,8 +11,8 @@ def ReadStr(file):
 		pass
 	return None
 
-class text_import_mate(bpy.types.Operator):
-	bl_idname = 'text.text_import_mate'
+class import_cm3d2_mate_text(bpy.types.Operator):
+	bl_idname = 'text.import_cm3d2_mate_text'
 	bl_label = "mateを開く"
 	bl_description = "mateファイルをテキストとして開きます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -106,4 +106,4 @@ class text_import_mate(bpy.types.Operator):
 # テキストメニューに項目を登録
 def TEXT_MT_text(self, context):
 	self.layout.separator()
-	self.layout.operator(text_import_mate.bl_idname, icon='SPACE2')
+	self.layout.operator(import_cm3d2_mate_text.bl_idname, icon='SPACE2')

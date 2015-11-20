@@ -1423,8 +1423,10 @@ def MATERIAL_PT_context_material(self, context):
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
-			row = box.split(percentage=0.3)
+			#row = box.split(percentage=0.3)
+			row = box.row()
 			row.label(text="CM3D2用", icon='SPACE2')
+			row.operator('material.export_cm3d2_mate', icon='SAVE_AS', text="")
 			
 			type_name = "不明"
 			if mate['shader1'] == 'CM3D2/Toony_Lighted':
@@ -1454,7 +1456,7 @@ def MATERIAL_PT_context_material(self, context):
 			elif mate['shader1'] == 'Diffuse':
 				type_name = "リアル"
 			
-			row.label(text="種類: " + type_name, icon='ALIASED')
+			box.label(text="種類: " + type_name, icon='ALIASED')
 			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
 			box.prop(mate, '["shader1"]', icon='MATERIAL', text="シェーダー1")
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
