@@ -1433,8 +1433,8 @@ def MATERIAL_PT_context_material(self, context):
 	mate = context.material
 	if not mate:
 		row = self.layout.row(align=True)
-		row.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="")
+		row.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value, text="CM3D2用を新規作成")
+		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="mateから新規作成")
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
