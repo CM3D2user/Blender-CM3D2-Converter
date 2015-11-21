@@ -1432,7 +1432,9 @@ def MESH_MT_shape_key_specials(self, context):
 def MATERIAL_PT_context_material(self, context):
 	mate = context.material
 	if not mate:
-		self.layout.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+		row = self.layout.row(align=True)
+		row.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="")
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
