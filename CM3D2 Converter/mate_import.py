@@ -50,19 +50,20 @@ class import_cm3d2_mate(bpy.types.Operator):
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path = self.filepath
 		
-		if not context.material_slot:
-			bpy.ops.object.material_slot_add()
-		root, ext = os.path.splitext(os.path.basename(self.filepath))
-		mate = context.blend_data.materials.new(root)
-		context.material_slot.material = mate
-		
 		file = open(self.filepath, 'rb')
 		if ReadStr(file) != 'CM3D2_MATERIAL':
 			self.report(type={'ERROR'}, message="これはmateファイルではありません、中止します")
 			return {'CANCELLED'}
 		struct.unpack('<i', file.read(4))[0]
 		ReadStr(file)
-		mate.name = ReadStr(file)
+		mate_name = ReadStr(file)
+		
+		if not context.material_slot:
+			bpy.ops.object.material_slot_add()
+		root, ext = os.path.splitext(os.path.basename(self.filepath))
+		mate = context.blend_data.materials.new(mate_name)
+		context.material_slot.material = mate
+		
 		mate['shader1'] = ReadStr(file)
 		mate['shader2'] = ReadStr(file)
 		
