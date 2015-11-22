@@ -944,6 +944,73 @@ class new_cm3d2(bpy.types.Operator):
 			slot_count += 1
 		return {'FINISHED'}
 
+class copy_material(bpy.types.Operator):
+	bl_idname = 'material.copy_material'
+	bl_label = "マテリアルをクリップボードにコピー"
+	bl_description = "表示しているマテリアルをテキスト形式でクリップボードにコピーします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		if 'material' in dir(context):
+			mate = context.material
+			if mate:
+				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+					return True
+		return False
+	
+	def execute(self, context):
+		mate = context.material
+		
+		output_text = "1000" + "\n"
+		output_text = output_text + mate.name.lower() + "\n"
+		output_text = output_text + mate.name + "\n"
+		output_text = output_text + mate['shader1'] + "\n"
+		output_text = output_text + mate['shader2'] + "\n"
+		output_text = output_text + "\n"
+		
+		for tex_slot in mate.texture_slots:
+			if not tex_slot:
+				continue
+			tex = tex_slot.texture
+			if tex_slot.use:
+				type = 'tex'
+			else:
+				if tex_slot.use_rgb_to_intensity:
+					type = 'col'
+				else:
+					type = 'f'
+			output_text = output_text + type + "\n"
+			output_text = output_text + "\t" + ArrangeName(tex.name) + "\n"
+			if type == 'tex':
+				try:
+					img = tex.image
+				except:
+					self.report(type={'ERROR'}, message="texタイプの設定値の取得に失敗しました、中止します")
+					return {'CANCELLED'}
+				if img:
+					output_text = output_text + '\ttex2d' + "\n"
+					output_text = output_text + "\t" + ArrangeName(img.name) + "\n"
+					path = img.filepath
+					path = path.replace('\\', '/')
+					path = re.sub(r'^[\/\.]*', "", path)
+					if not re.search(r'^assets/texture/', path, re.I):
+						path = "Assets/texture/texture/" + os.path.basename(path)
+					output_text = output_text + "\t" + path + "\n"
+					col = tex_slot.color
+					output_text = output_text + "\t" + str(col[0]) + " " + str(col[1]) + " " + str(col[2]) + " " + str(tex_slot.diffuse_color_factor) + "\n"
+				else:
+					output_text = output_text + "\tnull" + "\n"
+			elif type == 'col':
+				col = tex_slot.color
+				output_text = output_text + "\t" + str(col[0]) + " " + str(col[1]) + " " + str(col[2]) + " " + str(tex_slot.diffuse_color_factor) + "\n"
+			elif type == 'f':
+				output_text = output_text + "\t" + str(tex_slot.diffuse_color_factor) + "\n"
+		
+		context.window_manager.clipboard = output_text
+		self.report(type={'INFO'}, message="マテリアルテキストをクリップボードにコピーしました")
+		return {'FINISHED'}
+
 class paste_material(bpy.types.Operator):
 	bl_idname = "material.paste_material"
 	bl_label = "クリップボードからマテリアルを貼り付け"
@@ -1043,7 +1110,7 @@ class paste_material(bpy.types.Operator):
 				slot.texture = tex
 				
 				if tex_name == "_RimColor":
-					mate.diffuse_color = slot.color[:]
+					mate.diffuse_color = fs[:3]
 					mate.diffuse_color.v += 0.5
 				line_seek += 3
 			elif type == 'f':
@@ -1062,6 +1129,7 @@ class paste_material(bpy.types.Operator):
 				return {'CANCELLED'}
 			slot_index += 1
 		
+		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}
 
 class convert_cm3d2_bone_names(bpy.types.Operator):
@@ -1603,6 +1671,7 @@ def MATERIAL_PT_context_material(self, context):
 			row = box.row()
 			row.label(text="CM3D2用", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
 			row.operator('material.export_cm3d2_mate', icon='SAVE_AS', text="")
+			row.operator(copy_material.bl_idname, icon='COPYDOWN', text="")
 			
 			type_name = "不明"
 			if mate['shader1'] == 'CM3D2/Toony_Lighted':
