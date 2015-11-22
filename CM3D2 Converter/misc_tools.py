@@ -944,6 +944,126 @@ class new_cm3d2(bpy.types.Operator):
 			slot_count += 1
 		return {'FINISHED'}
 
+class paste_material(bpy.types.Operator):
+	bl_idname = "material.paste_material"
+	bl_label = "クリップボードからマテリアルを貼り付け"
+	bl_description = "クリップボード内のマテリアル情報から新規マテリアルを作成します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		data = context.window_manager.clipboard
+		lines = data.split('\n')
+		if len(lines) < 10:
+			return False
+		match_strs = ['\ntex\n', '\ncol\n', '\nf\n', '\n\t_MainTex\n', '\n\t_Color\n', '\n\t_Shininess\n']
+		for s in match_strs:
+			if s in data:
+				return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_decorate')
+	
+	def execute(self, context):
+		data = context.window_manager.clipboard
+		lines = data.split('\n')
+		
+		if not context.material_slot:
+			bpy.ops.object.material_slot_add()
+		mate = context.blend_data.materials.new(lines[2])
+		context.material_slot.material = mate
+		
+		mate['shader1'] = lines[3]
+		mate['shader2'] = lines[4]
+		
+		if self.is_decorate:
+			shader_type = mate['shader1']
+			if '/Toony_' in shader_type:
+				mate.diffuse_shader = 'TOON'
+				mate.diffuse_toon_smooth = 0.01
+				mate.diffuse_toon_size = 1.2
+			if 'Trans' in  shader_type:
+				mate.use_transparency = True
+				mate.alpha = 0.5
+			if 'CM3D2/Man' in shader_type:
+				mate.use_shadeless = True
+			if 'Unlit/' in shader_type:
+				mate.emit = 0.5
+			if '_NoZ' in shader_type:
+				mate.offset_z = 9999
+			if 'CM3D2/Mosaic' in shader_type:
+				mate.use_transparency = True
+				mate.transparency_method = 'RAYTRACE'
+				mate.alpha = 0.25
+				mate.raytrace_transparency.ior = 2
+		
+		slot_index = 0
+		line_seek = 5
+		for i in range(99999):
+			if len(lines) <= line_seek:
+				break
+			type = lines[line_seek]
+			if not type:
+				line_seek += 1
+				continue
+			if type == 'tex':
+				slot = mate.texture_slots.create(slot_index)
+				tex = context.blend_data.textures.new(lines[line_seek+1].replace('\t', ''), 'IMAGE')
+				slot.texture = tex
+				sub_type = lines[line_seek+2].replace('\t', '')
+				line_seek += 3
+				if sub_type == 'tex2d':
+					img = context.blend_data.images.new(lines[line_seek].replace('\t', ''), 128, 128)
+					img.filepath = lines[line_seek+1].replace('\t', '')
+					img.source = 'FILE'
+					tex.image = img
+					fs = lines[line_seek+2].replace('\t', '').split(' ')
+					for fi in range(len(fs)):
+						fs[fi] = float(fs[fi])
+					slot.color = fs[:3]
+					slot.diffuse_color_factor = fs[3]
+					line_seek += 3
+			elif type == 'col':
+				slot = mate.texture_slots.create(slot_index)
+				tex_name = lines[line_seek+1].replace('\t', '')
+				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
+				mate.use_textures[slot_index] = False
+				slot.use_rgb_to_intensity = True
+				fs = lines[line_seek+2].replace('\t', '').split(' ')
+				for fi in range(len(fs)):
+					fs[fi] = float(fs[fi])
+				slot.color = fs[:3]
+				slot.diffuse_color_factor = fs[3]
+				slot.texture = tex
+				
+				if tex_name == "_RimColor":
+					mate.diffuse_color = slot.color[:]
+					mate.diffuse_color.v += 0.5
+				line_seek += 3
+			elif type == 'f':
+				slot = mate.texture_slots.create(slot_index)
+				tex_name = lines[line_seek+1].replace('\t', '')
+				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
+				mate.use_textures[slot_index] = False
+				slot.diffuse_color_factor = float(lines[line_seek+2].replace('\t', ''))
+				slot.texture = tex
+				
+				if tex_name == '_Shininess':
+					mate.specular_intensity = slot.diffuse_color_factor
+				line_seek += 3
+			else:
+				self.report(type={'ERROR'}, message="未知の設定値タイプが見つかりました、中止します")
+				return {'CANCELLED'}
+			slot_index += 1
+		
+		return {'FINISHED'}
+
 class convert_cm3d2_bone_names(bpy.types.Operator):
 	bl_idname = "armature.convert_cm3d2_bone_names"
 	bl_label = "ボーン名をCM3D2用→Blender用に変換"
@@ -1432,9 +1552,11 @@ def MESH_MT_shape_key_specials(self, context):
 def MATERIAL_PT_context_material(self, context):
 	mate = context.material
 	if not mate:
-		row = self.layout.row(align=True)
-		row.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value, text="CM3D2用を新規作成")
-		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="mateから新規作成")
+		col = self.layout.column(align=True)
+		col.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+		row = col.row(align=True)
+		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="mateから")
+		row.operator(paste_material.bl_idname, icon='PASTEDOWN', text="クリップボードから")
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
@@ -1626,6 +1748,8 @@ def TEXTURE_PT_context_texture(self, context):
 		mate['shader1']
 		mate['shader2']
 	except:
+		return
+	if not tex_slot:
 		return
 	if tex_slot.use:
 		type = "tex"
