@@ -1,9 +1,6 @@
 import bpy, re, os, os.path, struct, shutil, mathutils, bmesh
 from . import common
 
-def SetMateLine(line):
-	return re.sub(r'^[\t ]*', "", line)
-
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
 	bl_idname = 'export_mesh.export_cm3d2_model'
@@ -599,27 +596,27 @@ class export_cm3d2_model(bpy.types.Operator):
 					type = data[seek]
 					if type == 'tex':
 						common.write_str(file, type)
-						common.write_str(file, SetMateLine(data[seek + 1]))
-						common.write_str(file, SetMateLine(data[seek + 2]))
-						if SetMateLine(data[seek + 2]) == 'tex2d':
-							common.write_str(file, SetMateLine(data[seek + 3]))
-							common.write_str(file, SetMateLine(data[seek + 4]))
-							col = SetMateLine(data[seek + 5])
+						common.write_str(file, common.line_trim(data[seek + 1]))
+						common.write_str(file, common.line_trim(data[seek + 2]))
+						if common.line_trim(data[seek + 2]) == 'tex2d':
+							common.write_str(file, common.line_trim(data[seek + 3]))
+							common.write_str(file, common.line_trim(data[seek + 4]))
+							col = common.line_trim(data[seek + 5])
 							col = col.split(' ')
 							file.write(struct.pack('<4f', float(col[0]), float(col[1]), float(col[2]), float(col[3])))
 							seek += 3
 						seek += 2
 					elif type == 'col':
 						common.write_str(file, type)
-						common.write_str(file, SetMateLine(data[seek + 1]))
-						col = SetMateLine(data[seek + 2])
+						common.write_str(file, common.line_trim(data[seek + 1]))
+						col = common.line_trim(data[seek + 2])
 						col = col.split(' ')
 						file.write(struct.pack('<4f', float(col[0]), float(col[1]), float(col[2]), float(col[3])))
 						seek += 2
 					elif type == 'f':
 						common.write_str(file, type)
-						common.write_str(file, SetMateLine(data[seek + 1]))
-						file.write(struct.pack('<f', float(SetMateLine(data[seek + 2]))))
+						common.write_str(file, common.line_trim(data[seek + 1]))
+						file.write(struct.pack('<f', float(common.line_trim(data[seek + 2]))))
 						seek += 2
 					seek += 1
 			common.write_str(file, 'end')

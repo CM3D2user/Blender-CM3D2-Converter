@@ -1033,22 +1033,22 @@ class paste_material(bpy.types.Operator):
 		for i in range(99999):
 			if len(lines) <= line_seek:
 				break
-			type = lines[line_seek]
+			type = common.line_trim(lines[line_seek])
 			if not type:
 				line_seek += 1
 				continue
 			if type == 'tex':
 				slot = mate.texture_slots.create(slot_index)
-				tex = context.blend_data.textures.new(lines[line_seek+1].replace('\t', ''), 'IMAGE')
+				tex = context.blend_data.textures.new(common.line_trim(lines[line_seek+1]), 'IMAGE')
 				slot.texture = tex
-				sub_type = lines[line_seek+2].replace('\t', '')
+				sub_type = common.line_trim(lines[line_seek+2])
 				line_seek += 3
 				if sub_type == 'tex2d':
-					img = context.blend_data.images.new(lines[line_seek].replace('\t', ''), 128, 128)
-					img.filepath = lines[line_seek+1].replace('\t', '')
+					img = context.blend_data.images.new(common.line_trim(lines[line_seek]), 128, 128)
+					img.filepath = common.line_trim(lines[line_seek+1])
 					img.source = 'FILE'
 					tex.image = img
-					fs = lines[line_seek+2].replace('\t', '').split(' ')
+					fs = common.line_trim(lines[line_seek+2]).split(' ')
 					for fi in range(len(fs)):
 						fs[fi] = float(fs[fi])
 					slot.color = fs[:3]
@@ -1056,11 +1056,11 @@ class paste_material(bpy.types.Operator):
 					line_seek += 3
 			elif type == 'col':
 				slot = mate.texture_slots.create(slot_index)
-				tex_name = lines[line_seek+1].replace('\t', '')
+				tex_name = common.line_trim(lines[line_seek+1])
 				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
 				mate.use_textures[slot_index] = False
 				slot.use_rgb_to_intensity = True
-				fs = lines[line_seek+2].replace('\t', '').split(' ')
+				fs = common.line_trim(lines[line_seek+2]).split(' ')
 				for fi in range(len(fs)):
 					fs[fi] = float(fs[fi])
 				slot.color = fs[:3]
@@ -1073,10 +1073,10 @@ class paste_material(bpy.types.Operator):
 				line_seek += 3
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
-				tex_name = lines[line_seek+1].replace('\t', '')
+				tex_name = common.line_trim(lines[line_seek+1])
 				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
 				mate.use_textures[slot_index] = False
-				slot.diffuse_color_factor = float(lines[line_seek+2].replace('\t', ''))
+				slot.diffuse_color_factor = float(common.line_trim(lines[line_seek+2]))
 				slot.texture = tex
 				
 				if tex_name == '_Shininess':

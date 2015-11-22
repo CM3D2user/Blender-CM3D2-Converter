@@ -7,6 +7,10 @@ def remove_serial_number(name, flag=True):
 		return re.sub(r'\.\d{3}$', "", name)
 	return name
 
+def line_trim(line):
+	line = re.sub(r'^[ 　\t\r\n]*', "", line)
+	return re.sub(r'[ 　\t\r\n]*$', "", line)
+
 def write_str(file, s):
 	str_count = len(s.encode('utf-8'))
 	if 128 <= str_count:

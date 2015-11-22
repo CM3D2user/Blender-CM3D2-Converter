@@ -211,28 +211,28 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 					line_seek += 1
 					continue
 				if lines[line_seek] == 'tex':
-					common.write_str(file, lines[line_seek])
-					common.write_str(file, lines[line_seek + 1].replace('\t', ''))
-					common.write_str(file, lines[line_seek + 2].replace('\t', ''))
+					common.write_str(file, common.line_trim(lines[line_seek]))
+					common.write_str(file, common.line_trim(lines[line_seek + 1]))
+					common.write_str(file, common.line_trim(lines[line_seek + 2]))
 					line_seek += 3
-					if lines[line_seek - 1].replace('\t', '') == 'tex2d':
-						common.write_str(file, lines[line_seek].replace('\t', ''))
-						common.write_str(file, lines[line_seek + 1].replace('\t', ''))
-						floats = lines[line_seek + 2].replace('\t', '').split(' ')
+					if common.line_trim(lines[line_seek - 1]) == 'tex2d':
+						common.write_str(file, common.line_trim(lines[line_seek]))
+						common.write_str(file, common.line_trim(lines[line_seek + 1]))
+						floats = common.line_trim(lines[line_seek + 2]).split(' ')
 						for f in floats:
 							file.write(struct.pack('<f', float(f)))
 						line_seek += 3
 				elif lines[line_seek] == 'col':
-					common.write_str(file, lines[line_seek])
-					common.write_str(file, lines[line_seek + 1].replace('\t', ''))
-					floats = lines[line_seek + 2].replace('\t', '').split(' ')
+					common.write_str(file, common.line_trim(lines[line_seek]))
+					common.write_str(file, common.line_trim(lines[line_seek + 1]))
+					floats = common.line_trim(lines[line_seek + 2]).split(' ')
 					for f in floats:
 						file.write(struct.pack('<f', float(f)))
 					line_seek += 3
 				elif lines[line_seek] == 'f':
-					common.write_str(file, lines[line_seek])
-					common.write_str(file, lines[line_seek + 1].replace('\t', ''))
-					f = float(lines[line_seek + 2].replace('\t', ''))
+					common.write_str(file, common.line_trim(lines[line_seek]))
+					common.write_str(file, common.line_trim(lines[line_seek + 1]))
+					f = float(common.line_trim(lines[line_seek + 2]))
 					file.write(struct.pack('<f', f))
 					line_seek += 3
 				else:
