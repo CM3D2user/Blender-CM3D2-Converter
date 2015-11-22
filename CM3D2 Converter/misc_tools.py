@@ -1887,18 +1887,21 @@ def TEXTURE_PT_context_texture(self, context):
 	if tex_slot.use:
 		sub_row.enabled = False
 	box.prop(tex, 'name', icon='SORTALPHA', text="設定値名")
+	
 	if type == "tex":
 		if tex.type == 'IMAGE':
 			img = tex.image
 			if img:
 				if img.source == 'FILE':
-					box.prop(img, 'name', icon='IMAGE_DATA', text="テクスチャ名")
-					box.prop(img, 'filepath', text="テクスチャパス")
+					sub_box = box.box()
+					sub_box.prop(img, 'name', icon='IMAGE_DATA', text="テクスチャ名")
+					sub_box.prop(img, 'filepath', text="テクスチャパス")
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	elif type == "col":
-		box.prop(tex_slot, 'color', text="")
-		box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
+		sub_box = box.box()
+		sub_box.prop(tex_slot, 'color', text="")
+		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	elif type == "f":
 		box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
 	
