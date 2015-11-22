@@ -1870,8 +1870,17 @@ def TEXTURE_PT_context_texture(self, context):
 			type = "f"
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-	row = box.row(align=True)
-	row.label(text="設定値タイプ: " + type)
+	split = box.split(percentage=0.3)
+	split.label(text="設定値タイプ:")
+	row = split.row(align=True)
+	
+	if type == 'tex':
+		row.label(text='テクスチャ')
+	elif type == 'col':
+		row.label(text='色')
+	elif type == 'f':
+		row.label(text='値')
+	
 	row.prop(tex_slot, 'use', text="")
 	sub_row = row.row(align=True)
 	sub_row.prop(tex_slot, 'use_rgb_to_intensity', text="")
