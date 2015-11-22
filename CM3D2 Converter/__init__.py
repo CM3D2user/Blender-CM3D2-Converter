@@ -17,6 +17,9 @@ bl_info = {
 # サブスクリプト群をインポート
 if "bpy" in locals():
 	import imp
+	
+	imp.reload(common)
+	
 	imp.reload(model_import)
 	imp.reload(model_export)
 	
@@ -28,6 +31,8 @@ if "bpy" in locals():
 	
 	imp.reload(misc_tools)
 else:
+	from . import common
+	
 	from . import model_import
 	from . import model_export
 	
@@ -57,8 +62,6 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
-	kiss_icon_value = bpy.props.IntProperty()
-	
 	def draw(self, context):
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
@@ -77,8 +80,6 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
-
-preview_collections = {}
 
 # プラグインをインストールしたときの処理
 def register():
@@ -106,8 +107,7 @@ def register():
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
 	pcoll.load('KISS', os.path.join(dir, "kiss.png"), 'IMAGE')
-	bpy.context.user_preferences.addons[__name__].preferences.kiss_icon_value = pcoll['KISS'].icon_id
-	preview_collections["main"] = pcoll
+	common.preview_collections['main'] = pcoll
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -132,9 +132,9 @@ def unregister():
 	bpy.types.DATA_PT_modifiers.remove(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.remove(misc_tools.TEXT_HT_header)
 	
-	for pcoll in preview_collections.values():
+	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
-	preview_collections.clear()
+	common.preview_collections.clear()
 
 # メイン関数
 if __name__ == "__main__":

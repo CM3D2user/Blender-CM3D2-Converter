@@ -1,15 +1,5 @@
 import os, os.path, bpy, struct, os.path
-
-def ReadStr(file):
-	str_index = struct.unpack('<B', file.read(1))[0]
-	if 128 <= str_index:
-		i = struct.unpack('<B', file.read(1))[0]
-		str_index += (i * 128) - 128
-	try:
-		return file.read(str_index).decode('utf-8')
-	except:
-		pass
-	return None
+from . import common
 
 class import_cm3d2_tex(bpy.types.Operator):
 	bl_idname = "image.import_cm3d2_tex"
@@ -47,10 +37,10 @@ class import_cm3d2_tex(bpy.types.Operator):
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path = self.filepath
 		file = open(self.filepath, 'rb')
-		header_ext = ReadStr(file)
+		header_ext = common.read_str(file)
 		if header_ext == 'CM3D2_TEX':
 			file.seek(4, 1)
-			ReadStr(file)
+			common.read_str(file)
 			png_size = struct.unpack('<i', file.read(4))[0]
 			root, ext = os.path.splitext(self.filepath)
 			png_path = root + ".png"
@@ -76,4 +66,4 @@ class import_cm3d2_tex(bpy.types.Operator):
 # メニューを登録する関数
 def menu_func(self, context):
 	self.layout.separator()
-	self.layout.operator(import_cm3d2_tex.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(import_cm3d2_tex.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)

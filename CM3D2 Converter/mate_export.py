@@ -1,20 +1,5 @@
 import os, re, bpy, struct, os.path, shutil
-
-def ArrangeName(name, flag=True):
-	if flag:
-		return re.sub(r'\.\d{3}$', "", name)
-	return name
-
-def WriteStr(file, s):
-	str_count = len(s.encode('utf-8'))
-	if 128 <= str_count:
-		b = (str_count % 128) + 128
-		file.write(struct.pack('<B', b))
-		b = str_count // 128
-		file.write(struct.pack('<B', b))
-	else:
-		file.write(struct.pack('<B', str_count))
-	file.write(s.encode('utf-8'))
+from . import common
 
 class export_cm3d2_mate(bpy.types.Operator):
 	bl_idname = 'material.export_cm3d2_mate'
@@ -51,7 +36,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 			except:
 				pass
 		head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path)
-		self.filepath = os.path.join(head, ArrangeName(mate.name))
+		self.filepath = os.path.join(head, common.remove_serial_number(mate.name))
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
@@ -78,13 +63,13 @@ class export_cm3d2_mate(bpy.types.Operator):
 		mate = context.material
 		
 		file = open(self.filepath, 'wb')
-		WriteStr(file, 'CM3D2_MATERIAL')
+		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		
-		WriteStr(file, ArrangeName(mate.name.lower()))
-		WriteStr(file, ArrangeName(mate.name))
-		WriteStr(file, mate['shader1'])
-		WriteStr(file, mate['shader2'])
+		common.write_str(file, common.remove_serial_number(mate.name.lower()))
+		common.write_str(file, common.remove_serial_number(mate.name))
+		common.write_str(file, mate['shader1'])
+		common.write_str(file, mate['shader2'])
 		
 		for tex_slot in mate.texture_slots:
 			if not tex_slot:
@@ -97,8 +82,8 @@ class export_cm3d2_mate(bpy.types.Operator):
 					type = 'col'
 				else:
 					type = 'f'
-			WriteStr(file, type)
-			WriteStr(file, ArrangeName(tex.name))
+			common.write_str(file, type)
+			common.write_str(file, common.remove_serial_number(tex.name))
 			if type == 'tex':
 				try:
 					img = tex.image
@@ -106,19 +91,19 @@ class export_cm3d2_mate(bpy.types.Operator):
 					self.report(type={'ERROR'}, message="texタイプの設定値の取得に失敗しました、中止します")
 					return {'CANCELLED'}
 				if img:
-					WriteStr(file, 'tex2d')
-					WriteStr(file, ArrangeName(img.name))
+					common.write_str(file, 'tex2d')
+					common.write_str(file, common.remove_serial_number(img.name))
 					path = img.filepath
 					path = path.replace('\\', '/')
 					path = re.sub(r'^[\/\.]*', "", path)
 					if not re.search(r'^assets/texture/', path, re.I):
 						path = "Assets/texture/texture/" + os.path.basename(path)
-					WriteStr(file, path)
+					common.write_str(file, path)
 					col = tex_slot.color
 					file.write(struct.pack('<3f', col[0], col[1], col[2]))
 					file.write(struct.pack('<f', tex_slot.diffuse_color_factor))
 				else:
-					WriteStr(file, 'null')
+					common.write_str(file, 'null')
 			elif type == 'col':
 				col = tex_slot.color
 				file.write(struct.pack('<3f', col[0], col[1], col[2]))
@@ -126,7 +111,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 			elif type == 'f':
 				file.write(struct.pack('<f', tex_slot.diffuse_color_factor))
 		
-		WriteStr(file, 'end')
+		common.write_str(file, 'end')
 		file.close()
 		return {'FINISHED'}
 
@@ -175,7 +160,7 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		if lines[2] and lines[2] != '***':
 			self.filepath = os.path.join(head, lines[2])
 		else:
-			self.filepath = os.path.join(head, ArrangeName(txt.name))
+			self.filepath = os.path.join(head, common.remove_serial_number(txt.name))
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
 		try:
@@ -206,16 +191,16 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		lines = txt.as_string().split('\n')
 		
 		file = open(self.filepath, 'wb')
-		WriteStr(file, 'CM3D2_MATERIAL')
+		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		
 		if lines[1] != '***':
-			WriteStr(file, lines[1])
+			common.write_str(file, lines[1])
 		else:
-			WriteStr(file, lines[2])
-		WriteStr(file, lines[2])
-		WriteStr(file, lines[3])
-		WriteStr(file, lines[4])
+			common.write_str(file, lines[2])
+		common.write_str(file, lines[2])
+		common.write_str(file, lines[3])
+		common.write_str(file, lines[4])
 		
 		line_seek = 5
 		try:
@@ -226,27 +211,27 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 					line_seek += 1
 					continue
 				if lines[line_seek] == 'tex':
-					WriteStr(file, lines[line_seek])
-					WriteStr(file, lines[line_seek + 1].replace('\t', ''))
-					WriteStr(file, lines[line_seek + 2].replace('\t', ''))
+					common.write_str(file, lines[line_seek])
+					common.write_str(file, lines[line_seek + 1].replace('\t', ''))
+					common.write_str(file, lines[line_seek + 2].replace('\t', ''))
 					line_seek += 3
 					if lines[line_seek - 1].replace('\t', '') == 'tex2d':
-						WriteStr(file, lines[line_seek].replace('\t', ''))
-						WriteStr(file, lines[line_seek + 1].replace('\t', ''))
+						common.write_str(file, lines[line_seek].replace('\t', ''))
+						common.write_str(file, lines[line_seek + 1].replace('\t', ''))
 						floats = lines[line_seek + 2].replace('\t', '').split(' ')
 						for f in floats:
 							file.write(struct.pack('<f', float(f)))
 						line_seek += 3
 				elif lines[line_seek] == 'col':
-					WriteStr(file, lines[line_seek])
-					WriteStr(file, lines[line_seek + 1].replace('\t', ''))
+					common.write_str(file, lines[line_seek])
+					common.write_str(file, lines[line_seek + 1].replace('\t', ''))
 					floats = lines[line_seek + 2].replace('\t', '').split(' ')
 					for f in floats:
 						file.write(struct.pack('<f', float(f)))
 					line_seek += 3
 				elif lines[line_seek] == 'f':
-					WriteStr(file, lines[line_seek])
-					WriteStr(file, lines[line_seek + 1].replace('\t', ''))
+					common.write_str(file, lines[line_seek])
+					common.write_str(file, lines[line_seek + 1].replace('\t', ''))
 					f = float(lines[line_seek + 2].replace('\t', ''))
 					file.write(struct.pack('<f', f))
 					line_seek += 3
@@ -256,11 +241,11 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		except:
 			self.report(type={'ERROR'}, message="mateファイルの出力に失敗、中止します。 構文を見直して下さい")
 			return {'CANCELLED'}
-		WriteStr(file, 'end')
+		common.write_str(file, 'end')
 		
 		file.close()
 		return {'FINISHED'}
 
 # テキストメニューに項目を登録
 def TEXT_MT_text(self, context):
-	self.layout.operator(export_cm3d2_mate_text.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(export_cm3d2_mate_text.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)

@@ -1,20 +1,5 @@
 import bpy, os, re, math, struct, mathutils, bmesh
-
-def ReadStr(file):
-	str_index = struct.unpack('<B', file.read(1))[0]
-	if 128 <= str_index:
-		i = struct.unpack('<B', file.read(1))[0]
-		str_index += (i * 128) - 128
-	return file.read(str_index).decode('utf-8')
-
-def ConvertBoneName(name, enable=True):
-	if not enable:
-		return name
-	direction = re.search(r'[_ ]([rRlL])[_ ]', name)
-	if direction:
-		direction = direction.groups()[0]
-		name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', name) + "." + direction
-	return name
+from . import common
 
 # メインオペレーター
 class import_cm3d2_model(bpy.types.Operator):
@@ -104,7 +89,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		file = open(self.filepath, 'rb')
 		
 		# ヘッダー
-		ext = ReadStr(file)
+		ext = common.read_str(file)
 		if ext != 'CM3D2_MESH':
 			self.report(type={'ERROR'}, message="これはカスタムメイド3D2のモデルファイルではありません")
 			return {'CANCELLED'}
@@ -112,8 +97,8 @@ class import_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_update(0.1)
 		
 		# 何で名前2つあるの？
-		model_name1 = ReadStr(file)
-		model_name2 = ReadStr(file)
+		model_name1 = common.read_str(file)
+		model_name2 = common.read_str(file)
 		context.window_manager.progress_update(0.2)
 		
 		# ボーン情報読み込み
@@ -121,7 +106,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		bone_count = struct.unpack('<i', file.read(4))[0]
 		for i in range(bone_count):
 			bone_data.append({})
-			bone_data[i]['name'] = ReadStr(file)
+			bone_data[i]['name'] = common.read_str(file)
 			bone_data[i]['unknown'] = struct.unpack('<B', file.read(1))[0]
 		for i in range(bone_count):
 			parent_index = struct.unpack('<i', file.read(4))[0]
@@ -145,7 +130,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		local_bone_data = []
 		for i in range(local_bone_count):
 			local_bone_data.append({})
-			local_bone_data[i]['name'] = ReadStr(file)
+			local_bone_data[i]['name'] = common.read_str(file)
 		for i in range(local_bone_count):
 			row0 = struct.unpack('<4f', file.read(4*4))
 			row1 = struct.unpack('<4f', file.read(4*4))
@@ -187,27 +172,27 @@ class import_cm3d2_model(bpy.types.Operator):
 		material_count = struct.unpack('<i', file.read(4))[0]
 		for i in range(material_count):
 			material_data.append({})
-			material_data[i]['name1'] = ReadStr(file)
-			material_data[i]['name2'] = ReadStr(file)
-			material_data[i]['name3'] = ReadStr(file)
+			material_data[i]['name1'] = common.read_str(file)
+			material_data[i]['name2'] = common.read_str(file)
+			material_data[i]['name3'] = common.read_str(file)
 			material_data[i]['data'] = []
 			while True:
-				data_type = ReadStr(file)
+				data_type = common.read_str(file)
 				if data_type == 'tex':
 					material_data[i]['data'].append({'type':data_type})
-					material_data[i]['data'][-1]['name'] = ReadStr(file)
-					material_data[i]['data'][-1]['type2'] = ReadStr(file)
+					material_data[i]['data'][-1]['name'] = common.read_str(file)
+					material_data[i]['data'][-1]['type2'] = common.read_str(file)
 					if material_data[i]['data'][-1]['type2'] == 'tex2d':
-						material_data[i]['data'][-1]['name2'] = ReadStr(file)
-						material_data[i]['data'][-1]['path'] = ReadStr(file)
+						material_data[i]['data'][-1]['name2'] = common.read_str(file)
+						material_data[i]['data'][-1]['path'] = common.read_str(file)
 						material_data[i]['data'][-1]['color'] = struct.unpack('<4f', file.read(4*4))
 				elif data_type == 'col':
 					material_data[i]['data'].append({'type':data_type})
-					material_data[i]['data'][-1]['name'] = ReadStr(file)
+					material_data[i]['data'][-1]['name'] = common.read_str(file)
 					material_data[i]['data'][-1]['color'] = struct.unpack('<4f', file.read(4*4))
 				elif data_type == 'f':
 					material_data[i]['data'].append({'type':data_type})
-					material_data[i]['data'][-1]['name'] = ReadStr(file)
+					material_data[i]['data'][-1]['name'] = common.read_str(file)
 					material_data[i]['data'][-1]['float'] = struct.unpack('<f', file.read(4))[0]
 				else:
 					break
@@ -216,10 +201,10 @@ class import_cm3d2_model(bpy.types.Operator):
 		# その他情報読み込み
 		misc_data = []
 		while True:
-			data_type = ReadStr(file)
+			data_type = common.read_str(file)
 			if data_type == 'morph':
 				misc_data.append({'type':data_type})
-				misc_data[-1]['name'] = ReadStr(file)
+				misc_data[-1]['name'] = common.read_str(file)
 				morph_vert_count = struct.unpack('<i', file.read(4))[0]
 				misc_data[-1]['data'] = []
 				for i in range(morph_vert_count):
@@ -251,7 +236,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			child_data = []
 			for data in bone_data:
 				if not data['parent_name']:
-					bone = arm.edit_bones.new(ConvertBoneName(data['name'], self.is_convert_bone_names))
+					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_names))
 					bone.head = (0, 0, 0)
 					bone.tail = (0, 0.1, 0)
 					
@@ -276,9 +261,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				if len(child_data) <= 0:
 					break
 				data = child_data.pop(0)
-				if ConvertBoneName(data['parent_name'], self.is_convert_bone_names) in arm.edit_bones.keys():
-					bone = arm.edit_bones.new(ConvertBoneName(data['name'], self.is_convert_bone_names))
-					parent = arm.edit_bones[ConvertBoneName(data['parent_name'], self.is_convert_bone_names)]
+				if common.decode_bone_name(data['parent_name'], self.is_convert_bone_names) in arm.edit_bones.keys():
+					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_names))
+					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_bone_names)]
 					bone.parent = parent
 					if data['unknown']:
 						bone.bbone_segments = 2
@@ -290,7 +275,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					rot = mathutils.Quaternion()
 					for j in range(9**9):
 						for b in bone_data:
-							if ConvertBoneName(b['name'], self.is_convert_bone_names) == temp_parent.name:
+							if common.decode_bone_name(b['name'], self.is_convert_bone_names) == temp_parent.name:
 								c = b['co'].copy()
 								r = b['rot'].copy()
 								break
@@ -332,7 +317,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature_clean:
 				for bone in arm.edit_bones:
 					for b in local_bone_data:
-						name = ConvertBoneName(b['name'], self.is_convert_bone_names)
+						name = common.decode_bone_name(b['name'], self.is_convert_bone_names)
 						if bone.name == name:
 							break
 					else:
@@ -410,12 +395,12 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			# 頂点グループ作成
 			for data in local_bone_data:
-				ob.vertex_groups.new(ConvertBoneName(data['name'], self.is_convert_vertex_group_names))
+				ob.vertex_groups.new(common.decode_bone_name(data['name'], self.is_convert_vertex_group_names))
 			context.window_manager.progress_update(3.1)
 			for vert_index, data in enumerate(vertex_data):
 				for weight in data['weights']:
 					if 0.0 < weight['value']:
-						vertex_group = ob.vertex_groups[ConvertBoneName(weight['name'], self.is_convert_vertex_group_names)]
+						vertex_group = ob.vertex_groups[common.decode_bone_name(weight['name'], self.is_convert_vertex_group_names)]
 						vertex_group.add([vert_index], weight['value'], 'REPLACE')
 			context.window_manager.progress_update(3.2)
 			if self.is_vertex_group_sort:
@@ -475,26 +460,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				mate['shader2'] = data['name3']
 				#mate.use_face_texture = True
 				
-				if self.is_decorate:
-					shader_type = mate['shader1']
-					if '/Toony_' in shader_type:
-						mate.diffuse_shader = 'TOON'
-						mate.diffuse_toon_smooth = 0.01
-						mate.diffuse_toon_size = 1.2
-					if 'Trans' in  shader_type:
-						mate.use_transparency = True
-						mate.alpha = 0.5
-					if 'CM3D2/Man' in shader_type:
-						mate.use_shadeless = True
-					if 'Unlit/' in shader_type:
-						mate.emit = 0.5
-					if '_NoZ' in shader_type:
-						mate.offset_z = 9999
-					if 'CM3D2/Mosaic' in shader_type:
-						mate.use_transparency = True
-						mate.transparency_method = 'RAYTRACE'
-						mate.alpha = 0.25
-						mate.raytrace_transparency.ior = 2
+				common.decorate_material(mate, mate['shader1'], self.is_decorate)
 				
 				ob.material_slots[-1].material = mate
 				# 面にマテリアル割り当て
@@ -693,4 +659,4 @@ class import_cm3d2_model(bpy.types.Operator):
 
 # メニューを登録する関数
 def menu_func(self, context):
-	self.layout.operator(import_cm3d2_model.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(import_cm3d2_model.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)

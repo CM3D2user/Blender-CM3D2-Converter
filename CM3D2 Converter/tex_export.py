@@ -1,20 +1,5 @@
 import os, re, bpy, struct, os.path, shutil
-
-def ArrangeName(name, flag=True):
-	if flag:
-		return re.sub(r'\.\d{3}$', "", name)
-	return name
-
-def WriteStr(file, s):
-	str_count = len(s.encode('utf-8'))
-	if 128 <= str_count:
-		b = (str_count % 128) + 128
-		file.write(struct.pack('<B', b))
-		b = str_count // 128
-		file.write(struct.pack('<B', b))
-	else:
-		file.write(struct.pack('<B', str_count))
-	file.write(s.encode('utf-8'))
+from . import common
 
 class export_cm3d2_tex(bpy.types.Operator):
 	bl_idname = "image.export_cm3d2_tex"
@@ -54,7 +39,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 				except:
 					pass
 			head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path)
-			self.filepath = os.path.join(head, ArrangeName(img.name))
+			self.filepath = os.path.join(head, common.remove_serial_number(img.name))
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".tex"
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
@@ -99,9 +84,9 @@ class export_cm3d2_tex(bpy.types.Operator):
 		
 		# 本命ファイルに書き込み
 		file = open(self.filepath, 'wb')
-		WriteStr(file, 'CM3D2_TEX')
+		common.write_str(file, 'CM3D2_TEX')
 		file.write(struct.pack('<i', self.version))
-		WriteStr(file, self.path)
+		common.write_str(file, self.path)
 		file.write(struct.pack('<i', len(temp_data)))
 		file.write(temp_data)
 		file.close()
@@ -110,4 +95,4 @@ class export_cm3d2_tex(bpy.types.Operator):
 
 # メニューを登録する関数
 def menu_func(self, context):
-	self.layout.operator(export_cm3d2_tex.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(export_cm3d2_tex.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)

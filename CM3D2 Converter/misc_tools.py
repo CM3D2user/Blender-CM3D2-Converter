@@ -1,9 +1,5 @@
 import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request, datetime
-
-def ArrangeName(name, flag=True):
-	if flag:
-		return re.sub(r'\.\d{3}$', "", name)
-	return name
+from . import common
 
 # アドオンアップデート処理
 class update_cm3d2_converter(bpy.types.Operator):
@@ -891,26 +887,7 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
 		
-		if self.is_decorate:
-			shader_type = self.type
-			if '/Toony_' in shader_type:
-				mate.diffuse_shader = 'TOON'
-				mate.diffuse_toon_smooth = 0.01
-				mate.diffuse_toon_size = 1.2
-			if 'Trans' in  shader_type:
-				mate.use_transparency = True
-				mate.alpha = 0.5
-			if 'CM3D2/Man' in shader_type:
-				mate.use_shadeless = True
-			if 'Unlit/' in shader_type:
-				mate.emit = 0.5
-			if '_NoZ' in shader_type:
-				mate.offset_z = 9999
-			if 'CM3D2/Mosaic' in shader_type:
-				mate.use_transparency = True
-				mate.transparency_method = 'RAYTRACE'
-				mate.alpha = 0.25
-				mate.raytrace_transparency.ior = 2
+		common.decorate_material(mate, self.type, self.is_decorate)
 		
 		slot_count = 0
 		for data in tex_list:
@@ -981,7 +958,7 @@ class copy_material(bpy.types.Operator):
 				else:
 					type = 'f'
 			output_text = output_text + type + "\n"
-			output_text = output_text + "\t" + ArrangeName(tex.name) + "\n"
+			output_text = output_text + "\t" + common.remove_serial_number(tex.name) + "\n"
 			if type == 'tex':
 				try:
 					img = tex.image
@@ -990,7 +967,7 @@ class copy_material(bpy.types.Operator):
 					return {'CANCELLED'}
 				if img:
 					output_text = output_text + '\ttex2d' + "\n"
-					output_text = output_text + "\t" + ArrangeName(img.name) + "\n"
+					output_text = output_text + "\t" + common.remove_serial_number(img.name) + "\n"
 					path = img.filepath
 					path = path.replace('\\', '/')
 					path = re.sub(r'^[\/\.]*', "", path)
@@ -1049,26 +1026,7 @@ class paste_material(bpy.types.Operator):
 		mate['shader1'] = lines[3]
 		mate['shader2'] = lines[4]
 		
-		if self.is_decorate:
-			shader_type = mate['shader1']
-			if '/Toony_' in shader_type:
-				mate.diffuse_shader = 'TOON'
-				mate.diffuse_toon_smooth = 0.01
-				mate.diffuse_toon_size = 1.2
-			if 'Trans' in  shader_type:
-				mate.use_transparency = True
-				mate.alpha = 0.5
-			if 'CM3D2/Man' in shader_type:
-				mate.use_shadeless = True
-			if 'Unlit/' in shader_type:
-				mate.emit = 0.5
-			if '_NoZ' in shader_type:
-				mate.offset_z = 9999
-			if 'CM3D2/Mosaic' in shader_type:
-				mate.use_transparency = True
-				mate.transparency_method = 'RAYTRACE'
-				mate.alpha = 0.25
-				mate.raytrace_transparency.ior = 2
+		common.decorate_material(mate, mate['shader1'], self.is_decorate)
 		
 		slot_index = 0
 		line_seek = 5
@@ -1637,30 +1595,30 @@ class open_url(bpy.types.Operator):
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(quick_vertex_group_transfer.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(quick_vertex_group_transfer.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
-	self.layout.operator(blur_vertex_group.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value, text="頂点グループ名を CM3D2 → Blender")
-	self.layout.operator(convert_cm3d2_vertex_group_names_restore.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value, text="頂点グループ名を Blender → CM3D2")
+	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id, text="頂点グループ名を CM3D2 → Blender")
+	self.layout.operator(convert_cm3d2_vertex_group_names_restore.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id, text="頂点グループ名を Blender → CM3D2")
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(shape_key_transfer_ex.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(shape_key_transfer_ex.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
-	self.layout.operator(scale_shape_key.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(scale_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
-	self.layout.operator(blur_shape_key.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-	self.layout.operator(radius_blur_shape_key.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(blur_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator(radius_blur_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):
 	mate = context.material
 	if not mate:
 		col = self.layout.column(align=True)
-		col.operator(new_cm3d2.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+		col.operator(new_cm3d2.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 		row = col.row(align=True)
 		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="mateから")
 		row.operator(paste_material.bl_idname, icon='PASTEDOWN', text="クリップボードから")
@@ -1669,7 +1627,7 @@ def MATERIAL_PT_context_material(self, context):
 			box = self.layout.box()
 			#row = box.split(percentage=0.3)
 			row = box.row()
-			row.label(text="CM3D2用", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+			row.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 			row.operator('material.export_cm3d2_mate', icon='SAVE_AS', text="")
 			row.operator(copy_material.bl_idname, icon='COPYDOWN', text="")
 			
@@ -1724,7 +1682,7 @@ def DATA_PT_context_arm(self, context):
 						flag = True
 				if flag:
 					col = self.layout.column(align=True)
-					col.label(text="CM3D2用 ボーン名変換", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+					col.label(text="CM3D2用 ボーン名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
 					row = col.row(align=True)
 					row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER')
 					row.operator(convert_cm3d2_bone_names_restore.bl_idname, text="Blender → CM3D2", icon='POSE_DATA')
@@ -1743,7 +1701,7 @@ def DATA_PT_context_arm(self, context):
 			if bone_data_count or enabled_clipboard:
 				col = self.layout.column(align=True)
 				row = col.row(align=True)
-				row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+				row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
 				sub_row = row.row()
 				sub_row.alignment = 'RIGHT'
 				if bone_data_count:
@@ -1782,7 +1740,7 @@ def OBJECT_PT_context_object(self, context):
 			if bone_data_count or enabled_clipboard:
 				col = self.layout.column(align=True)
 				row = col.row(align=True)
-				row.label(text="CM3D2用ボーン情報", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+				row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
 				sub_row = row.row()
 				sub_row.alignment = 'RIGHT'
 				if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
@@ -1807,13 +1765,13 @@ def DATA_PT_modifiers(self, context):
 				me = ob.data
 				if me.shape_keys:
 					if len(ob.modifiers):
-						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # テキストヘッダーに項目追加
 def TEXT_HT_header(self, context):
 	texts = bpy.data.texts
 	text_keys = texts.keys()
-	self.layout.label(text="CM3D2用:", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.label(text="CM3D2用:", icon_value=common.preview_collections['main']['KISS'].icon_id)
 	row = self.layout.row(align=True)
 	if 'BoneData' in text_keys:
 		txt = bpy.data.texts['BoneData']
@@ -1869,7 +1827,7 @@ def TEXTURE_PT_context_texture(self, context):
 		else:
 			type = "f"
 	box = self.layout.box()
-	box.label(text="CM3D2用", icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 	split = box.split(percentage=0.3)
 	split.label(text="設定値タイプ:")
 	row = split.row(align=True)
@@ -1905,7 +1863,7 @@ def TEXTURE_PT_context_texture(self, context):
 	elif type == "f":
 		box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
 	
-	base_name = ArrangeName(tex.name)
+	base_name = common.remove_serial_number(tex.name)
 	description = ""
 	if base_name == '_MainTex':
 		description = "面の色を決定するテクスチャを指定。\n普段テスクチャと呼んでいるものは基本コレです。\nテクスチャパスは適当でも動いたりしますが、\nテクスチャ名はきちんと決めましょう。"
@@ -1937,8 +1895,8 @@ def TEXTURE_PT_context_texture(self, context):
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
 	self.layout.separator()
-	self.layout.operator(update_cm3d2_converter.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
-	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(update_cm3d2_converter.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS"
 	bl_label = "CM3D2 Converterの更新履歴 (取得に数秒)"

@@ -1,34 +1,8 @@
 import bpy, re, os, os.path, struct, shutil, mathutils, bmesh
-
-def ArrangeName(name, flag):
-	if flag:
-		return re.sub(r'\.\d{3}$', "", name)
-	return name
-
-def WriteStr(file, s):
-	str_count = len(s.encode('utf-8'))
-	if 128 <= str_count:
-		b = (str_count % 128) + 128
-		file.write(struct.pack('<B', b))
-		b = str_count // 128
-		file.write(struct.pack('<B', b))
-	else:
-		file.write(struct.pack('<B', str_count))
-	file.write(s.encode('utf-8'))
+from . import common
 
 def SetMateLine(line):
 	return re.sub(r'^[\t ]*', "", line)
-
-def ConvertBoneName(name, enable=True):
-	if not enable:
-		return name
-	if name.count('*') == 1:
-		direction = re.search(r'\.([rRlL])$', name)
-		if direction:
-			direction = direction.groups()[0]
-			name = re.sub(r'\.[rRlL]$', '', name)
-			name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', name)
-	return name
 
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
@@ -94,7 +68,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not me.uv_layers.active:
 			self.report(type={'ERROR'}, message="UVがありません")
 			return {'CANCELLED'}
-		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
+		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
 		#if len(ob_names) != 2:
 		#	self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 		#	return {'CANCELLED'}
@@ -242,7 +216,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					return {'CANCELLED'}
 		context.window_manager.progress_update(1)
 		
-		ob_names = ArrangeName(ob.name, self.is_arrange_name).split('.')
+		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
 		ob_names = [self.model_name, self.base_bone_name]
 		
 		# BoneData情報読み込み
@@ -369,16 +343,16 @@ class export_cm3d2_model(bpy.types.Operator):
 		# ファイル先頭
 		file = open(self.filepath, 'wb')
 		
-		WriteStr(file, 'CM3D2_MESH')
+		common.write_str(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', self.version))
 		
-		WriteStr(file, ob_names[0])
-		WriteStr(file, ob_names[1])
+		common.write_str(file, ob_names[0])
+		common.write_str(file, ob_names[1])
 		
 		# ボーン情報書き出し
 		file.write(struct.pack('<i', len(bone_data)))
 		for bone in bone_data:
-			WriteStr(file, bone['name'])
+			common.write_str(file, bone['name'])
 			file.write(struct.pack('<b', bone['unknown']))
 		context.window_manager.progress_update(3.1)
 		for bone in bone_data:
@@ -416,7 +390,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		# ローカルボーン情報を書き出し
 		file.write(struct.pack('<i', len(local_bone_data)))
 		for bone in local_bone_data:
-			WriteStr(file, bone['name'])
+			common.write_str(file, bone['name'])
 		context.window_manager.progress_update(5.1)
 		for bone in local_bone_data:
 			for f in bone['matrix']:
@@ -445,7 +419,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				context.window_manager.progress_update(progress_count)
 				vgs = []
 				for vg in vert.groups:
-					name = ConvertBoneName(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+					name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
 					print(name)
 					if name not in local_bone_names:
 						continue
@@ -576,79 +550,79 @@ class export_cm3d2_model(bpy.types.Operator):
 		for slot_index, slot in enumerate(ob.material_slots):
 			if self.mate_info_mode == 'MATERIAL':
 				mate = slot.material
-				WriteStr(file, ArrangeName(mate.name, self.is_arrange_name))
-				WriteStr(file, mate['shader1'])
-				WriteStr(file, mate['shader2'])
+				common.write_str(file, common.remove_serial_number(mate.name, self.is_arrange_name))
+				common.write_str(file, mate['shader1'])
+				common.write_str(file, mate['shader2'])
 				for tindex, tslot in enumerate(mate.texture_slots):
 					if not tslot:
 						continue
 					tex = tslot.texture
 					if mate.use_textures[tindex]:
-						WriteStr(file, 'tex')
-						WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
+						common.write_str(file, 'tex')
+						common.write_str(file, common.remove_serial_number(tex.name, self.is_arrange_name))
 						if tex.image:
 							img = tex.image
-							WriteStr(file, 'tex2d')
-							WriteStr(file, ArrangeName(img.name, self.is_arrange_name))
+							common.write_str(file, 'tex2d')
+							common.write_str(file, common.remove_serial_number(img.name, self.is_arrange_name))
 							path = img.filepath
 							path = path.replace('\\', '/')
 							path = re.sub(r'^[\/\.]*', "", path)
 							if not re.search(r'^assets/texture/', path, re.I):
 								path = "Assets/texture/texture/" + os.path.basename(path)
-							WriteStr(file, path)
+							common.write_str(file, path)
 							col = tslot.color
 							file.write(struct.pack('<3f', col[0], col[1], col[2]))
 							file.write(struct.pack('<f', tslot.diffuse_color_factor))
 						else:
-							WriteStr(file, 'null')
+							common.write_str(file, 'null')
 					else:
 						if tslot.use_rgb_to_intensity:
-							WriteStr(file, 'col')
-							WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
+							common.write_str(file, 'col')
+							common.write_str(file, common.remove_serial_number(tex.name, self.is_arrange_name))
 							col = tslot.color
 							file.write(struct.pack('<3f', col[0], col[1], col[2]))
 							file.write(struct.pack('<f', tslot.diffuse_color_factor))
 						else:
-							WriteStr(file, 'f')
-							WriteStr(file, ArrangeName(tex.name, self.is_arrange_name))
+							common.write_str(file, 'f')
+							common.write_str(file, common.remove_serial_number(tex.name, self.is_arrange_name))
 							file.write(struct.pack('<f', tslot.diffuse_color_factor))
 			elif self.mate_info_mode == 'TEXT':
 				data = context.blend_data.texts["Material:" + str(slot_index)].as_string()
 				data = data.split('\n')
-				WriteStr(file, data[2])
-				WriteStr(file, data[3])
-				WriteStr(file, data[4])
+				common.write_str(file, data[2])
+				common.write_str(file, data[3])
+				common.write_str(file, data[4])
 				seek = 5
 				for i in range(9**9):
 					if len(data) <= seek:
 						break
 					type = data[seek]
 					if type == 'tex':
-						WriteStr(file, type)
-						WriteStr(file, SetMateLine(data[seek + 1]))
-						WriteStr(file, SetMateLine(data[seek + 2]))
+						common.write_str(file, type)
+						common.write_str(file, SetMateLine(data[seek + 1]))
+						common.write_str(file, SetMateLine(data[seek + 2]))
 						if SetMateLine(data[seek + 2]) == 'tex2d':
-							WriteStr(file, SetMateLine(data[seek + 3]))
-							WriteStr(file, SetMateLine(data[seek + 4]))
+							common.write_str(file, SetMateLine(data[seek + 3]))
+							common.write_str(file, SetMateLine(data[seek + 4]))
 							col = SetMateLine(data[seek + 5])
 							col = col.split(' ')
 							file.write(struct.pack('<4f', float(col[0]), float(col[1]), float(col[2]), float(col[3])))
 							seek += 3
 						seek += 2
 					elif type == 'col':
-						WriteStr(file, type)
-						WriteStr(file, SetMateLine(data[seek + 1]))
+						common.write_str(file, type)
+						common.write_str(file, SetMateLine(data[seek + 1]))
 						col = SetMateLine(data[seek + 2])
 						col = col.split(' ')
 						file.write(struct.pack('<4f', float(col[0]), float(col[1]), float(col[2]), float(col[3])))
 						seek += 2
 					elif type == 'f':
-						WriteStr(file, type)
-						WriteStr(file, SetMateLine(data[seek + 1]))
+						common.write_str(file, type)
+						common.write_str(file, SetMateLine(data[seek + 1]))
 						file.write(struct.pack('<f', float(SetMateLine(data[seek + 2]))))
 						seek += 2
 					seek += 1
-			WriteStr(file, 'end')
+			common.write_str(file, 'end')
 		context.window_manager.progress_update(9)
 		
 		# モーフを書き出し
@@ -664,8 +638,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			temp_me.from_pydata(vs, es, fs)
 			if 2 <= len(me.shape_keys.key_blocks):
 				for shape_key in me.shape_keys.key_blocks[1:]:
-					WriteStr(file, 'morph')
-					WriteStr(file, shape_key.name)
+					common.write_str(file, 'morph')
+					common.write_str(file, shape_key.name)
 					morph = []
 					vert_index = 0
 					for i in range(len(me.vertices)):
@@ -688,7 +662,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						normal = temp_me.vertices[raw_index].normal.copy() - me.vertices[raw_index].normal.copy()
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
-		WriteStr(file, 'end')
+		common.write_str(file, 'end')
 		
 		file.close()
 		context.window_manager.progress_update(10)
@@ -696,4 +670,4 @@ class export_cm3d2_model(bpy.types.Operator):
 
 # メニューを登録する関数
 def menu_func(self, context):
-	self.layout.operator(export_cm3d2_model.bl_idname, icon_value=context.user_preferences.addons[__name__.split('.')[0]].preferences.kiss_icon_value)
+	self.layout.operator(export_cm3d2_model.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
