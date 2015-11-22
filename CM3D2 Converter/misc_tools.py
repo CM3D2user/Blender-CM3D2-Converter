@@ -1224,6 +1224,45 @@ class paste_text_bone_data(bpy.types.Operator):
 		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
 		return {'FINISHED'}
 
+class remove_all_material_texts(bpy.types.Operator):
+	bl_idname = "text.remove_all_material_texts"
+	bl_label = "マテリアル情報テキストを全削除"
+	bl_description = "CM3D2で使用できるマテリアルテキストを全て削除します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	is_keep_used_material = bpy.props.BoolProperty(name="使用する分は保管", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		if 'Material:0' in context.blend_data.texts.keys():
+			return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_keep_used_material')
+	
+	def execute(self, context):
+		remove_texts = []
+		pass_count = 0
+		for i in range(9999):
+			name = 'Material:' + str(i)
+			if name in context.blend_data.texts.keys():
+				remove_texts.append(context.blend_data.texts[name])
+			else:
+				pass_count += 1
+			if 10 < pass_count:
+				break
+		if self.is_keep_used_material:
+			ob = context.active_object
+			if ob:
+				remove_texts = remove_texts[len(ob.material_slots):]
+		for txt in remove_texts:
+			context.blend_data.texts.remove(txt)
+		return {'FINISHED'}
+
 class show_apply_modifier_addon_web(bpy.types.Operator):
 	bl_idname = "object.show_apply_modifier_addon_web"
 	bl_label = "モディファイアを適用できない場合"
@@ -1738,6 +1777,8 @@ def TEXT_HT_header(self, context):
 				pass_count += 1
 			if 9 < pass_count:
 				break
+		if "Material:0" in text_keys:
+			row.operator(remove_all_material_texts.bl_idname, icon='X', text="")
 
 # テクスチャタブに項目追加
 def TEXTURE_PT_context_texture(self, context):
