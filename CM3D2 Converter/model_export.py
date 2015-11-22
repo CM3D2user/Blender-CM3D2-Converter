@@ -81,8 +81,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="マテリアルがありません")
 			return {'CANCELLED'}
 		for slot in ob.material_slots:
-			if not slot:
-				self.report(type={'ERROR'}, message="空のマテリアルスロットがあります")
+			if not slot.material:
+				self.report(type={'ERROR'}, message="空のマテリアルスロットを削除してください")
 				return {'CANCELLED'}
 			try:
 				slot.material['shader1']
