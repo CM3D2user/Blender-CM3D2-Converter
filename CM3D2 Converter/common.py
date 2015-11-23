@@ -1,4 +1,4 @@
-import bpy, re, struct
+import bpy, os, re, struct
 
 preview_collections = {}
 
@@ -69,3 +69,19 @@ def decorate_material(mate, shader_str, flag=True):
 			mate.transparency_method = 'RAYTRACE'
 			mate.alpha = 0.25
 			mate.raytrace_transparency.ior = 2
+
+def default_cm3d2_dir(main_dir, file_name, replace_ext):
+	if not main_dir:
+		try:
+			import winreg
+			with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+				main_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
+				main_dir = os.path.join(main_dir, "GameData", "*." + replace_ext)
+		except:
+			pass
+	if file_name:
+		head, tail = os.path.split(main_dir)
+		main_dir = os.path.join(head, file_name)
+	root, ext = os.path.splitext(main_dir)
+	main_dir = root + "." + replace_ext
+	return main_dir

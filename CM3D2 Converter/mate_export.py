@@ -28,19 +28,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		mate = context.material
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path:
-			try:
-				import winreg
-				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', '*.mate')
-					context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = path
-			except:
-				pass
-		head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path)
-		self.filepath = os.path.join(head, common.remove_serial_number(mate.name.lower()))
-		root, ext = os.path.splitext(self.filepath)
-		self.filepath = root + ".mate"
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path, mate.name.lower(), "mate")
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
 		self.name1 = common.remove_serial_number(mate.name.lower())
 		self.name2 = common.remove_serial_number(mate.name)
@@ -155,22 +143,7 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 	def invoke(self, context, event):
 		txt = context.edit_text
 		lines = txt.as_string().split('\n')
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path:
-			try:
-				import winreg
-				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', '*.mate')
-					context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = path
-			except:
-				pass
-		head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path)
-		if lines[1] and lines[1] != '***':
-			self.filepath = os.path.join(head, lines[1])
-		else:
-			self.filepath = os.path.join(head, lines[2].lower())
-		root, ext = os.path.splitext(self.filepath)
-		self.filepath = root + ".mate"
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path, lines[1], "mate")
 		try:
 			self.version = int(lines[0])
 		except:

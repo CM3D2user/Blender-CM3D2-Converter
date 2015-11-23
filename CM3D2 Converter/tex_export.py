@@ -27,21 +27,8 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def invoke(self, context, event):
 		img = context.edit_image
 		if img.filepath:
-			self.filepath = img.filepath
-		else:
-			if not context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path:
-				try:
-					import winreg
-					with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-						path = winreg.QueryValueEx(key, 'InstallPath')[0]
-						path = os.path.join(path, 'GameData', '*.tex')
-						context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = path
-				except:
-					pass
-			head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path)
-			self.filepath = os.path.join(head, common.remove_serial_number(img.name))
-		root, ext = os.path.splitext(self.filepath)
-		self.filepath = root + ".tex"
+			context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = img.filepath
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path, common.remove_serial_number(img.name), "tex")
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
 		self.path = "assets/texture/texture/" + os.path.basename(self.filepath)
 		context.window_manager.fileselect_add(self)

@@ -18,16 +18,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 	mode = bpy.props.EnumProperty(items=items, name="展開方法", default='PNG')
 	
 	def invoke(self, context, event):
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path:
-			try:
-				import winreg
-				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', '*.tex')
-					context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path = path
-			except:
-				pass
-		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path, "", "tex")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	

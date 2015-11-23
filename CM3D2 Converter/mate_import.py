@@ -21,16 +21,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path:
-			try:
-				import winreg
-				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', '*.mate')
-					context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path = path
-			except:
-				pass
-		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path, "", "mate")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -124,16 +115,7 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 		return True
 	
 	def invoke(self, context, event):
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path:
-			try:
-				import winreg
-				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', '*.mate')
-					context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path = path
-			except:
-				pass
-		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path, "", "mate")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	

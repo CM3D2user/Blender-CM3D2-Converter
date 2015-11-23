@@ -36,16 +36,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアのカスタムプロパティ", default=True, description="アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます")
 	
 	def invoke(self, context, event):
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path:
-			try:
-				import winreg
-				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					path = winreg.QueryValueEx(key, 'InstallPath')[0]
-					path = os.path.join(path, 'GameData', '*.model')
-					context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = path
-			except:
-				pass
-		self.filepath = context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path, "", "model")
 		self.scale = context.user_preferences.addons[__name__.split('.')[0]].preferences.scale
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
