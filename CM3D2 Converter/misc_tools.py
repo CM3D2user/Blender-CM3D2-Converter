@@ -427,6 +427,10 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		kd.balance()
 		is_first = True
 		context.window_manager.progress_begin(0, len(source_ob.data.shape_keys.key_blocks) * len(target_ob.data.vertices))
+		near_verts = []
+		for target_vert in target_ob.data.vertices:
+			co, index, dist = kd.find(target_ob.matrix_world * target_vert.co)
+			near_verts.append(index)
 		count = 0
 		for key_block in source_ob.data.shape_keys.key_blocks:
 			if is_first:
@@ -440,7 +444,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
 			is_shaped = False
 			for target_vert in target_ob.data.vertices:
-				co, index, dist = kd.find(target_ob.matrix_world * target_vert.co)
+				index = near_verts[target_vert.index]
 				total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
 				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
 				if not is_shaped and 0.001 <= total_diff.length:
