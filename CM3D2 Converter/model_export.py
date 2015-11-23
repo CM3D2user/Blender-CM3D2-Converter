@@ -401,67 +401,75 @@ class export_cm3d2_model(bpy.types.Operator):
 		progress_plus_value = 1.0 / len(me.vertices)
 		progress_count = 6.0
 		for vert in me.vertices:
-			for uv in vert_uvs[vert.index]:
-				progress_count += progress_plus_value
-				context.window_manager.progress_update(progress_count)
-				vgs = []
-				for vg in vert.groups:
-					name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
-					print(name)
-					if name not in local_bone_names:
-						continue
-					weight = vg.weight
-					if 0.0 < weight:
-						vgs.append([name, weight])
-				if len(vgs) == 0:
-					self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、中止します")
-					return {'CANCELLED'}
-				vgs.sort(key=lambda vg: vg[1])
-				vgs.reverse()
-				for i in range(4):
-					try:
-						name = vgs[i][0]
-					except IndexError:
-						index = 0
+			progress_count += progress_plus_value
+			context.window_manager.progress_update(progress_count)
+			
+			vgs = []
+			face_indexs = []
+			weights = []
+			for vg in vert.groups:
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+				print(name)
+				if name not in local_bone_names:
+					continue
+				weight = vg.weight
+				if 0.0 < weight:
+					vgs.append([name, weight])
+			if len(vgs) == 0:
+				self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、中止します")
+				return {'CANCELLED'}
+			vgs.sort(key=lambda vg: vg[1])
+			vgs.reverse()
+			for i in range(4):
+				try:
+					name = vgs[i][0]
+				except IndexError:
+					index = 0
+				else:
+					index = 0
+					for i, bone in enumerate(local_bone_data):
+						if bone['name'] == name:
+							break
+						index += 1
 					else:
 						index = 0
-						for i, bone in enumerate(local_bone_data):
-							if bone['name'] == name:
-								break
-							index += 1
-						else:
-							index = 0
-					file.write(struct.pack('<H', index))
-				total = 0.0
+				face_indexs.append(index)
+			total = 0.0
+			for i in range(4):
+				try:
+					weight = vgs[i][1]
+				except IndexError:
+					weight = 0.0
+				total += weight
+			if self.is_normalize_weight:
 				for i in range(4):
 					try:
 						weight = vgs[i][1]
 					except IndexError:
+						pass
+					else:
+						weight /= total
+						vgs[i][1] = weight
+			else:
+				if 1.01 < total:
+					is_over_one += 1
+				if total < 0.99:
+					is_under_one += 1
+			for i in range(4):
+				try:
+					weight = vgs[i][1]
+				except IndexError:
+					if total <= 0.0:
+						if i == 0:
+							weight = 1.0
+					else:
 						weight = 0.0
-					total += weight
-				if self.is_normalize_weight:
-					for i in range(4):
-						try:
-							weight = vgs[i][1]
-						except IndexError:
-							pass
-						else:
-							weight /= total
-							vgs[i][1] = weight
-				else:
-					if 1.01 < total:
-						is_over_one += 1
-					if total < 0.99:
-						is_under_one += 1
-				for i in range(4):
-					try:
-						weight = vgs[i][1]
-					except IndexError:
-						if total <= 0.0:
-							if i == 0:
-								weight = 1.0
-						else:
-							weight = 0.0
+				weights.append(weight)
+			
+			for uv in vert_uvs[vert.index]:
+				for index in face_indexs:
+					file.write(struct.pack('<H', index))
+				for weight in weights:
 					file.write(struct.pack('<f', weight))
 		if 1 <= is_over_one:
 			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が%dつ見つかりました" % is_over_one)
