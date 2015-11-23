@@ -1889,6 +1889,8 @@ def TEXTURE_PT_context_texture(self, context):
 		description = "リムライトの強さを指定。\nこの値は1.0以上なことが多いです。\nこのアドオンではデフォルトは25としています。"
 	elif base_name == '_RimShift':
 		description = "リムライトの幅を指定。\n0.0～1.0で指定。0.5でもかなり強い。"
+	elif base_name == '_RenderTex':
+		description = "モザイクシェーダーにある設定値。\n特に設定の必要なし。"
 	elif base_name == '_FloatValue1':
 		description = "モザイクの大きさ？(未確認)"
 	if description != "":
