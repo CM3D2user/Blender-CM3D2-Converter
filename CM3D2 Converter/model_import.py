@@ -132,11 +132,17 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		# 頂点情報読み込み
 		vertex_data = []
+		comparison_data = []
 		for i in range(vertex_count):
 			vertex_data.append({})
-			vertex_data[i]['co'] = struct.unpack('<3f', file.read(3*4))
-			vertex_data[i]['normal'] = struct.unpack('<3f', file.read(3*4))
-			vertex_data[i]['uv'] = struct.unpack('<2f', file.read(2*4))
+			co = struct.unpack('<3f', file.read(3*4))
+			no = struct.unpack('<3f', file.read(3*4))
+			uv = struct.unpack('<2f', file.read(2*4))
+			vertex_data[i]['co'] = co
+			vertex_data[i]['normal'] = no
+			vertex_data[i]['uv'] = uv
+			comparison_str = str(co[0]) + str(co[1]) + str(co[2]) + str(no[0]) + str(no[1]) + str(no[2])
+			comparison_data.append(comparison_str)
 		unknown_count = struct.unpack('<i', file.read(4))[0]
 		for i in range(unknown_count):
 			struct.unpack('<4f', file.read(4*4))
@@ -504,13 +510,8 @@ class import_cm3d2_model(bpy.types.Operator):
 			bpy.ops.mesh.select_all(action='DESELECT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			if self.is_remove_doubles:
-				comparison_data = []
-				progress_plus_value = 1.0 / (len(vertex_data) + len(me.vertices))
+				progress_plus_value = 1.0 / len(me.vertices)
 				progress_count = 7.0
-				for data in vertex_data:
-					comparison_data.append((data['co'], data['normal']))
-					progress_count += progress_plus_value
-					context.window_manager.progress_update(progress_count)
 				for i, vert in enumerate(me.vertices):
 					if comparison_data[i] in comparison_data[:i] or comparison_data[i] in comparison_data[i+1:]:
 						vert.select = True
