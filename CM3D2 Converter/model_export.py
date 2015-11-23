@@ -69,6 +69,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		#if len(ob_names) != 2:
 		#	self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
 		#	return {'CANCELLED'}
+		if 65535 < len(me.vertices):
+			self.report(type={'ERROR'}, message="エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
+			return {'CANCELLED'}
 		for face in me.polygons:
 			if 5 <= len(face.vertices):
 				self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
