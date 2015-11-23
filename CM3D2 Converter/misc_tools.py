@@ -343,11 +343,8 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 		ob = context.active_object
 		convert_count = 0
 		for vg in ob.vertex_groups:
-			direction = re.search(r'[_ ]([rRlL])[_ ]', vg.name)
-			if direction:
-				direction = direction.groups()[0]
-				vg_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', vg.name) + "." + direction
-				#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
+			vg_name = common.decode_bone_name(vg.name)
+			if vg_name != vg.name:
 				vg.name = vg_name
 				convert_count += 1
 		if convert_count == 0:
@@ -378,15 +375,10 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 		ob = context.active_object
 		convert_count = 0
 		for vg in ob.vertex_groups:
-			if vg.name.count('*') == 1:
-				direction = re.search(r'\.([rRlL])$', vg.name)
-				if direction:
-					direction = direction.groups()[0]
-					vg_name = re.sub(r'\.[rRlL]$', '', vg.name).replace('*', direction)
-					vg_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', vg_name)
-					#self.report(type={'INFO'}, message=vg.name +" → "+ vg_name)
-					vg.name = vg_name
-					convert_count += 1
+			vg_name = common.encode_bone_name(vg.name)
+			if vg_name != vg.name:
+				vg.name = vg_name
+				convert_count += 1
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
@@ -1112,11 +1104,8 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 		arm = ob.data
 		convert_count = 0
 		for bone in arm.bones:
-			direction = re.search(r'[_ ]([rRlL])[_ ]', bone.name)
-			if direction:
-				direction = direction.groups()[0]
-				bone_name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', bone.name) + "." + direction
-				#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
+			bone_name = common.decode_bone_name(bone.name)
+			if bone_name != bone.name:
 				bone.name = bone_name
 				convert_count += 1
 		if convert_count == 0:
@@ -1148,15 +1137,10 @@ class convert_cm3d2_bone_names_restore(bpy.types.Operator):
 		arm = ob.data
 		convert_count = 0
 		for bone in arm.bones:
-			if bone.name.count('*') == 1:
-				direction = re.search(r'\.([rRlL])$', bone.name)
-				if direction:
-					direction = direction.groups()[0]
-					bone_name = re.sub(r'\.[rRlL]$', '', bone.name)
-					bone_name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', bone_name)
-					#self.report(type={'INFO'}, message=bone.name +" → "+ bone_name)
-					bone.name = bone_name
-					convert_count += 1
+			bone_name = common.encode_bone_name(bone.name)
+			if bone_name != bone.name:
+				bone.name = bone_name
+				convert_count += 1
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
