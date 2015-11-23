@@ -14,6 +14,8 @@ class export_cm3d2_mate(bpy.types.Operator):
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	name1 = bpy.props.StringProperty(name="名前1")
+	name2 = bpy.props.StringProperty(name="名前2")
 	
 	@classmethod
 	def poll(cls, context):
@@ -40,6 +42,8 @@ class export_cm3d2_mate(bpy.types.Operator):
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
+		self.name1 = common.remove_serial_number(mate.name.lower())
+		self.name2 = common.remove_serial_number(mate.name)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -49,6 +53,8 @@ class export_cm3d2_mate(bpy.types.Operator):
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
 			row.enabled = False
 		self.layout.prop(self, 'version', icon='LINENUMBERS_ON')
+		self.layout.prop(self, 'name1', icon='SORTALPHA')
+		self.layout.prop(self, 'name2', icon='SORTALPHA')
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = self.filepath
@@ -66,8 +72,8 @@ class export_cm3d2_mate(bpy.types.Operator):
 		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		
-		common.write_str(file, common.remove_serial_number(mate.name.lower()))
-		common.write_str(file, common.remove_serial_number(mate.name))
+		common.write_str(file, self.name1)
+		common.write_str(file, self.name2)
 		common.write_str(file, mate['shader1'])
 		common.write_str(file, mate['shader2'])
 		
@@ -128,6 +134,8 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	name1 = bpy.props.StringProperty(name="名前1")
+	name2 = bpy.props.StringProperty(name="名前2")
 	
 	@classmethod
 	def poll(cls, context):
@@ -167,6 +175,11 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 			self.version = int(lines[0])
 		except:
 			self.version = 1000
+		if lines[1] != '***':
+			self.name1 = lines[1]
+		else:
+			self.name1 = lines[2]
+		self.name2 = lines[2]
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -176,6 +189,8 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
 			row.enabled = False
 		self.layout.prop(self, 'version', icon='LINENUMBERS_ON')
+		self.layout.prop(self, 'name1', icon='SORTALPHA')
+		self.layout.prop(self, 'name2', icon='SORTALPHA')
 	
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = self.filepath
@@ -194,11 +209,8 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		
-		if lines[1] != '***':
-			common.write_str(file, lines[1])
-		else:
-			common.write_str(file, lines[2])
-		common.write_str(file, lines[2])
+		common.write_str(file, self.name1)
+		common.write_str(file, self.name2)
 		common.write_str(file, lines[3])
 		common.write_str(file, lines[4])
 		
