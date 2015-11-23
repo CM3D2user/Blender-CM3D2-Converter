@@ -1867,8 +1867,12 @@ def TEXTURE_PT_context_texture(self, context):
 	description = ""
 	if base_name == '_MainTex':
 		description = "面の色を決定するテクスチャを指定。\n普段テスクチャと呼んでいるものは基本コレです。\nテクスチャパスは適当でも動いたりしますが、\nテクスチャ名はきちんと決めましょう。"
+	if base_name == '_ToonRamp':
+		description = "面をトゥーン処理している\nグラデーション画像を指定します。"
 	elif base_name == '_ShadowTex':
 		description = "陰部分の面の色を決定するテクスチャを指定。\n「陰」とは光の当たる面の反対側のことで、\n別の物体に遮られてできるのは「影」とします。"
+	if base_name == '_ShadowRateToon':
+		description = "陰部分の面をトゥーン処理している\nグラデーション画像を指定します。"
 	elif base_name == '_Color':
 		description = "面の色を指定、白色で無効。\n_MainTexへ追加で色付けしたり、\n単色でよければここを設定しましょう。"
 	elif base_name == '_ShadowColor':
@@ -1878,13 +1882,15 @@ def TEXTURE_PT_context_texture(self, context):
 	elif base_name == '_OutlineColor':
 		description = "輪郭線の色を指定。\n面の色が単色の場合は、\nそれを少し暗くしたものを指定してもいいかも。"
 	elif base_name == '_Shininess':
-		description = "スペキュラーの強さを指定。\nスペキュラーとは面の角度と光源の角度によって\nできるハイライトのことです。\n金属、皮、ガラスなどに使うと良いでしょう。"
+		description = "スペキュラーの強さを指定。0.0～1.0で指定。\nスペキュラーとは面の角度と光源の角度によって\nできるハイライトのことです。\n金属、皮、ガラスなどに使うと良いでしょう。"
 	elif base_name == '_OutlineWidth':
-		description = "輪郭線の太さを指定。\n0.002は太め、0.001は細め。"
+		description = "輪郭線の太さを指定。\n0.002は太め、0.001は細め。\n小数点第3位までしか表示されていませんが、\n内部にはそれ以下の数値も保存されています。"
 	elif base_name == '_RimPower':
 		description = "リムライトの強さを指定。\nこの値は1.0以上なことが多いです。\nこのアドオンではデフォルトは25としています。"
 	elif base_name == '_RimShift':
 		description = "リムライトの幅を指定。\n0.0～1.0で指定。0.5でもかなり強い。"
+	elif base_name == '_FloatValue1':
+		description = "モザイクの大きさ？(未確認)"
 	if description != "":
 		sub_box = box.box()
 		col = sub_box.column(align=True)
