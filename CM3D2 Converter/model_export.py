@@ -636,8 +636,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			temp_me.from_pydata(vs, es, fs)
 			if 2 <= len(me.shape_keys.key_blocks):
 				for shape_key in me.shape_keys.key_blocks[1:]:
-					common.write_str(file, 'morph')
-					common.write_str(file, shape_key.name)
 					morph = []
 					vert_index = 0
 					for i in range(len(me.vertices)):
@@ -652,6 +650,10 @@ class export_cm3d2_model(bpy.types.Operator):
 								co *= self.scale
 								morph.append((vert_index, co, i))
 							vert_index += 1
+					if not len(morph):
+						continue
+					common.write_str(file, 'morph')
+					common.write_str(file, shape_key.name)
 					file.write(struct.pack('<i', len(morph)))
 					for index, vec, raw_index in morph:
 						vec.x = -vec.x
