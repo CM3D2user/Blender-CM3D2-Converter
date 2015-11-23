@@ -74,6 +74,16 @@ class export_cm3d2_model(bpy.types.Operator):
 			return {'CANCELLED'}
 		for face in me.polygons:
 			if 5 <= len(face.vertices):
+				bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.mesh.select_all(action='DESELECT')
+				bpy.ops.object.mode_set(mode='OBJECT')
+				pre_mesh_select_mode = context.tool_settings.mesh_select_mode[:]
+				context.tool_settings.mesh_select_mode = (False, False, True)
+				for face in me.polygons:
+					if 5 <= len(face.vertices):
+						face.select = True
+				context.tool_settings.mesh_select_mode = pre_mesh_select_mode[:]
+				bpy.ops.object.mode_set(mode='EDIT')
 				self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
 				return {'CANCELLED'}
 		
@@ -416,6 +426,16 @@ class export_cm3d2_model(bpy.types.Operator):
 				if 0.0 < weight:
 					vgs.append([name, weight])
 			if len(vgs) == 0:
+				bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.mesh.select_all(action='DESELECT')
+				bpy.ops.object.mode_set(mode='OBJECT')
+				for vert in me.vertices:
+					for vg in vert.groups:
+						if 0.0 < vg.weight:
+							break
+					else:
+						vert.select = True
+				bpy.ops.object.mode_set(mode='EDIT')
 				self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、中止します")
 				return {'CANCELLED'}
 			vgs.sort(key=lambda vg: vg[1])
