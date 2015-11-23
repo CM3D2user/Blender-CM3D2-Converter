@@ -457,6 +457,107 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
+class shape_key_transfer_ex_radius(bpy.types.Operator):
+	bl_idname = 'object.shape_key_transfer_ex_radius'
+	bl_label = "シェイプキー強制転送・範囲"
+	bl_description = "頂点数の違うメッシュ同士でも範囲内の頂点からシェイプキーを強制転送します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	remove_empty_shape = bpy.props.BoolProperty(name="全頂点に変形のないシェイプを削除", default=True)
+	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
+	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 2:
+			return False
+		for ob in context.selected_objects:
+			if ob.type != 'MESH':
+				return False
+			if ob.name != context.active_object.name:
+				if not ob.data.shape_keys:
+					return False
+		if context.active_object.mode != 'OBJECT':
+			return False
+		return True
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'remove_empty_shape')
+		self.layout.prop(self, 'radius_multi')
+		self.layout.prop(self, 'fadeout')
+	
+	def execute(self, context):
+		target_ob = context.active_object
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				source_ob = ob
+		bm = bmesh.new()
+		bm.from_mesh(source_ob.data)
+		bm.faces.ensure_lookup_table()
+		
+		total_len = 0.0
+		for edge in bm.edges:
+			total_len += edge.calc_length()
+		radius = (total_len / len(bm.edges)) * self.radius_multi
+		
+		kd = mathutils.kdtree.KDTree(len(bm.verts))
+		for i, vert in enumerate(bm.verts):
+			kd.insert(source_ob.matrix_world * vert.co.copy(), i)
+		kd.balance()
+		
+		context.window_manager.progress_begin(0, len(source_ob.data.shape_keys.key_blocks) * len(target_ob.data.vertices))
+		near_verts = []
+		for target_vert in target_ob.data.vertices:
+			near_verts.append([])
+			target_co = target_ob.matrix_world * target_vert.co
+			for co, index, dist in kd.find_range(target_co, radius):
+				diff = target_co - co
+				near_verts[-1].append((index, diff.length))
+		
+		is_first = True
+		count = 0
+		for key_block in source_ob.data.shape_keys.key_blocks:
+			if is_first:
+				is_first = False
+				if not target_ob.data.shape_keys:
+					target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
+				continue
+			if key_block.name not in target_ob.data.shape_keys.key_blocks.keys():
+				target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
+			else:
+				target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
+			is_shaped = False
+			for target_vert in target_ob.data.vertices:
+				
+				total_co = mathutils.Vector((0, 0, 0))
+				total_len = 0.0
+				for index, length in near_verts[target_vert.index]:
+					diff_co = key_block.data[index].co - source_ob.data.vertices[index].co
+					if self.fadeout:
+						multi = (radius - length) / radius
+						total_co += diff_co * multi
+						total_len += multi
+					else:
+						total_co += diff_co
+						total_len += 1.0
+				
+				co = mathutils.Vector((0, 0, 0))
+				if 0 < total_len:
+					co = total_co / total_len
+				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + co
+				if not is_shaped and 0.001 <= co.length:
+					is_shaped = True
+				context.window_manager.progress_update(count)
+				count += 1
+			if not is_shaped and self.remove_empty_shape:
+				target_ob.shape_key_remove(target_shape)
+		target_ob.active_shape_key_index = 0
+		context.window_manager.progress_end()
+		return {'FINISHED'}
+
 class scale_shape_key(bpy.types.Operator):
 	bl_idname = 'object.scale_shape_key'
 	bl_label = "シェイプキーの変形を拡大/縮小"
@@ -1595,6 +1696,7 @@ def MESH_MT_vertex_group_specials(self, context):
 def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator(shape_key_transfer_ex_radius.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator(scale_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
