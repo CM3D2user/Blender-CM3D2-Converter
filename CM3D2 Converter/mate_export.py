@@ -165,8 +165,8 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 			except:
 				pass
 		head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path)
-		if lines[2] and lines[2] != '***':
-			self.filepath = os.path.join(head, lines[2])
+		if lines[1] and lines[1] != '***':
+			self.filepath = os.path.join(head, lines[1])
 		else:
 			self.filepath = os.path.join(head, common.remove_serial_number(txt.name))
 		root, ext = os.path.splitext(self.filepath)

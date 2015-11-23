@@ -45,8 +45,8 @@ class import_cm3d2_mate(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="これはmateファイルではありません、中止します")
 			return {'CANCELLED'}
 		struct.unpack('<i', file.read(4))[0]
-		common.read_str(file)
 		mate_name = common.read_str(file)
+		common.read_str(file)
 		
 		if not context.material_slot:
 			bpy.ops.object.material_slot_add()
