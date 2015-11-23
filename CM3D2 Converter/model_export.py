@@ -77,12 +77,10 @@ class export_cm3d2_model(bpy.types.Operator):
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.select_all(action='DESELECT')
 				bpy.ops.object.mode_set(mode='OBJECT')
-				pre_mesh_select_mode = context.tool_settings.mesh_select_mode[:]
 				context.tool_settings.mesh_select_mode = (False, False, True)
 				for face in me.polygons:
 					if 5 <= len(face.vertices):
 						face.select = True
-				context.tool_settings.mesh_select_mode = pre_mesh_select_mode[:]
 				bpy.ops.object.mode_set(mode='EDIT')
 				self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
 				return {'CANCELLED'}
@@ -432,6 +430,9 @@ class export_cm3d2_model(bpy.types.Operator):
 				context.tool_settings.mesh_select_mode = (True, False, False)
 				for vert in me.vertices:
 					for vg in vert.groups:
+						name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+						if name not in local_bone_names:
+							continue
 						if 0.0 < vg.weight:
 							break
 					else:
