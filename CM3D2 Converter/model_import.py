@@ -515,8 +515,11 @@ class import_cm3d2_model(bpy.types.Operator):
 				progress_plus_value = 1.0 / len(me.vertices)
 				progress_count = 7.0
 				for i, vert in enumerate(me.vertices):
-					if comparison_data[i] in comparison_data[:i] or comparison_data[i] in comparison_data[i+1:]:
+					if comparison_data[i] in comparison_data[:i]:
 						vert.select = True
+					else:
+						 if comparison_data[i] in comparison_data[i+1:]:
+						 	vert.select = True
 					progress_count += progress_plus_value
 					context.window_manager.progress_update(progress_count)
 				bpy.ops.object.mode_set(mode='EDIT')
