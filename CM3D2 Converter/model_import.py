@@ -1,4 +1,4 @@
-import bpy, os, re, math, struct, mathutils, bmesh
+import bpy, os, re, math, struct, mathutils, bmesh, time
 from . import common
 
 # メインオペレーター
@@ -73,6 +73,8 @@ class import_cm3d2_model(bpy.types.Operator):
 		box.prop(self, 'is_bone_data_arm_property', icon='ARMATURE_DATA')
 	
 	def execute(self, context):
+		start_time = time.time()
+		
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_import_path = self.filepath
 		context.window_manager.progress_begin(0, 100)
 		context.window_manager.progress_update(0)
@@ -647,6 +649,8 @@ class import_cm3d2_model(bpy.types.Operator):
 			txt.current_line_index = 0
 		
 		context.window_manager.progress_end()
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message="modelのインポートが完了しました、" + str(round(diff_time, 1)) + "秒掛かりました")
 		return {'FINISHED'}
 
 # メニューを登録する関数

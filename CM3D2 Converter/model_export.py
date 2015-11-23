@@ -1,4 +1,4 @@
-import bpy, re, os, os.path, struct, shutil, mathutils, bmesh
+import bpy, re, os, os.path, struct, shutil, mathutils, bmesh, time
 from . import common
 
 # メインオペレーター
@@ -133,6 +133,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 	
 	def execute(self, context):
+		start_time = time.time()
+		
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
 		context.window_manager.progress_begin(0, 100)
 		context.window_manager.progress_update(0)
@@ -650,6 +652,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		file.close()
 		context.window_manager.progress_update(10)
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message="modelのエクスポートが完了しました、" + str(round(diff_time, 1)) + "秒掛かりました")
 		return {'FINISHED'}
 
 # メニューを登録する関数
