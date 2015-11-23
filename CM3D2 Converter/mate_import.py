@@ -45,8 +45,8 @@ class import_cm3d2_mate(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="これはmateファイルではありません、中止します")
 			return {'CANCELLED'}
 		struct.unpack('<i', file.read(4))[0]
-		mate_name = common.read_str(file)
 		common.read_str(file)
+		mate_name = common.read_str(file)
 		
 		if not context.material_slot:
 			bpy.ops.object.material_slot_add()
@@ -143,6 +143,7 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 	def execute(self, context):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path = self.filepath
 		
+		txt = None
 		if self.is_overwrite:
 			if 'edit_text' not in dir(context):
 				self.report(type={'ERROR'}, message="上書きする為のテキストデータが見つかりません")
@@ -152,18 +153,22 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 				return {'CANCELLED'}
 			txt = context.edit_text
 			txt.clear()
-		else:
-			txt = context.blend_data.texts.new(os.path.basename(self.filepath))
-			context.area.type = 'TEXT_EDITOR'
-			context.space_data.text = txt
 		
 		file = open(self.filepath, 'rb')
 		if common.read_str(file) != 'CM3D2_MATERIAL':
 			self.report(type={'ERROR'}, message="これはmateファイルではありません、中止します")
 			return {'CANCELLED'}
-		txt.write( str(struct.unpack('<i', file.read(4))[0]) + "\n" )
-		txt.write( common.read_str(file) + "\n" )
-		txt.write( common.read_str(file) + "\n" )
+		
+		version = str(struct.unpack('<i', file.read(4))[0])
+		name1 = common.read_str(file)
+		name2 = common.read_str(file)
+		if not txt:
+			txt = context.blend_data.texts.new(os.path.basename(name2))
+			context.area.type = 'TEXT_EDITOR'
+			context.space_data.text = txt
+		txt.write( version + "\n" )
+		txt.write( name1 + "\n" )
+		txt.write( name2 + "\n" )
 		txt.write( common.read_str(file) + "\n" )
 		txt.write( common.read_str(file) + "\n" )
 		txt.write("\n")

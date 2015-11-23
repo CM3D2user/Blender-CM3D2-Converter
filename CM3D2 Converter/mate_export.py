@@ -38,7 +38,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 			except:
 				pass
 		head, tail = os.path.split(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path)
-		self.filepath = os.path.join(head, common.remove_serial_number(mate.name))
+		self.filepath = os.path.join(head, common.remove_serial_number(mate.name.lower()))
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
@@ -168,7 +168,7 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		if lines[1] and lines[1] != '***':
 			self.filepath = os.path.join(head, lines[1])
 		else:
-			self.filepath = os.path.join(head, common.remove_serial_number(txt.name))
+			self.filepath = os.path.join(head, lines[2].lower())
 		root, ext = os.path.splitext(self.filepath)
 		self.filepath = root + ".mate"
 		try:
