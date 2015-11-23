@@ -429,6 +429,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.select_all(action='DESELECT')
 				bpy.ops.object.mode_set(mode='OBJECT')
+				context.tool_settings.mesh_select_mode = (True, False, False)
 				for vert in me.vertices:
 					for vg in vert.groups:
 						if 0.0 < vg.weight:
