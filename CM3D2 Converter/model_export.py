@@ -364,7 +364,8 @@ class export_cm3d2_model(bpy.types.Operator):
 				uv = loop[uv_lay].uv
 				if uv not in vert_uvs[-1]:
 					vert_uvs[-1].append(uv)
-					vert_iuv.append((vert.index, uv.x, uv.y))
+					iuv_str = str(vert.index) + str(uv.x) + str(uv.y)
+					vert_iuv.append(iuv_str)
 					vert_count += 1
 		if 65535 < vert_count:
 			self.report(type={'ERROR'}, message="頂点数がまだ多いです (現在" + str(vert_count) + "頂点)。あと" + str(vert_count - 65535) + "頂点以上減らしてください、中止します")
@@ -486,7 +487,8 @@ class export_cm3d2_model(bpy.types.Operator):
 						uv = loop[uv_lay].uv
 						index = loop.vert.index
 						try:
-							vert_index = vert_iuv.index((index, uv.x, uv.y))
+							iuv_str = str(index) + str(uv.x) + str(uv.y)
+							vert_index = vert_iuv.index(iuv_str)
 						except ValueError:
 							vert_index = 0
 							for i, v in enumerate(vert_iuv):
@@ -508,12 +510,14 @@ class export_cm3d2_model(bpy.types.Operator):
 						if i in f1:
 							uv = loop[uv_lay].uv
 							index = loop.vert.index
-							vert_index = vert_iuv.index((index, uv.x, uv.y))
+							iuv_str = str(index) + str(uv.x) + str(uv.y)
+							vert_index = vert_iuv.index(iuv_str)
 							faces.append(vert_index)
 						if i in f2:
 							uv = loop[uv_lay].uv
 							index = loop.vert.index
-							vert_index = vert_iuv.index((index, uv.x, uv.y))
+							iuv_str = str(index) + str(uv.x) + str(uv.y)
+							vert_index = vert_iuv.index(iuv_str)
 							faces2.append(vert_index)
 					face_count += 2
 				else:
