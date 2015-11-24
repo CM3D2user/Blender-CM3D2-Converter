@@ -521,8 +521,8 @@ class export_cm3d2_model(bpy.types.Operator):
 							vert_index = vert_iuv.index(iuv_str)
 						except ValueError:
 							vert_index = 0
-							for i, v in enumerate(vert_iuv):
-								if v[0] == index:
+							for i, s in enumerate(vert_iuv):
+								if int(s.split(' ')[0]) == index:
 									vert_index = i
 									break
 						faces.append(vert_index)
