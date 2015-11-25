@@ -23,6 +23,8 @@ if "bpy" in locals():
 	imp.reload(model_import)
 	imp.reload(model_export)
 	
+	imp.reload(anm_import)
+	
 	imp.reload(tex_import)
 	imp.reload(tex_export)
 	
@@ -35,6 +37,8 @@ else:
 	
 	from . import model_import
 	from . import model_export
+	
+	from . import anm_import
 	
 	from . import tex_import
 	from . import tex_export
@@ -54,6 +58,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	model_import_path = bpy.props.StringProperty(name="modelインポート時のデフォルトパス", subtype='FILE_PATH', description="modelインポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="modelエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	anm_import_path = bpy.props.StringProperty(name="anmインポート時のデフォルトパス", subtype='FILE_PATH', description="anmインポート時に最初はここが表示されます、インポート毎に保存されます")
+	anm_export_path = bpy.props.StringProperty(name="anmエクスポート時のデフォルトパス", subtype='FILE_PATH', description="anmエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
+	
 	tex_import_path = bpy.props.StringProperty(name="texインポート時のデフォルトパス", subtype='FILE_PATH', description="texインポート時に最初はここが表示されます、インポート毎に保存されます")
 	tex_export_path = bpy.props.StringProperty(name="texエクスポート時のデフォルトパス", subtype='FILE_PATH', description="texエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
@@ -68,6 +75,10 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.prop(self, 'scale', icon='MAN_SCALE')
 		box.prop(self, 'model_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'model_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box = self.layout.box()
+		box.label(text="anmファイル", icon='POSE_HLT')
+		box.prop(self, 'anm_import_path', icon='IMPORT', text="インポート時デフォルトパス")
+		box.prop(self, 'anm_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
 		box = self.layout.box()
 		box.label(text="texファイル", icon='FILE_IMAGE')
 		box.prop(self, 'tex_import_path', icon='IMPORT', text="インポート時デフォルトパス")
@@ -87,6 +98,8 @@ def register():
 	
 	bpy.types.INFO_MT_file_import.append(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
+	
+	bpy.types.INFO_MT_file_import.append(anm_import.menu_func)
 	
 	bpy.types.IMAGE_MT_image.append(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.append(tex_export.menu_func)
@@ -115,6 +128,8 @@ def unregister():
 	
 	bpy.types.INFO_MT_file_import.remove(model_import.menu_func)
 	bpy.types.INFO_MT_file_export.remove(model_export.menu_func)
+	
+	bpy.types.INFO_MT_file_import.remove(anm_import.menu_func)
 	
 	bpy.types.IMAGE_MT_image.remove(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.remove(tex_export.menu_func)
