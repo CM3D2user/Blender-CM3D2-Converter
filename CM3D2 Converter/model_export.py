@@ -65,10 +65,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not me.uv_layers.active:
 			self.report(type={'ERROR'}, message="UVがありません")
 			return {'CANCELLED'}
-		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
-		#if len(ob_names) != 2:
-		#	self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
-		#	return {'CANCELLED'}
 		if 65535 < len(me.vertices):
 			self.report(type={'ERROR'}, message="エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
 			return {'CANCELLED'}
@@ -86,11 +82,9 @@ class export_cm3d2_model(bpy.types.Operator):
 				return {'CANCELLED'}
 		
 		# model名とか
+		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
 		self.model_name = ob_names[0]
-		if 2 <= len(ob_names):
-			self.base_bone_name = ob_names[1]
-		else:
-			self.base_bone_name = 'body'
+		self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
 		
 		# ボーン情報元のデフォルトオプションを取得
 		if self.bone_info_mode == 'OBJECT':
@@ -110,7 +104,7 @@ class export_cm3d2_model(bpy.types.Operator):
 								break
 		
 		# エクスポート時のデフォルトパスを取得
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path, ob_names[0], "model")
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path, self.model_name, "model")
 		
 		# バックアップ関係
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
@@ -210,8 +204,12 @@ class export_cm3d2_model(bpy.types.Operator):
 					return {'CANCELLED'}
 		context.window_manager.progress_update(1)
 		
+		# model名とか
 		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
-		ob_names = [self.model_name, self.base_bone_name]
+		if self.model_name == '*':
+			self.model_name = ob_names[0]
+		if self.base_bone_name == '*':
+			self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
 		
 		# BoneData情報読み込み
 		bone_data = []
@@ -279,7 +277,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			return {'CANCELLED'}
 		
 		for bone in bone_data:
-			if bone['name'] == ob_names[1]:
+			if bone['name'] == self.base_bone_name:
 				break
 		else:
 			self.report(type={'ERROR'}, message="オブジェクト名の後半は存在するボーン名にして下さい")
@@ -340,8 +338,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		common.write_str(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', self.version))
 		
-		common.write_str(file, ob_names[0])
-		common.write_str(file, ob_names[1])
+		common.write_str(file, self.model_name)
+		common.write_str(file, self.base_bone_name)
 		
 		# ボーン情報書き出し
 		file.write(struct.pack('<i', len(bone_data)))
