@@ -78,9 +78,8 @@ class import_cm3d2_anm(bpy.types.Operator):
 		for edit_bone in arm.edit_bones:
 			edit_bone.use_connect = False
 		for edit_bone in arm.edit_bones:
-			break
 			head_co = edit_bone.head.copy()
-			head_co.z += -1
+			head_co.z += 0.5
 			edit_bone.tail = head_co
 			edit_bone.roll = 0.0
 		
@@ -97,20 +96,26 @@ class import_cm3d2_anm(bpy.types.Operator):
 				data_path = 'rotation_quaternion'
 				data_index = -1
 				if channel_id == '100':
-					data_index = 3
-				elif channel_id == '101':
-					data_index = 0
-				elif channel_id == '102':
 					data_index = 1
-				elif channel_id == '103':
+				elif channel_id == '101':
 					data_index = 2
+				elif channel_id == '102':
+					data_index = 3
+				elif channel_id == '103':
+					data_index = 0
 				else:
 					continue
 				
 				for data in channel_data:
 					frame = data['frame']
 					
-					if channel_id in ['100', '101', '102', '103']:
+					if channel_id == '100':
+						pose_bone.rotation_quaternion[data_index] = data['f0']
+					elif channel_id == '101':
+						pose_bone.rotation_quaternion[data_index] = data['f0']
+					elif channel_id == '102':
+						pose_bone.rotation_quaternion[data_index] = data['f0']
+					elif channel_id == '103':
 						pose_bone.rotation_quaternion[data_index] = data['f0']
 					
 					pose_bone.keyframe_insert(data_path, index=data_index, frame=frame * fps)

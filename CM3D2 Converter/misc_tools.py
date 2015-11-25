@@ -652,25 +652,31 @@ class blur_shape_key(bpy.types.Operator):
 			for key_block in shape_keys.key_blocks:
 				target_shapes.append(key_block)
 		context.window_manager.progress_begin(0, len(bm.verts) * len(target_shapes) * self.strength)
-		total_count = 0
-		for i, vert in enumerate(bm.verts):
-			near_verts = []
+		
+		near_vert_index = []
+		for vert_index, vert in enumerate(bm.verts):
+			near_vert_index.append([])
 			for edge in vert.link_edges:
 				for v in edge.verts:
-					if vert.index != v.index:
-						near_verts.append(v)
-						break
+					if vert_index != v.index:
+						near_vert_index[-1].append(v.index)
+		
+		total_count = 0
+		for strength_count in range(self.strength):
 			for shape in target_shapes:
-				for s in range(self.strength):
+				data = shape.data
+				for vert_index, vert in enumerate(bm.verts):
+					
 					context.window_manager.progress_update(total_count)
 					total_count += 1
-					data = shape.data
-					average = mathutils.Vector((0, 0, 0))
-					for v in near_verts:
-						average += data[v.index].co - me.vertices[v.index].co
-					average /= len(near_verts)
-					co = data[i].co - vert.co
-					data[i].co = ((co * 2) + average) / 3 + vert.co
+					
+					average_co = mathutils.Vector((0, 0, 0))
+					for index in near_vert_index[vert_index]:
+						average_co += data[index].co - me.vertices[index].co
+					average_co /= len(near_vert_index[vert_index])
+					co = data[vert_index].co - vert.co
+					data[vert_index].co = (co + average_co) / 2 + vert.co
+		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		context.window_manager.progress_end()
 		return {'FINISHED'}
