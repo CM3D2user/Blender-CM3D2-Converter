@@ -692,9 +692,15 @@ class radius_blur_shape_key(bpy.types.Operator):
 		('ALL', "全て", "", 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
-	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
-	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
+	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=100, precision=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=True)
+	items = [
+		('BOTH', "増減両方", "", 1),
+		('ADD', "増加のみ", "", 2),
+		('SUB', "減少のみ", "", 3),
+		]
+	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
 	
 	@classmethod
 	def poll(cls, context):
@@ -713,6 +719,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		self.layout.prop(self, 'radius_multi')
 		self.layout.prop(self, 'blur_count')
 		self.layout.prop(self, 'fadeout')
+		self.layout.prop(self, 'effect')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -739,6 +746,15 @@ class radius_blur_shape_key(bpy.types.Operator):
 		for i, v in enumerate(me.vertices):
 			kd.insert(v.co, i)
 		kd.balance()
+		
+		near_verts = []
+		for vert in me.vertices:
+			near_verts.append([])
+			for co, index, dist in kd.find_range(vert.co, radius):
+				diff = vert.co - co
+				multi = (radius - diff.length) / radius
+				near_verts[-1].append((index, multi))
+		
 		context.window_manager.progress_begin(0, self.blur_count * len(target_shapes) * len(me.vertices))
 		total_count = 0
 		for count in range(self.blur_count):
@@ -748,22 +764,43 @@ class radius_blur_shape_key(bpy.types.Operator):
 				for vert in me.vertices:
 					context.window_manager.progress_update(total_count)
 					total_count += 1
+					
+					source_diff_co = data[vert.index].co - vert.co
+					
 					average_co = mathutils.Vector((0, 0, 0))
-					nears = kd.find_range(vert.co, radius)
 					nears_total = 0
-					for co, index, dist in nears:
+					for index, multi in near_verts[vert.index]:
+						diff_co = data[index].co - me.vertices[index].co
 						if self.fadeout:
-							diff = co - vert.co
-							multi = (radius - diff.length) / radius
-							average_co += (data[index].co - me.vertices[index].co) * multi
-							nears_total += multi
+							if self.effect == 'ADD':
+								if source_diff_co.length < diff_co.length:
+									average_co += diff_co * multi
+									nears_total += multi
+							elif self.effect == 'SUB':
+								if diff_co.length < source_diff_co.length:
+									average_co += diff_co * multi
+									nears_total += multi
+							else:
+								average_co += diff_co * multi
+								nears_total += multi
 						else:
-							average_co += data[index].co - me.vertices[index].co
-							nears_total += 1
-					average_co /= nears_total
-					co = data[vert.index].co - vert.co
-					new_co.append(((co * 2) + average_co) / 3 + vert.co)
-					#data[vert.index].co = ((co * 2) + average_co) / 3 + vert.co
+							if self.effect == 'ADD':
+								if source_diff_co.length < diff_co.length:
+									average_co += diff_co
+									nears_total += 1
+							elif self.effect == 'SUB':
+								if diff_co.length < source_diff_co.length:
+									average_co += diff_co
+									nears_total += 1
+							else:
+								average_co += diff_co
+								nears_total += 1
+					
+					if 0 < nears_total:
+						average_co /= nears_total
+						new_co.append(((source_diff_co * 2) + average_co) / 3 + vert.co)
+					else:
+						new_co.append(source_diff_co + vert.co)
 				for i, co in enumerate(new_co):
 					data[i].co = co.copy()
 		bpy.ops.object.mode_set(mode=pre_mode)
