@@ -41,7 +41,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
-	def invoke(self, context, event):
+	def precheck(self, context):
 		# データの成否チェック
 		ob = context.active_object
 		if not ob:
@@ -82,6 +82,12 @@ class export_cm3d2_model(bpy.types.Operator):
 				bpy.ops.object.mode_set(mode='EDIT')
 			self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
 			return {'CANCELLED'}
+		return None
+		
+	def invoke(self, context, event):
+		res = self.precheck(context)
+		if res: return res
+		ob = context.active_object
 		
 		# model名とか
 		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
@@ -146,6 +152,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_begin(0, 100)
 		context.window_manager.progress_update(0)
 		
+		res = self.precheck(context)
+		if res: return res
+
 		ob = context.active_object
 		me = ob.data
 		
