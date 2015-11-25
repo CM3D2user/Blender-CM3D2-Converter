@@ -1072,12 +1072,12 @@ class copy_material(bpy.types.Operator):
 						path = "Assets/texture/texture/" + os.path.basename(path)
 					output_text = output_text + "\t" + path + "\n"
 					col = tex_slot.color
-					output_text = output_text + "\t" + str(col[0]) + " " + str(col[1]) + " " + str(col[2]) + " " + str(tex_slot.diffuse_color_factor) + "\n"
+					output_text = output_text + "\t" + " ".join([str(col[0]), str(col[1]), str(col[2]), str(tex_slot.diffuse_color_factor)]) + "\n"
 				else:
 					output_text = output_text + "\tnull" + "\n"
 			elif type == 'col':
 				col = tex_slot.color
-				output_text = output_text + "\t" + str(col[0]) + " " + str(col[1]) + " " + str(col[2]) + " " + str(tex_slot.diffuse_color_factor) + "\n"
+				output_text = output_text + "\t" + " ".join([str(col[0]), str(col[1]), str(col[2]), str(tex_slot.diffuse_color_factor)]) + "\n"
 			elif type == 'f':
 				output_text = output_text + "\t" + str(tex_slot.diffuse_color_factor) + "\n"
 		

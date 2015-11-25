@@ -565,11 +565,11 @@ class import_cm3d2_model(bpy.types.Operator):
 						if tex_data['type2'] == 'tex2d':
 							txt.write("\t" + tex_data['name2'] + "\n")
 							txt.write("\t" + tex_data['path'] + "\n")
-							col = str(tex_data['color'][0]) + " " + str(tex_data['color'][1]) + " " + str(tex_data['color'][2]) + " " + str(tex_data['color'][3])
+							col = " ".join([str(tex_data['color'][0]), str(tex_data['color'][1]), str(tex_data['color'][2]), str(tex_data['color'][3])])
 							txt.write("\t" + col + "\n")
 					elif tex_data['type'] == 'col':
 						txt.write("\t" + tex_data['name'] + "\n")
-						col = str(tex_data['color'][0]) + " " + str(tex_data['color'][1]) + " " + str(tex_data['color'][2]) + " " + str(tex_data['color'][3])
+						col = " ".join([str(tex_data['color'][0]), str(tex_data['color'][1]), str(tex_data['color'][2]), str(tex_data['color'][3])])
 						txt.write("\t" + col + "\n")
 					elif tex_data['type'] == 'f':
 						txt.write("\t" + tex_data['name'] + "\n")
@@ -586,20 +586,14 @@ class import_cm3d2_model(bpy.types.Operator):
 			else:
 				txt = context.blend_data.texts.new("BoneData")
 		for i, data in enumerate(bone_data):
-			s = data['name'] + ","
-			s = s + str(data['unknown']) + ","
+			s = ",".join([data['name'], str(data['unknown']), ""])
 			parent_index = data['parent_index']
 			if -1 < parent_index:
 				s = s + bone_data[parent_index]['name'] + ","
 			else:
 				s = s + "None" + ","
-			s = s + str(data['co'][0]) + " "
-			s = s + str(data['co'][1]) + " "
-			s = s + str(data['co'][2]) + ","
-			s = s + str(data['rot'][0]) + " "
-			s = s + str(data['rot'][1]) + " "
-			s = s + str(data['rot'][2]) + " "
-			s = s + str(data['rot'][3])
+			s = s + " ".join([str(data['co'][0]), str(data['co'][1]), str(data['co'][2])]) + ","
+			s = s + " ".join([str(data['rot'][0]), str(data['rot'][1]), str(data['rot'][2]), str(data['rot'][3])])
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
@@ -622,25 +616,13 @@ class import_cm3d2_model(bpy.types.Operator):
 		for i, data in enumerate(local_bone_data):
 			s = data['name'] + ","
 			
-			s = s + str(data['matrix'][0][0]) + " "
-			s = s + str(data['matrix'][0][1]) + " "
-			s = s + str(data['matrix'][0][2]) + " "
-			s = s + str(data['matrix'][0][3]) + " "
-			
-			s = s + str(data['matrix'][1][0]) + " "
-			s = s + str(data['matrix'][1][1]) + " "
-			s = s + str(data['matrix'][1][2]) + " "
-			s = s + str(data['matrix'][1][3]) + " "
-			
-			s = s + str(data['matrix'][2][0]) + " "
-			s = s + str(data['matrix'][2][1]) + " "
-			s = s + str(data['matrix'][2][2]) + " "
-			s = s + str(data['matrix'][2][3]) + " "
-			
-			s = s + str(data['matrix'][3][0]) + " "
-			s = s + str(data['matrix'][3][1]) + " "
-			s = s + str(data['matrix'][3][2]) + " "
-			s = s + str(data['matrix'][3][3])
+			mat_list = list(data['matrix'][0])
+			mat_list.extend(list(data['matrix'][1]))
+			mat_list.extend(list(data['matrix'][2]))
+			mat_list.extend(list(data['matrix'][3]))
+			for j, f in enumerate(mat_list):
+				mat_list[j] = str(f)
+			s = s + " ".join(mat_list)
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")

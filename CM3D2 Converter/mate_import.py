@@ -166,12 +166,12 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 					txt.write( "\t" + common.read_str(file) + "\n" )
 					txt.write( "\t" + common.read_str(file) + "\n" )
 					fs = struct.unpack('<4f', file.read(4*4))
-					txt.write( "\t" + str(fs[0]) + " " + str(fs[1]) + " " + str(fs[2]) + " " + str(fs[3]) + "\n" )
+					txt.write( "\t" + " ".join([str(fs[0]), str(fs[1]), str(fs[2]), str(fs[3])]) + "\n" )
 			elif type == 'col':
 				txt.write( type + "\n" )
 				txt.write( "\t" + common.read_str(file) + "\n" )
 				fs = struct.unpack('<4f', file.read(4*4))
-				txt.write( "\t" + str(fs[0]) + " " + str(fs[1]) + " " + str(fs[2]) + " " + str(fs[3]) + "\n" )
+				txt.write( "\t" + " ".join([str(fs[0]), str(fs[1]), str(fs[2]), str(fs[3])]) + "\n" )
 			elif type == 'f':
 				txt.write( type + "\n" )
 				txt.write( "\t" + common.read_str(file) + "\n" )
