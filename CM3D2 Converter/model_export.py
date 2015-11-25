@@ -163,48 +163,31 @@ class export_cm3d2_model(bpy.types.Operator):
 			if "BoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
-			elif "LocalBoneData" not in context.blend_data.texts.keys():
+			if "LocalBoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'OBJECT':
 			if "BoneData:0" not in ob.keys():
 				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
-			elif "LocalBoneData:0" not in ob.keys():
+			if "LocalBoneData:0" not in ob.keys():
 				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
-			if arm_ob:
-				if arm_ob.type == 'ARMATURE':
-					if "BoneData:0" not in arm_ob.data.keys():
-						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-						return {'CANCELLED'}
-					elif "LocalBoneData:0" not in arm_ob.data.keys():
-						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-						return {'CANCELLED'}
-				else:
-					self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
-					return {'CANCELLED'}
-			else:
-				for mod in ob.modifiers:
-					if mod.type == 'ARMATURE':
-						if mod.object:
-							arm_ob = mod.object
-							if "BoneData:0" not in arm_ob.data.keys():
-								self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-								return {'CANCELLED'}
-							elif "LocalBoneData:0" not in arm_ob.data.keys():
-								self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-								return {'CANCELLED'}
-							break
-				else:
+			if arm_ob and arm_ob.type != 'ARMATURE':
+				self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
+				return {'CANCELLED'}
+			if not arm_ob:
+				try:
+					arm_ob = next(mod for mod in ob.modifiers if mod.type == 'ARMATURE' and mod.object)
+				except StopIteration:
 					self.report(type={'ERROR'}, message="アーマチュアが見つかりません、親にするかモディファイアにして下さい")
 					return {'CANCELLED'}
 			if "BoneData:0" not in arm_ob.data.keys():
 				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
-			elif "LocalBoneData:0" not in arm_ob.data.keys():
+			if "LocalBoneData:0" not in arm_ob.data.keys():
 				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
 		else:
