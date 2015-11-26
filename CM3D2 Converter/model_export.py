@@ -41,35 +41,32 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
+	def report_cancel(self, report_message, report_type={'ERROR'}, return_dict={'CANCELLED'}):
+		self.report(type=report_type, message=report_message)
+		return return_dict
+	
 	def precheck(self, context):
 		# データの成否チェック
 		ob = context.active_object
 		if not ob:
-			self.report(type={'ERROR'}, message="アクティブオブジェクトがありません")
-			return {'CANCELLED'}
+			return self.report_cancel("アクティブオブジェクトがありません")
 		if ob.type != 'MESH':
-			self.report(type={'ERROR'}, message="メッシュオブジェクトを選択した状態で実行してください")
-			return {'CANCELLED'}
+			return self.report_cancel("メッシュオブジェクトを選択した状態で実行してください")
 		if not len(ob.material_slots):
-			self.report(type={'ERROR'}, message="マテリアルがありません")
-			return {'CANCELLED'}
+			return self.report_cancel("マテリアルがありません")
 		for slot in ob.material_slots:
 			if not slot.material:
-				self.report(type={'ERROR'}, message="空のマテリアルスロットを削除してください")
-				return {'CANCELLED'}
+				return self.report_cancel("空のマテリアルスロットを削除してください")
 			try:
 				slot.material['shader1']
 				slot.material['shader2']
 			except:
-				self.report(type={'ERROR'}, message="マテリアルに「shader1」と「shader2」という名前のカスタムプロパティを用意してください")
-				return {'CANCELLED'}
+				return self.report_cancel("マテリアルに「shader1」と「shader2」という名前のカスタムプロパティを用意してください")
 		me = ob.data
 		if not me.uv_layers.active:
-			self.report(type={'ERROR'}, message="UVがありません")
-			return {'CANCELLED'}
+			return self.report_cancel("UVがありません")
 		if 65535 < len(me.vertices):
-			self.report(type={'ERROR'}, message="エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
-			return {'CANCELLED'}
+			return self.report_cancel("エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
 		pentagons = [face for face in me.polygons if 5 <= len(face.vertices)]
 		if 0 < len(pentagons):
 			if not self.is_batch:
@@ -80,8 +77,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				for face in pentagons:
 					face.select = True
 				bpy.ops.object.mode_set(mode='EDIT')
-			self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
-			return {'CANCELLED'}
+			return self.report_cancel("五角以上のポリゴンが含まれています")
 		return None
 		
 	def invoke(self, context, event):
@@ -161,44 +157,34 @@ class export_cm3d2_model(bpy.types.Operator):
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
 			if "BoneData" not in context.blend_data.texts.keys():
-				self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
-				return {'CANCELLED'}
+				return self.report_cancel("テキスト「BoneData」が見つかりません、中止します")
 			if "LocalBoneData" not in context.blend_data.texts.keys():
-				self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
-				return {'CANCELLED'}
+				return self.report_cancel("テキスト「LocalBoneData」が見つかりません、中止します")
 		elif self.bone_info_mode == 'OBJECT':
 			if "BoneData:0" not in ob.keys():
-				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
-				return {'CANCELLED'}
+				return self.report_cancel("オブジェクトのカスタムプロパティにボーン情報がありません")
 			if "LocalBoneData:0" not in ob.keys():
-				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
-				return {'CANCELLED'}
+				return self.report_cancel("オブジェクトのカスタムプロパティにボーン情報がありません")
 		elif self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
 			if arm_ob and arm_ob.type != 'ARMATURE':
-				self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
-				return {'CANCELLED'}
+				return self.report_cancel("メッシュオブジェクトの親がアーマチュアではありません")
 			if not arm_ob:
 				try:
 					arm_ob = next(mod for mod in ob.modifiers if mod.type == 'ARMATURE' and mod.object)
 				except StopIteration:
-					self.report(type={'ERROR'}, message="アーマチュアが見つかりません、親にするかモディファイアにして下さい")
-					return {'CANCELLED'}
+					return self.report_cancel("アーマチュアが見つかりません、親にするかモディファイアにして下さい")
 			if "BoneData:0" not in arm_ob.data.keys():
-				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-				return {'CANCELLED'}
+				return self.report_cancel("アーマチュアのカスタムプロパティにボーン情報がありません")
 			if "LocalBoneData:0" not in arm_ob.data.keys():
-				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
-				return {'CANCELLED'}
+				return self.report_cancel("アーマチュアのカスタムプロパティにボーン情報がありません")
 		else:
-			self.report(type={'ERROR'}, message="ボーン情報元のモードがおかしいです")
-			return {'CANCELLED'}
+			return self.report_cancel("ボーン情報元のモードがおかしいです")
 		
 		if self.mate_info_mode == 'TEXT':
 			for index, slot in enumerate(ob.material_slots):
 				if "Material:" + str(index) not in context.blend_data.texts.keys():
-					self.report(type={'ERROR'}, message="マテリアル情報元のテキストが足りません")
-					return {'CANCELLED'}
+					return self.report_cancel("マテリアル情報元のテキストが足りません")
 		context.window_manager.progress_update(1)
 		
 		# model名とか
@@ -270,15 +256,13 @@ class export_cm3d2_model(bpy.types.Operator):
 					for f in floats:
 						bone_data[-1]['rot'].append(float(f))
 		if len(bone_data) <= 0:
-			self.report(type={'ERROR'}, message="テキスト「BoneData」に有効なデータがありません")
-			return {'CANCELLED'}
+			return self.report_cancel("テキスト「BoneData」に有効なデータがありません")
 		
 		for bone in bone_data:
 			if bone['name'] == self.base_bone_name:
 				break
 		else:
-			self.report(type={'ERROR'}, message="オブジェクト名の後半は存在するボーン名にして下さい")
-			return {'CANCELLED'}
+			return self.report_cancel("オブジェクト名の後半は存在するボーン名にして下さい")
 		context.window_manager.progress_update(2)
 		
 		# LocalBoneData情報読み込み
@@ -318,8 +302,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						local_bone_data[-1]['matrix'].append(float(f))
 					local_bone_names.append(data[0])
 		if len(local_bone_data) <= 0:
-			self.report(type={'ERROR'}, message="テキスト「LocalBoneData」に有効なデータがありません")
-			return {'CANCELLED'}
+			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
 		context.window_manager.progress_update(3)
 		
 		# バックアップ
@@ -368,8 +351,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vert_iuv.append(iuv_str)
 					vert_count += 1
 		if 65535 < vert_count:
-			self.report(type={'ERROR'}, message="頂点数がまだ多いです (現在" + str(vert_count) + "頂点)。あと" + str(vert_count - 65535) + "頂点以上減らしてください、中止します")
-			return {'CANCELLED'}
+			return self.report_cancel("頂点数がまだ多いです (現在" + str(vert_count) + "頂点)。あと" + str(vert_count - 65535) + "頂点以上減らしてください、中止します")
 		context.window_manager.progress_update(5)
 		
 		file.write(struct.pack('<2i', vert_count, len(ob.material_slots)))
@@ -431,8 +413,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						else:
 							vert.select = True
 					bpy.ops.object.mode_set(mode='EDIT')
-				self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、中止します")
-				return {'CANCELLED'}
+				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
 			vgs.sort(key=lambda vg: vg[1])
 			vgs.reverse()
 			for i in range(4):
