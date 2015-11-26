@@ -39,9 +39,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
 	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
 	
-	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
-	
-	def precheck(self, context):
+	def invoke(self, context, event):
 		# データの成否チェック
 		ob = context.active_object
 		if not ob:
@@ -67,32 +65,32 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not me.uv_layers.active:
 			self.report(type={'ERROR'}, message="UVがありません")
 			return {'CANCELLED'}
+		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
+		#if len(ob_names) != 2:
+		#	self.report(type={'ERROR'}, message="オブジェクト名は「○○○.○○○」という形式にしてください")
+		#	return {'CANCELLED'}
 		if 65535 < len(me.vertices):
 			self.report(type={'ERROR'}, message="エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
 			return {'CANCELLED'}
-		pentagons = [face for face in me.polygons if 5 <= len(face.vertices)]
-		if 0 < len(pentagons):
-			if not self.is_batch:
+		for face in me.polygons:
+			if 5 <= len(face.vertices):
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.select_all(action='DESELECT')
 				bpy.ops.object.mode_set(mode='OBJECT')
 				context.tool_settings.mesh_select_mode = (False, False, True)
-				for face in pentagons:
-					face.select = True
+				for face in me.polygons:
+					if 5 <= len(face.vertices):
+						face.select = True
 				bpy.ops.object.mode_set(mode='EDIT')
-			self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
-			return {'CANCELLED'}
-		return None
-		
-	def invoke(self, context, event):
-		res = self.precheck(context)
-		if res: return res
-		ob = context.active_object
+				self.report(type={'ERROR'}, message="五角以上のポリゴンが含まれています")
+				return {'CANCELLED'}
 		
 		# model名とか
-		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
 		self.model_name = ob_names[0]
-		self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
+		if 2 <= len(ob_names):
+			self.base_bone_name = ob_names[1]
+		else:
+			self.base_bone_name = 'body'
 		
 		# ボーン情報元のデフォルトオプションを取得
 		if self.bone_info_mode == 'OBJECT':
@@ -112,7 +110,7 @@ class export_cm3d2_model(bpy.types.Operator):
 								break
 		
 		# エクスポート時のデフォルトパスを取得
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path, self.model_name, "model")
+		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path, ob_names[0], "model")
 		
 		# バックアップ関係
 		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
@@ -141,20 +139,14 @@ class export_cm3d2_model(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
 		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
-		# don't show 'is_batch' in UI
 	
 	def execute(self, context):
 		start_time = time.time()
 		
-		if not self.is_batch:
-			context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
-		
+		context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
 		context.window_manager.progress_begin(0, 100)
 		context.window_manager.progress_update(0)
 		
-		res = self.precheck(context)
-		if res: return res
-
 		ob = context.active_object
 		me = ob.data
 		
@@ -163,31 +155,48 @@ class export_cm3d2_model(bpy.types.Operator):
 			if "BoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「BoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
-			if "LocalBoneData" not in context.blend_data.texts.keys():
+			elif "LocalBoneData" not in context.blend_data.texts.keys():
 				self.report(type={'ERROR'}, message="テキスト「LocalBoneData」が見つかりません、中止します")
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'OBJECT':
 			if "BoneData:0" not in ob.keys():
 				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
-			if "LocalBoneData:0" not in ob.keys():
+			elif "LocalBoneData:0" not in ob.keys():
 				self.report(type={'ERROR'}, message="オブジェクトのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
 		elif self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
-			if arm_ob and arm_ob.type != 'ARMATURE':
-				self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
-				return {'CANCELLED'}
-			if not arm_ob:
-				try:
-					arm_ob = next(mod for mod in ob.modifiers if mod.type == 'ARMATURE' and mod.object)
-				except StopIteration:
+			if arm_ob:
+				if arm_ob.type == 'ARMATURE':
+					if "BoneData:0" not in arm_ob.data.keys():
+						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+						return {'CANCELLED'}
+					elif "LocalBoneData:0" not in arm_ob.data.keys():
+						self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+						return {'CANCELLED'}
+				else:
+					self.report(type={'ERROR'}, message="メッシュオブジェクトの親がアーマチュアではありません")
+					return {'CANCELLED'}
+			else:
+				for mod in ob.modifiers:
+					if mod.type == 'ARMATURE':
+						if mod.object:
+							arm_ob = mod.object
+							if "BoneData:0" not in arm_ob.data.keys():
+								self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+								return {'CANCELLED'}
+							elif "LocalBoneData:0" not in arm_ob.data.keys():
+								self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
+								return {'CANCELLED'}
+							break
+				else:
 					self.report(type={'ERROR'}, message="アーマチュアが見つかりません、親にするかモディファイアにして下さい")
 					return {'CANCELLED'}
 			if "BoneData:0" not in arm_ob.data.keys():
 				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
-			if "LocalBoneData:0" not in arm_ob.data.keys():
+			elif "LocalBoneData:0" not in arm_ob.data.keys():
 				self.report(type={'ERROR'}, message="アーマチュアのカスタムプロパティにボーン情報がありません")
 				return {'CANCELLED'}
 		else:
@@ -201,12 +210,8 @@ class export_cm3d2_model(bpy.types.Operator):
 					return {'CANCELLED'}
 		context.window_manager.progress_update(1)
 		
-		# model名とか
 		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
-		if self.model_name == '*':
-			self.model_name = ob_names[0]
-		if self.base_bone_name == '*':
-			self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
+		ob_names = [self.model_name, self.base_bone_name]
 		
 		# BoneData情報読み込み
 		bone_data = []
@@ -274,7 +279,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			return {'CANCELLED'}
 		
 		for bone in bone_data:
-			if bone['name'] == self.base_bone_name:
+			if bone['name'] == ob_names[1]:
 				break
 		else:
 			self.report(type={'ERROR'}, message="オブジェクト名の後半は存在するボーン名にして下さい")
@@ -335,8 +340,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		common.write_str(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', self.version))
 		
-		common.write_str(file, self.model_name)
-		common.write_str(file, self.base_bone_name)
+		common.write_str(file, ob_names[0])
+		common.write_str(file, ob_names[1])
 		
 		# ボーン情報書き出し
 		file.write(struct.pack('<i', len(bone_data)))
@@ -352,8 +357,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
 		context.window_manager.progress_update(4)
 		
-		if not self.is_batch:
-			bpy.ops.object.mode_set(mode='OBJECT')
+		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		# 正しい頂点数などを取得
 		bm = bmesh.new()
@@ -420,21 +424,20 @@ class export_cm3d2_model(bpy.types.Operator):
 				if 0.0 < weight:
 					vgs.append([name, weight])
 			if len(vgs) == 0:
-				if not self.is_batch:
-					bpy.ops.object.mode_set(mode='EDIT')
-					bpy.ops.mesh.select_all(action='DESELECT')
-					bpy.ops.object.mode_set(mode='OBJECT')
-					context.tool_settings.mesh_select_mode = (True, False, False)
-					for vert in me.vertices:
-						for vg in vert.groups:
-							name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
-							if name not in local_bone_names:
-								continue
-							if 0.0 < vg.weight:
-								break
-						else:
-							vert.select = True
-					bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.mesh.select_all(action='DESELECT')
+				bpy.ops.object.mode_set(mode='OBJECT')
+				context.tool_settings.mesh_select_mode = (True, False, False)
+				for vert in me.vertices:
+					for vg in vert.groups:
+						name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+						if name not in local_bone_names:
+							continue
+						if 0.0 < vg.weight:
+							break
+					else:
+						vert.select = True
+				bpy.ops.object.mode_set(mode='EDIT')
 				self.report(type={'ERROR'}, message="ウェイトが割り当てられていない頂点が見つかりました、中止します")
 				return {'CANCELLED'}
 			vgs.sort(key=lambda vg: vg[1])
