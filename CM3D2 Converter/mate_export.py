@@ -48,11 +48,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = self.filepath
 		
 		# バックアップ
-		if self.is_backup and context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
-			if os.path.exists(self.filepath):
-				backup_path = self.filepath + "." + context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
-				shutil.copyfile(self.filepath, backup_path)
-				self.report(type={'INFO'}, message="上書き時にバックアップを複製しました")
+		common.file_backup(self.filepath, self.is_backup)
 		
 		mate = context.material
 		
@@ -169,11 +165,7 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = self.filepath
 		
 		# バックアップ
-		if self.is_backup and context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
-			if os.path.exists(self.filepath):
-				backup_path = self.filepath + "." + context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
-				shutil.copyfile(self.filepath, backup_path)
-				self.report(type={'INFO'}, message="上書き時にバックアップを複製しました")
+		common.file_backup(self.filepath, self.is_backup)
 		
 		txt = context.edit_text
 		lines = txt.as_string().split('\n')

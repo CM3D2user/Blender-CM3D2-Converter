@@ -1,4 +1,4 @@
-import bpy, os, re, struct
+import bpy, os, re, struct, shutil
 
 preview_collections = {}
 
@@ -85,3 +85,10 @@ def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	root, ext = os.path.splitext(main_dir)
 	main_dir = root + "." + replace_ext
 	return main_dir
+
+def file_backup(filepath, enable=True):
+	backup_ext = bpy.context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
+	if enable and backup_ext:
+		if os.path.exists(filepath):
+			backup_path = filepath + "." + backup_ext
+			shutil.copyfile(filepath, backup_path)

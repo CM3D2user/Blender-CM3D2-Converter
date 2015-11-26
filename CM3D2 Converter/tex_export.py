@@ -46,11 +46,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 		context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = self.filepath
 		
 		# バックアップ
-		if self.is_backup and context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
-			if os.path.exists(self.filepath):
-				backup_path = self.filepath + "." + context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
-				shutil.copyfile(self.filepath, backup_path)
-				self.report(type={'INFO'}, message="上書き時にバックアップを複製しました")
+		common.file_backup(self.filepath, self.is_backup)
 		
 		temp_path = self.filepath + ".temp.png"
 		

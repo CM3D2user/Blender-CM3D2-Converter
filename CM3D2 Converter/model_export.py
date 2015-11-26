@@ -323,11 +323,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_update(3)
 		
 		# バックアップ
-		if self.is_backup and context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
-			if os.path.exists(self.filepath):
-				backup_path = self.filepath + "." + context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
-				shutil.copyfile(self.filepath, backup_path)
-				self.report(type={'INFO'}, message="上書き時にバックアップを複製しました")
+		common.file_backup(self.filepath, self.is_backup)
 		
 		# ファイル先頭
 		file = open(self.filepath, 'wb')
