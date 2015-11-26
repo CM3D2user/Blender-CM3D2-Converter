@@ -413,64 +413,75 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if len(context.selected_objects) != 2:
+		active_ob = context.active_object
+		obs = context.selected_objects
+		if len(obs) != 2:
 			return False
-		for ob in context.selected_objects:
+		for ob in obs:
 			if ob.type != 'MESH':
 				return False
-			if ob.name != context.active_object.name:
+			if ob.name != active_ob.name:
 				if not ob.data.shape_keys:
 					return False
-		if context.active_object.mode != 'OBJECT':
-			return False
 		return True
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'remove_empty_shape')
+		self.layout.prop(self, 'remove_empty_shape', icon='X')
 	
 	def execute(self, context):
 		target_ob = context.active_object
+		target_me = target_ob.data
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
 				source_ob = ob
+		source_me = source_ob.data
+		
+		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
 		bm = bmesh.new()
 		bm.from_mesh(source_ob.data)
 		bm.faces.ensure_lookup_table()
+		
 		kd = mathutils.kdtree.KDTree(len(bm.verts))
 		for i, vert in enumerate(bm.verts):
 			kd.insert(source_ob.matrix_world * vert.co.copy(), i)
 		kd.balance()
-		is_first = True
-		context.window_manager.progress_begin(0, len(source_ob.data.shape_keys.key_blocks) * len(target_ob.data.vertices))
-		near_verts = []
-		for target_vert in target_ob.data.vertices:
-			co, index, dist = kd.find(target_ob.matrix_world * target_vert.co)
-			near_verts.append(index)
-		count = 0
-		for key_block in source_ob.data.shape_keys.key_blocks:
-			if is_first:
-				is_first = False
-				if not target_ob.data.shape_keys:
-					target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
-				continue
-			if key_block.name not in target_ob.data.shape_keys.key_blocks.keys():
-				target_shape = target_ob.shape_key_add(name=key_block.name, from_mix=False)
+		
+		near_vert_index = []
+		for vert in target_ob.data.vertices:
+			near_vert_index.append( kd.find(target_ob.matrix_world * vert.co)[1] )
+		
+		progress_count = 0
+		context.window_manager.progress_begin(0, len(source_me.shape_keys.key_blocks) * len(target_me.vertices))
+		
+		if not target_me.shape_keys:
+			bpy.ops.object.shape_key_add(from_mix=False)
+		
+		for key_block in source_me.shape_keys.key_blocks[1:]:
+			if key_block.name not in target_me.shape_keys.key_blocks.keys():
+				target_key_block = target_ob.shape_key_add(name=key_block.name, from_mix=False)
 			else:
-				target_shape = target_ob.data.shape_keys.key_blocks[key_block.name]
+				target_key_block = target_ob.data.shape_keys.key_blocks[key_block.name]
+			
 			is_shaped = False
-			for target_vert in target_ob.data.vertices:
-				index = near_verts[target_vert.index]
-				total_diff = key_block.data[index].co - source_ob.data.vertices[index].co
-				target_shape.data[target_vert.index].co = target_ob.data.vertices[target_vert.index].co + total_diff
-				if not is_shaped and 0.001 <= total_diff.length:
+			for target_vert in target_me.vertices:
+				near_index = near_vert_index[target_vert.index]
+				diff_co = key_block.data[near_index].co - source_me.vertices[near_index].co
+				target_key_block.data[target_vert.index].co = target_me.vertices[target_vert.index].co + diff_co
+				if not is_shaped and 0.001 <= diff_co.length:
 					is_shaped = True
-				context.window_manager.progress_update(count)
-				count += 1
+				
+				context.window_manager.progress_update(progress_count)
+				progress_count += 1
+			
 			if not is_shaped and self.remove_empty_shape:
-				target_ob.shape_key_remove(target_shape)
+				target_ob.shape_key_remove(target_key_block)
+		
+		bpy.ops.object.mode_set(mode=pre_mode)
 		target_ob.active_shape_key_index = 0
 		context.window_manager.progress_end()
 		return {'FINISHED'}
