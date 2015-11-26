@@ -684,7 +684,7 @@ class blur_shape_key(bpy.types.Operator):
 class radius_blur_shape_key(bpy.types.Operator):
 	bl_idname = 'object.radius_blur_shape_key'
 	bl_label = "シェイプキー範囲ぼかし"
-	bl_description = "シェイプキーの変形を範囲でぼかしてなめらかにします"
+	bl_description = "シェイプキーの変形を一定範囲の頂点でぼかしてスムーズにします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
@@ -692,20 +692,21 @@ class radius_blur_shape_key(bpy.types.Operator):
 		('ALL', "全て", "", 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
-	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=100, precision=1)
 	blur_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=True)
 	items = [
 		('BOTH', "増減両方", "", 1),
 		('ADD', "増加のみ", "", 2),
 		('SUB', "減少のみ", "", 3),
 		]
 	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
+	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=100, precision=1)
+	is_shaped_radius = bpy.props.BoolProperty(name="モーフ変形後の範囲", default=False)
+	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=True)
 	
 	@classmethod
 	def poll(cls, context):
-		if context.active_object:
-			ob = context.active_object
+		ob = context.active_object
+		if ob:
 			if ob.type == 'MESH':
 				if ob.active_shape_key:
 					return True
@@ -716,10 +717,11 @@ class radius_blur_shape_key(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
-		self.layout.prop(self, 'radius_multi')
 		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'fadeout')
 		self.layout.prop(self, 'effect')
+		self.layout.prop(self, 'radius_multi')
+		self.layout.prop(self, 'is_shaped_radius')
+		self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -742,28 +744,45 @@ class radius_blur_shape_key(bpy.types.Operator):
 			target_shapes = []
 			for key_block in shape_keys.key_blocks:
 				target_shapes.append(key_block)
-		kd = mathutils.kdtree.KDTree(len(me.vertices))
-		for i, v in enumerate(me.vertices):
-			kd.insert(v.co, i)
-		kd.balance()
 		
-		near_verts = []
-		for vert in me.vertices:
-			near_verts.append([])
-			for co, index, dist in kd.find_range(vert.co, radius):
-				diff = vert.co - co
-				multi = (radius - diff.length) / radius
-				near_verts[-1].append((index, multi))
+		if not self.is_shaped_radius:
+			kd = mathutils.kdtree.KDTree(len(me.vertices))
+			for i, v in enumerate(me.vertices):
+				kd.insert(v.co, i)
+			kd.balance()
+			
+			near_verts = []
+			for vert in me.vertices:
+				near_verts.append([])
+				for co, index, dist in kd.find_range(vert.co, radius):
+					diff = vert.co - co
+					multi = (radius - diff.length) / radius
+					near_verts[-1].append((index, multi))
 		
 		context.window_manager.progress_begin(0, self.blur_count * len(target_shapes) * len(me.vertices))
 		total_count = 0
 		for count in range(self.blur_count):
 			for shape in target_shapes:
 				data = shape.data
+				
+				if self.is_shaped_radius:
+					kd = mathutils.kdtree.KDTree(len(me.vertices))
+					for i, v in enumerate(data):
+						kd.insert(v.co, i)
+					kd.balance()
+					near_verts = []
+				
 				new_co = []
 				for vert in me.vertices:
 					context.window_manager.progress_update(total_count)
 					total_count += 1
+					
+					if self.is_shaped_radius:
+						near_verts.append([])
+						for co, index, dist in kd.find_range(data[vert.index].co, radius):
+							diff = data[vert.index].co - co
+							multi = (radius - diff.length) / radius
+							near_verts[-1].append((index, multi))
 					
 					source_diff_co = data[vert.index].co - vert.co
 					
