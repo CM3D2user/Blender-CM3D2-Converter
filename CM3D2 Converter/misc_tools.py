@@ -66,16 +66,20 @@ class quick_vertex_group_transfer(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if (len(context.selected_objects) <= 1):
+		target_ob = context.active_object
+		if target_ob.type != 'MESH':
 			return False
-		source_objs = []
-		for obj in context.selected_objects:
-			if (obj.type == 'MESH' and context.object.name != obj.name):
-				source_objs.append(obj)
-		if (len(source_objs) <= 0):
+		obs = context.selected_objects
+		if len(obs) < 2:
 			return False
-		for obj in source_objs:
-			if (1 <= len(obj.vertex_groups)):
+		source_obs = []
+		for ob in obs:
+			if ob.type=='MESH' and target_ob.name!=ob.name:
+				source_obs.append(ob)
+		if not len(source_obs):
+			return False
+		for ob in source_obs:
+			if len(ob.vertex_groups):
 				return True
 		return False
 	
@@ -83,46 +87,57 @@ class quick_vertex_group_transfer(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'vertex_group_remove_all')
-		self.layout.prop(self, 'vertex_group_clean')
-		self.layout.prop(self, 'vertex_group_delete')
+		self.layout.prop(self, 'vertex_group_remove_all', icon='X')
+		self.layout.prop(self, 'vertex_group_clean', icon='STICKY_UVS_LOC')
+		self.layout.prop(self, 'vertex_group_delete', icon='DISCLOSURE_TRI_DOWN')
 	
 	def execute(self, context):
-		source_objs = []
-		for obj in context.selected_objects:
-			if (obj.type == 'MESH' and context.active_object.name != obj.name):
-				source_objs.append(obj)
-		if (0 < len(context.active_object.vertex_groups) and self.vertex_group_remove_all):
+		target_ob = context.active_object
+		source_obs = []
+		for ob in context.selected_objects:
+			if ob.type=='MESH' and target_ob.name!=ob.name:
+				source_obs.append(ob)
+		
+		if len(target_ob.vertex_groups) and self.vertex_group_remove_all:
 			bpy.ops.object.vertex_group_remove(all=True)
-		me = context.active_object.data
-		vert_mapping = 'NEAREST'
-		for obj in source_objs:
-			if (len(obj.data.polygons) <= 0):
-				for obj2 in source_objs:
-					if (len(obj.data.edges) <= 0):
-						break
-				else:
-					vert_mapping = 'EDGEINTERP_NEAREST'
-				break
-		else:
+		
+		is_vert, is_edge, is_face = 0, 0, 0
+		for ob in source_obs:
+			me = ob.data
+			if len(me.vertices):
+				is_vert += 1
+			if len(me.edges):
+				is_edge += 1
+			if len(me.polygons):
+				is_face += 1
+		if is_face == len(source_obs):
 			vert_mapping = 'POLYINTERP_NEAREST'
+		elif is_edge == len(source_obs):
+			vert_mapping = 'EDGEINTERP_NEAREST'
+		elif is_vert == len(source_obs):
+			vert_mapping = 'NEAREST'
+		else:
+			self.report(type={'ERROR'}, message="頂点すらないメッシュを選択しています、中止します")
+			return {'CANCELLED'}
+		
 		try:
 			bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=vert_mapping, layers_select_src='ALL', layers_select_dst='NAME')
 		except:
 			bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping='NEAREST', layers_select_src='NAME', layers_select_dst='ALL')
-		if (self.vertex_group_clean):
+			self.report(type={'INFO'}, message="通常の処理に失敗したので、面ではなく頂点から転送しました")
+		
+		if self.vertex_group_clean:
 			bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0, keep_single=False)
-		if (self.vertex_group_delete):
-			obj = context.active_object
-			for vg in obj.vertex_groups:
-				for vert in obj.data.vertices:
+		if self.vertex_group_delete:
+			for vertex_group in target_ob.vertex_groups:
+				for vert in target_ob.data.vertices:
 					try:
-						if (vg.weight(vert.index) > 0.0):
+						if vertex_group.weight(vert.index) > 0.0:
 							break
-					except RuntimeError:
+					except:
 						pass
 				else:
-					obj.vertex_groups.remove(vg)
+					target_ob.vertex_groups.remove(vertex_group)
 		context.active_object.vertex_groups.active_index = 0
 		return {'FINISHED'}
 
