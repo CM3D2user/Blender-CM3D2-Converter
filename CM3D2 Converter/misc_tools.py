@@ -5,10 +5,10 @@ from . import common
 class update_cm3d2_converter(bpy.types.Operator):
 	bl_idname = 'script.update_cm3d2_converter'
 	bl_label = "CM3D2 Converterを更新"
-	bl_description = "GitHubから最新版のBlender-CM3D2-Converterをダウンロードし上書きします、実行した後は再起動して下さい"
+	bl_description = "GitHubから最新版のCM3D2 Converterアドオンをダウンロードし上書き更新します"
 	bl_options = {'REGISTER'}
 	
-	is_restart = bpy.props.BoolProperty(name="更新後にBlenderを再起動", description="アドオン更新後にBlenderを再起動します", default=True)
+	is_restart = bpy.props.BoolProperty(name="更新後にBlenderを再起動", default=True)
 	is_toggle_console = bpy.props.BoolProperty(name="再起動後にコンソールを閉じる", default=True)
 	
 	def invoke(self, context, event):
@@ -19,23 +19,26 @@ class update_cm3d2_converter(bpy.types.Operator):
 		self.layout.prop(self, 'is_toggle_console')
 	
 	def execute(self, context):
+		zip_path = os.path.join(bpy.app.tempdir, "Blender-CM3D2-Converter-master.zip")
+		addon_path = os.path.dirname(__file__)
+		
 		response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip")
-		tempDir = bpy.app.tempdir
-		zipPath = os.path.join(tempDir, "Blender-CM3D2-Converter-master.zip")
-		addonDir = os.path.dirname(__file__)
-		f = open(zipPath, "wb")
-		f.write(response.read())
-		f.close()
-		zf = zipfile.ZipFile(zipPath, "r")
-		for f in zf.namelist():
-			if not os.path.basename(f):
-				pass
-			else:
-				if ("CM3D2 Converter" in f):
-					uzf = open(os.path.join(addonDir, os.path.basename(f)), 'wb')
-					uzf.write(zf.read(f))
-					uzf.close()
-		zf.close()
+		zip_file = open(zip_path, "wb")
+		zip_file.write(response.read())
+		zip_file.close()
+		
+		zip_file = zipfile.ZipFile(zip_path, "r")
+		for path in zip_file.namelist():
+			if not os.path.basename(path):
+				continue
+			dir, file_name = os.path.split(path)
+			base_dir, sub_dir = os.path.split(dir)
+			if sub_dir == "CM3D2 Converter":
+				file = open(os.path.join(addon_path, os.path.basename(path)), 'wb')
+				file.write(zip_file.read(path))
+				file.close()
+		zip_file.close()
+		
 		if self.is_restart:
 			filepath = bpy.data.filepath
 			command_line = [sys.argv[0]]
@@ -48,7 +51,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 			subprocess.Popen(command_line)
 			bpy.ops.wm.quit_blender()
 		else:
-			self.report(type={'WARNING'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
+			self.report(type={'INFO'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
 		return {'FINISHED'}
 
 class quick_vertex_group_transfer(bpy.types.Operator):
