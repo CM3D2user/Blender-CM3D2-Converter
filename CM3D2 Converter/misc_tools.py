@@ -485,7 +485,9 @@ class shape_key_transfer_ex(bpy.types.Operator):
 			is_shaped = False
 			for target_vert in target_me.vertices:
 				near_index = near_vert_index[target_vert.index]
-				diff_co = key_block.data[near_index].co - source_me.vertices[near_index].co
+				shape_co = source_ob.matrix_world * key_block.data[near_index].co * target_ob.matrix_world
+				source_co = source_ob.matrix_world * source_me.vertices[near_index].co * target_ob.matrix_world
+				diff_co = shape_co - source_co
 				target_key_block.data[target_vert.index].co = target_me.vertices[target_vert.index].co + diff_co
 				if not is_shaped and 0.001 <= diff_co.length:
 					is_shaped = True
