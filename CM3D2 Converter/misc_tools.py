@@ -409,6 +409,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	bl_description = "頂点数の違うメッシュ同士でも一番近い頂点からシェイプキーを強制転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	subdivide_level = bpy.props.IntProperty(name="精度 (分割回数)", default=0, min=0, max=4, soft_min=0, soft_max=4)
 	remove_empty_shape = bpy.props.BoolProperty(name="全頂点に変形のないシェイプを削除", default=True)
 	
 	@classmethod
@@ -429,6 +430,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		self.layout.prop(self, 'subdivide_level', icon='UV_FACESEL')
 		self.layout.prop(self, 'remove_empty_shape', icon='X')
 	
 	def execute(self, context):
@@ -436,11 +438,24 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		target_me = target_ob.data
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
-				source_ob = ob
-		source_me = source_ob.data
+				source_ob_raw = ob
 		
 		pre_mode = target_ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		if self.subdivide_level:
+			bpy.ops.object.select_all(action='DESELECT')
+			source_ob_raw.select = True
+			context.scene.objects.active = source_ob_raw
+			bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.mesh.select_all(action='SELECT')
+			bpy.ops.mesh.subdivide(number_cuts=self.subdivide_level, smoothness=0)
+			bpy.ops.object.mode_set(mode='OBJECT')
+			source_ob = context.scene.objects.active
+		else:
+			source_ob = source_ob_raw
+		source_me = source_ob.data
 		
 		bm = bmesh.new()
 		bm.from_mesh(source_ob.data)
@@ -481,8 +496,19 @@ class shape_key_transfer_ex(bpy.types.Operator):
 			if not is_shaped and self.remove_empty_shape:
 				target_ob.shape_key_remove(target_key_block)
 		
-		bpy.ops.object.mode_set(mode=pre_mode)
+		if self.subdivide_level:
+			context.scene.objects.unlink(source_ob)
+			try:
+				context.blend_data.meshes.remove(source_me)
+				context.blend_data.objects.remove(source_ob)
+			except:
+				pass
+			context.scene.objects.active = target_ob
+			target_ob.select = True
+			source_ob_raw.select = True
+		
 		target_ob.active_shape_key_index = 0
+		bpy.ops.object.mode_set(mode=pre_mode)
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
