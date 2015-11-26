@@ -2,6 +2,9 @@ import bpy, os, re, struct, shutil
 
 preview_collections = {}
 
+def preferences():
+	return bpy.context.user_preferences.addons[__name__.split('.')[0]].preferences
+
 def remove_serial_number(name, flag=True):
 	if flag:
 		return re.sub(r'\.\d{3}$', "", name)

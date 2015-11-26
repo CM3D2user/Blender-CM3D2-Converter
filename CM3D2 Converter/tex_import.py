@@ -18,7 +18,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 	mode = bpy.props.EnumProperty(items=items, name="展開方法", default='PNG')
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path, "", "tex")
+		self.filepath = common.default_cm3d2_dir(common.preferences().tex_import_path, "", "tex")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -26,7 +26,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 		self.layout.prop(self, 'mode', icon='FILESEL')
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_import_path = self.filepath
+		common.preferences().tex_import_path = self.filepath
 		file = open(self.filepath, 'rb')
 		header_ext = common.read_str(file)
 		if header_ext == 'CM3D2_TEX':

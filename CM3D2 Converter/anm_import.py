@@ -21,7 +21,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.anm_import_path, "", "anm")
+		self.filepath = common.default_cm3d2_dir(common.preferences().anm_import_path, "", "anm")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -29,7 +29,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 		pass
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.anm_import_path = self.filepath
+		common.preferences().anm_import_path = self.filepath
 		
 		file = open(self.filepath, 'rb')
 		

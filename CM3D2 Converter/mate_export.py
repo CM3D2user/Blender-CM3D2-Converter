@@ -28,8 +28,8 @@ class export_cm3d2_mate(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		mate = context.material
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path, mate.name.lower(), "mate")
-		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
+		self.filepath = common.default_cm3d2_dir(common.preferences().mate_export_path, mate.name.lower(), "mate")
+		self.is_backup = bool(common.preferences().backup_ext)
 		self.name1 = common.remove_serial_number(mate.name.lower())
 		self.name2 = common.remove_serial_number(mate.name)
 		context.window_manager.fileselect_add(self)
@@ -38,14 +38,14 @@ class export_cm3d2_mate(bpy.types.Operator):
 	def draw(self, context):
 		row = self.layout.row()
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
+		if not common.preferences().backup_ext:
 			row.enabled = False
 		self.layout.prop(self, 'version', icon='LINENUMBERS_ON')
 		self.layout.prop(self, 'name1', icon='SORTALPHA')
 		self.layout.prop(self, 'name2', icon='SORTALPHA')
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = self.filepath
+		common.preferences().mate_export_path = self.filepath
 		
 		# バックアップ
 		common.file_backup(self.filepath, self.is_backup)
@@ -139,7 +139,7 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 	def invoke(self, context, event):
 		txt = context.edit_text
 		lines = txt.as_string().split('\n')
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path, lines[1], "mate")
+		self.filepath = common.default_cm3d2_dir(common.preferences().mate_export_path, lines[1], "mate")
 		try:
 			self.version = int(lines[0])
 		except:
@@ -155,14 +155,14 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 	def draw(self, context):
 		row = self.layout.row()
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
+		if not common.preferences().backup_ext:
 			row.enabled = False
 		self.layout.prop(self, 'version', icon='LINENUMBERS_ON')
 		self.layout.prop(self, 'name1', icon='SORTALPHA')
 		self.layout.prop(self, 'name2', icon='SORTALPHA')
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_export_path = self.filepath
+		common.preferences().mate_export_path = self.filepath
 		
 		# バックアップ
 		common.file_backup(self.filepath, self.is_backup)

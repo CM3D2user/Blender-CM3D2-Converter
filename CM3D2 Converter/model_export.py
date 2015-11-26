@@ -108,12 +108,12 @@ class export_cm3d2_model(bpy.types.Operator):
 								break
 		
 		# エクスポート時のデフォルトパスを取得
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path, self.model_name, "model")
+		self.filepath = common.default_cm3d2_dir(common.preferences().model_export_path, self.model_name, "model")
 		
 		# バックアップ関係
-		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
+		self.is_backup = bool(common.preferences().backup_ext)
 		
-		self.scale = 1.0 / context.user_preferences.addons[__name__.split('.')[0]].preferences.scale
+		self.scale = 1.0 / common.preferences().scale
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -121,7 +121,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.layout.prop(self, 'scale')
 		row = self.layout.row()
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
+		if not common.preferences().backup_ext:
 			row.enabled = False
 		self.layout.prop(self, 'is_arrange_name', icon='SAVE_AS')
 		box = self.layout.box()
@@ -143,7 +143,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		start_time = time.time()
 		
 		if not self.is_batch:
-			context.user_preferences.addons[__name__.split('.')[0]].preferences.model_export_path = self.filepath
+			common.preferences().model_export_path = self.filepath
 		
 		context.window_manager.progress_begin(0, 100)
 		context.window_manager.progress_update(0)
@@ -391,7 +391,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			weights = []
 			for vg in vert.groups:
 				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
-				print(name)
 				if name not in local_bone_names:
 					continue
 				weight = vg.weight

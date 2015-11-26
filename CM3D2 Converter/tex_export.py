@@ -27,9 +27,9 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def invoke(self, context, event):
 		img = context.edit_image
 		if img.filepath:
-			context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = img.filepath
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path, common.remove_serial_number(img.name), "tex")
-		self.is_backup = bool(context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext)
+			common.preferences().tex_export_path = img.filepath
+		self.filepath = common.default_cm3d2_dir(common.preferences().tex_export_path, common.remove_serial_number(img.name), "tex")
+		self.is_backup = bool(common.preferences().backup_ext)
 		self.path = "assets/texture/texture/" + os.path.basename(self.filepath)
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
@@ -37,13 +37,13 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def draw(self, context):
 		row = self.layout.row()
 		row.prop(self, 'is_backup', icon='FILE_BACKUP')
-		if not context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext:
+		if not common.preferences().backup_ext:
 			row.enabled = False
 		self.layout.prop(self, 'version', icon='LINENUMBERS_ON')
 		self.layout.prop(self, 'path', icon='ANIM')
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.tex_export_path = self.filepath
+		common.preferences().tex_export_path = self.filepath
 		
 		# バックアップ
 		common.file_backup(self.filepath, self.is_backup)

@@ -21,7 +21,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path, "", "mate")
+		self.filepath = common.default_cm3d2_dir(common.preferences().mate_import_path, "", "mate")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -29,7 +29,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 		self.layout.prop(self, 'is_decorate')
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path = self.filepath
+		common.preferences().mate_import_path = self.filepath
 		
 		file = open(self.filepath, 'rb')
 		if common.read_str(file) != 'CM3D2_MATERIAL':
@@ -115,7 +115,7 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 		return True
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path, "", "mate")
+		self.filepath = common.default_cm3d2_dir(common.preferences().mate_import_path, "", "mate")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -123,7 +123,7 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 		self.layout.prop(self, 'is_overwrite', icon='SAVE_COPY')
 	
 	def execute(self, context):
-		context.user_preferences.addons[__name__.split('.')[0]].preferences.mate_import_path = self.filepath
+		common.preferences().mate_import_path = self.filepath
 		
 		txt = None
 		if self.is_overwrite:
