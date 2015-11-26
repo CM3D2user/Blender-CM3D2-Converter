@@ -611,7 +611,7 @@ class scale_shape_key(bpy.types.Operator):
 class blur_shape_key(bpy.types.Operator):
 	bl_idname = 'object.blur_shape_key'
 	bl_label = "シェイプキーぼかし"
-	bl_description = "シェイプキーの変形をぼかしてなめらかにします"
+	bl_description = "シェイプキーの変形をぼかしてスムーズにします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
@@ -620,14 +620,18 @@ class blur_shape_key(bpy.types.Operator):
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
 	strength = bpy.props.IntProperty(name="処理回数", description="ぼかしの強度(回数)を設定します", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	items = [
+		('BOTH', "増減両方", "", 1),
+		('ADD', "増加のみ", "", 2),
+		('SUB', "減少のみ", "", 3),
+		]
+	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
 	
 	@classmethod
 	def poll(cls, context):
-		if context.active_object:
-			ob = context.active_object
-			if ob.type == 'MESH':
-				if ob.active_shape_key:
-					return True
+		ob = context.active_object
+		if ob:
+			return ob.type=='MESH' and ob.active_shape_key
 		return False
 	
 	def invoke(self, context, event):
@@ -636,15 +640,19 @@ class blur_shape_key(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
 		self.layout.prop(self, 'strength')
+		self.layout.prop(self, 'effect')
 	
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
 		shape_keys = me.shape_keys
+		
 		bm = bmesh.new()
 		bm.from_mesh(me)
+		
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
+		
 		if self.mode == 'ACTIVE':
 			target_shapes = [ob.active_shape_key]
 		elif self.mode == 'ALL':
@@ -665,17 +673,37 @@ class blur_shape_key(bpy.types.Operator):
 		for strength_count in range(self.strength):
 			for shape in target_shapes:
 				data = shape.data
+				new_co = []
 				for vert_index, vert in enumerate(bm.verts):
-					
 					context.window_manager.progress_update(total_count)
 					total_count += 1
 					
+					source_diff_co = data[vert_index].co - vert.co
+					
 					average_co = mathutils.Vector((0, 0, 0))
+					average_total = 0
 					for index in near_vert_index[vert_index]:
-						average_co += data[index].co - me.vertices[index].co
-					average_co /= len(near_vert_index[vert_index])
-					co = data[vert_index].co - vert.co
-					data[vert_index].co = (co + average_co) / 2 + vert.co
+						diff_co = data[index].co - me.vertices[index].co
+						
+						if self.effect == 'ADD':
+							if source_diff_co.length < diff_co.length:
+								average_co += diff_co
+								average_total += 1
+						elif self.effect == 'SUB':
+							if diff_co.length < source_diff_co.length:
+								average_co += diff_co
+								average_total += 1
+						else:
+							average_co += diff_co
+							average_total += 1
+					
+					if 0 < average_total:
+						average_co /= average_total
+						new_co.append(((source_diff_co * 2) + average_co) / 3 + vert.co)
+					else:
+						new_co.append(source_diff_co + vert.co)
+				for i, co in enumerate(new_co):
+					data[i].co = co.copy()
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		context.window_manager.progress_end()
@@ -707,9 +735,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
-			if ob.type == 'MESH':
-				if ob.active_shape_key:
-					return True
+			return ob.type=='MESH' and ob.active_shape_key
 		return False
 	
 	def invoke(self, context, event):
