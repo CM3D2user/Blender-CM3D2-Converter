@@ -409,6 +409,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 	bl_description = "頂点数の違うメッシュ同士でも一番近い頂点からシェイプキーを強制転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	is_all_remove = bpy.props.BoolProperty(name="既にあるシェイプは全削除", default=True)
 	subdivide_level = bpy.props.IntProperty(name="精度 (分割回数)", default=0, min=0, max=4, soft_min=0, soft_max=4)
 	remove_empty_shape = bpy.props.BoolProperty(name="全頂点に変形のないシェイプを削除", default=True)
 	
@@ -430,7 +431,8 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'subdivide_level', icon='UV_FACESEL')
+		self.layout.prop(self, 'is_all_remove', icon='CANCEL')
+		#self.layout.prop(self, 'subdivide_level', icon='UV_FACESEL')
 		self.layout.prop(self, 'remove_empty_shape', icon='X')
 	
 	def execute(self, context):
@@ -456,6 +458,7 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		else:
 			source_ob = source_ob_raw
 		source_me = source_ob.data
+		source_me.update()
 		
 		bm = bmesh.new()
 		bm.from_mesh(source_ob.data)
@@ -473,6 +476,12 @@ class shape_key_transfer_ex(bpy.types.Operator):
 		progress_count = 0
 		context.window_manager.progress_begin(0, len(source_me.shape_keys.key_blocks) * len(target_me.vertices))
 		
+		context.scene.objects.active = target_ob
+		if self.is_all_remove:
+			try:
+				bpy.ops.object.shape_key_remove(all=True)
+			except:
+				pass
 		if not target_me.shape_keys:
 			bpy.ops.object.shape_key_add(from_mix=False)
 		
