@@ -1532,16 +1532,6 @@ class remove_all_material_texts(bpy.types.Operator):
 			context.blend_data.texts.remove(txt)
 		return {'FINISHED'}
 
-class show_apply_modifier_addon_web(bpy.types.Operator):
-	bl_idname = "object.show_apply_modifier_addon_web"
-	bl_label = "モディファイアを適用できない場合"
-	bl_description = "Apply ModifierのWEBサイトを開きます"
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	def execute(self, context):
-		webbrowser.open("https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier")
-		return {'FINISHED'}
-
 class copy_object_bone_data_property(bpy.types.Operator):
 	bl_idname = "object.copy_object_bone_data_property"
 	bl_label = "ボーン情報をコピー"
@@ -2007,9 +1997,8 @@ def DATA_PT_modifiers(self, context):
 		if ob:
 			if ob.type == 'MESH':
 				me = ob.data
-				if me.shape_keys:
-					if len(ob.modifiers):
-						self.layout.operator(show_apply_modifier_addon_web.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+				if me.shape_keys and len(ob.modifiers):
+					self.layout.operator(open_url.bl_idname, text="モディファイアを適用できない場合", icon_value=common.preview_collections['main']['KISS'].icon_id).url = "https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier"
 
 # テキストヘッダーに項目追加
 def TEXT_HT_header(self, context):
