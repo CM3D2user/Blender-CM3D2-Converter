@@ -15,8 +15,8 @@ class update_cm3d2_converter(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'is_restart')
-		self.layout.prop(self, 'is_toggle_console')
+		self.layout.prop(self, 'is_restart', icon='FILE_REFRESH')
+		self.layout.prop(self, 'is_toggle_console', icon='CONSOLE')
 	
 	def execute(self, context):
 		zip_path = os.path.join(bpy.app.tempdir, "Blender-CM3D2-Converter-master.zip")
