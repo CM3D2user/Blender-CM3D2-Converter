@@ -973,6 +973,7 @@ class new_cm3d2(bpy.types.Operator):
 		]
 	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=False, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
 	
 	@classmethod
 	def poll(cls, context):
@@ -990,6 +991,7 @@ class new_cm3d2(bpy.types.Operator):
 		self.layout.separator()
 		self.layout.prop(self, 'type')
 		self.layout.prop(self, 'is_decorate')
+		self.layout.prop(self, 'is_replace_cm3d2_tex')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -1001,15 +1003,24 @@ class new_cm3d2(bpy.types.Operator):
 		tex_list, col_list, f_list = [], [], []
 		#mate.use_face_texture = True
 		
+		ob_name = ob_names[0]
+		
+		base_path = "Assets\\texture\\texture\\"
+		
+		_MainTex = base_path + ob_name + ".png"
+		toonGrayA1 = base_path + r"toon\toonGrayA1.png"
+		_ShadowTex = base_path + ob_name + "_shadow.png"
+		toonDress_shadow = base_path + r"toon\toonDress_shadow.png"
+		
 		if False:
 			pass
 		elif self.type == 'CM3D2/Toony_Lighted_Outline':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1022,10 +1033,10 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Toony_Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1036,11 +1047,11 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Toony_Lighted_Hair_Outline':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
-			tex_list.append(("_HiTex", ob_names[0] + "_s", "Assets\\texture\\texture\\" + ob_names[0] + "_s.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
+			tex_list.append(("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png"))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1060,12 +1071,12 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'Unlit/Texture':
 			mate['shader1'] = 'Unlit/Texture'
 			mate['shader2'] = 'Unlit__Texture'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 		elif self.type == 'Unlit/Transparent':
 			mate['shader1'] = 'Unlit/Transparent'
 			mate['shader2'] = 'Unlit__Transparent'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1082,15 +1093,15 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'Diffuse':
 			mate['shader1'] = 'Diffuse'
 			mate['shader2'] = 'Diffuse'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 		elif self.type == 'CM3D2/Toony_Lighted_Trans_NoZ':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans_NoZ'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans_NoZ'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1103,10 +1114,10 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Toony_Lighted_Outline_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline_Trans'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1119,7 +1130,7 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Lighted_Trans'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
@@ -1127,10 +1138,10 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Toony_Lighted':
 			mate['shader1'] = 'CM3D2/Toony_Lighted'
 			mate['shader2'] = 'CM3D2__Toony_Lighted'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1141,11 +1152,11 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'CM3D2/Toony_Lighted_Hair':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
-			tex_list.append(("_MainTex", ob_names[0], "Assets\\texture\\texture\\" + ob_names[0] + ".png"))
-			tex_list.append(("_ToonRamp", "toonGrayA1", r"Assets\texture\texture\toon\toonGrayA1.png"))
-			tex_list.append(("_ShadowTex", ob_names[0] + "_shadow", "Assets\\texture\\texture\\" + ob_names[0] + "_shadow.png"))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", r"Assets\texture\texture\toon\toonDress_shadow.png"))
-			tex_list.append(("_HiTex", ob_names[0] + "_s", "Assets\\texture\\texture\\" + ob_names[0] + "_s.png"))
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
+			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
+			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
+			tex_list.append(("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png"))
 			col_list.append(("_Color", (1, 1, 1, 1)))
 			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
 			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
@@ -1176,6 +1187,14 @@ class new_cm3d2(bpy.types.Operator):
 			
 			if data[0] != '_MainTex':
 				slot.use_map_color_diffuse = False
+			
+			# tex探し
+			if self.is_replace_cm3d2_tex:
+				if common.replace_cm3d2_tex(img) and data[0]=='_MainTex':
+					me = ob.data
+					for face in me.polygons:
+						if face.material_index == ob.active_material_index:
+							me.uv_textures.active.data[face.index].image = img
 		
 		for data in col_list:
 			slot = mate.texture_slots.create(slot_count)
