@@ -12,6 +12,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 	filter_glob = bpy.props.StringProperty(default="*.mate", options={'HIDDEN'})
 	
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=False, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
 	
 	@classmethod
 	def poll(cls, context):
@@ -27,6 +28,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'is_decorate')
+		self.layout.prop(self, 'is_replace_cm3d2_tex')
 	
 	def execute(self, context):
 		common.preferences().mate_import_path = self.filepath
@@ -55,16 +57,28 @@ class import_cm3d2_mate(bpy.types.Operator):
 			type = common.read_str(file)
 			if type == 'tex':
 				slot = mate.texture_slots.create(slot_index)
-				tex = context.blend_data.textures.new(common.read_str(file), 'IMAGE')
+				tex_name = common.read_str(file)
+				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
 				slot.texture = tex
 				sub_type = common.read_str(file)
 				if sub_type == 'tex2d':
 					img = context.blend_data.images.new(common.read_str(file), 128, 128)
-					img.filepath = common.read_str(file)
+					img['cm3d2_path'] = common.read_str(file)
+					img.filepath = img['cm3d2_path']
 					img.source = 'FILE'
 					tex.image = img
 					slot.color = struct.unpack('<3f', file.read(4*3))
 					slot.diffuse_color_factor = struct.unpack('<f', file.read(4))[0]
+					
+					# tex探し
+					if self.is_replace_cm3d2_tex:
+						if common.replace_cm3d2_tex(img) and tex_name=='_MainTex':
+							ob = context.active_object
+							me = ob.data
+							for face in me.polygons:
+								if face.material_index == ob.active_material_index:
+									me.uv_textures.active.data[face.index].image = img
+			
 			elif type == 'col':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.read_str(file)
@@ -78,6 +92,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 				if tex_name == "_RimColor":
 					mate.diffuse_color = slot.color[:]
 					mate.diffuse_color.v += 0.5
+			
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.read_str(file)

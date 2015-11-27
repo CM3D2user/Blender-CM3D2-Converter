@@ -557,7 +557,10 @@ class export_cm3d2_model(bpy.types.Operator):
 							img = tex.image
 							common.write_str(file, 'tex2d')
 							common.write_str(file, common.remove_serial_number(img.name, self.is_arrange_name))
-							path = img.filepath
+							if 'cm3d2_path' in img.keys():
+								path = img['cm3d2_path']
+							else:
+								path = img.filepath
 							path = path.replace('\\', '/')
 							path = re.sub(r'^[\/\.]*', "", path)
 							if not re.search(r'^assets/texture/', path, re.I):

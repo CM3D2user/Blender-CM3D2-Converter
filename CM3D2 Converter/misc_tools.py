@@ -1183,6 +1183,7 @@ class new_cm3d2(bpy.types.Operator):
 			slot.color = [0, 0, 1]
 			img = context.blend_data.images.new(data[1], 128, 128)
 			img.filepath = data[2]
+			img['cm3d2_path'] = data[2]
 			img.source = 'FILE'
 			tex.image = img
 			slot_count += 1
@@ -1251,7 +1252,10 @@ class copy_material(bpy.types.Operator):
 				if img:
 					output_text = output_text + '\ttex2d' + "\n"
 					output_text = output_text + "\t" + common.remove_serial_number(img.name) + "\n"
-					path = img.filepath
+					if 'cm3d2_path' in img.keys():
+						path = img['cm3d2_path']
+					else:
+						path = img.filepath
 					path = path.replace('\\', '/')
 					path = re.sub(r'^[\/\.]*', "", path)
 					if not re.search(r'^assets/texture/', path, re.I):
@@ -1328,7 +1332,8 @@ class paste_material(bpy.types.Operator):
 				line_seek += 3
 				if sub_type == 'tex2d':
 					img = context.blend_data.images.new(common.line_trim(lines[line_seek]), 128, 128)
-					img.filepath = common.line_trim(lines[line_seek+1])
+					img['cm3d2_path'] = common.line_trim(lines[line_seek+1])
+					img.filepath = img['cm3d2_path']
 					img.source = 'FILE'
 					tex.image = img
 					fs = common.line_trim(lines[line_seek+2]).split(' ')
@@ -2118,7 +2123,10 @@ def TEXTURE_PT_context_texture(self, context):
 				if img.source == 'FILE':
 					sub_box = box.box()
 					sub_box.prop(img, 'name', icon='IMAGE_DATA', text="テクスチャ名")
-					sub_box.prop(img, 'filepath', text="テクスチャパス")
+					if 'cm3d2_path' in img.keys():
+						sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
+					else:
+						sub_box.prop(img, 'filepath', text="テクスチャパス")
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	elif type == "col":

@@ -95,3 +95,57 @@ def file_backup(filepath, enable=True):
 		if os.path.exists(filepath):
 			backup_path = filepath + "." + backup_ext
 			shutil.copyfile(filepath, backup_path)
+
+def fild_all_files(directory):
+	for root, dirs, files in os.walk(directory):
+		yield root
+		for file in files:
+			yield os.path.join(root, file)
+
+def replace_cm3d2_tex(img):
+	if not preferences().default_tex_path:
+		try:
+			import winreg
+			with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+				cm3d2_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
+				cm3d2_dir = os.path.join(cm3d2_dir, "GameData")
+		except:
+			return False
+		preferences().default_tex_path = cm3d2_dir
+	else:
+		cm3d2_dir = preferences().default_tex_path
+	
+	if 'cm3d2_path' in img.keys():
+		source_path = img['cm3d2_path']
+	else:
+		source_path = img.filepath
+	source_png_name = os.path.basename(source_path).lower()
+	source_tex_name = os.path.splitext(source_png_name)[0] + ".tex"
+	
+	for path in fild_all_files(cm3d2_dir):
+		file_name = os.path.basename(path).lower()
+		
+		if file_name == source_png_name:
+			img.filepath = path
+			img.reload()
+			return True
+		else:
+			if file_name == source_tex_name:
+				file = open(path, 'rb')
+				header_ext = read_str(file)
+				if header_ext == 'CM3D2_TEX':
+					file.seek(4, 1)
+					read_str(file)
+					png_size = struct.unpack('<i', file.read(4))[0]
+					png_path = os.path.splitext(path)[0] + ".png"
+					png_file = open(png_path, 'wb')
+					png_file.write(file.read(png_size))
+					png_file.close()
+					file.close()
+					img.filepath = png_path
+					img.reload()
+					return True
+				else:
+					file.close()
+					return False
+	return False

@@ -22,6 +22,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_vertex_group_sort = bpy.props.BoolProperty(name="頂点グループを名前順ソート", default=True, description="頂点グループを名前順でソートします")
 	is_remove_empty_vertex_group = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True, description="全ての頂点に割り当てのない頂点グループを削除します")
 	
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=True, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
 	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
 	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
@@ -56,6 +57,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box.prop(self, 'is_remove_empty_vertex_group', icon='DISCLOSURE_TRI_DOWN')
 		sub_box = box.box()
 		sub_box.label("マテリアル")
+		sub_box.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
 		sub_box.prop(self, 'is_mate_color', icon='COLOR')
 		sub_box.prop(self, 'is_decorate', icon='TEXTURE_SHADED')
 		sub_box.prop(self, 'is_mate_data_text', icon='TEXT')
@@ -449,6 +451,12 @@ class import_cm3d2_model(bpy.types.Operator):
 			context.window_manager.progress_update(6)
 			
 			# マテリアル追加
+			progress_plus_value = 0.0
+			for data in material_data:
+				progress_plus_value += len(data['data'])
+			progress_plus_value = 1.0 / progress_plus_value
+			progress_count = 6.0
+			
 			face_seek = 0
 			for index, data in enumerate(material_data):
 				override = context.copy()
@@ -478,8 +486,17 @@ class import_cm3d2_model(bpy.types.Operator):
 							slot.diffuse_color_factor = tex_data['color'][3]
 							img = context.blend_data.images.new(tex_data['name2'], 128, 128)
 							img.filepath = tex_data['path']
+							img['cm3d2_path'] = tex_data['path']
 							img.source = 'FILE'
 							tex.image = img
+							
+							# tex探し
+							if self.is_replace_cm3d2_tex:
+								if common.replace_cm3d2_tex(img) and tex_data['name']=='_MainTex':
+									for face in me.polygons:
+										if face.material_index == index:
+											me.uv_textures.active.data[face.index].image = img
+					
 					elif tex_data['type'] == 'col':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
@@ -502,6 +519,9 @@ class import_cm3d2_model(bpy.types.Operator):
 						
 						if tex_data['name'] == '_Shininess':
 							mate.specular_intensity = tex_data['float']
+					
+					progress_count += progress_plus_value
+					context.window_manager.progress_update(progress_count)
 			ob.active_material_index = 0
 			context.window_manager.progress_update(7)
 			
