@@ -2232,10 +2232,16 @@ def TEXTURE_PT_context_texture(self, context):
 def INFO_MT_help(self, context):
 	self.layout.separator()
 	self.layout.operator(update_cm3d2_converter.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS_sub.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+class INFO_MT_help_CM3D2_Converter_RSS_sub(bpy.types.Menu):
+	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS_sub"
+	bl_label = "CM3D2 Converterの更新履歴"
+	
+	def draw(self, context):
+		self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, text="取得に数秒かかります", icon='FILE_REFRESH')
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS"
-	bl_label = "CM3D2 Converterの更新履歴 (取得に数秒)"
+	bl_label = "CM3D2 Converterの更新履歴"
 	
 	def draw(self, context):
 		try:
