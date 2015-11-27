@@ -15,7 +15,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'is_restart', icon='FILE_REFRESH')
+		self.layout.prop(self, 'is_restart', icon='BLENDER')
 		self.layout.prop(self, 'is_toggle_console', icon='CONSOLE')
 	
 	def execute(self, context):
@@ -31,8 +31,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 		for path in zip_file.namelist():
 			if not os.path.basename(path):
 				continue
-			dir, file_name = os.path.split(path)
-			base_dir, sub_dir = os.path.split(dir)
+			sub_dir = os.path.split( os.path.split(path)[0] )[1]
 			if sub_dir == "CM3D2 Converter":
 				file = open(os.path.join(addon_path, os.path.basename(path)), 'wb')
 				file.write(zip_file.read(path))
