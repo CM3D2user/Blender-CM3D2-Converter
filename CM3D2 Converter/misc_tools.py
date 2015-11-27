@@ -1955,6 +1955,27 @@ class sync_tex_color_ramps(bpy.types.Operator):
 			common.set_texture_color(tex, slot.diffuse_color_factor, type)
 		return {'FINISHED'}
 
+class replace_cm3d2_tex(bpy.types.Operator):
+	bl_idname = "image.replace_cm3d2_tex"
+	bl_label = "テクスチャを探す"
+	bl_description = "CM3D2本体のインストールフォルダからtexファイルを探して開きます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		if 'texture' in dir(context):
+			tex = context.texture
+			if 'image' in dir(tex):
+				return True
+		return False
+	
+	def execute(self, context):
+		tex = context.texture
+		img = tex.image
+		common.replace_cm3d2_tex(img)
+		return {'FINISHED'}
+
+
 
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
@@ -2240,7 +2261,11 @@ def TEXTURE_PT_context_texture(self, context):
 						sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					else:
 						sub_box.prop(img, 'filepath', text="テクスチャパス")
-					sub_box.operator(show_image.bl_idname, text="この画像を表示", icon='ZOOM_IN').image_name = img.name
+					
+					if len(img.pixels):
+						sub_box.operator(show_image.bl_idname, text="この画像を表示", icon='ZOOM_IN').image_name = img.name
+					else:
+						sub_box.operator(replace_cm3d2_tex.bl_idname, icon='BORDERMOVE')
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	elif type == "col":
