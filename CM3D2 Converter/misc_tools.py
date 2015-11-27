@@ -1875,6 +1875,45 @@ class open_url(bpy.types.Operator):
 		webbrowser.open(self.url)
 		return {'FINISHED'}
 
+class show_image(bpy.types.Operator):
+	bl_idname = "image.show_image"
+	bl_label = "画像を表示"
+	bl_description = "指定の画像をUV/画像エディターに表示します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	
+	def execute(self, context):
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			self.report(type={'ERROR'}, message="指定された画像が見つかりません")
+			return {'CANCELLED'}
+		
+		image_editors = []
+		other_areas = []
+		for area in context.screen.areas:
+			if area.type == 'IMAGE_EDITOR':
+				image_editors.append(area)
+			else:
+				if area.type != 'VIEW_3D':
+					other_areas.append(area)
+		if len(image_editors):
+			other_areas = image_editors[:]
+		
+		maximum_area_size = -1
+		for area in other_areas:
+			size = area.width * area.height
+			if maximum_area_size < size:
+				maximum_area = area
+				maximum_area_size = size
+		
+		maximum_area.type = 'IMAGE_EDITOR'
+		for space in maximum_area.spaces:
+			if space.type == 'IMAGE_EDITOR':
+				space.image = img
+		return {'FINISHED'}
+
 
 
 # 頂点グループメニューに項目追加
@@ -2142,6 +2181,7 @@ def TEXTURE_PT_context_texture(self, context):
 						sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					else:
 						sub_box.prop(img, 'filepath', text="テクスチャパス")
+					sub_box.operator(show_image.bl_idname, text="この画像を表示", icon='ZOOM_IN').image_name = img.name
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	elif type == "col":
