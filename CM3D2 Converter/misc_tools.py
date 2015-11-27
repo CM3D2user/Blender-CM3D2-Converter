@@ -227,7 +227,7 @@ class blur_vertex_group(bpy.types.Operator):
 						target_vert_weight = 0.0
 					
 					near_weight_average = 0.0
-					#near_weight_total = 0.0
+					near_weight_total = 0.0
 					for near_vert_index, near_vert_multi in near_vert_data[vert.index]:
 						try:
 							near_vert_weight = vertex_group.weight(near_vert_index)
@@ -237,20 +237,23 @@ class blur_vertex_group(bpy.types.Operator):
 						if self.effect == 'ADD':
 							if target_vert_weight < near_vert_weight:
 								near_weight_average += near_vert_weight
+								near_weight_total += 1
 						elif self.effect == 'SUB':
 							if near_vert_weight < target_vert_weight:
 								near_weight_average += near_vert_weight
+								near_weight_total += 1
 						else:
 							near_weight_average += near_vert_weight
+							near_weight_total += 1
 					
-					if len(near_vert_data[vert.index]):
-						near_weight_average /= len(near_vert_data[vert.index])
+					if 0.0 < near_weight_total:
+						near_weight_average /= near_weight_total
 						new_vert_weights.append( ((target_vert_weight * 2) + near_weight_average) / 3 )
 					else:
 						new_vert_weights.append(target_vert_weight)
 				
 				for vert_index, new_weight in enumerate(new_vert_weights):
-					if new_weight <= 0.0001:
+					if new_weight <= 0.001:
 						vertex_group.remove([vert_index])
 					else:
 						vertex_group.add([vert_index], new_weight, 'REPLACE')
