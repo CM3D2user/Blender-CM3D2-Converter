@@ -490,6 +490,9 @@ class import_cm3d2_model(bpy.types.Operator):
 							img.source = 'FILE'
 							tex.image = img
 							
+							if tex_data['name'] != '_MainTex':
+								slot.use_map_color_diffuse = False
+							
 							# tex探し
 							if self.is_replace_cm3d2_tex:
 								if common.replace_cm3d2_tex(img) and tex_data['name']=='_MainTex':

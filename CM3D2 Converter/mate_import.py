@@ -70,6 +70,9 @@ class import_cm3d2_mate(bpy.types.Operator):
 					slot.color = struct.unpack('<3f', file.read(4*3))
 					slot.diffuse_color_factor = struct.unpack('<f', file.read(4))[0]
 					
+					if tex_name != '_MainTex':
+						slot.use_map_color_diffuse = False
+					
 					# tex探し
 					if self.is_replace_cm3d2_tex:
 						if common.replace_cm3d2_tex(img) and tex_name=='_MainTex':

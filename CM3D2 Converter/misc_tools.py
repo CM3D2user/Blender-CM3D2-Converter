@@ -1187,6 +1187,9 @@ class new_cm3d2(bpy.types.Operator):
 			img.source = 'FILE'
 			tex.image = img
 			slot_count += 1
+			
+			if data[0] != '_MainTex':
+				slot.use_map_color_diffuse = False
 		for data in col_list:
 			slot = mate.texture_slots.create(slot_count)
 			mate.use_textures[slot_count] = False
