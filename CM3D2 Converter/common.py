@@ -103,17 +103,27 @@ def fild_all_files(directory):
 			yield os.path.join(root, file)
 
 def replace_cm3d2_tex(img):
-	if not preferences().default_tex_path:
+	if not preferences().default_tex_path0 and not preferences().default_tex_path1 and not preferences().default_tex_path2:
 		try:
 			import winreg
 			with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
 				cm3d2_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
-				cm3d2_dir = os.path.join(cm3d2_dir, "GameData")
 		except:
 			return False
-		preferences().default_tex_path = cm3d2_dir
+		
+		cm3d2_dir = os.path.join(cm3d2_dir, "GameData")
+		tex_dirs = []
+		for end_str in ['', '2', '3']:
+			path = os.path.join(cm3d2_dir, "texture" + end_str)
+			if os.path.isdir(path):
+				tex_dirs.append(path)
+		
+		for index, path in enumerate(tex_dirs):
+			preferences().__setattr__('default_tex_path' + str(index), path)
 	else:
-		cm3d2_dir = preferences().default_tex_path
+		tex_dirs = []
+		for index in range(3):
+			tex_dirs.append( preferences().__getattribute__('default_tex_path' + str(index)) )
 	
 	if 'cm3d2_path' in img.keys():
 		source_path = img['cm3d2_path']
@@ -122,32 +132,33 @@ def replace_cm3d2_tex(img):
 	source_png_name = os.path.basename(source_path).lower()
 	source_tex_name = os.path.splitext(source_png_name)[0] + ".tex"
 	
-	for path in fild_all_files(cm3d2_dir):
-		file_name = os.path.basename(path).lower()
-		
-		if file_name == source_png_name:
-			img.filepath = path
-			img.reload()
-			return True
-		else:
-			if file_name == source_tex_name:
-				file = open(path, 'rb')
-				header_ext = read_str(file)
-				if header_ext == 'CM3D2_TEX':
-					file.seek(4, 1)
-					read_str(file)
-					png_size = struct.unpack('<i', file.read(4))[0]
-					png_path = os.path.splitext(path)[0] + ".png"
-					png_file = open(png_path, 'wb')
-					png_file.write(file.read(png_size))
-					png_file.close()
-					file.close()
-					img.filepath = png_path
-					img.reload()
-					return True
-				else:
-					file.close()
-					return False
+	for tex_dir in tex_dirs:
+		for path in fild_all_files(tex_dir):
+			file_name = os.path.basename(path).lower()
+			
+			if file_name == source_png_name:
+				img.filepath = path
+				img.reload()
+				return True
+			else:
+				if file_name == source_tex_name:
+					file = open(path, 'rb')
+					header_ext = read_str(file)
+					if header_ext == 'CM3D2_TEX':
+						file.seek(4, 1)
+						read_str(file)
+						png_size = struct.unpack('<i', file.read(4))[0]
+						png_path = os.path.splitext(path)[0] + ".png"
+						png_file = open(png_path, 'wb')
+						png_file.write(file.read(png_size))
+						png_file.close()
+						file.close()
+						img.filepath = png_path
+						img.reload()
+						return True
+					else:
+						file.close()
+						return False
 	return False
 
 def set_texture_color(tex, color):

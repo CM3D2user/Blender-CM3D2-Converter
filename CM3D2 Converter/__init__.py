@@ -61,12 +61,15 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	anm_import_path = bpy.props.StringProperty(name="anmインポート時のデフォルトパス", subtype='FILE_PATH', description="anmインポート時に最初はここが表示されます、インポート毎に保存されます")
 	anm_export_path = bpy.props.StringProperty(name="anmエクスポート時のデフォルトパス", subtype='FILE_PATH', description="anmエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
-	default_tex_path = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	tex_import_path = bpy.props.StringProperty(name="texインポート時のデフォルトパス", subtype='FILE_PATH', description="texインポート時に最初はここが表示されます、インポート毎に保存されます")
 	tex_export_path = bpy.props.StringProperty(name="texエクスポート時のデフォルトパス", subtype='FILE_PATH', description="texエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
 	mate_import_path = bpy.props.StringProperty(name="mateインポート時のデフォルトパス", subtype='FILE_PATH', description="mateインポート時に最初はここが表示されます、インポート毎に保存されます")
 	mate_export_path = bpy.props.StringProperty(name="mateエクスポート時のデフォルトパス", subtype='FILE_PATH', description="mateエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
+	
+	default_tex_path0 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
+	default_tex_path1 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
+	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
@@ -82,13 +85,17 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.prop(self, 'anm_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
 		box = self.layout.box()
 		box.label(text="texファイル", icon='FILE_IMAGE')
-		box.prop(self, 'default_tex_path', icon='BORDERMOVE', text="texファイル置き場")
 		box.prop(self, 'tex_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'tex_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
 		box = self.layout.box()
 		box.label(text="mateファイル", icon='MATERIAL')
 		box.prop(self, 'mate_import_path', icon='IMPORT', text="インポート時デフォルトパス")
 		box.prop(self, 'mate_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box = self.layout.box()
+		box.label(text="texファイル置き場", icon='BORDERMOVE')
+		box.prop(self, 'default_tex_path0', icon='TEXTURE', text="その1")
+		box.prop(self, 'default_tex_path1', icon='TEXTURE', text="その2")
+		box.prop(self, 'default_tex_path2', icon='TEXTURE', text="その3")
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
