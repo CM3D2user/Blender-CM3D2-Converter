@@ -1207,7 +1207,7 @@ class new_cm3d2(bpy.types.Operator):
 			slot.texture = tex
 			slot_count += 1
 			
-			common.set_texture_color(tex, [0.5, 1, 0.5, 1])
+			common.set_texture_color(tex, slot.color[:], 'col', slot.diffuse_color_factor)
 		
 		for data in f_list:
 			slot = mate.texture_slots.create(slot_count)
@@ -1219,7 +1219,7 @@ class new_cm3d2(bpy.types.Operator):
 			
 			if data[0] == '_Shininess':
 				mate.specular_intensity = data[1]
-			common.set_texture_color(tex, [0.5, 0.5, 1, 1])
+			common.set_texture_color(tex, slot.diffuse_color_factor, 'f')
 		
 		return {'FINISHED'}
 
@@ -1377,7 +1377,7 @@ class paste_material(bpy.types.Operator):
 				if tex_name == "_RimColor":
 					mate.diffuse_color = fs[:3]
 					mate.diffuse_color.v += 0.5
-				common.set_texture_color(tex, [0.5, 1, 0.5, 1])
+				common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
 				line_seek += 3
 			
 			elif type == 'f':
@@ -1390,7 +1390,7 @@ class paste_material(bpy.types.Operator):
 				
 				if tex_name == '_Shininess':
 					mate.specular_intensity = slot.diffuse_color_factor
-				common.set_texture_color(tex, [0.5, 0.5, 1, 1])
+				common.set_texture_color(tex, slot.diffuse_color_factor, type)
 				line_seek += 3
 			
 			else:
@@ -1922,6 +1922,38 @@ class show_image(bpy.types.Operator):
 				space.image = img
 		return {'FINISHED'}
 
+class sync_tex_color_ramps(bpy.types.Operator):
+	bl_idname = "texture.sync_tex_color_ramps"
+	bl_label = "設定をテクスチャの色に同期"
+	bl_description = "この設定値をテクスチャの色に適用してわかりやすくします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		if 'texture_slot' in dir(context):
+			if context.texture_slot:
+				if 'texture' in dir(context):
+					if context.texture:
+						return True
+		return False
+	
+	def execute(self, context):
+		slot = context.texture_slot
+		tex = context.texture
+		
+		if slot.use:
+			type = 'tex'
+		else:
+			if slot.use_rgb_to_intensity:
+				type = 'col'
+			else:
+				type = 'f'
+		
+		if type == 'col':
+			common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
+		elif type == 'f':
+			common.set_texture_color(tex, slot.diffuse_color_factor, type)
+		return {'FINISHED'}
 
 
 # 頂点グループメニューに項目追加
@@ -2215,8 +2247,11 @@ def TEXTURE_PT_context_texture(self, context):
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'color', text="")
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
+		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
 	elif type == "f":
-		box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+		sub_box = box.box()
+		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
 	
 	base_name = common.remove_serial_number(tex.name)
 	description = ""

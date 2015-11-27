@@ -95,7 +95,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 				if tex_name == "_RimColor":
 					mate.diffuse_color = slot.color[:]
 					mate.diffuse_color.v += 0.5
-				common.set_texture_color(tex, [0.5, 1, 0.5, 1])
+				common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
 			
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
@@ -107,7 +107,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 				
 				if tex_name == '_Shininess':
 					mate.specular_intensity = slot.diffuse_color_factor
-				common.set_texture_color(tex, [0.5, 0.5, 1, 1])
+				common.set_texture_color(tex, slot.diffuse_color_factor, type)
 			
 			elif type == 'end':
 				break

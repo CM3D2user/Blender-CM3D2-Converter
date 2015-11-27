@@ -164,10 +164,42 @@ def replace_cm3d2_tex(img):
 						return False
 	return False
 
-def set_texture_color(tex, color):
+def set_texture_color(tex, color, type, alpha=1.0):
+	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
 	tex.use_color_ramp = True
 	elements = tex.color_ramp.elements
-	for i in range(len(elements) - 1):
-		elements.remove(elements[-1])
-	elements[0].color = color[:]
+	
+	if 2 < len(elements):
+		for i in range(len(elements) - 2):
+			elements.remove(elements[-1])
+	elif len(elements) < 2:
+		for i in range(2 - len(elements)):
+			elements.new(1.0)
+	
+	if type == 'col':
+		elements[0].color = [0.5, 1, 0.5, 1]
+		
+		try:
+			color = list(color[:])
+			if len(color) == 3:
+				color.append(alpha)
+		except:
+			color = [color, color, color, alpha]
+		elements[1].color = color
+	
+	elif type == 'f':
+		elements[0].color = [0.5, 0.5, 1, 1]
+		
+		multi = 1.0
+		if base_name == '_OutlineWidth':
+			multi = 200
+		elif base_name == '_RimPower':
+			multi = 1.0 / 30.0
+		
+		value = color * multi
+		elements[1].color = [value, value, value, 1]
+	
+	else:
+		elements[0].color = [1, 0, 1, 1]
+		elements[1].color = [1, 0, 1, 1]
