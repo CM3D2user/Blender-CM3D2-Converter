@@ -153,7 +153,7 @@ class blur_vertex_group(bpy.types.Operator):
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象ウェイト", default='ACTIVE')
 	radius = bpy.props.IntProperty(name="範囲:辺×", default=1, min=1, max=10, soft_min=1, soft_max=10, step=1)
-	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	items = [
 		('BOTH', "増減両方", "", 1),
 		('ADD', "増加のみ", "", 2),
@@ -227,7 +227,7 @@ class blur_vertex_group(bpy.types.Operator):
 						target_vert_weight = 0.0
 					
 					near_weight_average = 0.0
-					near_weight_total = 0.0
+					#near_weight_total = 0.0
 					for near_vert_index, near_vert_multi in near_vert_data[vert.index]:
 						try:
 							near_vert_weight = vertex_group.weight(near_vert_index)
@@ -236,18 +236,15 @@ class blur_vertex_group(bpy.types.Operator):
 						
 						if self.effect == 'ADD':
 							if target_vert_weight < near_vert_weight:
-								near_weight_average += near_vert_weight * near_vert_multi
-								near_weight_total += near_vert_multi
+								near_weight_average += near_vert_weight
 						elif self.effect == 'SUB':
 							if near_vert_weight < target_vert_weight:
-								near_weight_average += near_vert_weight * near_vert_multi
-								near_weight_total += near_vert_multi
+								near_weight_average += near_vert_weight
 						else:
-							near_weight_average += near_vert_weight * near_vert_multi
-							near_weight_total += near_vert_multi
+							near_weight_average += near_vert_weight
 					
-					if 0 < near_weight_total:
-						near_weight_average /= near_weight_total
+					if len(near_vert_data[vert.index]):
+						near_weight_average /= len(near_vert_data[vert.index])
 						new_vert_weights.append( ((target_vert_weight * 2) + near_weight_average) / 3 )
 					else:
 						new_vert_weights.append(target_vert_weight)
