@@ -15,6 +15,7 @@ class update_cm3d2_converter(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
 		self.layout.prop(self, 'is_restart', icon='BLENDER')
 		self.layout.prop(self, 'is_toggle_console', icon='CONSOLE')
 	
@@ -1216,6 +1217,8 @@ class new_cm3d2(bpy.types.Operator):
 			slot.texture = tex
 			slot_count += 1
 			
+			if tex_data['name'] == '_Shininess':
+				mate.specular_intensity = tex_data['float']
 			common.set_texture_color(tex, [0.5, 0.5, 1, 1])
 		
 		return {'FINISHED'}
