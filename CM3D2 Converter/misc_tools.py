@@ -2139,6 +2139,7 @@ def TEXT_HT_header(self, context):
 		if "Material:0" in text_keys:
 			row.operator(remove_all_material_texts.bl_idname, icon='X', text="")
 
+# UV/画像エディターのプロパティに項目追加
 def IMAGE_PT_image_properties(self, context):
 	if 'edit_image' in dir(context):
 		img = context.edit_image
@@ -2146,6 +2147,16 @@ def IMAGE_PT_image_properties(self, context):
 			box = self.layout.box()
 			box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 			box.prop(img, '["cm3d2_path"]', icon='ANIM_DATA', text="内部パス")
+
+# UV/画像エディターのヘッダーに項目追加
+def IMAGE_HT_header(self, context):
+	if 'edit_image' in dir(context):
+		img = context.edit_image
+		if 'cm3d2_path' in img.keys():
+			self.layout.label(text="CM3D2用: 内部パス", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			row = self.layout.row()
+			row.prop(img, '["cm3d2_path"]', text="")
+			row.scale_x = 3.0
 
 # テクスチャタブに項目追加
 def TEXTURE_PT_context_texture(self, context):

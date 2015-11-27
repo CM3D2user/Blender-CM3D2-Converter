@@ -128,6 +128,7 @@ def register():
 	bpy.types.DATA_PT_modifiers.append(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.append(misc_tools.TEXT_HT_header)
 	bpy.types.IMAGE_PT_image_properties.append(misc_tools.IMAGE_PT_image_properties)
+	bpy.types.IMAGE_HT_header.append(misc_tools.IMAGE_HT_header)
 	
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
@@ -159,6 +160,7 @@ def unregister():
 	bpy.types.DATA_PT_modifiers.remove(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.remove(misc_tools.TEXT_HT_header)
 	bpy.types.IMAGE_PT_image_properties.remove(misc_tools.IMAGE_PT_image_properties)
+	bpy.types.IMAGE_HT_header.remove(misc_tools.IMAGE_HT_header)
 	
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
