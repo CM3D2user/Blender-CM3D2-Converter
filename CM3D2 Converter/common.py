@@ -176,6 +176,8 @@ def set_texture_color(tex, color, type, alpha=1.0):
 	elif len(elements) < 2:
 		for i in range(2 - len(elements)):
 			elements.new(1.0)
+	elements[0].position = 0.2
+	elements[1].position = 0.21
 	
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
