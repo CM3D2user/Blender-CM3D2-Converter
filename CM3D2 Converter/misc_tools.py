@@ -1190,6 +1190,7 @@ class new_cm3d2(bpy.types.Operator):
 			
 			if data[0] != '_MainTex':
 				slot.use_map_color_diffuse = False
+		
 		for data in col_list:
 			slot = mate.texture_slots.create(slot_count)
 			mate.use_textures[slot_count] = False
@@ -1199,6 +1200,9 @@ class new_cm3d2(bpy.types.Operator):
 			tex = context.blend_data.textures.new(data[0], 'IMAGE')
 			slot.texture = tex
 			slot_count += 1
+			
+			common.set_texture_color(tex, [0.5, 1, 0.5, 1])
+		
 		for data in f_list:
 			slot = mate.texture_slots.create(slot_count)
 			mate.use_textures[slot_count] = False
@@ -1206,6 +1210,9 @@ class new_cm3d2(bpy.types.Operator):
 			tex = context.blend_data.textures.new(data[0], 'IMAGE')
 			slot.texture = tex
 			slot_count += 1
+			
+			common.set_texture_color(tex, [0.5, 0.5, 1, 1])
+		
 		return {'FINISHED'}
 
 class copy_material(bpy.types.Operator):
@@ -1345,6 +1352,7 @@ class paste_material(bpy.types.Operator):
 					slot.color = fs[:3]
 					slot.diffuse_color_factor = fs[3]
 					line_seek += 3
+			
 			elif type == 'col':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.line_trim(lines[line_seek+1])
@@ -1361,7 +1369,9 @@ class paste_material(bpy.types.Operator):
 				if tex_name == "_RimColor":
 					mate.diffuse_color = fs[:3]
 					mate.diffuse_color.v += 0.5
+				common.set_texture_color(tex, [0.5, 1, 0.5, 1])
 				line_seek += 3
+			
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.line_trim(lines[line_seek+1])
@@ -1372,7 +1382,9 @@ class paste_material(bpy.types.Operator):
 				
 				if tex_name == '_Shininess':
 					mate.specular_intensity = slot.diffuse_color_factor
+				common.set_texture_color(tex, [0.5, 0.5, 1, 1])
 				line_seek += 3
+			
 			else:
 				self.report(type={'ERROR'}, message="未知の設定値タイプが見つかりました、中止します")
 				return {'CANCELLED'}

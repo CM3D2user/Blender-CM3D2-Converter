@@ -149,3 +149,9 @@ def replace_cm3d2_tex(img):
 					file.close()
 					return False
 	return False
+
+def set_texture_color(tex, color):
+	tex.type = 'BLEND'
+	tex.use_color_ramp = True
+	for elem in tex.color_ramp.elements:
+		elem.color = color[:]

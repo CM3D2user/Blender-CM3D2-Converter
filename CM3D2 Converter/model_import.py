@@ -509,9 +509,12 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.use_rgb_to_intensity = True
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
+						
 						if tex_data['name'] == "_RimColor" and self.is_mate_color:
 							mate.diffuse_color = tex_data['color'][:3]
 							mate.diffuse_color.v += 0.5
+						common.set_texture_color(tex, [0.5, 1, 0.5, 1])
+					
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
@@ -522,6 +525,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						
 						if tex_data['name'] == '_Shininess':
 							mate.specular_intensity = tex_data['float']
+						common.set_texture_color(tex, [0.5, 0.5, 1, 1])
 					
 					progress_count += progress_plus_value
 					context.window_manager.progress_update(progress_count)
