@@ -31,7 +31,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 		header_ext = common.read_str(file)
 		if header_ext == 'CM3D2_TEX':
 			file.seek(4, 1)
-			common.read_str(file)
+			in_path = common.read_str(file)
 			png_size = struct.unpack('<i', file.read(4))[0]
 			root, ext = os.path.splitext(self.filepath)
 			png_path = root + ".png"
@@ -44,6 +44,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 			bpy.ops.image.open(filepath=png_path)
 			img = context.edit_image
 			img.name = os.path.basename(self.filepath)
+			img['cm3d2_path'] = in_path
 		else:
 			bpy.ops.image.open(filepath=self.filepath)
 			img = context.edit_image
