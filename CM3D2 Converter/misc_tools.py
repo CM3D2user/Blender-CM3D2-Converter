@@ -153,7 +153,12 @@ class blur_vertex_group(bpy.types.Operator):
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
 	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	use_clean = bpy.props.BoolProperty(name="ウェイト0.0の頂点は頂点グループから除外", default=True)
+	items = [
+		('BOTH', "増減両方", "", 1),
+		('ADD', "増加のみ", "", 2),
+		('SUB', "減少のみ", "", 3),
+		]
+	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
 	
 	@classmethod
 	def poll(cls, context):
@@ -170,7 +175,7 @@ class blur_vertex_group(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.prop(self, 'mode')
 		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'use_clean')
+		self.layout.prop(self, 'effect')
 	
 	def execute(self, context):
 		activeObj = context.active_object
@@ -212,16 +217,30 @@ class blur_vertex_group(bpy.types.Operator):
 								break
 						else:
 							near_weights.append(0.0)
+					
 					near_weight_average = 0
+					near_weight_total = 0
 					for weight in near_weights:
-						near_weight_average += weight
-					try:
-						near_weight_average /= len(near_weights)
-					except ZeroDivisionError:
-						near_weight_average = 0.0
-					new_weights.append( (my_weight*2 + near_weight_average) / 3 )
+						if self.effect == 'ADD':
+							if my_weight < weight:
+								near_weight_average += weight
+								near_weight_total += 1
+						elif self.effect == 'SUB':
+							if weight < my_weight:
+								near_weight_average += weight
+								near_weight_total += 1
+						else:
+							near_weight_average += weight
+							near_weight_total += 1
+					
+					if 0 < near_weight_total:
+						near_weight_average /= near_weight_total
+						new_weights.append( (my_weight*2 + near_weight_average) / 3 )
+					else:
+						new_weights.append(my_weight)
+				
 				for vert, weight in zip(me.vertices, new_weights):
-					if (self.use_clean and weight <= 0.000001):
+					if weight < 0.000001:
 						vg.remove([vert.index])
 					else:
 						vg.add([vert.index], weight, 'REPLACE')
