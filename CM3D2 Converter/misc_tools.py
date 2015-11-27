@@ -151,7 +151,8 @@ class blur_vertex_group(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
+	mode = bpy.props.EnumProperty(items=items, name="対象ウェイト", default='ACTIVE')
+	radius = bpy.props.IntProperty(name="範囲:辺×", default=1, min=1, max=10, soft_min=1, soft_max=10, step=1)
 	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	items = [
 		('BOTH', "増減両方", "", 1),
@@ -165,85 +166,98 @@ class blur_vertex_group(bpy.types.Operator):
 		ob = context.active_object
 		if ob:
 			if ob.type == 'MESH':
-				if ob.vertex_groups.active:
-					return True
+				return bool(ob.vertex_groups.active)
 		return False
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode')
-		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'effect')
+		self.layout.prop(self, 'mode', icon='ACTION')
+		#self.layout.prop(self, 'radius', icon='UV_EDGESEL')
+		self.layout.prop(self, 'blur_count', icon='BRUSH_BLUR')
+		self.layout.prop(self, 'effect', icon='BRUSH_ADD')
 	
 	def execute(self, context):
-		activeObj = context.active_object
-		pre_mode = activeObj.mode
+		ob = context.active_object
+		me = ob.data
+		
+		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
-		me = activeObj.data
-		target_weights = []
-		if (self.mode == 'ACTIVE'):
-			target_weights.append(activeObj.vertex_groups.active)
-		elif (self.mode == 'ALL'):
-			for vg in activeObj.vertex_groups:
-				target_weights.append(vg)
+		
+		target_vertex_groups = []
+		if self.mode == 'ACTIVE':
+			target_vertex_groups.append(ob.vertex_groups.active)
+		else:
+			for vertex_group in ob.vertex_groups:
+				target_vertex_groups.append(vertex_group)
+		
 		bm = bmesh.new()
 		bm.from_mesh(me)
-		context.window_manager.progress_begin(0, self.blur_count * len(target_weights) * len(bm.verts))
-		total_count = 0
-		for count in range(self.blur_count):
-			for vg in target_weights:
-				vg_index = vg.index
-				new_weights = []
+		bm.verts.ensure_lookup_table()
+		near_vert_data = []
+		for vert in bm.verts:
+			near_vert_data.append([])
+			near_vert_data[-1].append( (vert.index, None) )
+			near_vert_indexs = [vert.index]
+			for radius_count in range(self.radius):
+				for near_vert_index, near_vert_multi in near_vert_data[-1][:]:
+					for edge in bm.verts[near_vert_index].link_edges:
+						for edge_vert in edge.verts:
+							if edge_vert.index not in near_vert_indexs:
+								multi = (self.radius - radius_count) / self.radius
+								near_vert_data[-1].append( (edge_vert.index, multi) )
+								near_vert_indexs.append(edge_vert.index)
+								break
+			del near_vert_data[-1][0]
+		
+		context.window_manager.progress_begin(0, self.blur_count * len(target_vertex_groups) * len(bm.verts))
+		progress_count = 0
+		
+		for blur_count_index in range(self.blur_count):
+			for vertex_group in target_vertex_groups:
+				new_vert_weights = []
 				for vert in bm.verts:
-					context.window_manager.progress_update(total_count)
-					total_count += 1
-					for group in me.vertices[vert.index].groups:
-						if (group.group == vg_index):
-							my_weight = group.weight
-							break
-					else:
-						my_weight = 0.0
-					near_weights = []
-					for edge in vert.link_edges:
-						for v in edge.verts:
-							if (v.index != vert.index):
-								edges_vert = v
-								break
-						for group in me.vertices[edges_vert.index].groups:
-							if (group.group == vg_index):
-								near_weights.append(group.weight)
-								break
-						else:
-							near_weights.append(0.0)
+					context.window_manager.progress_update(progress_count)
+					progress_count += 1
 					
-					near_weight_average = 0
-					near_weight_total = 0
-					for weight in near_weights:
+					try:
+						target_vert_weight = vertex_group.weight(vert.index)
+					except:
+						target_vert_weight = 0.0
+					
+					near_weight_average = 0.0
+					near_weight_total = 0.0
+					for near_vert_index, near_vert_multi in near_vert_data[vert.index]:
+						try:
+							near_vert_weight = vertex_group.weight(near_vert_index)
+						except:
+							near_vert_weight = 0.0
+						
 						if self.effect == 'ADD':
-							if my_weight < weight:
-								near_weight_average += weight
-								near_weight_total += 1
+							if target_vert_weight < near_vert_weight:
+								near_weight_average += near_vert_weight * near_vert_multi
+								near_weight_total += near_vert_multi
 						elif self.effect == 'SUB':
-							if weight < my_weight:
-								near_weight_average += weight
-								near_weight_total += 1
+							if near_vert_weight < target_vert_weight:
+								near_weight_average += near_vert_weight * near_vert_multi
+								near_weight_total += near_vert_multi
 						else:
-							near_weight_average += weight
-							near_weight_total += 1
+							near_weight_average += near_vert_weight * near_vert_multi
+							near_weight_total += near_vert_multi
 					
 					if 0 < near_weight_total:
 						near_weight_average /= near_weight_total
-						new_weights.append( (my_weight*2 + near_weight_average) / 3 )
+						new_vert_weights.append( ((target_vert_weight * 2) + near_weight_average) / 3 )
 					else:
-						new_weights.append(my_weight)
+						new_vert_weights.append(target_vert_weight)
 				
-				for vert, weight in zip(me.vertices, new_weights):
-					if weight < 0.000001:
-						vg.remove([vert.index])
+				for vert_index, new_weight in enumerate(new_vert_weights):
+					if new_weight <= 0.0:
+						vertex_group.remove([vert_index])
 					else:
-						vg.add([vert.index], weight, 'REPLACE')
+						vertex_group.add([vert_index], new_weight, 'REPLACE')
+		
 		bm.free()
 		bpy.ops.object.mode_set(mode=pre_mode)
 		context.window_manager.progress_end()
