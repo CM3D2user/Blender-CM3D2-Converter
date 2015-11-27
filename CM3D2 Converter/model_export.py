@@ -174,6 +174,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					arm_ob = next(mod for mod in ob.modifiers if mod.type == 'ARMATURE' and mod.object)
 				except StopIteration:
 					return self.report_cancel("アーマチュアが見つかりません、親にするかモディファイアにして下さい")
+				arm_ob = arm_ob.object
 			if "BoneData:0" not in arm_ob.data.keys():
 				return self.report_cancel("アーマチュアのカスタムプロパティにボーン情報がありません")
 			if "LocalBoneData:0" not in arm_ob.data.keys():

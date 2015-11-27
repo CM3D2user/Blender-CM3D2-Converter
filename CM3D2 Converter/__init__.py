@@ -70,6 +70,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	default_tex_path0 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path1 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
+	default_tex_path3 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
@@ -96,6 +97,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.prop(self, 'default_tex_path0', icon='TEXTURE', text="その1")
 		box.prop(self, 'default_tex_path1', icon='TEXTURE', text="その2")
 		box.prop(self, 'default_tex_path2', icon='TEXTURE', text="その3")
+		box.prop(self, 'default_tex_path3', icon='TEXTURE', text="その4")
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')

@@ -111,10 +111,13 @@ def replace_cm3d2_tex(img):
 		except:
 			return False
 		
-		cm3d2_dir = os.path.join(cm3d2_dir, "GameData")
+		target_dir = [os.path.join(cm3d2_dir, "GameData", "texture")]
+		target_dir.append(os.path.join(cm3d2_dir, "GameData", "texture2"))
+		target_dir.append(os.path.join(cm3d2_dir, "Sybaris", "GameData"))
+		target_dir.append(os.path.join(cm3d2_dir, "Mod"))
+		
 		tex_dirs = []
-		for end_str in ['', '2', '3']:
-			path = os.path.join(cm3d2_dir, "texture" + end_str)
+		for path in target_dir:
 			if os.path.isdir(path):
 				tex_dirs.append(path)
 		
@@ -122,7 +125,7 @@ def replace_cm3d2_tex(img):
 			preferences().__setattr__('default_tex_path' + str(index), path)
 	else:
 		tex_dirs = []
-		for index in range(3):
+		for index in range(4):
 			tex_dirs.append( preferences().__getattribute__('default_tex_path' + str(index)) )
 	
 	if 'cm3d2_path' in img.keys():
