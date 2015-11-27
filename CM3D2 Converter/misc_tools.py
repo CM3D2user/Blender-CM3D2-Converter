@@ -253,7 +253,7 @@ class blur_vertex_group(bpy.types.Operator):
 						new_vert_weights.append(target_vert_weight)
 				
 				for vert_index, new_weight in enumerate(new_vert_weights):
-					if new_weight <= 0.0:
+					if new_weight <= 0.0001:
 						vertex_group.remove([vert_index])
 					else:
 						vertex_group.add([vert_index], new_weight, 'REPLACE')
