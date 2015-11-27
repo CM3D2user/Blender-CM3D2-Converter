@@ -127,6 +127,7 @@ def register():
 	bpy.types.OBJECT_PT_context_object.append(misc_tools.OBJECT_PT_context_object)
 	bpy.types.DATA_PT_modifiers.append(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.append(misc_tools.TEXT_HT_header)
+	bpy.types.IMAGE_PT_image_properties.append(misc_tools.IMAGE_PT_image_properties)
 	
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
@@ -157,6 +158,7 @@ def unregister():
 	bpy.types.OBJECT_PT_context_object.remove(misc_tools.OBJECT_PT_context_object)
 	bpy.types.DATA_PT_modifiers.remove(misc_tools.DATA_PT_modifiers)
 	bpy.types.TEXT_HT_header.remove(misc_tools.TEXT_HT_header)
+	bpy.types.IMAGE_PT_image_properties.remove(misc_tools.IMAGE_PT_image_properties)
 	
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
