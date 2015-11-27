@@ -12,7 +12,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 	filter_glob = bpy.props.StringProperty(default="*.mate", options={'HIDDEN'})
 	
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
-	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=False, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=True, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
 	
 	@classmethod
 	def poll(cls, context):
