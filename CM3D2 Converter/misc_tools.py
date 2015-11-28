@@ -1947,7 +1947,9 @@ class replace_cm3d2_tex(bpy.types.Operator):
 	def execute(self, context):
 		tex = context.texture
 		img = tex.image
-		common.replace_cm3d2_tex(img)
+		if not common.replace_cm3d2_tex(img):
+			self.report(type={'ERROR'}, message="見つかりませんでした")
+			return {'CANCELLED'}
 		return {'FINISHED'}
 
 
