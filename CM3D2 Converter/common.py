@@ -171,6 +171,7 @@ def set_texture_color(tex, color, type, alpha=1.0):
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
 	tex.use_color_ramp = True
+	tex.use_preview_alpha = True
 	elements = tex.color_ramp.elements
 	
 	if 2 < len(elements):
