@@ -103,7 +103,10 @@ def fild_all_files(directory):
 			yield os.path.join(root, file)
 
 def replace_cm3d2_tex(img):
-	if not preferences().default_tex_path0 and not preferences().default_tex_path1 and not preferences().default_tex_path2:
+	default_tex_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
+	for i, path in enumerate(default_tex_paths):
+		default_tex_paths[i] = bool(path)
+	if True not in default_tex_paths:
 		try:
 			import winreg
 			with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
