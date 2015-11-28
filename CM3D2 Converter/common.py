@@ -5,14 +5,16 @@ preview_collections = {}
 def preferences():
 	return bpy.context.user_preferences.addons[__name__.split('.')[0]].preferences
 
-def remove_serial_number(name, flag=True):
-	if flag:
-		return re.sub(r'\.\d{3}$', "", name)
+def remove_serial_number(name, enable=True):
+	if enable:
+		return re.sub(r'\.\d{3,}$', "", name)
 	return name
 
-def line_trim(line):
-	line = re.sub(r'^[ 　\t\r\n]*', "", line)
-	return re.sub(r'[ 　\t\r\n]*$', "", line)
+def line_trim(line, enable=True):
+	if enable:
+		line = re.sub(r'^[ 　\t\r\n]*', "", line)
+		return re.sub(r'[ 　\t\r\n]*$', "", line)
+	return line
 
 def write_str(file, s):
 	str_count = len(s.encode('utf-8'))
@@ -52,8 +54,8 @@ def decode_bone_name(name, enable=True):
 		name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', name) + "." + direction
 	return name
 
-def decorate_material(mate, shader_str, flag=True):
-	if flag:
+def decorate_material(mate, shader_str, enable=True):
+	if enable:
 		if '/Toony_' in shader_str:
 			mate.diffuse_shader = 'TOON'
 			mate.diffuse_toon_smooth = 0.01
