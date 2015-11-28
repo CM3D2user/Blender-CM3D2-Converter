@@ -170,7 +170,15 @@ def replace_cm3d2_tex(img):
 						return False
 	return False
 
-def set_texture_color(tex, color, type, alpha=1.0):
+def set_texture_color(slot):
+	if slot.use:
+		return
+	if slot.use_rgb_to_intensity:
+		type = 'col'
+	else:
+		type = 'f'
+	
+	tex = slot.texture
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
 	tex.use_color_ramp = True
@@ -188,25 +196,18 @@ def set_texture_color(tex, color, type, alpha=1.0):
 	
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
-		
-		try:
-			color = list(color[:])
-			if len(color) == 3:
-				color.append(alpha)
-		except:
-			color = [color, color, color, alpha]
+		color = list(slot.color[:])
+		color.append(slot.diffuse_color_factor)
 		elements[1].color = color
 	
 	elif type == 'f':
 		elements[0].color = [0.5, 0.5, 1, 1]
-		
 		multi = 1.0
 		if base_name == '_OutlineWidth':
 			multi = 200
 		elif base_name == '_RimPower':
 			multi = 1.0 / 30.0
-		
-		value = color * multi
+		value = slot.diffuse_color_factor * multi
 		elements[1].color = [value, value, value, 1]
 	
 	else:

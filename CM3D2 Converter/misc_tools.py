@@ -1207,7 +1207,7 @@ class new_cm3d2(bpy.types.Operator):
 			slot.texture = tex
 			slot_count += 1
 			
-			common.set_texture_color(tex, slot.color[:], 'col', slot.diffuse_color_factor)
+			common.set_texture_color(slot)
 		
 		for data in f_list:
 			slot = mate.texture_slots.create(slot_count)
@@ -1219,7 +1219,7 @@ class new_cm3d2(bpy.types.Operator):
 			
 			if data[0] == '_Shininess':
 				mate.specular_intensity = data[1]
-			common.set_texture_color(tex, slot.diffuse_color_factor, 'f')
+			common.set_texture_color(slot)
 		
 		return {'FINISHED'}
 
@@ -1377,7 +1377,7 @@ class paste_material(bpy.types.Operator):
 				if tex_name == "_RimColor":
 					mate.diffuse_color = fs[:3]
 					mate.diffuse_color.v += 0.5
-				common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
+				common.set_texture_color(slot)
 				line_seek += 3
 			
 			elif type == 'f':
@@ -1390,7 +1390,7 @@ class paste_material(bpy.types.Operator):
 				
 				if tex_name == '_Shininess':
 					mate.specular_intensity = slot.diffuse_color_factor
-				common.set_texture_color(tex, slot.diffuse_color_factor, type)
+				common.set_texture_color(slot)
 				line_seek += 3
 			
 			else:
@@ -1947,23 +1947,7 @@ class sync_tex_color_ramps(bpy.types.Operator):
 				for slot in mate.texture_slots:
 					if not slot:
 						continue
-					
-					if slot.use:
-						continue
-					else:
-						if slot.use_rgb_to_intensity:
-							type = 'col'
-						else:
-							type = 'f'
-					
-					try:
-						tex = slot.texture
-					except:
-						continue
-					if type == 'col':
-						common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
-					elif type == 'f':
-						common.set_texture_color(tex, slot.diffuse_color_factor, type)
+					common.set_texture_color(slot)
 		return {'FINISHED'}
 
 class replace_cm3d2_tex(bpy.types.Operator):
