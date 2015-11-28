@@ -90,21 +90,25 @@ def decorate_material(mate, shader_str, enable=True):
 				if 'image' in dir(tex):
 					img = tex.image
 					if len(img.pixels):
-						w, h = img.size
-						pixel_count = w * h
-						c = img.channels
-						sample_count = 50
-						
-						average_color = [0] * c
-						seek_plus = pixel_count / sample_count
-						for i in range(sample_count):
-							for j in range(c):
-								index = int( seek_plus * i ) * c + j
-								average_color[j] += img.pixels[index]
-						for i in range(c):
-							average_color[i] /= sample_count
-						
-						mate.diffuse_color = average_color[:3]
+						mate.diffuse_color = get_image_average_color(img)[:3]
+
+def get_image_average_color(img, sample_count=10, enable=True):
+	if not len(img.pixels):
+		return [0, 0, 0, 0]
+	
+	pixel_count = img.size[0] * img.size[1]
+	channels = img.channels
+	
+	average_color = [0] * channels
+	seek_interval = pixel_count / sample_count
+	for sample_index in range(sample_count):
+		for channel_index in range(channels):
+			index = int(seek_interval * sample_index) * channels + channel_index
+			average_color[channel_index] += img.pixels[index]
+	
+	for channel_index in range(channels):
+		average_color[channel_index] /= sample_count
+	return average_color
 
 def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	if not main_dir:
