@@ -131,6 +131,7 @@ def replace_cm3d2_tex(img):
 	if 'cm3d2_path' in img.keys():
 		source_path = img['cm3d2_path']
 	else:
+		img['cm3d2_path'] = img.filepath
 		source_path = img.filepath
 	source_png_name = os.path.basename(source_path).lower()
 	if '*' in source_png_name:
