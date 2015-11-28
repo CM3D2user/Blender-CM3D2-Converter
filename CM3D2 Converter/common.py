@@ -114,7 +114,7 @@ def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	if not main_dir:
 		if preferences().cm3d2_path:
 			main_dir = os.path.join(preferences().cm3d2_path, "GameData", "*." + replace_ext)
-		else
+		else:
 			try:
 				import winreg
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:

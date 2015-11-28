@@ -2224,6 +2224,7 @@ def TEXTURE_PT_context_texture(self, context):
 			type = "col"
 		else:
 			type = "f"
+	
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 	split = box.split(percentage=0.3)
