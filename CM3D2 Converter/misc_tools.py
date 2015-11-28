@@ -987,7 +987,7 @@ class new_cm3d2(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		if not re.search(r'^[^\.]+\.[^\.]+$', context.active_object.name):
+		if not re.search(r'^[^\.]+\.[^\.]+$', common.remove_serial_number(context.active_object.name)):
 			self.layout.label(text="オブジェクト名を設定してからの作成を推奨", icon='CANCEL')
 		self.layout.separator()
 		self.layout.prop(self, 'type')
@@ -996,7 +996,7 @@ class new_cm3d2(bpy.types.Operator):
 	
 	def execute(self, context):
 		ob = context.active_object
-		ob_names = ob.name.split('.')
+		ob_names = common.remove_serial_number(ob.name).split('.')
 		if not context.material_slot:
 			bpy.ops.object.material_slot_add()
 		mate = context.blend_data.materials.new(ob_names[0])
