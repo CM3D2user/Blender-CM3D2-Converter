@@ -171,6 +171,10 @@ def replace_cm3d2_tex(img):
 	return False
 
 def set_texture_color(slot):
+	if not slot:
+		return
+	if not slot.texture:
+		return
 	if slot.use:
 		return
 	if slot.use_rgb_to_intensity:
@@ -185,20 +189,26 @@ def set_texture_color(slot):
 	tex.use_preview_alpha = True
 	elements = tex.color_ramp.elements
 	
-	if 2 < len(elements):
-		for i in range(len(elements) - 2):
+	element_count = 4
+	if element_count < len(elements):
+		for i in range(len(elements) - element_count):
 			elements.remove(elements[-1])
-	elif len(elements) < 2:
-		for i in range(2 - len(elements)):
+	elif len(elements) < element_count:
+		for i in range(element_count - len(elements)):
 			elements.new(1.0)
+	
 	elements[0].position = 0.2
 	elements[1].position = 0.21
+	elements[2].position = 0.3
+	elements[3].position = 0.31
+	elements[1].color = [0, 0, 0, 1]
+	elements[2].color = [0, 0, 0, 1]
 	
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
 		color = list(slot.color[:])
 		color.append(slot.diffuse_color_factor)
-		elements[1].color = color
+		elements[-1].color = color
 	
 	elif type == 'f':
 		elements[0].color = [0.5, 0.5, 1, 1]
@@ -208,8 +218,10 @@ def set_texture_color(slot):
 		elif base_name == '_RimPower':
 			multi = 1.0 / 30.0
 		value = slot.diffuse_color_factor * multi
-		elements[1].color = [value, value, value, 1]
+		elements[-1].color = [value, value, value, 1]
 	
 	else:
 		elements[0].color = [1, 0, 1, 1]
 		elements[1].color = [1, 0, 1, 1]
+		elements[2].color = [1, 0, 1, 1]
+		elements[3].color = [1, 0, 1, 1]
