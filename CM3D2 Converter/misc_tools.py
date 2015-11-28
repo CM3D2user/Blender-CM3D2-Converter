@@ -2251,10 +2251,9 @@ def TEXTURE_PT_context_texture(self, context):
 				if img.source == 'FILE':
 					sub_box = box.box()
 					sub_box.prop(img, 'name', icon='IMAGE_DATA', text="テクスチャ名")
-					if 'cm3d2_path' in img.keys():
-						sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
-					else:
-						sub_box.prop(img, 'filepath', text="テクスチャパス")
+					if 'cm3d2_path' not in img.keys():
+						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
+					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
 					if len(img.pixels):
 						sub_box.operator(show_image.bl_idname, text="この画像を表示", icon='ZOOM_IN').image_name = img.name
