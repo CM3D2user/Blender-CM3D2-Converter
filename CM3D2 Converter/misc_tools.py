@@ -1938,21 +1938,28 @@ class sync_tex_color_ramps(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
-		slot = context.texture_slot
-		tex = context.texture
-		
-		if slot.use:
-			type = 'tex'
-		else:
-			if slot.use_rgb_to_intensity:
-				type = 'col'
-			else:
-				type = 'f'
-		
-		if type == 'col':
-			common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
-		elif type == 'f':
-			common.set_texture_color(tex, slot.diffuse_color_factor, type)
+		for mate in context.blend_data.materials:
+			if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+				for slot in mate.texture_slots:
+					if not slot:
+						continue
+					
+					if slot.use:
+						continue
+					else:
+						if slot.use_rgb_to_intensity:
+							type = 'col'
+						else:
+							type = 'f'
+					
+					try:
+						tex = slot.texture
+					except:
+						continue
+					if type == 'col':
+						common.set_texture_color(tex, slot.color[:], type, slot.diffuse_color_factor)
+					elif type == 'f':
+						common.set_texture_color(tex, slot.diffuse_color_factor, type)
 		return {'FINISHED'}
 
 class replace_cm3d2_tex(bpy.types.Operator):
