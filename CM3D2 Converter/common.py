@@ -55,54 +55,56 @@ def decode_bone_name(name, enable=True):
 	return name
 
 def decorate_material(mate, shader_str, enable=True):
-	if enable:
-		if 'shader1' not in mate.keys():
-			return
-		shader_str = mate['shader1']
-		
-		if '/Toony_' in shader_str:
-			mate.diffuse_shader = 'TOON'
-			mate.diffuse_toon_smooth = 0.01
-			mate.diffuse_toon_size = 1.2
-		if 'Trans' in  shader_str:
-			mate.use_transparency = True
-			mate.alpha = 0.0
-			mate.texture_slots[0].use_map_alpha = True
-		if 'Unlit/' in shader_str:
-			mate.emit = 0.5
-		if '_NoZ' in shader_str:
-			mate.offset_z = 9999
-		if 'CM3D2/Man' == shader_str:
-			mate.use_shadeless = True
-		if 'CM3D2/Mosaic' == shader_str:
-			mate.use_transparency = True
-			mate.transparency_method = 'RAYTRACE'
-			mate.alpha = 0.25
-			mate.raytrace_transparency.ior = 2
-		
-		slot = mate.texture_slots[0]
-		if slot:
-			tex = slot.texture
-			if tex:
-				if remove_serial_number(tex.name) == '_MainTex':
-					if 'image' in dir(tex):
-						img = tex.image
-						if len(img.pixels):
-							w, h = img.size
-							pixel_count = w * h
-							c = img.channels
-							
-							average_color = [0] * c
-							seek_plus = pixel_count / 10
-							for i in range(10):
-								for j in range(c):
-									index = int( seek_plus * i ) * c + j
-									average_color[j] += img.pixels[index]
-							for i in range(c):
-								average_color[i] /= 10
-							
-							print(average_color)
-							mate.diffuse_color = average_color[:3]
+	if not enable:
+		return
+	
+	if 'shader1' not in mate.keys():
+		return
+	shader_str = mate['shader1']
+	
+	if '/Toony_' in shader_str:
+		mate.diffuse_shader = 'TOON'
+		mate.diffuse_toon_smooth = 0.01
+		mate.diffuse_toon_size = 1.2
+	if 'Trans' in  shader_str:
+		mate.use_transparency = True
+		mate.alpha = 0.0
+		mate.texture_slots[0].use_map_alpha = True
+	if 'Unlit/' in shader_str:
+		mate.emit = 0.5
+	if '_NoZ' in shader_str:
+		mate.offset_z = 9999
+	if 'CM3D2/Man' == shader_str:
+		mate.use_shadeless = True
+	if 'CM3D2/Mosaic' == shader_str:
+		mate.use_transparency = True
+		mate.transparency_method = 'RAYTRACE'
+		mate.alpha = 0.25
+		mate.raytrace_transparency.ior = 2
+	
+	slot = mate.texture_slots[0]
+	if slot:
+		tex = slot.texture
+		if tex:
+			if remove_serial_number(tex.name) == '_MainTex':
+				if 'image' in dir(tex):
+					img = tex.image
+					if len(img.pixels):
+						w, h = img.size
+						pixel_count = w * h
+						c = img.channels
+						sample_count = 50
+						
+						average_color = [0] * c
+						seek_plus = pixel_count / sample_count
+						for i in range(sample_count):
+							for j in range(c):
+								index = int( seek_plus * i ) * c + j
+								average_color[j] += img.pixels[index]
+						for i in range(c):
+							average_color[i] /= sample_count
+						
+						mate.diffuse_color = average_color[:3]
 
 def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	if not main_dir:
