@@ -2,20 +2,24 @@ import bpy, os, re, struct, shutil
 
 preview_collections = {}
 
+# このアドオンの設定値群を呼び出す
 def preferences():
 	return bpy.context.user_preferences.addons[__name__.split('.')[0]].preferences
 
+# データ名末尾の「.001」などを削除
 def remove_serial_number(name, enable=True):
 	if enable:
 		return re.sub(r'\.\d{3,}$', "", name)
 	return name
 
+# 文字列の左右端から空白を削除
 def line_trim(line, enable=True):
 	if enable:
 		line = re.sub(r'^[ 　\t\r\n]*', "", line)
 		return re.sub(r'[ 　\t\r\n]*$', "", line)
 	return line
 
+# CM3D2専用ファイル用の文字列書き込み
 def write_str(file, s):
 	str_count = len(s.encode('utf-8'))
 	if 128 <= str_count:
@@ -27,6 +31,7 @@ def write_str(file, s):
 		file.write(struct.pack('<B', str_count))
 	file.write(s.encode('utf-8'))
 
+# CM3D2専用ファイル用の文字列読み込み
 def read_str(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
 	if 128 <= str_index:
@@ -34,6 +39,7 @@ def read_str(file):
 		str_index += (i * 128) - 128
 	return file.read(str_index).decode('utf-8')
 
+# ボーン/ウェイト名を Blender → CM3D2
 def encode_bone_name(name, enable=True):
 	if not enable:
 		return name
@@ -45,6 +51,7 @@ def encode_bone_name(name, enable=True):
 			name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', name)
 	return name
 
+# ボーン/ウェイト名を CM3D2 → Blender
 def decode_bone_name(name, enable=True):
 	if not enable:
 		return name
@@ -54,6 +61,7 @@ def decode_bone_name(name, enable=True):
 		name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', name) + "." + direction
 	return name
 
+# CM3D2用マテリアルを設定に合わせて装飾
 def decorate_material(mate, enable=True):
 	if not enable:
 		return
@@ -111,6 +119,7 @@ def decorate_material(mate, enable=True):
 		
 		set_texture_color(slot)
 
+# 画像のおおよその平均色を取得
 def get_image_average_color(img, sample_count=10, enable=True):
 	if not len(img.pixels):
 		return [0, 0, 0, 0]
@@ -129,6 +138,7 @@ def get_image_average_color(img, sample_count=10, enable=True):
 		average_color[channel_index] /= sample_count
 	return average_color
 
+# CM3D2のインストールフォルダを取得＋α
 def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	if not main_dir:
 		if preferences().cm3d2_path:
@@ -149,6 +159,7 @@ def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	main_dir = root + "." + replace_ext
 	return main_dir
 
+# ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):
 	backup_ext = bpy.context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
 	if enable and backup_ext:
@@ -156,12 +167,14 @@ def file_backup(filepath, enable=True):
 			backup_path = filepath + "." + backup_ext
 			shutil.copyfile(filepath, backup_path)
 
+# サブフォルダを再帰的に検索してリスト化
 def fild_all_files(directory):
 	for root, dirs, files in os.walk(directory):
 		yield root
 		for file in files:
 			yield os.path.join(root, file)
 
+# CM3D2フォルダからテクスチャを検索して空の画像を置換
 def replace_cm3d2_tex(img):
 	default_tex_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
 	for i, path in enumerate(default_tex_paths):
@@ -234,6 +247,7 @@ def replace_cm3d2_tex(img):
 						return False
 	return False
 
+# col f タイプの設定値を値に合わせて着色
 def set_texture_color(slot):
 	if not slot:
 		return
