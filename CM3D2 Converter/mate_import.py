@@ -50,8 +50,6 @@ class import_cm3d2_mate(bpy.types.Operator):
 		mate['shader1'] = common.read_str(file)
 		mate['shader2'] = common.read_str(file)
 		
-		common.decorate_material(mate, mate['shader1'], self.is_decorate)
-		
 		slot_index = 0
 		for i in range(99999):
 			type = common.read_str(file)
@@ -117,6 +115,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 			slot_index += 1
 		
 		file.close()
+		common.decorate_material(mate, self.is_decorate)
 		return {'FINISHED'}
 
 class import_cm3d2_mate_text(bpy.types.Operator):

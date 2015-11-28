@@ -56,20 +56,25 @@ def decode_bone_name(name, enable=True):
 
 def decorate_material(mate, shader_str, enable=True):
 	if enable:
+		if 'shader1' not in mate.keys():
+			return
+		shader_str = mate['shader1']
+		
 		if '/Toony_' in shader_str:
 			mate.diffuse_shader = 'TOON'
 			mate.diffuse_toon_smooth = 0.01
 			mate.diffuse_toon_size = 1.2
 		if 'Trans' in  shader_str:
 			mate.use_transparency = True
-			mate.alpha = 0.5
-		if 'CM3D2/Man' in shader_str:
-			mate.use_shadeless = True
+			mate.alpha = 0.0
+			mate.texture_slots[0].use_map_alpha = True
 		if 'Unlit/' in shader_str:
 			mate.emit = 0.5
 		if '_NoZ' in shader_str:
 			mate.offset_z = 9999
-		if 'CM3D2/Mosaic' in shader_str:
+		if 'CM3D2/Man' == shader_str:
+			mate.use_shadeless = True
+		if 'CM3D2/Mosaic' == shader_str:
 			mate.use_transparency = True
 			mate.transparency_method = 'RAYTRACE'
 			mate.alpha = 0.25

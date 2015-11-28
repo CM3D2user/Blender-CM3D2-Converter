@@ -1168,8 +1168,6 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
 		
-		common.decorate_material(mate, self.type, self.is_decorate)
-		
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
@@ -1221,6 +1219,7 @@ class new_cm3d2(bpy.types.Operator):
 				mate.specular_intensity = data[1]
 			common.set_texture_color(slot)
 		
+		common.decorate_material(mate, self.is_decorate)
 		return {'FINISHED'}
 
 class copy_material(bpy.types.Operator):
@@ -1331,8 +1330,6 @@ class paste_material(bpy.types.Operator):
 		mate['shader1'] = lines[3]
 		mate['shader2'] = lines[4]
 		
-		common.decorate_material(mate, mate['shader1'], self.is_decorate)
-		
 		slot_index = 0
 		line_seek = 5
 		for i in range(99999):
@@ -1397,6 +1394,8 @@ class paste_material(bpy.types.Operator):
 				self.report(type={'ERROR'}, message="未知の設定値タイプが見つかりました、中止します")
 				return {'CANCELLED'}
 			slot_index += 1
+		
+		common.decorate_material(mate, self.is_decorate)
 		
 		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}

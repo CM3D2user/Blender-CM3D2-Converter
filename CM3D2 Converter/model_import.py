@@ -467,8 +467,6 @@ class import_cm3d2_model(bpy.types.Operator):
 				mate['shader2'] = data['name3']
 				#mate.use_face_texture = True
 				
-				common.decorate_material(mate, mate['shader1'], self.is_decorate)
-				
 				ob.material_slots[-1].material = mate
 				# 面にマテリアル割り当て
 				for i in range(face_seek, face_seek + len(face_data[index])):
@@ -529,6 +527,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					
 					progress_count += progress_plus_value
 					context.window_manager.progress_update(progress_count)
+			common.decorate_material(mate, self.is_decorate)
 			ob.active_material_index = 0
 			context.window_manager.progress_update(7)
 			
