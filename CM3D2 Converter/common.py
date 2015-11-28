@@ -8,16 +8,16 @@ def preferences():
 
 # データ名末尾の「.001」などを削除
 def remove_serial_number(name, enable=True):
-	if enable:
-		return re.sub(r'\.\d{3,}$', "", name)
-	return name
+	if not enable:
+		return name
+	return re.sub(r'\.\d{3,}$', "", name)
 
 # 文字列の左右端から空白を削除
 def line_trim(line, enable=True):
-	if enable:
-		line = re.sub(r'^[ 　\t\r\n]*', "", line)
-		return re.sub(r'[ 　\t\r\n]*$', "", line)
-	return line
+	if not enable:
+		return line
+	line = re.sub(r'^[ 　\t\r\n]*', "", line)
+	return re.sub(r'[ 　\t\r\n]*$', "", line)
 
 # CM3D2専用ファイル用の文字列書き込み
 def write_str(file, s):
@@ -69,7 +69,6 @@ def decorate_material(mate, enable=True):
 		return
 	
 	shader = mate['shader1']
-	is_colored = False
 	
 	if '/Toony_' in shader:
 		mate.diffuse_shader = 'TOON'
@@ -91,6 +90,7 @@ def decorate_material(mate, enable=True):
 		mate.alpha = 0.25
 		mate.raytrace_transparency.ior = 2
 	
+	is_colored = False
 	for slot in mate.texture_slots:
 		if not slot:
 			continue
@@ -120,9 +120,9 @@ def decorate_material(mate, enable=True):
 		set_texture_color(slot)
 
 # 画像のおおよその平均色を取得
-def get_image_average_color(img, sample_count=10, enable=True):
+def get_image_average_color(img, sample_count=10):
 	if not len(img.pixels):
-		return [0, 0, 0, 0]
+		return [0, 0, 0, 1]
 	
 	pixel_count = img.size[0] * img.size[1]
 	channels = img.channels
@@ -151,7 +151,6 @@ def default_cm3d2_dir(main_dir, file_name, replace_ext):
 					main_dir = os.path.join(main_dir, "GameData", "*." + replace_ext)
 			except:
 				pass
-	
 	if file_name:
 		head, tail = os.path.split(main_dir)
 		main_dir = os.path.join(head, file_name)
@@ -176,10 +175,8 @@ def fild_all_files(directory):
 
 # CM3D2フォルダからテクスチャを検索して空の画像を置換
 def replace_cm3d2_tex(img):
-	default_tex_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
-	for i, path in enumerate(default_tex_paths):
-		default_tex_paths[i] = bool(path)
-	if True not in default_tex_paths:
+	path_sum = preferences().default_tex_path0 + preferences().default_tex_path1 + preferences().default_tex_path2 + preferences().default_tex_path3
+	if not path_sum:
 		
 		if preferences().cm3d2_path:
 			cm3d2_dir = preferences().cm3d2_path
@@ -206,7 +203,9 @@ def replace_cm3d2_tex(img):
 	else:
 		tex_dirs = []
 		for index in range(4):
-			tex_dirs.append( preferences().__getattribute__('default_tex_path' + str(index)) )
+			path = preferences().__getattribute__('default_tex_path' + str(index))
+			if path:
+				tex_dirs.append(path)
 	
 	if 'cm3d2_path' in img.keys():
 		source_path = img['cm3d2_path']
@@ -249,25 +248,21 @@ def replace_cm3d2_tex(img):
 
 # col f タイプの設定値を値に合わせて着色
 def set_texture_color(slot):
-	if not slot:
+	if not slot or not slot.texture or slot.use:
 		return
-	if not slot.texture:
-		return
-	if slot.use:
-		return
+	type = 'f'
 	if slot.use_rgb_to_intensity:
 		type = 'col'
-	else:
-		type = 'f'
 	
 	tex = slot.texture
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
 	tex.use_color_ramp = True
 	tex.use_preview_alpha = True
-	elements = tex.color_ramp.elements
 	
+	elements = tex.color_ramp.elements
 	element_count = 4
+	
 	if element_count < len(elements):
 		for i in range(len(elements) - element_count):
 			elements.remove(elements[-1])
@@ -279,14 +274,13 @@ def set_texture_color(slot):
 	elements[1].position = 0.21
 	elements[2].position = 0.3
 	elements[3].position = 0.31
+	
 	elements[1].color = [0, 0, 0, 1]
 	elements[2].color = [0, 0, 0, 1]
 	
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
-		color = list(slot.color[:])
-		color.append(slot.diffuse_color_factor)
-		elements[-1].color = color
+		elements[-1].color = slot.color[:] + (slot.diffuse_color_factor, )
 	
 	elif type == 'f':
 		elements[0].color = [0.5, 0.5, 1, 1]
@@ -297,9 +291,3 @@ def set_texture_color(slot):
 			multi = 1.0 / 30.0
 		value = slot.diffuse_color_factor * multi
 		elements[-1].color = [value, value, value, 1]
-	
-	else:
-		elements[0].color = [1, 0, 1, 1]
-		elements[1].color = [1, 0, 1, 1]
-		elements[2].color = [1, 0, 1, 1]
-		elements[3].color = [1, 0, 1, 1]
