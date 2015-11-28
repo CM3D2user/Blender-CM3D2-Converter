@@ -2251,6 +2251,7 @@ def TEXTURE_PT_context_texture(self, context):
 	elif type == "f":
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+		sub_box.label(text="正確な値: " + str(tex_slot.diffuse_color_factor))
 		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
 	
 	base_name = common.remove_serial_number(tex.name)
