@@ -112,13 +112,17 @@ def get_image_average_color(img, sample_count=10, enable=True):
 
 def default_cm3d2_dir(main_dir, file_name, replace_ext):
 	if not main_dir:
-		try:
-			import winreg
-			with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-				main_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
-				main_dir = os.path.join(main_dir, "GameData", "*." + replace_ext)
-		except:
-			pass
+		if preferences().cm3d2_path:
+			main_dir = os.path.join(preferences().cm3d2_path, "GameData", "*." + replace_ext)
+		else
+			try:
+				import winreg
+				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+					main_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
+					main_dir = os.path.join(main_dir, "GameData", "*." + replace_ext)
+			except:
+				pass
+	
 	if file_name:
 		head, tail = os.path.split(main_dir)
 		main_dir = os.path.join(head, file_name)
@@ -144,12 +148,16 @@ def replace_cm3d2_tex(img):
 	for i, path in enumerate(default_tex_paths):
 		default_tex_paths[i] = bool(path)
 	if True not in default_tex_paths:
-		try:
-			import winreg
-			with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-				cm3d2_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
-		except:
-			return False
+		
+		if preferences().cm3d2_path:
+			cm3d2_dir = preferences().cm3d2_path
+		else:
+			try:
+				import winreg
+				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
+					cm3d2_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
+			except:
+				return False
 		
 		target_dir = [os.path.join(cm3d2_dir, "GameData", "texture")]
 		target_dir.append(os.path.join(cm3d2_dir, "GameData", "texture2"))

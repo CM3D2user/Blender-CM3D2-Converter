@@ -53,8 +53,10 @@ import bpy, os.path, bpy.utils.previews
 class AddonPreferences(bpy.types.AddonPreferences):
 	bl_idname = __name__
 	
-	scale = bpy.props.FloatProperty(name="倍率", description="Blenderでモデルを扱うときの拡大率", default=5, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
+	cm3d2_path = bpy.props.StringProperty(name="CM3D2インストールフォルダ", subtype='DIR_PATH', description="変更している場合は設定しておくと役立つかもしれません")
+	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
+	scale = bpy.props.FloatProperty(name="倍率", description="Blenderでモデルを扱うときの拡大率", default=5, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
 	model_import_path = bpy.props.StringProperty(name="modelインポート時のデフォルトパス", subtype='FILE_PATH', description="modelインポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="modelエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
@@ -72,10 +74,10 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path3 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	
-	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
-	
 	def draw(self, context):
 		self.layout.label(text="ここの設定は「ユーザー設定の保存」ボタンを押すまで保存されていません", icon='QUESTION')
+		self.layout.prop(self, 'cm3d2_path', icon='FILE_FOLDER')
+		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
 		box.prop(self, 'scale', icon='MAN_SCALE')
@@ -99,7 +101,6 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.prop(self, 'default_tex_path1', icon='TEXTURE', text="その2")
 		box.prop(self, 'default_tex_path2', icon='TEXTURE', text="その3")
 		box.prop(self, 'default_tex_path3', icon='TEXTURE', text="その4")
-		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
