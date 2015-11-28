@@ -54,7 +54,7 @@ def decode_bone_name(name, enable=True):
 		name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', name) + "." + direction
 	return name
 
-def decorate_material(mate, shader_str, enable=True):
+def decorate_material(mate, enable=True):
 	if not enable:
 		return
 	
