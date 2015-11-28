@@ -1916,6 +1916,10 @@ class show_image(bpy.types.Operator):
 				maximum_area = area
 				maximum_area_size = size
 		
+		if maximum_area_size == -1:
+			self.report(type={'ERROR'}, message="画像を表示できるエリアが見つかりませんでした")
+			return {'CANCELLED'}
+		
 		maximum_area.type = 'IMAGE_EDITOR'
 		for space in maximum_area.spaces:
 			if space.type == 'IMAGE_EDITOR':
