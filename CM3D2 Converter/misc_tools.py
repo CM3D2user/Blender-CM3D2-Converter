@@ -1184,9 +1184,6 @@ class new_cm3d2(bpy.types.Operator):
 			tex.image = img
 			slot_count += 1
 			
-			if data[0] != '_MainTex':
-				slot.use_map_color_diffuse = False
-			
 			# tex探し
 			if self.is_replace_cm3d2_tex:
 				if common.replace_cm3d2_tex(img) and data[0]=='_MainTex':
@@ -1204,8 +1201,6 @@ class new_cm3d2(bpy.types.Operator):
 			tex = context.blend_data.textures.new(data[0], 'IMAGE')
 			slot.texture = tex
 			slot_count += 1
-			
-			common.set_texture_color(slot)
 		
 		for data in f_list:
 			slot = mate.texture_slots.create(slot_count)
@@ -1214,10 +1209,6 @@ class new_cm3d2(bpy.types.Operator):
 			tex = context.blend_data.textures.new(data[0], 'IMAGE')
 			slot.texture = tex
 			slot_count += 1
-			
-			if data[0] == '_Shininess':
-				mate.specular_intensity = data[1]
-			common.set_texture_color(slot)
 		
 		common.decorate_material(mate, self.is_decorate)
 		return {'FINISHED'}
@@ -1370,11 +1361,6 @@ class paste_material(bpy.types.Operator):
 				slot.color = fs[:3]
 				slot.diffuse_color_factor = fs[3]
 				slot.texture = tex
-				
-				if tex_name == "_RimColor":
-					mate.diffuse_color = fs[:3]
-					mate.diffuse_color.v += 0.5
-				common.set_texture_color(slot)
 				line_seek += 3
 			
 			elif type == 'f':
@@ -1384,10 +1370,6 @@ class paste_material(bpy.types.Operator):
 				mate.use_textures[slot_index] = False
 				slot.diffuse_color_factor = float(common.line_trim(lines[line_seek+2]))
 				slot.texture = tex
-				
-				if tex_name == '_Shininess':
-					mate.specular_intensity = slot.diffuse_color_factor
-				common.set_texture_color(slot)
 				line_seek += 3
 			
 			else:
@@ -1396,7 +1378,6 @@ class paste_material(bpy.types.Operator):
 			slot_index += 1
 		
 		common.decorate_material(mate, self.is_decorate)
-		
 		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}
 

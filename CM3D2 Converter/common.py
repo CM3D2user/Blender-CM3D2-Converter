@@ -57,40 +57,59 @@ def decode_bone_name(name, enable=True):
 def decorate_material(mate, enable=True):
 	if not enable:
 		return
-	
 	if 'shader1' not in mate.keys():
 		return
-	shader_str = mate['shader1']
 	
-	if '/Toony_' in shader_str:
+	shader = mate['shader1']
+	is_colored = False
+	
+	if '/Toony_' in shader:
 		mate.diffuse_shader = 'TOON'
 		mate.diffuse_toon_smooth = 0.01
 		mate.diffuse_toon_size = 1.2
-	if 'Trans' in  shader_str:
+	if 'Trans' in  shader:
 		mate.use_transparency = True
 		mate.alpha = 0.0
 		mate.texture_slots[0].use_map_alpha = True
-	if 'Unlit/' in shader_str:
+	if 'Unlit/' in shader:
 		mate.emit = 0.5
-	if '_NoZ' in shader_str:
+	if '_NoZ' in shader:
 		mate.offset_z = 9999
-	if 'CM3D2/Man' == shader_str:
+	if 'CM3D2/Man' == shader:
 		mate.use_shadeless = True
-	if 'CM3D2/Mosaic' == shader_str:
+	if 'CM3D2/Mosaic' == shader:
 		mate.use_transparency = True
 		mate.transparency_method = 'RAYTRACE'
 		mate.alpha = 0.25
 		mate.raytrace_transparency.ior = 2
 	
-	slot = mate.texture_slots[0]
-	if slot:
+	for slot in mate.texture_slots:
+		if not slot:
+			continue
+		if not slot.texture:
+			continue
+		
 		tex = slot.texture
-		if tex:
-			if remove_serial_number(tex.name) == '_MainTex':
-				if 'image' in dir(tex):
-					img = tex.image
-					if len(img.pixels):
-						mate.diffuse_color = get_image_average_color(img)[:3]
+		tex_name = remove_serial_number(tex.name)
+		slot.use_map_color_diffuse = False
+		
+		if tex_name == '_MainTex':
+			slot.use_map_color_diffuse = True
+			if 'image' in dir(tex):
+				img = tex.image
+				if len(img.pixels):
+					mate.diffuse_color = get_image_average_color(img)[:3]
+					is_colored = True
+		
+		elif tex_name == '_RimColor':
+			if not is_colored:
+				mate.diffuse_color = slot.color[:]
+				mate.diffuse_color.v += 0.5
+		
+		elif tex_name == '_Shininess':
+			mate.specular_intensity = slot.diffuse_color_factor
+		
+		set_texture_color(slot)
 
 def get_image_average_color(img, sample_count=10, enable=True):
 	if not len(img.pixels):

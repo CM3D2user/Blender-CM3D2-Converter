@@ -68,9 +68,6 @@ class import_cm3d2_mate(bpy.types.Operator):
 					slot.color = struct.unpack('<3f', file.read(4*3))
 					slot.diffuse_color_factor = struct.unpack('<f', file.read(4))[0]
 					
-					if tex_name != '_MainTex':
-						slot.use_map_color_diffuse = False
-					
 					# tex探し
 					if self.is_replace_cm3d2_tex:
 						if common.replace_cm3d2_tex(img) and tex_name=='_MainTex':
@@ -89,11 +86,6 @@ class import_cm3d2_mate(bpy.types.Operator):
 				slot.color = struct.unpack('<3f', file.read(4*3))
 				slot.diffuse_color_factor = struct.unpack('<f', file.read(4))[0]
 				slot.texture = tex
-				
-				if tex_name == "_RimColor":
-					mate.diffuse_color = slot.color[:]
-					mate.diffuse_color.v += 0.5
-				common.set_texture_color(slot)
 			
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
@@ -102,10 +94,6 @@ class import_cm3d2_mate(bpy.types.Operator):
 				mate.use_textures[slot_index] = False
 				slot.diffuse_color_factor = struct.unpack('<f', file.read(4))[0]
 				slot.texture = tex
-				
-				if tex_name == '_Shininess':
-					mate.specular_intensity = slot.diffuse_color_factor
-				common.set_texture_color(slot)
 			
 			elif type == 'end':
 				break

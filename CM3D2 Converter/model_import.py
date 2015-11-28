@@ -488,9 +488,6 @@ class import_cm3d2_model(bpy.types.Operator):
 							img.source = 'FILE'
 							tex.image = img
 							
-							if tex_data['name'] != '_MainTex':
-								slot.use_map_color_diffuse = False
-							
 							# tex探し
 							if self.is_replace_cm3d2_tex:
 								if common.replace_cm3d2_tex(img) and tex_data['name']=='_MainTex':
@@ -507,11 +504,6 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.use_rgb_to_intensity = True
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
-						
-						if tex_data['name'] == "_RimColor" and self.is_mate_color:
-							mate.diffuse_color = tex_data['color'][:3]
-							mate.diffuse_color.v += 0.5
-						common.set_texture_color(slot)
 					
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
@@ -520,10 +512,6 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.diffuse_color_factor = tex_data['float']
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
-						
-						if tex_data['name'] == '_Shininess':
-							mate.specular_intensity = tex_data['float']
-						common.set_texture_color(slot)
 					
 					progress_count += progress_plus_value
 					context.window_manager.progress_update(progress_count)
