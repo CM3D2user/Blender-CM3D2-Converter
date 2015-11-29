@@ -1,8 +1,8 @@
 色	Color
 値	Value
 全て	All
-倍率	Multiplication
-透過	Transparent
+倍率	Scale
+透過	Trans
 発光	Emit
 種類	Type
 不明	Unknown
@@ -147,40 +147,40 @@ PNGに変換してPNGを開く	Convert PNG and Open PNG
 指定された画像が見つかりません	Not Found Image
 CM3D2 → Blender	CM3D2 > Blender
 Blender → CM3D2	Blender > CM3D2
-UVの切れ目にシームをつけます	UVの切れ目にシームをつけます
-CM3D2インストールフォルダ	CM3D2インストールフォルダ
-全頂点に変形のないシェイプを削除	全頂点に変形のないシェイプを削除
-ぼかしの強度(回数)を設定します	ぼかしの強度(回数)を設定します
-CM3D2用マテリアルを新規作成	CM3D2用マテリアルを新規作成
-モディファイアを適用できない場合	モディファイアを適用できない場合
-割り当てのない頂点グループを削除	割り当てのない頂点グループを削除
-テキストにマテリアル情報埋め込み	テキストにマテリアル情報埋め込み
-ウェイトが無いボーンを削除します	ウェイトが無いボーンを削除します
-オブジェクトのカスタムプロパティ	オブジェクトのカスタムプロパティ
-アーマチュアのカスタムプロパティ	アーマチュアのカスタムプロパティ
-ボーン名をBlender用に変換	ボーン名をBlender用に変換
-マテリアルをクリップボードにコピー	マテリアルをクリップボードにコピー
-頂点グループ名をCM3D2用に変換	頂点グループ名をCM3D2用に変換
-アクティブオブジェクトがありません	アクティブオブジェクトがありません
-五角以上のポリゴンが含まれています	五角以上のポリゴンが含まれています
-ボーン情報元のモードがおかしいです	ボーン情報元のモードがおかしいです
-頂点グループを名前順でソートします	頂点グループを名前順でソートします
-anmインポート時のデフォルトパス	anmインポート時のデフォルトパス
-texインポート時のデフォルトパス	texインポート時のデフォルトパス
-CM3D2 Converterを更新	CM3D2 Converterを更新
-ウェイト0.0は頂点グループから除外	ウェイト0.0は頂点グループから除外
-変換できる名前が見つかりませんでした	変換できる名前が見つかりませんでした
-インポート時のメッシュ等の拡大率です	インポート時のメッシュ等の拡大率です
-ボーンを分かりやすい向きに変更します	ボーンを分かりやすい向きに変更します
-バックアップの拡張子 (空欄で無効)	バックアップの拡張子 (空欄で無効)
-anmエクスポート時のデフォルトパス	anmエクスポート時のデフォルトパス
-texエクスポート時のデフォルトパス	texエクスポート時のデフォルトパス
-mateインポート時のデフォルトパス	mateインポート時のデフォルトパス
-ウェイト0.0の頂点はグループから除外	ウェイト0.0の頂点はグループから除外
-クリップボードからマテリアルを貼り付け	クリップボードからマテリアルを貼り付け
+UVの切れ目にシームをつけます	Seam UV Break Edge
+CM3D2インストールフォルダ	CM3D2 Install Folder
+全頂点に変形のないシェイプを削除	Remove Empty Shape Key
+ぼかしの強度(回数)を設定します	Set Blur Count
+CM3D2用マテリアルを新規作成	Create CM3D2 Material
+モディファイアを適用できない場合	Case of Can't Aplly Modifiers
+割り当てのない頂点グループを削除	Remove Empty Vertex Groups
+テキストにマテリアル情報埋め込み	Set Material Info to Text
+ウェイトが無いボーンを削除します	Remove Empty Weight Bones
+オブジェクトのカスタムプロパティ	Custom Property of Object
+アーマチュアのカスタムプロパティ	Custom Property of Armature
+ボーン名をBlender用に変換	Convert Bone Names to Blender
+マテリアルをクリップボードにコピー	Copy Clipboard Material
+頂点グループ名をCM3D2用に変換	Convert Vertex Groups to CM3D2
+アクティブオブジェクトがありません	Not Found Active Object
+五角以上のポリゴンが含まれています	In 5 Polygon
+ボーン情報元のモードがおかしいです	Not Found Bone Info Source
+頂点グループを名前順でソートします	Sort Vertex Groups by Name
+anmインポート時のデフォルトパス	Default Path of anm Import
+texインポート時のデフォルトパス	Default Path of tex Import
+CM3D2 Converterを更新	Update CM3D2 Converter
+ウェイト0.0は頂点グループから除外	Remove Weight 0.0
+変換できる名前が見つかりませんでした	Not Found Convertable Name
+インポート時のメッシュ等の拡大率です	Scale of Mesh
+ボーンを分かりやすい向きに変更します	Order Bone Directions
+バックアップの拡張子 (空欄で無効)	Backup Ext (Empty is Disable)
+anmエクスポート時のデフォルトパス	Default Path of anm Export
+texエクスポート時のデフォルトパス	Default Path of tex Export
+mateインポート時のデフォルトパス	Default Path of mate Export
+ウェイト0.0の頂点はグループから除外	Remove Weight 0.0
+クリップボードからマテリアルを貼り付け	Paste Material by Clipboard
 指定したテキストをこの領域に表示します	指定したテキストをこの領域に表示します
 表示できるエリアが見つかりませんでした	表示できるエリアが見つかりませんでした
-LocalBoneData (%d行)	LocalBoneData (%d行)
+LocalBoneData (%d行)	LocalBoneData (%d)
 エクスポート時のメッシュ等の拡大率です	エクスポート時のメッシュ等の拡大率です
 マテリアル情報元のテキストが足りません	マテリアル情報元のテキストが足りません
 頂点グループ名をBlender用に変換	頂点グループ名をBlender用に変換
@@ -191,7 +191,7 @@ mateエクスポート時のデフォルトパス	mateエクスポート時の�
 mateファイルをテキストとして開きます	mateファイルをテキストとして開きます
 オブジェクト名を設定してからの作成を推奨	オブジェクト名を設定してからの作成を推奨
 CM3D2には使えないオブジェクト名です	CM3D2には使えないオブジェクト名です
-CM3D2 Converterの更新履歴	CM3D2 Converterの更新履歴
+CM3D2 Converterの更新履歴	Change Log of CM3D2 Converter
 空のマテリアルスロットを削除してください	空のマテリアルスロットを削除してください
 Blenderでモデルを扱うときの拡大率	Blenderでモデルを扱うときの拡大率
 modelエクスポート時のデフォルトパス	modelエクスポート時のデフォルトパス
@@ -208,10 +208,10 @@ CM3D2で使われてるボーン名に元に戻します	CM3D2で使われてる
 指定の画像をUV/画像エディターに表示します	指定の画像をUV/画像エディターに表示します
 画像を表示できるエリアが見つかりませんでした	画像を表示できるエリアが見つかりませんでした
 未知の設定値タイプが見つかりました、中止します	未知の設定値タイプが見つかりました、中止します
-ボーン名をCM3D2用→Blender用に変換	ボーン名をCM3D2用→Blender用に変換
-ボーン名をBlender用→CM3D2用に変換	ボーン名をBlender用→CM3D2用に変換
+ボーン名をCM3D2用→Blender用に変換	Bone Names CM3D2 > Blender
+ボーン名をBlender用→CM3D2用に変換	Bone Names Blender > CM3D2
 カスタムプロパティのボーン情報を全て削除します	カスタムプロパティのボーン情報を全て削除します
-CM3D2 Converterの設定画面を開く	CM3D2 Converterの設定画面を開く
+CM3D2 Converterの設定画面を開く	Show Setting Panel of CM3D2 Converter
 テキスト「BoneData」が上書きされました	テキスト「BoneData」が上書きされました
 Software\KISS\カスタムメイド3D2	Software\KISS\カスタムメイド3D2
 これはmateファイルではありません、中止します	これはmateファイルではありません、中止します
