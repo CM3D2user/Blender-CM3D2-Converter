@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 21),
+	"version" : (0, 22),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -138,11 +138,7 @@ def register():
 	common.preview_collections['main'] = pcoll
 	
 	if not bpy.context.user_preferences.system.use_international_fonts:
-		try:
-			import webbrowser
-			webbrowser.open("http://www.cgradproject.com/archives/1732")
-		except:
-			pass
+		bpy.context.user_preferences.system.use_international_fonts = True
 
 # プラグインをアンインストールしたときの処理
 def unregister():
