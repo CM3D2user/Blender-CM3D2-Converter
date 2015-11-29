@@ -2027,7 +2027,7 @@ def MATERIAL_PT_context_material(self, context):
 		col = self.layout.column(align=True)
 		col.operator(new_cm3d2.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 		row = col.row(align=True)
-		row.operator('material.import_cm3d2_mate', icon='OPEN_RECENT', text="mateから")
+		row.operator('material.import_cm3d2_mate', icon='FILE_FOLDER', text="mateから")
 		row.operator(paste_material.bl_idname, icon='PASTEDOWN', text="クリップボードから")
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
@@ -2035,7 +2035,7 @@ def MATERIAL_PT_context_material(self, context):
 			#row = box.split(percentage=0.3)
 			row = box.row()
 			row.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
-			row.operator('material.export_cm3d2_mate', icon='SAVE_AS', text="")
+			row.operator('material.export_cm3d2_mate', icon='FILE_FOLDER', text="")
 			row.operator(copy_material.bl_idname, icon='COPYDOWN', text="")
 			
 			type_name = "不明"
