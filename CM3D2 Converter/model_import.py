@@ -642,7 +642,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		context.window_manager.progress_end()
 		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message="modelのインポートが完了しました、" + str(round(diff_time, 1)) + "秒掛かりました")
+		self.report(type={'INFO'}, message="modelのインポートが完了しました、%s秒掛かりました" % str(round(diff_time, 1)))
 		return {'FINISHED'}
 
 # メニューを登録する関数

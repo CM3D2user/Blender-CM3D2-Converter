@@ -2185,14 +2185,14 @@ def TEXT_HT_header(self, context):
 		for line in txt.as_string().split('\n'):
 			if line:
 				line_count += 1
-		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData (" + str(line_count) + "行)").name = 'BoneData'
+		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData (%d行)" % line_count).name = 'BoneData'
 	if 'LocalBoneData' in text_keys:
 		txt = bpy.data.texts['LocalBoneData']
 		line_count = 0
 		for line in txt.as_string().split('\n'):
 			if line:
 				line_count += 1
-		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData (" + str(line_count) + "行)").name = 'LocalBoneData'
+		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData (%d行)" % line_count).name = 'LocalBoneData'
 	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
 		row.operator(copy_text_bone_data.bl_idname, icon='COPYDOWN', text="")
 		row.operator(paste_text_bone_data.bl_idname, icon='PASTEDOWN', text="")
@@ -2297,7 +2297,7 @@ def TEXTURE_PT_context_texture(self, context):
 	elif type == "f":
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
-		sub_box.label(text="正確な値: " + str(tex_slot.diffuse_color_factor))
+		sub_box.label(text="正確な値: %s" % str(tex_slot.diffuse_color_factor))
 		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
 	
 	base_name = common.remove_serial_number(tex.name)
