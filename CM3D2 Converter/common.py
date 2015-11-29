@@ -275,7 +275,7 @@ def set_texture_color(slot):
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
 		elements[-1].color = slot.color[:] + (slot.diffuse_color_factor, )
-		if 0.5 < mathutils.Color(slot.color[:3]).v:
+		if 0.3 < mathutils.Color(slot.color[:3]).v:
 			elements[1].color, elements[2].color = [0, 0, 0, 1], [0, 0, 0, 1]
 		else:
 			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
@@ -289,7 +289,7 @@ def set_texture_color(slot):
 			multi = 1.0 / 30.0
 		value = slot.diffuse_color_factor * multi
 		elements[-1].color = [value, value, value, 1]
-		if 0.5 < value:
+		if 0.3 < value:
 			elements[1].color, elements[2].color = [0, 0, 0, 1], [0, 0, 0, 1]
 		else:
 			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
