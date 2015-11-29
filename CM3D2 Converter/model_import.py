@@ -18,7 +18,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True, description="UVの切れ目でポリゴンが分かれている仕様なので、インポート時にくっつけます")
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True, description="UVの切れ目にシームをつけます")
 	
-	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をBlender用に変換", default=True, description="全ての頂点グループ名をBlenderの左右対称編集で使えるように変換してから読み込みます")
+	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をBlender用に変換", default=False, description="全ての頂点グループ名をBlenderの左右対称編集で使えるように変換してから読み込みます")
 	is_vertex_group_sort = bpy.props.BoolProperty(name="頂点グループを名前順ソート", default=True, description="頂点グループを名前順でソートします")
 	is_remove_empty_vertex_group = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True, description="全ての頂点に割り当てのない頂点グループを削除します")
 	
@@ -30,7 +30,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True, description="ボーンを分かりやすい向きに変更します")
-	is_convert_bone_names = bpy.props.BoolProperty(name="ボーン名をBlender用に変換", default=True, description="全てのボーン名をBlenderの左右対称編集で使えるように変換してから読み込みます")
+	is_convert_bone_names = bpy.props.BoolProperty(name="ボーン名をBlender用に変換", default=False, description="全てのボーン名をBlenderの左右対称編集で使えるように変換してから読み込みます")
 	
 	is_bone_data_text = bpy.props.BoolProperty(name="テキスト", default=True, description="ボーン情報をテキストとして読み込みます")
 	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトのカスタムプロパティ", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")

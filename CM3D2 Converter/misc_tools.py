@@ -392,11 +392,26 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 	
 	def execute(self, context):
 		ob = context.active_object
+		me = ob.data
 		convert_count = 0
-		for vg in ob.vertex_groups:
+		for vg in ob.vertex_groups[:]:
 			vg_name = common.decode_bone_name(vg.name)
 			if vg_name != vg.name:
-				vg.name = vg_name
+				if vg_name in ob.vertex_groups.keys():
+					target_vg = ob.vertex_groups[vg_name]
+					for vert in me.vertices:
+						try:
+							weight = vg.weight(vert.index)
+						except:
+							weight = 0.0
+						try:
+							target_weight = target_vg.weight(vert.index)
+						except:
+							target_weight = 0.0
+						target_vg.add([vert.index], weight + target_weight, 'REPLACE')
+					ob.vertex_groups.remove(vg)
+				else:
+					vg.name = vg_name
 				convert_count += 1
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
@@ -424,16 +439,31 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 	
 	def execute(self, context):
 		ob = context.active_object
+		me = ob.data
 		convert_count = 0
-		for vg in ob.vertex_groups:
+		for vg in ob.vertex_groups[:]:
 			vg_name = common.encode_bone_name(vg.name)
 			if vg_name != vg.name:
-				vg.name = vg_name
+				if vg_name in ob.vertex_groups.keys():
+					target_vg = ob.vertex_groups[vg_name]
+					for vert in me.vertices:
+						try:
+							weight = vg.weight(vert.index)
+						except:
+							weight = 0.0
+						try:
+							target_weight = target_vg.weight(vert.index)
+						except:
+							target_weight = 0.0
+						target_vg.add([vert.index], weight + target_weight, 'REPLACE')
+					ob.vertex_groups.remove(vg)
+				else:
+					vg.name = vg_name
 				convert_count += 1
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をCM3D2用に戻しました")
+			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
