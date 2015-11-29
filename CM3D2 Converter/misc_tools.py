@@ -408,7 +408,8 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 							target_weight = target_vg.weight(vert.index)
 						except:
 							target_weight = 0.0
-						target_vg.add([vert.index], weight + target_weight, 'REPLACE')
+						if 0.0 < weight + target_weight:
+							target_vg.add([vert.index], weight + target_weight, 'REPLACE')
 					ob.vertex_groups.remove(vg)
 				else:
 					vg.name = vg_name
@@ -455,7 +456,8 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 							target_weight = target_vg.weight(vert.index)
 						except:
 							target_weight = 0.0
-						target_vg.add([vert.index], weight + target_weight, 'REPLACE')
+						if 0.0 < weight + target_weight:
+							target_vg.add([vert.index], weight + target_weight, 'REPLACE')
 					ob.vertex_groups.remove(vg)
 				else:
 					vg.name = vg_name
