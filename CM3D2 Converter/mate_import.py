@@ -27,8 +27,8 @@ class import_cm3d2_mate(bpy.types.Operator):
 		return {'RUNNING_MODAL'}
 	
 	def draw(self, context):
-		self.layout.prop(self, 'is_decorate')
-		self.layout.prop(self, 'is_replace_cm3d2_tex')
+		self.layout.prop(self, 'is_decorate', icon='TEXTURE_SHADED')
+		self.layout.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
 	
 	def execute(self, context):
 		common.preferences().mate_import_path = self.filepath
