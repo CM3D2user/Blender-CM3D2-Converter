@@ -472,9 +472,9 @@ class export_cm3d2_model(bpy.types.Operator):
 				for weight in weights:
 					file.write(struct.pack('<f', weight))
 		if 1 <= is_over_one:
-			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が%dつ見つかりました" % is_over_one)
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が見つかりました" % is_over_one)
 		if 1 <= is_under_one:
-			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が%dつ見つかりました" % is_under_one)
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が見つかりました" % is_under_one)
 		context.window_manager.progress_update(7)
 		
 		# 面情報を書き出し
@@ -540,7 +540,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				for face in faces2:
 					file.write(struct.pack('<H', face))
 		if 1 <= error_face_count:
-			self.report(type={'INFO'}, message="多角ポリゴンが%dつ見つかりました、正常に出力できなかった可能性があります" % error_face_count)
+			self.report(type={'INFO'}, message="多角ポリゴンが見つかりました、正常に出力できなかった可能性があります" % error_face_count)
 		context.window_manager.progress_update(8)
 		
 		# マテリアルを書き出し

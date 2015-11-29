@@ -225,7 +225,7 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 					file.write(struct.pack('<f', f))
 					line_seek += 3
 				else:
-					self.report(type={'ERROR'}, message="tex col f 以外の設定値が見つかりました(%s)、中止します" % lines[line_seek])
+					self.report(type={'ERROR'}, message="tex col f 以外の設定値が見つかりました、中止します")
 					return {'CANCELLED'}
 		except:
 			self.report(type={'ERROR'}, message="mateファイルの出力に失敗、中止します。 構文を見直して下さい")

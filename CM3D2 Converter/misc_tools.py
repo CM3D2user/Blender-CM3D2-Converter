@@ -419,7 +419,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message="%d個の頂点グループ名をBlender用に変換しました" % convert_count)
+			self.report(type={'INFO'}, message="頂点グループ名をBlender用に変換しました")
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
@@ -470,7 +470,7 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message="%d個の頂点グループ名をCM3D2用に戻しました" % convert_count)
+			self.report(type={'INFO'}, message="頂点グループ名をCM3D2用に戻しました")
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
@@ -1447,7 +1447,7 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message="%d個のボーン名をBlender用に変換しました" % convert_count)
+			self.report(type={'INFO'}, message="ボーン名をBlender用に変換しました")
 		return {'FINISHED'}
 
 class convert_cm3d2_bone_names_restore(bpy.types.Operator):
@@ -1480,7 +1480,7 @@ class convert_cm3d2_bone_names_restore(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message="%d個のボーン名をCM3D2用に戻しました" % convert_count)
+			self.report(type={'INFO'}, message="ボーン名をCM3D2用に戻しました")
 		return {'FINISHED'}
 
 class show_text(bpy.types.Operator):
@@ -2112,9 +2112,9 @@ def DATA_PT_context_arm(self, context):
 				sub_row = row.row()
 				sub_row.alignment = 'RIGHT'
 				if bone_data_count:
-					sub_row.label(text="%d個" % bone_data_count, icon='CHECKBOX_HLT')
+					sub_row.label(text=str(bone_data_count), icon='CHECKBOX_HLT')
 				else:
-					sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
+					sub_row.label(text="0", icon='CHECKBOX_DEHLT')
 				row = col.row(align=True)
 				row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 				row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
@@ -2125,11 +2125,15 @@ def OBJECT_PT_context_object(self, context):
 	ob = context.active_object
 	if ob:
 		if ob.type == 'MESH':
-			row = self.layout.row(align=True)
 			if re.search(r'^[^\.]+\.[^\.]+$', ob.name):
 				name, base = ob.name.split('.')
-				row.label(text="model名: %s" % name, icon='SORTALPHA')
-				row.label(text="基点ボーン名: %s" % base, icon='CONSTRAINT_BONE')
+				row = self.layout.row(align=True)
+				sub_row = row.row()
+				sub_row.label(text="model名:", icon='SORTALPHA')
+				sub_row.label(text=name)
+				sub_row = row.row()
+				sub_row.label(text="基点ボーン名:", icon='CONSTRAINT_BONE')
+				sub_row.label(text=base)
 			else:
 				#row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
 				pass
@@ -2155,9 +2159,9 @@ def OBJECT_PT_context_object(self, context):
 					for key in ob.keys():
 						if re.search(r'^(Local)?BoneData:\d+$', key):
 							bone_data_count += 1
-					sub_row.label(text="%d個" % bone_data_count, icon='CHECKBOX_HLT')
+					sub_row.label(text=str(bone_data_count), icon='CHECKBOX_HLT')
 				else:
-					sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
+					sub_row.label(text="0", icon='CHECKBOX_DEHLT')
 				row = col.row(align=True)
 				row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
 				row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
@@ -2185,14 +2189,14 @@ def TEXT_HT_header(self, context):
 		for line in txt.as_string().split('\n'):
 			if line:
 				line_count += 1
-		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData (%d行)" % line_count).name = 'BoneData'
+		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData (%d)" % line_count).name = 'BoneData'
 	if 'LocalBoneData' in text_keys:
 		txt = bpy.data.texts['LocalBoneData']
 		line_count = 0
 		for line in txt.as_string().split('\n'):
 			if line:
 				line_count += 1
-		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData (%d行)" % line_count).name = 'LocalBoneData'
+		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData (%d)" % line_count).name = 'LocalBoneData'
 	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
 		row.operator(copy_text_bone_data.bl_idname, icon='COPYDOWN', text="")
 		row.operator(paste_text_bone_data.bl_idname, icon='PASTEDOWN', text="")
@@ -2297,7 +2301,9 @@ def TEXTURE_PT_context_texture(self, context):
 	elif type == "f":
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
-		sub_box.label(text="正確な値: %s" % str(tex_slot.diffuse_color_factor))
+		split = sub_box.split(percentage=0.3)
+		split.label(text="正確な値: ")
+		split.label(text=str(tex_slot.diffuse_color_factor))
 		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
 	
 	base_name = common.remove_serial_number(tex.name)
