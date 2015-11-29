@@ -2128,8 +2128,8 @@ def OBJECT_PT_context_object(self, context):
 			row = self.layout.row(align=True)
 			if re.search(r'^[^\.]+\.[^\.]+$', ob.name):
 				name, base = ob.name.split('.')
-				row.label(text="model名: " + name, icon='SORTALPHA')
-				row.label(text="基点ボーン名: " + base, icon='CONSTRAINT_BONE')
+				row.label(text="model名: %s" % name, icon='SORTALPHA')
+				row.label(text="基点ボーン名: %s" % base, icon='CONSTRAINT_BONE')
 			else:
 				#row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
 				pass
