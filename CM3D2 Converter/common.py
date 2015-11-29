@@ -293,3 +293,29 @@ def set_texture_color(slot):
 			elements[1].color, elements[2].color = [0, 0, 0, 1], [0, 0, 0, 1]
 		else:
 			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
+
+# 必要なエリアタイプを設定を変更してでも取得
+def get_request_area(context, request_area_type, exception_area_types=['VIEW_3D']):
+	request_areas = []
+	candidate_areas = []
+	for area in context.screen.areas:
+		if area.type == request_area_type:
+			request_areas.append(area)
+		else:
+			if area.type not in exception_area_types:
+				candidate_areas.append(area)
+	
+	if len(request_areas):
+		candidate_areas = request_areas[:]
+	if not len(candidate_areas):
+		return None
+	
+	maximum_area_size = -1
+	for area in candidate_areas:
+		size = area.width * area.height
+		if maximum_area_size < size:
+			maximum_area = area
+			maximum_area_size = size
+	
+	maximum_area.type = request_area_type
+	return maximum_area

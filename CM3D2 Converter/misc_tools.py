@@ -1915,32 +1915,30 @@ class show_image(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="指定された画像が見つかりません")
 			return {'CANCELLED'}
 		
-		image_editors = []
-		other_areas = []
-		for area in context.screen.areas:
-			if area.type == 'IMAGE_EDITOR':
-				image_editors.append(area)
-			else:
-				if area.type != 'VIEW_3D':
-					other_areas.append(area)
-		if len(image_editors):
-			other_areas = image_editors[:]
-		
-		maximum_area_size = -1
-		for area in other_areas:
-			size = area.width * area.height
-			if maximum_area_size < size:
-				maximum_area = area
-				maximum_area_size = size
-		
-		if maximum_area_size == -1:
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		if area:
+			for space in area.spaces:
+				if space.type == 'IMAGE_EDITOR':
+					space.image = img
+		else:
 			self.report(type={'ERROR'}, message="画像を表示できるエリアが見つかりませんでした")
 			return {'CANCELLED'}
-		
-		maximum_area.type = 'IMAGE_EDITOR'
-		for space in maximum_area.spaces:
-			if space.type == 'IMAGE_EDITOR':
-				space.image = img
+		return {'FINISHED'}
+
+class show_cm3d2_converter_preference(bpy.types.Operator):
+	bl_idname = "wm.show_cm3d2_converter_preference"
+	bl_label = "CM3D2 Converterの設定画面を開く"
+	bl_description = "CM3D2 Converterアドオンの設定画面を表示します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	def execute(self, context):
+		area = common.get_request_area(context, 'USER_PREFERENCES')
+		if area:
+			context.user_preferences.active_section = 'ADDONS'
+			context.window_manager.addon_search = "CM3D2 Converter"
+		else:
+			self.report(type={'ERROR'}, message="表示できるエリアが見つかりませんでした")
+			return {'CANCELLED'}
 		return {'FINISHED'}
 
 class sync_tex_color_ramps(bpy.types.Operator):
@@ -2335,6 +2333,7 @@ def INFO_MT_help(self, context):
 	self.layout.separator()
 	self.layout.operator(update_cm3d2_converter.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS_sub.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator(show_cm3d2_converter_preference.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 class INFO_MT_help_CM3D2_Converter_RSS_sub(bpy.types.Menu):
 	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS_sub"
 	bl_label = "CM3D2 Converterの更新履歴"
