@@ -23,7 +23,6 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_remove_empty_vertex_group = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True, description="全ての頂点に割り当てのない頂点グループを削除します")
 	
 	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=True, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
-	is_mate_color = bpy.props.BoolProperty(name="マテリアルに色をつける", default=True, description="modelファイル内の設定値を参照に、マテリアルに色をつけます")
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
 	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
 	
@@ -58,7 +57,6 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.label("マテリアル")
 		sub_box.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
-		sub_box.prop(self, 'is_mate_color', icon='COLOR')
 		sub_box.prop(self, 'is_decorate', icon='TEXTURE_SHADED')
 		sub_box.prop(self, 'is_mate_data_text', icon='TEXT')
 		box = self.layout.box()
