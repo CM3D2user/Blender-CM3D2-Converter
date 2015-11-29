@@ -1028,9 +1028,9 @@ class new_cm3d2(bpy.types.Operator):
 		if not re.search(r'^[^\.]+\.[^\.]+$', common.remove_serial_number(context.active_object.name)):
 			self.layout.label(text="オブジェクト名を設定してからの作成を推奨", icon='CANCEL')
 		self.layout.separator()
-		self.layout.prop(self, 'type')
-		self.layout.prop(self, 'is_decorate')
-		self.layout.prop(self, 'is_replace_cm3d2_tex')
+		self.layout.prop(self, 'type', icon='ANTIALIASED')
+		self.layout.prop(self, 'is_decorate', icon='TEXTURE_SHADED')
+		self.layout.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
 	
 	def execute(self, context):
 		ob = context.active_object
