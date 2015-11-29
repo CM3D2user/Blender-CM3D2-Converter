@@ -91,7 +91,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		struct.unpack('<i', file.read(4))[0]
 		context.window_manager.progress_update(0.1)
 		
-		# 何で名前2つあるの？
+		# 名前群を取得
 		model_name1 = common.read_str(file)
 		model_name2 = common.read_str(file)
 		context.window_manager.progress_update(0.2)
@@ -350,7 +350,6 @@ class import_cm3d2_model(bpy.types.Operator):
 			arm_ob.show_x_ray = True
 			bpy.ops.armature.select_all(action='DESELECT')
 			bpy.ops.object.mode_set(mode='OBJECT')
-			#arm_ob.scale *= self.scale
 		context.window_manager.progress_update(2)
 		
 		if self.is_mesh:
@@ -391,7 +390,6 @@ class import_cm3d2_model(bpy.types.Operator):
 					ob.rotation_quaternion = rot
 					
 					break
-			#ob.scale *= self.scale
 			context.window_manager.progress_update(3)
 			
 			# 頂点グループ作成
@@ -422,7 +420,6 @@ class import_cm3d2_model(bpy.types.Operator):
 			context.window_manager.progress_update(4)
 			
 			# UV作成
-			#me.uv_textures.new("UVMap")
 			bpy.ops.mesh.uv_texture_add()
 			bm = bmesh.new()
 			bm.from_mesh(me)
@@ -438,7 +435,6 @@ class import_cm3d2_model(bpy.types.Operator):
 			for data in misc_data:
 				if data['type'] == 'morph':
 					if morph_count == 0:
-						#ob.shape_key_add(name="Basis", from_mix=False)
 						bpy.ops.object.shape_key_add(from_mix=False)
 						me.shape_keys.name = model_name1 + "." + model_name2
 					shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
@@ -465,7 +461,6 @@ class import_cm3d2_model(bpy.types.Operator):
 				mate = context.blend_data.materials.new(data['name1'])
 				mate['shader1'] = data['name2']
 				mate['shader2'] = data['name3']
-				#mate.use_face_texture = True
 				
 				ob.material_slots[-1].material = mate
 				# 面にマテリアル割り当て
@@ -479,7 +474,6 @@ class import_cm3d2_model(bpy.types.Operator):
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex
 						if tex_data['type2'] == 'tex2d':
-							#slot.use_map_color_diffuse = False
 							slot.color = tex_data['color'][:3]
 							slot.diffuse_color_factor = tex_data['color'][3]
 							img = context.blend_data.images.new(tex_data['name2'], 128, 128)
@@ -498,7 +492,6 @@ class import_cm3d2_model(bpy.types.Operator):
 					elif tex_data['type'] == 'col':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
-						#slot.use_map_color_diffuse = False
 						slot.color = tex_data['color'][:3]
 						slot.diffuse_color_factor = tex_data['color'][3]
 						slot.use_rgb_to_intensity = True
@@ -508,7 +501,6 @@ class import_cm3d2_model(bpy.types.Operator):
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
-						#slot.use_map_color_diffuse = False
 						slot.diffuse_color_factor = tex_data['float']
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
 						slot.texture = tex

@@ -1034,7 +1034,6 @@ class new_cm3d2(bpy.types.Operator):
 		mate = context.blend_data.materials.new(ob_names[0])
 		context.material_slot.material = mate
 		tex_list, col_list, f_list = [], [], []
-		#mate.use_face_texture = True
 		
 		ob_name = ob_names[0]
 		

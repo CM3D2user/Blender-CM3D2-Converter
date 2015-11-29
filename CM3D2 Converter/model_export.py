@@ -117,6 +117,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
+	# 'is_batch' がオンなら非表示
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
 		row = self.layout.row()
@@ -137,7 +138,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
 		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
-		# don't show 'is_batch' in UI
 	
 	def execute(self, context):
 		start_time = time.time()
@@ -628,8 +628,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			vs, es, fs = [], [], []
 			for vert in me.vertices:
 				vs.append(vert.co)
-			#for edge in me.edges:
-			#	es.append(edge.vertices)
 			for face in me.polygons:
 				fs.append(face.vertices)
 			temp_me.from_pydata(vs, es, fs)
