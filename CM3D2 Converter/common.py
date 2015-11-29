@@ -227,14 +227,20 @@ def replace_cm3d2_tex(img):
 				return True
 			else:
 				if file_name == source_tex_name:
-					file = open(path, 'rb')
+					try:
+						file = open(path, 'rb')
+					except:
+						return False
 					header_ext = read_str(file)
 					if header_ext == 'CM3D2_TEX':
 						file.seek(4, 1)
 						read_str(file)
 						png_size = struct.unpack('<i', file.read(4))[0]
 						png_path = os.path.splitext(path)[0] + ".png"
-						png_file = open(png_path, 'wb')
+						try:
+							png_file = open(png_path, 'wb')
+						except:
+							return False
 						png_file.write(file.read(png_size))
 						png_file.close()
 						file.close()

@@ -78,7 +78,11 @@ class import_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_begin(0, 100)
 		context.window_manager.progress_update(0)
 		
-		file = open(self.filepath, 'rb')
+		try:
+			file = open(self.filepath, 'rb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
+			return {'CANCELLED'}
 		
 		# ヘッダー
 		ext = common.read_str(file)

@@ -310,7 +310,11 @@ class export_cm3d2_model(bpy.types.Operator):
 		common.file_backup(self.filepath, self.is_backup)
 		
 		# ファイル先頭
-		file = open(self.filepath, 'wb')
+		try:
+			file = open(self.filepath, 'wb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
+			return {'CANCELLED'}
 		
 		common.write_str(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', self.version))

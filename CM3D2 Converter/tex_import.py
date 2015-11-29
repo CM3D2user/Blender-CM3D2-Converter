@@ -27,7 +27,11 @@ class import_cm3d2_tex(bpy.types.Operator):
 	
 	def execute(self, context):
 		common.preferences().tex_import_path = self.filepath
-		file = open(self.filepath, 'rb')
+		try:
+			file = open(self.filepath, 'rb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
+			return {'CANCELLED'}
 		header_ext = common.read_str(file)
 		if header_ext == 'CM3D2_TEX':
 			file.seek(4, 1)

@@ -33,7 +33,11 @@ class import_cm3d2_mate(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().mate_import_path = self.filepath
 		
-		file = open(self.filepath, 'rb')
+		try:
+			file = open(self.filepath, 'rb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
+			return {'CANCELLED'}
 		if common.read_str(file) != 'CM3D2_MATERIAL':
 			self.report(type={'ERROR'}, message="これはmateファイルではありません、中止します")
 			return {'CANCELLED'}
@@ -144,7 +148,11 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 			txt = context.edit_text
 			txt.clear()
 		
-		file = open(self.filepath, 'rb')
+		try:
+			file = open(self.filepath, 'rb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
+			return {'CANCELLED'}
 		if common.read_str(file) != 'CM3D2_MATERIAL':
 			self.report(type={'ERROR'}, message="これはmateファイルではありません、中止します")
 			return {'CANCELLED'}

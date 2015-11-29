@@ -69,7 +69,11 @@ class export_cm3d2_tex(bpy.types.Operator):
 		os.remove(temp_path)
 		
 		# 本命ファイルに書き込み
-		file = open(self.filepath, 'wb')
+		try:
+			file = open(self.filepath, 'wb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
+			return {'CANCELLED'}
 		common.write_str(file, 'CM3D2_TEX')
 		file.write(struct.pack('<i', self.version))
 		common.write_str(file, self.path)

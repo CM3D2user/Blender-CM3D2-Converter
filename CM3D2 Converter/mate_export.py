@@ -52,7 +52,11 @@ class export_cm3d2_mate(bpy.types.Operator):
 		
 		mate = context.material
 		
-		file = open(self.filepath, 'wb')
+		try:
+			file = open(self.filepath, 'wb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
+			return {'CANCELLED'}
 		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		
@@ -173,7 +177,12 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 		txt = context.edit_text
 		lines = txt.as_string().split('\n')
 		
-		file = open(self.filepath, 'wb')
+		try:
+			file = open(self.filepath, 'wb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
+			return {'CANCELLED'}
+		
 		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		

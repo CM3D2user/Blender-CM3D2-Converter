@@ -31,7 +31,11 @@ class import_cm3d2_anm(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().anm_import_path = self.filepath
 		
-		file = open(self.filepath, 'rb')
+		try:
+			file = open(self.filepath, 'rb')
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
+			return {'CANCELLED'}
 		
 		# ヘッダー
 		ext = common.read_str(file)
