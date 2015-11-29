@@ -1,4 +1,4 @@
-import bpy, os, re, struct, shutil
+import bpy, os, re, struct, shutil, mathutils
 
 preview_collections = {}
 
@@ -255,14 +255,14 @@ def set_texture_color(slot):
 		type = 'col'
 	
 	tex = slot.texture
+	elements = tex.color_ramp.elements
+	
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
 	tex.use_color_ramp = True
 	tex.use_preview_alpha = True
 	
-	elements = tex.color_ramp.elements
 	element_count = 4
-	
 	if element_count < len(elements):
 		for i in range(len(elements) - element_count):
 			elements.remove(elements[-1])
@@ -270,22 +270,15 @@ def set_texture_color(slot):
 		for i in range(element_count - len(elements)):
 			elements.new(1.0)
 	
-	elements[0].position = 0.2
-	elements[1].position = 0.21
-	elements[2].position = 0.3
-	elements[3].position = 0.31
-	
+	elements[0].position, elements[1].position, elements[2].position, elements[3].position = 0.2, 0.21, 0.3, 0.31
 	
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
 		elements[-1].color = slot.color[:] + (slot.diffuse_color_factor, )
-		value = (slot.color[0] + slot.color[1] + slot.color[2]) / 3
-		if 0.5 < value:
-			elements[1].color = [0, 0, 0, 1]
-			elements[2].color = elements[1].color[:]
+		if 0.5 < mathutils.Color(slot.color[:3]).v:
+			elements[1].color, elements[2].color = [0, 0, 0, 1], [0, 0, 0, 1]
 		else:
-			elements[1].color = [1, 1, 1, 1]
-			elements[2].color = elements[1].color[:]
+			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
 	
 	elif type == 'f':
 		elements[0].color = [0.5, 0.5, 1, 1]
@@ -297,8 +290,6 @@ def set_texture_color(slot):
 		value = slot.diffuse_color_factor * multi
 		elements[-1].color = [value, value, value, 1]
 		if 0.5 < value:
-			elements[1].color = [0, 0, 0, 1]
-			elements[2].color = elements[1].color[:]
+			elements[1].color, elements[2].color = [0, 0, 0, 1], [0, 0, 0, 1]
 		else:
-			elements[1].color = [1, 1, 1, 1]
-			elements[2].color = elements[1].color[:]
+			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
