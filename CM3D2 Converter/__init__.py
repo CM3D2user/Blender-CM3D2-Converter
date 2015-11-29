@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 27),
+	"version" : (0, 29),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -105,6 +105,34 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
 
+# 英訳辞書を作成
+def get_english_dictionary():
+	try:
+		import codecs
+		
+		addon_dir = os.path.dirname(__file__)
+		file_path = os.path.join(addon_dir, "english_dictionary.csv")
+		
+		file = codecs.open(file_path, 'r', 'utf-8')
+		lines = []
+		for line in file:
+			line = common.line_trim(line)
+			if line:
+				lines.append(line)
+		
+		dict = {}
+		for locale in bpy.app.translations.locales:
+			if locale == 'ja_JP':
+				continue
+			dict[locale] = {}
+			for line in lines:
+				jp, en = line.split('\t')
+				for context in bpy.app.translations.contexts:
+					dict[locale][(context, jp)] = en
+	except:
+		dict = {}
+	return dict
+
 # プラグインをインストールしたときの処理
 def register():
 	bpy.utils.register_module(__name__)
@@ -139,6 +167,8 @@ def register():
 	
 	if not bpy.context.user_preferences.system.use_international_fonts:
 		bpy.context.user_preferences.system.use_international_fonts = True
+	
+	bpy.app.translations.register(__name__, get_english_dictionary())
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -170,6 +200,8 @@ def unregister():
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
 	common.preview_collections.clear()
+	
+	bpy.app.translations.unregister(__name__)
 
 # メイン関数
 if __name__ == "__main__":
