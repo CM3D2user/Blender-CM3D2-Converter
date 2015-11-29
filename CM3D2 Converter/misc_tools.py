@@ -1936,6 +1936,7 @@ class show_cm3d2_converter_preference(bpy.types.Operator):
 		if area:
 			context.user_preferences.active_section = 'ADDONS'
 			context.window_manager.addon_search = "CM3D2 Converter"
+			bpy.ops.wm.addon_expand(module="CM3D2 Converter")
 		else:
 			self.report(type={'ERROR'}, message="表示できるエリアが見つかりませんでした")
 			return {'CANCELLED'}
