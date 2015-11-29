@@ -29,7 +29,6 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
 	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
 	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True, description="ボーンを分かりやすい向きに変更します")
-	is_convert_bone_names = bpy.props.BoolProperty(name="ボーン名をBlender用に変換", default=False, description="全てのボーン名をBlenderの左右対称編集で使えるように変換してから読み込みます")
 	
 	is_bone_data_text = bpy.props.BoolProperty(name="テキスト", default=True, description="ボーン情報をテキストとして読み込みます")
 	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトのカスタムプロパティ", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
@@ -51,9 +50,9 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box.prop(self, 'is_seam', icon='KEY_DEHLT')
 		sub_box = box.box()
 		sub_box.label("頂点グループ")
-		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 		sub_box.prop(self, 'is_vertex_group_sort', icon='SORTALPHA')
 		sub_box.prop(self, 'is_remove_empty_vertex_group', icon='DISCLOSURE_TRI_DOWN')
+		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
 		sub_box = box.box()
 		sub_box.label("マテリアル")
 		sub_box.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
@@ -65,7 +64,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box.label("アーマチュア")
 		sub_box.prop(self, 'is_armature_clean', icon='X')
 		sub_box.prop(self, 'is_armature_arrange', icon='HAIR')
-		sub_box.prop(self, 'is_convert_bone_names', icon='BONE_DATA')
+		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX', text="ボーン名をBlender用に変換")
 		box = self.layout.box()
 		box.label("ボーン情報埋め込み場所")
 		box.prop(self, 'is_bone_data_text', icon='TEXT')
@@ -235,7 +234,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			child_data = []
 			for data in bone_data:
 				if not data['parent_name']:
-					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_names))
+					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_vertex_group_names))
 					bone.head = (0, 0, 0)
 					bone.tail = (0, 0.1, 0)
 					
@@ -260,9 +259,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				if len(child_data) <= 0:
 					break
 				data = child_data.pop(0)
-				if common.decode_bone_name(data['parent_name'], self.is_convert_bone_names) in arm.edit_bones.keys():
-					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_names))
-					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_bone_names)]
+				if common.decode_bone_name(data['parent_name'], self.is_convert_vertex_group_names) in arm.edit_bones.keys():
+					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_vertex_group_names))
+					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_vertex_group_names)]
 					bone.parent = parent
 					if data['unknown']:
 						bone.bbone_segments = 2
@@ -274,7 +273,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					rot = mathutils.Quaternion()
 					for j in range(9**9):
 						for b in bone_data:
-							if common.decode_bone_name(b['name'], self.is_convert_bone_names) == temp_parent.name:
+							if common.decode_bone_name(b['name'], self.is_convert_vertex_group_names) == temp_parent.name:
 								c = b['co'].copy()
 								r = b['rot'].copy()
 								break
@@ -316,7 +315,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature_clean:
 				for bone in arm.edit_bones:
 					for b in local_bone_data:
-						name = common.decode_bone_name(b['name'], self.is_convert_bone_names)
+						name = common.decode_bone_name(b['name'], self.is_convert_vertex_group_names)
 						if bone.name == name:
 							break
 					else:
