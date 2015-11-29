@@ -1932,11 +1932,19 @@ class show_cm3d2_converter_preference(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	def execute(self, context):
+		import addon_utils
+		my_info = None
+		for module in addon_utils.modules():
+			info = addon_utils.module_bl_info(module)
+			if info['name'] == "CM3D2 Converter":
+				my_info = info
+				break
 		area = common.get_request_area(context, 'USER_PREFERENCES')
-		if area:
+		if area and my_info:
 			context.user_preferences.active_section = 'ADDONS'
-			context.window_manager.addon_search = "CM3D2 Converter"
-			bpy.ops.wm.addon_expand(module="CM3D2 Converter")
+			context.window_manager.addon_search = my_info['name']
+			if not my_info['show_expanded']:
+				bpy.ops.wm.addon_expand(module=my_info['name'])
 		else:
 			self.report(type={'ERROR'}, message="表示できるエリアが見つかりませんでした")
 			return {'CANCELLED'}
