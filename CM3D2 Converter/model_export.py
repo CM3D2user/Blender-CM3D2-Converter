@@ -356,7 +356,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vert_iuv.append(iuv_str)
 					vert_count += 1
 		if 65535 < vert_count:
-			return self.report_cancel("頂点数がまだ多いです (現在%s頂点)。あと%s頂点以上減らしてください、中止します" % (vert_count, vert_count - 65535))
+			return self.report_cancel("頂点数がまだ多いです (現在%d頂点)。あと%d頂点以上減らしてください、中止します" % (vert_count, vert_count - 65535))
 		context.window_manager.progress_update(5)
 		
 		file.write(struct.pack('<2i', vert_count, len(ob.material_slots)))

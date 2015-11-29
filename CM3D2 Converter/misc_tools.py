@@ -419,7 +419,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+			self.report(type={'INFO'}, message="%d個の頂点グループ名をBlender用に変換しました" % convert_count)
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
@@ -470,7 +470,7 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+			self.report(type={'INFO'}, message="%d個の頂点グループ名をCM3D2用に戻しました" % convert_count)
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
@@ -1447,7 +1447,7 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をBlender用に変換しました")
+			self.report(type={'INFO'}, message="%d個のボーン名をBlender用に変換しました" % convert_count)
 		return {'FINISHED'}
 
 class convert_cm3d2_bone_names_restore(bpy.types.Operator):
@@ -1480,7 +1480,7 @@ class convert_cm3d2_bone_names_restore(bpy.types.Operator):
 		if convert_count == 0:
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
-			self.report(type={'INFO'}, message=str(convert_count) + "個のボーン名をCM3D2用に戻しました")
+			self.report(type={'INFO'}, message="%d個のボーン名をCM3D2用に戻しました" % convert_count)
 		return {'FINISHED'}
 
 class show_text(bpy.types.Operator):
@@ -2112,7 +2112,7 @@ def DATA_PT_context_arm(self, context):
 				sub_row = row.row()
 				sub_row.alignment = 'RIGHT'
 				if bone_data_count:
-					sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
+					sub_row.label(text="%d個" % bone_data_count, icon='CHECKBOX_HLT')
 				else:
 					sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
 				row = col.row(align=True)
@@ -2155,7 +2155,7 @@ def OBJECT_PT_context_object(self, context):
 					for key in ob.keys():
 						if re.search(r'^(Local)?BoneData:\d+$', key):
 							bone_data_count += 1
-					sub_row.label(text=str(bone_data_count)+"個", icon='CHECKBOX_HLT')
+					sub_row.label(text="%d個" % bone_data_count, icon='CHECKBOX_HLT')
 				else:
 					sub_row.label(text="0個", icon='CHECKBOX_DEHLT')
 				row = col.row(align=True)
