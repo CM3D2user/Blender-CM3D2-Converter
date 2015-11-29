@@ -394,7 +394,9 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		convert_count = 0
-		for vg in ob.vertex_groups[:]:
+		context.window_manager.progress_begin(0, len(ob.vertex_groups))
+		for vg_index, vg in enumerate(ob.vertex_groups[:]):
+			context.window_manager.progress_update(vg_index)
 			vg_name = common.decode_bone_name(vg.name)
 			if vg_name != vg.name:
 				if vg_name in ob.vertex_groups.keys():
@@ -418,6 +420,7 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
 			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
@@ -442,7 +445,9 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		convert_count = 0
-		for vg in ob.vertex_groups[:]:
+		context.window_manager.progress_begin(0, len(ob.vertex_groups))
+		for vg_index, vg in enumerate(ob.vertex_groups[:]):
+			context.window_manager.progress_update(vg_index)
 			vg_name = common.encode_bone_name(vg.name)
 			if vg_name != vg.name:
 				if vg_name in ob.vertex_groups.keys():
@@ -466,6 +471,7 @@ class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
 			self.report(type={'WARNING'}, message="変換できる名前が見つかりませんでした")
 		else:
 			self.report(type={'INFO'}, message=str(convert_count) + "個の頂点グループ名をBlender用に変換しました")
+		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class shape_key_transfer_ex(bpy.types.Operator):
