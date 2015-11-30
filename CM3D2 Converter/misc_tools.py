@@ -175,7 +175,10 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 	
 	def execute(self, context):
 		if self.is_first_remove_all:
-			bpy.ops.object.vertex_group_remove(all=True)
+			try:
+				bpy.ops.object.vertex_group_remove(all=True)
+			except:
+				pass
 		
 		target_ob = context.active_object
 		for ob in context.selected_objects:
