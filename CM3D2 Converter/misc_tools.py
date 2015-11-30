@@ -1943,6 +1943,9 @@ class show_cm3d2_converter_preference(bpy.types.Operator):
 		if area and my_info:
 			context.user_preferences.active_section = 'ADDONS'
 			context.window_manager.addon_search = my_info['name']
+			context.window_manager.addon_filter = 'All'
+			if 'COMMUNITY' not in context.window_manager.addon_support:
+				context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY'}
 			if not my_info['show_expanded']:
 				bpy.ops.wm.addon_expand(module=my_info['name'])
 		else:
