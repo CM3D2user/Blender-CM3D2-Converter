@@ -198,3 +198,6 @@ anmファイル置き場	Strage of anm File
 mateファイル置き場	Strage of mate File
 modelファイル置き場	Strage of model File
 ファイル選択時の初期フォルダ	Folder when File Select
+範囲倍率	Range Multiple
+高精度ウェイト転送	Precision Vertex Group Transfer
+最初に全頂点グループを削除	Remove All First

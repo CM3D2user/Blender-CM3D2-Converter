@@ -141,6 +141,122 @@ class quick_vertex_group_transfer(bpy.types.Operator):
 		context.active_object.vertex_groups.active_index = 0
 		return {'FINISHED'}
 
+class precision_vertex_group_transfer(bpy.types.Operator):
+	bl_idname = 'object.precision_vertex_group_transfer'
+	bl_label = "高精度ウェイト転送"
+	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高精度で転送します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=2, min=1.1, max=5, soft_min=1.1, soft_max=5, step=10, precision=2)
+	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		active_ob = context.active_object
+		obs = context.selected_objects
+		if len(obs) != 2:
+			return False
+		for ob in obs:
+			if ob.type != 'MESH':
+				return False
+			if ob.name != active_ob.name:
+				if len(ob.vertex_groups):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
+		self.layout.prop(self, 'extend_range', icon='META_EMPTY')
+		self.layout.prop(self, 'is_remove_empty', icon='X')
+	
+	def execute(self, context):
+		if self.is_first_remove_all:
+			bpy.ops.object.vertex_group_remove(all=True)
+		
+		target_ob = context.active_object
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				source_ob = ob
+				break
+		target_me = target_ob.data
+		source_me = source_ob.data
+		
+		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
+		for vert in source_me.vertices:
+			co = source_ob.matrix_world * vert.co
+			kd.insert(co, vert.index)
+		kd.balance()
+		
+		context.window_manager.progress_begin(0, len(target_me.vertices))
+		near_vert_data = []
+		for vert in target_me.vertices:
+			near_vert_data.append([])
+			
+			target_co = target_ob.matrix_world * vert.co
+			
+			mini_co, mini_index, mini_dist = kd.find(target_co)
+			radius = mini_dist * self.extend_range
+			diff_radius = radius - mini_dist
+			
+			for co, index, dist in kd.find_range(target_co, radius):
+				try:
+					multi = (diff_radius - (dist - mini_dist)) / diff_radius
+				except ZeroDivisionError:
+					multi = 0.0
+				near_vert_data[-1].append((index, multi))
+			
+			context.window_manager.progress_update(vert.index)
+		context.window_manager.progress_end()
+		
+		context.window_manager.progress_begin(0, len(source_ob.vertex_groups) * len(target_me.vertices))
+		progress_count = 0
+		for source_vertex_group in source_ob.vertex_groups:
+			
+			if source_vertex_group.name in target_ob.vertex_groups.keys():
+				target_vertex_group = target_ob.vertex_groups[source_vertex_group.name]
+			else:
+				target_vertex_group = target_ob.vertex_groups.new(source_vertex_group.name)
+			
+			is_waighted = False
+			
+			for target_vert in target_me.vertices:
+				
+				total_weight = 0.0
+				total_multi = 0.0
+				
+				for near_index, near_multi in near_vert_data[target_vert.index]:
+					try:
+						near_weight = source_vertex_group.weight(near_index)
+					except:
+						near_weight = 0.0
+					
+					total_weight += near_weight * near_multi
+					total_multi += near_multi
+				
+				try:
+					average_weight = total_weight / total_multi
+				except ZeroDivisionError:
+					average_weight = 0.0
+				
+				if 0.01 < average_weight:
+					target_vertex_group.add([target_vert.index], average_weight, 'REPLACE')
+					is_waighted = True
+				else:
+					target_vertex_group.remove([target_vert.index])
+				
+				context.window_manager.progress_update(progress_count)
+				progress_count += 1
+			
+			if not is_waighted and self.is_remove_empty:
+				target_ob.vertex_groups.remove(target_vertex_group)
+		
+		target_ob.vertex_groups.active_index = 0
+		return {'FINISHED'}
+
 class blur_vertex_group(bpy.types.Operator):
 	bl_idname = 'object.blur_vertex_group'
 	bl_label = "頂点グループぼかし"
@@ -2005,6 +2121,7 @@ class replace_cm3d2_tex(bpy.types.Operator):
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(quick_vertex_group_transfer.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.precision_vertex_group_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator(blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
