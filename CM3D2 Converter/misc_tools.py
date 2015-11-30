@@ -206,9 +206,9 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			diff_radius = radius - mini_dist
 			
 			for co, index, dist in kd.find_range(target_co, radius):
-				try:
+				if 0 < diff_radius:
 					multi = (diff_radius - (dist - mini_dist)) / diff_radius
-				except ZeroDivisionError:
+				else:
 					multi = 1.0
 				near_vert_data[-1].append((index, multi))
 			
@@ -232,17 +232,20 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 				total_multi = 0.0
 				
 				for near_index, near_multi in near_vert_data[target_vert.index]:
-					try:
-						near_weight = source_vertex_group.weight(near_index)
-					except:
+					
+					for elem in source_me.vertices[near_index].groups:
+						if elem.group == source_vertex_group.index:
+							near_weight = elem.weight
+							break
+					else:
 						near_weight = 0.0
 					
 					total_weight += near_weight * near_multi
 					total_multi += near_multi
 				
-				try:
+				if 0 < total_multi:
 					average_weight = total_weight / total_multi
-				except ZeroDivisionError:
+				else:
 					average_weight = 0.0
 				
 				if 0.01 < average_weight:
