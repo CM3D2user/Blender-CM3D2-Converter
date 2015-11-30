@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 37),
+	"version" : (0, 39),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -80,21 +80,21 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	
 	def draw(self, context):
 		self.layout.label(text="ここの設定は「ユーザー設定の保存」ボタンを押すまで保存されていません", icon='QUESTION')
-		self.layout.prop(self, 'cm3d2_path', icon='FILE_FOLDER')
+		self.layout.prop(self, 'cm3d2_path', icon_value=common.preview_collections['main']['KISS'].icon_id)
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
 		box.prop(self, 'scale', icon='MAN_SCALE')
-		box.prop(self, 'model_default_path', icon='FILESEL', text="選択時の初期位置")
+		box.prop(self, 'model_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
 		box.label(text="anmファイル", icon='POSE_HLT')
-		box.prop(self, 'anm_default_path', icon='FILESEL', text="選択時の初期位置")
+		box.prop(self, 'anm_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
 		box.label(text="texファイル", icon='FILE_IMAGE')
-		box.prop(self, 'tex_default_path', icon='FILESEL', text="選択時の初期位置")
+		box.prop(self, 'tex_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
 		box.label(text="mateファイル", icon='MATERIAL')
-		box.prop(self, 'mate_default_path', icon='FILESEL', text="選択時の初期位置")
+		box.prop(self, 'mate_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
 		box.label(text="texファイル置き場", icon='BORDERMOVE')
 		box.prop(self, 'default_tex_path0', icon='TEXTURE', text="その1")
