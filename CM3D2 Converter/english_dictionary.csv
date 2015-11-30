@@ -26,7 +26,7 @@
 減少のみ	Subtract Only
 トゥーン	Toon
 モザイク	Mosaic
-ご主人様	Master
+ご主人様	Man
 貼り付け	Paste
 内部パス	In Path
 設定値名	Value Name
@@ -170,9 +170,9 @@ texインポート時のデフォルトパス	Default Path of tex Import
 CM3D2 Converterを更新	Update CM3D2 Converter
 ウェイト0.0は頂点グループから除外	Remove Weight 0.0
 変換できる名前が見つかりませんでした	Not Found Convertable Name
-インポート時のメッシュ等の拡大率です	Scale of Mesh
+インポート時のメッシュ等の拡大率です	Scale of Meshes
 ボーンを分かりやすい向きに変更します	Order Bone Directions
-バックアップの拡張子 (空欄で無効)	Backup Ext (Empty is Disable)
+バックアップの拡張子 (空欄で無効)	Backup Extension (Disable if Empty)
 anmエクスポート時のデフォルトパス	Default Path of anm Export
 texエクスポート時のデフォルトパス	Default Path of tex Export
 mateインポート時のデフォルトパス	Default Path of mate Export
@@ -192,3 +192,4 @@ model名:	Model Name:
 頂点グループ名を CM3D2 → Blender	Vertex Group Names CM3D2 → Blender
 頂点グループ名を Blender → CM3D2	Vertex Group Names Blender → CM3D2
 Software\KISS\カスタムメイド3D2	Software\KISS\カスタムメイド3D2
+カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います	This is done import / export of dedicated file for the CustomMaid3D2

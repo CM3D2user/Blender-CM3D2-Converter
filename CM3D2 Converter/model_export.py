@@ -668,7 +668,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.close()
 		context.window_manager.progress_update(10)
 		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message="modelのエクスポートが完了しました、%s秒掛かりました" % str(round(diff_time, 1)))
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
+		self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
 		return {'FINISHED'}
 
 # メニューを登録する関数
