@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 31),
+	"version" : (0, 33),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -108,7 +108,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 # 英訳辞書を作成
 def get_english_dictionary():
 	try:
-		import codecs
+		import re, codecs
 		
 		addon_dir = os.path.dirname(__file__)
 		file_path = os.path.join(addon_dir, "english_dictionary.csv")
@@ -116,7 +116,7 @@ def get_english_dictionary():
 		file = codecs.open(file_path, 'r', 'utf-8')
 		lines = []
 		for line in file:
-			line = common.line_trim(line)
+			line = re.sub(r'\r?\n$', "", line)
 			if line:
 				lines.append(line)
 		
