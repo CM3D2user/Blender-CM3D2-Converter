@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 35),
+	"version" : (0, 36),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -57,15 +57,19 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
 	scale = bpy.props.FloatProperty(name="倍率", description="Blenderでモデルを扱うときの拡大率", default=5, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
+	model_default_path = bpy.props.StringProperty(name="modelファイル置き場", subtype='DIR_PATH', description="設定すれば、modelを扱う時は必ずここからファイル選択を始めます")
 	model_import_path = bpy.props.StringProperty(name="modelインポート時のデフォルトパス", subtype='FILE_PATH', description="modelインポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="modelエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	anm_default_path = bpy.props.StringProperty(name="anmファイル置き場", subtype='DIR_PATH', description="設定すれば、anmを扱う時は必ずここからファイル選択を始めます")
 	anm_import_path = bpy.props.StringProperty(name="anmインポート時のデフォルトパス", subtype='FILE_PATH', description="anmインポート時に最初はここが表示されます、インポート毎に保存されます")
 	anm_export_path = bpy.props.StringProperty(name="anmエクスポート時のデフォルトパス", subtype='FILE_PATH', description="anmエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	tex_default_path = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="設定すれば、texを扱う時は必ずここからファイル選択を始めます")
 	tex_import_path = bpy.props.StringProperty(name="texインポート時のデフォルトパス", subtype='FILE_PATH', description="texインポート時に最初はここが表示されます、インポート毎に保存されます")
 	tex_export_path = bpy.props.StringProperty(name="texエクスポート時のデフォルトパス", subtype='FILE_PATH', description="texエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	mate_default_path = bpy.props.StringProperty(name="mateファイル置き場", subtype='DIR_PATH', description="設定すれば、mateを扱う時は必ずここからファイル選択を始めます")
 	mate_import_path = bpy.props.StringProperty(name="mateインポート時のデフォルトパス", subtype='FILE_PATH', description="mateインポート時に最初はここが表示されます、インポート毎に保存されます")
 	mate_export_path = bpy.props.StringProperty(name="mateエクスポート時のデフォルトパス", subtype='FILE_PATH', description="mateエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
@@ -81,20 +85,16 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
 		box.prop(self, 'scale', icon='MAN_SCALE')
-		box.prop(self, 'model_import_path', icon='IMPORT', text="インポート時デフォルトパス")
-		box.prop(self, 'model_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box.prop(self, 'model_default_path', icon='FILESEL', text="選択時の初期位置")
 		box = self.layout.box()
 		box.label(text="anmファイル", icon='POSE_HLT')
-		box.prop(self, 'anm_import_path', icon='IMPORT', text="インポート時デフォルトパス")
-		box.prop(self, 'anm_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box.prop(self, 'anm_default_path', icon='FILESEL', text="選択時の初期位置")
 		box = self.layout.box()
 		box.label(text="texファイル", icon='FILE_IMAGE')
-		box.prop(self, 'tex_import_path', icon='IMPORT', text="インポート時デフォルトパス")
-		box.prop(self, 'tex_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box.prop(self, 'tex_default_path', icon='FILESEL', text="選択時の初期位置")
 		box = self.layout.box()
 		box.label(text="mateファイル", icon='MATERIAL')
-		box.prop(self, 'mate_import_path', icon='IMPORT', text="インポート時デフォルトパス")
-		box.prop(self, 'mate_export_path', icon='EXPORT', text="エクスポート時デフォルトパス")
+		box.prop(self, 'mate_default_path', icon='FILESEL', text="選択時の初期位置")
 		box = self.layout.box()
 		box.label(text="texファイル置き場", icon='BORDERMOVE')
 		box.prop(self, 'default_tex_path0', icon='TEXTURE', text="その1")

@@ -127,7 +127,10 @@ class import_cm3d2_mate_text(bpy.types.Operator):
 		return True
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(common.preferences().mate_import_path, "", "mate")
+		if common.preferences().mate_default_path:
+			self.filepath = common.default_cm3d2_dir(common.preferences().mate_default_path, "", "mate")
+		else:
+			self.filepath = common.default_cm3d2_dir(common.preferences().mate_import_path, "", "mate")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	

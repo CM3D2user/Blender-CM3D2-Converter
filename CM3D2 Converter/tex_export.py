@@ -28,7 +28,10 @@ class export_cm3d2_tex(bpy.types.Operator):
 		img = context.edit_image
 		if img.filepath:
 			common.preferences().tex_export_path = img.filepath
-		self.filepath = common.default_cm3d2_dir(common.preferences().tex_export_path, common.remove_serial_number(img.name), "tex")
+		if common.preferences().tex_default_path:
+			self.filepath = common.default_cm3d2_dir(common.preferences().tex_default_path, common.remove_serial_number(img.name), "tex")
+		else:
+			self.filepath = common.default_cm3d2_dir(common.preferences().tex_export_path, common.remove_serial_number(img.name), "tex")
 		self.is_backup = bool(common.preferences().backup_ext)
 		if 'cm3d2_path' in img.keys():
 			self.path = img['cm3d2_path']

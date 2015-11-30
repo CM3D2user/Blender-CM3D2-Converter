@@ -35,7 +35,10 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアのカスタムプロパティ", default=True, description="アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます")
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(common.preferences().model_import_path, "", "model")
+		if common.preferences().model_default_path:
+			self.filepath = common.default_cm3d2_dir(common.preferences().model_default_path, "", "model")
+		else:
+			self.filepath = common.default_cm3d2_dir(common.preferences().model_import_path, "", "model")
 		self.scale = common.preferences().scale
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}

@@ -28,7 +28,10 @@ class export_cm3d2_mate(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		mate = context.material
-		self.filepath = common.default_cm3d2_dir(common.preferences().mate_export_path, mate.name.lower(), "mate")
+		if common.preferences().mate_default_path:
+			self.filepath = common.default_cm3d2_dir(common.preferences().mate_default_path, mate.name.lower(), "mate")
+		else:
+			self.filepath = common.default_cm3d2_dir(common.preferences().mate_export_path, mate.name.lower(), "mate")
 		self.is_backup = bool(common.preferences().backup_ext)
 		self.name1 = common.remove_serial_number(mate.name.lower())
 		self.name2 = common.remove_serial_number(mate.name)

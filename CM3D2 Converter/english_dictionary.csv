@@ -193,3 +193,7 @@ model名:	Model Name:
 頂点グループ名を Blender → CM3D2	Vertex Group Names Blender → CM3D2
 Software\KISS\カスタムメイド3D2	Software\KISS\カスタムメイド3D2
 カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います	This is done import / export of dedicated file for the CustomMaid3D2
+選択時の初期位置	Selection First Dir
+anmファイル置き場	Strage of anm File
+mateファイル置き場	Strage of mate File
+modelファイル置き場	Strage of model File

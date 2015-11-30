@@ -108,7 +108,10 @@ class export_cm3d2_model(bpy.types.Operator):
 								break
 		
 		# エクスポート時のデフォルトパスを取得
-		self.filepath = common.default_cm3d2_dir(common.preferences().model_export_path, self.model_name, "model")
+		if common.preferences().model_default_path:
+			self.filepath = common.default_cm3d2_dir(common.preferences().model_default_path, self.model_name, "model")
+		else:
+			self.filepath = common.default_cm3d2_dir(common.preferences().model_export_path, self.model_name, "model")
 		
 		# バックアップ関係
 		self.is_backup = bool(common.preferences().backup_ext)

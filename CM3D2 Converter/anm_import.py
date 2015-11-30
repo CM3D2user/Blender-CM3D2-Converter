@@ -21,7 +21,10 @@ class import_cm3d2_anm(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
-		self.filepath = common.default_cm3d2_dir(common.preferences().anm_import_path, "", "anm")
+		if common.preferences().anm_default_path:
+			self.filepath = common.default_cm3d2_dir(common.preferences().anm_default_path, "", "anm")
+		else:
+			self.filepath = common.default_cm3d2_dir(common.preferences().anm_import_path, "", "anm")
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
