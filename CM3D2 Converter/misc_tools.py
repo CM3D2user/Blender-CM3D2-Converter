@@ -209,7 +209,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 				try:
 					multi = (diff_radius - (dist - mini_dist)) / diff_radius
 				except ZeroDivisionError:
-					multi = 0.0
+					multi = 1.0
 				near_vert_data[-1].append((index, multi))
 			
 			context.window_manager.progress_update(vert.index)
