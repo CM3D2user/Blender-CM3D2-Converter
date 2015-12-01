@@ -195,6 +195,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		kd.balance()
 		
 		context.window_manager.progress_begin(0, len(target_me.vertices))
+		progress_reduce = len(target_me.vertices) // 200 + 1
 		near_vert_data = []
 		near_vert_multi_total = []
 		for vert in target_me.vertices:
@@ -216,12 +217,11 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 				multi_total += multi
 			near_vert_multi_total.append(multi_total)
 			
-			if vert.index % 10 == 0:
+			if vert.index % progress_reduce == 0:
 				context.window_manager.progress_update(vert.index)
 		context.window_manager.progress_end()
 		
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
-		progress_count = 0
 		for source_vertex_group in source_ob.vertex_groups:
 			
 			if source_vertex_group.name in target_ob.vertex_groups.keys():
@@ -258,8 +258,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 					if not self.is_first_remove_all:
 						target_vertex_group.remove([target_vert.index])
 				
-			context.window_manager.progress_update(progress_count)
-			progress_count += 1
+			context.window_manager.progress_update(source_vertex_group.index)
 			
 			if not is_waighted and self.is_remove_empty:
 				target_ob.vertex_groups.remove(target_vertex_group)
@@ -389,6 +388,71 @@ class blur_vertex_group(bpy.types.Operator):
 		bm.free()
 		bpy.ops.object.mode_set(mode=pre_mode)
 		context.window_manager.progress_end()
+		return {'FINISHED'}
+
+class multiply_vertex_group(bpy.types.Operator):
+	bl_idname = 'object.multiply_vertex_group'
+	bl_label = "頂点グループを拡大/縮小"
+	bl_description = "頂点グループに数値を掛け算して、影響を増減させます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	value = bpy.props.FloatProperty(name="掛ける数", default=1.1, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=2)
+	is_normalize = bpy.props.BoolProperty(name="他頂点グループも調節", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				return bool(ob.vertex_groups.active)
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'value')
+		self.layout.prop(self, 'is_normalize')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		vertex_group = ob.vertex_groups.active
+		
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		for vert in me.vertices:
+			
+			old_weight = -1
+			other_weight_total = 0.0
+			for elem in vert.groups:
+				if elem.group == vertex_group.index:
+					old_weight = elem.weight
+				else:
+					other_weight_total += elem.weight
+			if old_weight == -1:
+				continue
+			
+			new_weight = old_weight * self.value
+			vertex_group.add([vert.index], new_weight, 'REPLACE')
+			
+			if self.is_normalize:
+				
+				diff_weight = new_weight - old_weight
+				
+				new_other_weight_total = other_weight_total - diff_weight
+				if 0 < other_weight_total:
+					other_weight_multi = new_other_weight_total / other_weight_total
+				else:
+					other_weight_multi = 0.0
+				
+				for elem in vert.groups:
+					if elem.group != vertex_group.index:
+						vg = ob.vertex_groups[elem.group]
+						vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
+		
+		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
 class radius_blur_vertex_group(bpy.types.Operator):
@@ -2134,6 +2198,8 @@ def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(quick_vertex_group_transfer.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator('object.precision_vertex_group_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.separator()
+	self.layout.operator('object.multiply_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator(blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
