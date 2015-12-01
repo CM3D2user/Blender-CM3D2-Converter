@@ -78,7 +78,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		start_time = time.time()
 		
 		common.preferences().model_import_path = self.filepath
-		context.window_manager.progress_begin(0, 100)
+		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
 		
 		try:
@@ -531,7 +531,8 @@ class import_cm3d2_model(bpy.types.Operator):
 						 if comparison_data[i] in comparison_data[i+1:]:
 						 	vert.select = True
 					progress_count += progress_plus_value
-					context.window_manager.progress_update(progress_count)
+					if i % 10 == 0:
+						context.window_manager.progress_update(progress_count)
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
 				bpy.ops.object.mode_set(mode='OBJECT')

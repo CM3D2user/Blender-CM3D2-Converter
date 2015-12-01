@@ -148,7 +148,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not self.is_batch:
 			common.preferences().model_export_path = self.filepath
 		
-		context.window_manager.progress_begin(0, 100)
+		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
 		
 		res = self.precheck(context)
@@ -392,7 +392,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		progress_count = 6.0
 		for vert in me.vertices:
 			progress_count += progress_plus_value
-			context.window_manager.progress_update(progress_count)
+			if vert.index % 10 == 0:
+				context.window_manager.progress_update(progress_count)
 			
 			vgs = []
 			face_indexs = []
@@ -490,7 +491,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			faces2 = []
 			for face in bm.faces:
 				progress_count += progress_plus_value
-				context.window_manager.progress_update(progress_count)
+				if face.index % 10 == 0:
+					context.window_manager.progress_update(progress_count)
 				if face.material_index != mate_index:
 					continue
 				if len(face.verts) == 3:

@@ -216,7 +216,8 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 				multi_total += multi
 			near_vert_multi_total.append(multi_total)
 			
-			context.window_manager.progress_update(vert.index)
+			if vert.index % 10 == 0:
+				context.window_manager.progress_update(vert.index)
 		context.window_manager.progress_end()
 		
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
