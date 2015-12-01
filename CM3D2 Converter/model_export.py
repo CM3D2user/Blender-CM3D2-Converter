@@ -330,10 +330,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		for bone in bone_data:
 			common.write_str(file, bone['name'])
 			file.write(struct.pack('<b', bone['unknown']))
-		context.window_manager.progress_update(3.1)
+		context.window_manager.progress_update(3.3)
 		for bone in bone_data:
 			file.write(struct.pack('<i', bone['parent_index']))
-		context.window_manager.progress_update(3.2)
+		context.window_manager.progress_update(3.7)
 		for bone in bone_data:
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
@@ -368,11 +368,11 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.write(struct.pack('<i', len(local_bone_data)))
 		for bone in local_bone_data:
 			common.write_str(file, bone['name'])
-		context.window_manager.progress_update(5.1)
+		context.window_manager.progress_update(5.3)
 		for bone in local_bone_data:
 			for f in bone['matrix']:
 				file.write(struct.pack('<f', f))
-		context.window_manager.progress_update(5.2)
+		context.window_manager.progress_update(5.7)
 		
 		# 頂点情報を書き出し
 		for i, vert in enumerate(bm.verts):
