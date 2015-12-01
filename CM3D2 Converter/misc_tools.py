@@ -174,12 +174,6 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
-		if self.is_first_remove_all:
-			try:
-				bpy.ops.object.vertex_group_remove(all=True)
-			except:
-				pass
-		
 		target_ob = context.active_object
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
@@ -187,6 +181,10 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 				break
 		target_me = target_ob.data
 		source_me = source_ob.data
+		
+		if self.is_first_remove_all:
+			if len(target_ob.vertex_groups):
+				bpy.ops.object.vertex_group_remove(all=True)
 		
 		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
 		for vert in source_me.vertices:
@@ -196,6 +194,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		
 		context.window_manager.progress_begin(0, len(target_me.vertices))
 		near_vert_data = []
+		near_vert_multi_total = []
 		for vert in target_me.vertices:
 			near_vert_data.append([])
 			
@@ -205,12 +204,15 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			radius = mini_dist * self.extend_range
 			diff_radius = radius - mini_dist
 			
+			multi_total = 0.0
 			for co, index, dist in kd.find_range(target_co, radius):
 				if 0 < diff_radius:
 					multi = (diff_radius - (dist - mini_dist)) / diff_radius
 				else:
 					multi = 1.0
 				near_vert_data[-1].append((index, multi))
+				multi_total += multi
+			near_vert_multi_total.append(multi_total)
 			
 			context.window_manager.progress_update(vert.index)
 		context.window_manager.progress_end()
@@ -229,7 +231,6 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			for target_vert in target_me.vertices:
 				
 				total_weight = 0.0
-				total_multi = 0.0
 				
 				for near_index, near_multi in near_vert_data[target_vert.index]:
 					
@@ -241,10 +242,9 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 						near_weight = 0.0
 					
 					total_weight += near_weight * near_multi
-					total_multi += near_multi
 				
-				if 0 < total_multi:
-					average_weight = total_weight / total_multi
+				if 0 < near_vert_multi_total[target_vert.index]:
+					average_weight = total_weight / near_vert_multi_total[target_vert.index]
 				else:
 					average_weight = 0.0
 				
