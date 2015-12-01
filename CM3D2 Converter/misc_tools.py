@@ -411,8 +411,8 @@ class multiply_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'value')
-		self.layout.prop(self, 'is_normalize')
+		self.layout.prop(self, 'value', icon='X')
+		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
 	def execute(self, context):
 		ob = context.active_object
