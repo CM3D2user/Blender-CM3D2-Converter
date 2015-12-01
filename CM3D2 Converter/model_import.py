@@ -451,10 +451,10 @@ class import_cm3d2_model(bpy.types.Operator):
 			context.window_manager.progress_update(6)
 			
 			# マテリアル追加
-			progress_plus_value = 0.0
+			progress_count_total = 0.0
 			for data in material_data:
-				progress_plus_value += len(data['data'])
-			progress_plus_value = 1.0 / progress_plus_value
+				progress_count_total += len(data['data'])
+			progress_plus_value = 1.0 / progress_count_total
 			progress_count = 6.0
 			
 			face_seek = 0
@@ -524,6 +524,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_remove_doubles:
 				progress_plus_value = 1.0 / len(me.vertices)
 				progress_count = 7.0
+				progress_reduce = len(me.vertices) // 200 + 1
 				for i, vert in enumerate(me.vertices):
 					if comparison_data[i] in comparison_data[:i]:
 						vert.select = True
@@ -531,7 +532,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						 if comparison_data[i] in comparison_data[i+1:]:
 						 	vert.select = True
 					progress_count += progress_plus_value
-					if i % 10 == 0:
+					if i % progress_reduce == 0:
 						context.window_manager.progress_update(progress_count)
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)

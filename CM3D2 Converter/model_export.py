@@ -390,9 +390,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.write(struct.pack('<i', 0))
 		progress_plus_value = 1.0 / len(me.vertices)
 		progress_count = 6.0
+		progress_reduce = len(me.vertices) // 200 + 1
 		for vert in me.vertices:
 			progress_count += progress_plus_value
-			if vert.index % 10 == 0:
+			if vert.index % progress_reduce == 0:
 				context.window_manager.progress_update(progress_count)
 			
 			vgs = []
@@ -485,13 +486,14 @@ class export_cm3d2_model(bpy.types.Operator):
 		error_face_count = 0
 		progress_plus_value = 1.0 / (len(ob.material_slots) * len(bm.faces))
 		progress_count = 7.0
+		progress_reduce = (len(ob.material_slots) * len(bm.faces)) // 200 + 1
 		for mate_index, slot in enumerate(ob.material_slots):
 			face_count = 0
 			faces = []
 			faces2 = []
 			for face in bm.faces:
 				progress_count += progress_plus_value
-				if face.index % 10 == 0:
+				if face.index % progress_reduce == 0:
 					context.window_manager.progress_update(progress_count)
 				if face.material_index != mate_index:
 					continue
