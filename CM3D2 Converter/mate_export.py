@@ -149,10 +149,11 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 	def invoke(self, context, event):
 		txt = context.edit_text
 		lines = txt.as_string().split('\n')
+		mate_name = lines[1]
 		if common.preferences().mate_default_path:
-			self.filepath = common.default_cm3d2_dir(common.preferences().mate_default_path, mate.name.lower(), "mate")
+			self.filepath = common.default_cm3d2_dir(common.preferences().mate_default_path, mate_name.lower(), "mate")
 		else:
-			self.filepath = common.default_cm3d2_dir(common.preferences().mate_export_path, mate.name.lower(), "mate")
+			self.filepath = common.default_cm3d2_dir(common.preferences().mate_export_path, mate_name.lower(), "mate")
 		try:
 			self.version = int(lines[0])
 		except:
