@@ -219,7 +219,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			context.window_manager.progress_update(vert.index)
 		context.window_manager.progress_end()
 		
-		context.window_manager.progress_begin(0, len(source_ob.vertex_groups) * len(target_me.vertices))
+		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
 		progress_count = 0
 		for source_vertex_group in source_ob.vertex_groups:
 			
@@ -257,8 +257,8 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 					if not self.is_first_remove_all:
 						target_vertex_group.remove([target_vert.index])
 				
-				context.window_manager.progress_update(progress_count)
-				progress_count += 1
+			context.window_manager.progress_update(progress_count)
+			progress_count += 1
 			
 			if not is_waighted and self.is_remove_empty:
 				target_ob.vertex_groups.remove(target_vertex_group)
