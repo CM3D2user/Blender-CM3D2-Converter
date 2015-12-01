@@ -1,4 +1,4 @@
-import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request, datetime
+import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request, datetime, time
 from . import common
 
 # アドオンアップデート処理
@@ -174,6 +174,8 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
+		start_time = time.time()
+		
 		target_ob = context.active_object
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
@@ -252,7 +254,8 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 					target_vertex_group.add([target_vert.index], average_weight, 'REPLACE')
 					is_waighted = True
 				else:
-					target_vertex_group.remove([target_vert.index])
+					if not self.is_first_remove_all:
+						target_vertex_group.remove([target_vert.index])
 				
 				context.window_manager.progress_update(progress_count)
 				progress_count += 1
@@ -261,6 +264,8 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 				target_ob.vertex_groups.remove(target_vertex_group)
 		
 		target_ob.vertex_groups.active_index = 0
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
 class blur_vertex_group(bpy.types.Operator):
