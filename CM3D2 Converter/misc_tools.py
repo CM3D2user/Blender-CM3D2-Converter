@@ -225,6 +225,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		context.window_manager.progress_end()
 		
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
+		context.window_manager.progress_update(0)
 		for source_vertex_group in source_ob.vertex_groups:
 			
 			if source_vertex_group.name in target_ob.vertex_groups.keys():
@@ -986,6 +987,7 @@ class precision_shape_key_transfer(bpy.types.Operator):
 		is_shapeds = {}
 		relative_keys = []
 		context.window_manager.progress_begin(0, len(source_me.shape_keys.key_blocks))
+		context.window_manager.progress_update(0)
 		for source_shape_key_index, source_shape_key in enumerate(source_me.shape_keys.key_blocks):
 			
 			if target_me.shape_keys:
