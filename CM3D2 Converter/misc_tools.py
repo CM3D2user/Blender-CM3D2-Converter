@@ -421,7 +421,7 @@ class multiply_vertex_group(bpy.types.Operator):
 	bl_description = "頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	value = bpy.props.FloatProperty(name="掛ける数", default=1.1, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=2)
+	value = bpy.props.FloatProperty(name="倍率", default=1.1, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=2)
 	is_normalize = bpy.props.BoolProperty(name="他頂点グループも調節", default=True)
 	
 	@classmethod
@@ -436,7 +436,7 @@ class multiply_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'value', icon='X')
+		self.layout.prop(self, 'value', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
 	def execute(self, context):
@@ -958,8 +958,8 @@ class precision_shape_key_transfer(bpy.types.Operator):
 		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
-class scale_shape_key(bpy.types.Operator):
-	bl_idname = 'object.scale_shape_key'
+class multiply_shape_key(bpy.types.Operator):
+	bl_idname = 'object.multiply_shape_key'
 	bl_label = "シェイプキーの変形に乗算"
 	bl_description = "シェイプキーの変形に数値を乗算し、変形の強度を増減させます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -969,7 +969,7 @@ class scale_shape_key(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
+	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	
 	@classmethod
 	def poll(cls, context):
@@ -984,8 +984,8 @@ class scale_shape_key(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'multi')
-		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'multi', icon='ARROW_LEFTRIGHT')
+		self.layout.prop(self, 'mode', icon='ACTION')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -2284,7 +2284,7 @@ def MESH_MT_shape_key_specials(self, context):
 	self.layout.operator('object.quick_shape_key_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator('object.precision_shape_key_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
-	self.layout.operator(scale_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.multiply_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator(blur_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator(radius_blur_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
