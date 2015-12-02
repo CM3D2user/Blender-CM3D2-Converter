@@ -57,93 +57,110 @@ class update_cm3d2_converter(bpy.types.Operator):
 class quick_vertex_group_transfer(bpy.types.Operator):
 	bl_idname = 'object.quick_vertex_group_transfer'
 	bl_label = "クイック・ウェイト転送"
-	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを転送します"
+	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	vertex_group_remove_all = bpy.props.BoolProperty(name="最初に頂点グループ全削除", default=True)
-	vertex_group_clean = bpy.props.BoolProperty(name="ウェイト0.0の頂点はグループから除外", default=True)
-	vertex_group_delete = bpy.props.BoolProperty(name="割り当ての無い頂点グループ削除", default=True)
+	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
 	
 	@classmethod
 	def poll(cls, context):
-		target_ob = context.active_object
-		if target_ob.type != 'MESH':
-			return False
+		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) < 2:
+		if len(obs) != 2:
 			return False
-		source_obs = []
 		for ob in obs:
-			if ob.type=='MESH' and target_ob.name!=ob.name:
-				source_obs.append(ob)
-		if not len(source_obs):
-			return False
-		for ob in source_obs:
-			if len(ob.vertex_groups):
-				return True
+			if ob.type != 'MESH':
+				return False
+			if ob.name != active_ob.name:
+				if len(ob.vertex_groups):
+					return True
 		return False
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'vertex_group_remove_all', icon='X')
-		self.layout.prop(self, 'vertex_group_clean', icon='STICKY_UVS_LOC')
-		self.layout.prop(self, 'vertex_group_delete', icon='DISCLOSURE_TRI_DOWN')
+		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
+		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
+		start_time = time.time()
+		
 		target_ob = context.active_object
-		source_obs = []
 		for ob in context.selected_objects:
-			if ob.type=='MESH' and target_ob.name!=ob.name:
-				source_obs.append(ob)
+			if ob.name != target_ob.name:
+				source_ob = ob
+				break
+		target_me = target_ob.data
+		source_me = source_ob.data
 		
-		if len(target_ob.vertex_groups) and self.vertex_group_remove_all:
-			bpy.ops.object.vertex_group_remove(all=True)
+		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		is_vert, is_edge, is_face = 0, 0, 0
-		for ob in source_obs:
-			me = ob.data
-			if len(me.vertices):
-				is_vert += 1
-			if len(me.edges):
-				is_edge += 1
-			if len(me.polygons):
-				is_face += 1
-		if is_face == len(source_obs):
-			vert_mapping = 'POLYINTERP_NEAREST'
-		elif is_edge == len(source_obs):
-			vert_mapping = 'EDGEINTERP_NEAREST'
-		elif is_vert == len(source_obs):
-			vert_mapping = 'NEAREST'
-		else:
-			self.report(type={'ERROR'}, message="頂点すらないメッシュを選択しています、中止します")
-			return {'CANCELLED'}
+		if self.is_first_remove_all:
+			if len(target_ob.vertex_groups):
+				bpy.ops.object.vertex_group_remove(all=True)
 		
-		try:
-			bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=vert_mapping, layers_select_src='ALL', layers_select_dst='NAME')
-		except:
-			bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping='NEAREST', layers_select_src='NAME', layers_select_dst='ALL')
-			self.report(type={'INFO'}, message="通常の処理に失敗したので、面ではなく頂点から転送しました")
+		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
+		for vert in source_me.vertices:
+			co = source_ob.matrix_world * vert.co
+			kd.insert(co, vert.index)
+		kd.balance()
 		
-		if self.vertex_group_clean:
-			bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0, keep_single=False)
-		if self.vertex_group_delete:
-			for vertex_group in target_ob.vertex_groups:
-				for vert in target_ob.data.vertices:
-					try:
-						if vertex_group.weight(vert.index) > 0.0:
-							break
-					except:
-						pass
+		near_vert_indexs = []
+		for vert in target_me.vertices:
+			target_co = target_ob.matrix_world * vert.co
+			near_index = kd.find(target_co)[1]
+			near_vert_indexs.append(near_index)
+		
+		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
+		for source_vertex_group in source_ob.vertex_groups:
+			
+			if source_vertex_group.name in target_ob.vertex_groups.keys():
+				target_vertex_group = target_ob.vertex_groups[source_vertex_group.name]
+			else:
+				target_vertex_group = target_ob.vertex_groups.new(source_vertex_group.name)
+			
+			is_waighted = False
+			
+			source_weights = []
+			for source_vert in source_me.vertices:
+				for elem in source_vert.groups:
+					if elem.group == source_vertex_group.index:
+						source_weights.append(elem.weight)
+						break
 				else:
-					target_ob.vertex_groups.remove(vertex_group)
-		context.active_object.vertex_groups.active_index = 0
+					source_weights.append(0.0)
+			
+			for target_vert in target_me.vertices:
+				
+				near_vert_index = near_vert_indexs[target_vert.index]
+				near_weight = source_weights[near_vert_index]
+				
+				if 0.01 < near_weight:
+					target_vertex_group.add([target_vert.index], near_weight, 'REPLACE')
+					is_waighted = True
+				else:
+					if not self.is_first_remove_all:
+						target_vertex_group.remove([target_vert.index])
+			
+			context.window_manager.progress_update(source_vertex_group.index)
+			
+			if not is_waighted and self.is_remove_empty:
+				target_ob.vertex_groups.remove(target_vertex_group)
+		context.window_manager.progress_end()
+		
+		target_ob.vertex_groups.active_index = 0
+		bpy.ops.object.mode_set(mode=pre_mode)
+		
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
 class precision_vertex_group_transfer(bpy.types.Operator):
 	bl_idname = 'object.precision_vertex_group_transfer'
-	bl_label = "高精度ウェイト転送"
+	bl_label = "高精度・ウェイト転送"
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高精度で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
@@ -2357,7 +2374,7 @@ class replace_cm3d2_tex(bpy.types.Operator):
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
-	self.layout.operator(quick_vertex_group_transfer.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.quick_vertex_group_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator('object.precision_vertex_group_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator('object.multiply_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
