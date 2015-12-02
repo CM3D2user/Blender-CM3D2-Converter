@@ -225,7 +225,6 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		context.window_manager.progress_end()
 		
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
-		context.window_manager.progress_update(0)
 		for source_vertex_group in source_ob.vertex_groups:
 			
 			if source_vertex_group.name in target_ob.vertex_groups.keys():
@@ -235,6 +234,15 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			
 			is_waighted = False
 			
+			source_weights = []
+			for source_vert in source_me.vertices:
+				for elem in source_vert.groups:
+					if elem.group == source_vertex_group.index:
+						source_weights.append(elem.weight)
+						break
+				else:
+					source_weights.append(0.0)
+			
 			for target_vert in target_me.vertices:
 				
 				if 0 < near_vert_multi_total[target_vert.index]:
@@ -242,15 +250,7 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 					total_weight = 0.0
 					
 					for near_index, near_multi in near_vert_data[target_vert.index]:
-						
-						for elem in source_me.vertices[near_index].groups:
-							if elem.group == source_vertex_group.index:
-								near_weight = elem.weight
-								break
-						else:
-							near_weight = 0.0
-						
-						total_weight += near_weight * near_multi
+						total_weight += source_weights[near_index] * near_multi
 					
 					average_weight = total_weight / near_vert_multi_total[target_vert.index]
 				else:
@@ -1008,6 +1008,12 @@ class precision_shape_key_transfer(bpy.types.Operator):
 			except:
 				pass
 			
+			source_shape_keys = []
+			for source_vert in source_me.vertices:
+				shape_key_co = source_ob.matrix_world * source_shape_key.data[source_vert.index].co * target_ob.matrix_world
+				vert_co = source_ob.matrix_world * source_me.vertices[source_vert.index].co * target_ob.matrix_world
+				source_shape_keys.append(shape_key_co - vert_co)
+			
 			for target_vert in target_me.vertices:
 				
 				if 0 < near_vert_multi_total[target_vert.index]:
@@ -1015,12 +1021,7 @@ class precision_shape_key_transfer(bpy.types.Operator):
 					total_diff_co = mathutils.Vector((0, 0, 0))
 					
 					for near_index, near_multi in near_vert_data[target_vert.index]:
-						
-						shape_key_co = source_ob.matrix_world * source_shape_key.data[near_index].co * target_ob.matrix_world
-						co = source_ob.matrix_world * source_me.vertices[near_index].co * target_ob.matrix_world
-						new_diff_co = shape_key_co - co
-						
-						total_diff_co += new_diff_co * near_multi
+						total_diff_co += source_shape_keys[near_index] * near_multi
 					
 					average_diff_co = total_diff_co / near_vert_multi_total[target_vert.index]
 				
