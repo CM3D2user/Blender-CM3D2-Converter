@@ -236,20 +236,21 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			
 			for target_vert in target_me.vertices:
 				
-				total_weight = 0.0
-				
-				for near_index, near_multi in near_vert_data[target_vert.index]:
-					
-					for elem in source_me.vertices[near_index].groups:
-						if elem.group == source_vertex_group.index:
-							near_weight = elem.weight
-							break
-					else:
-						near_weight = 0.0
-					
-					total_weight += near_weight * near_multi
-				
 				if 0 < near_vert_multi_total[target_vert.index]:
+					
+					total_weight = 0.0
+					
+					for near_index, near_multi in near_vert_data[target_vert.index]:
+						
+						for elem in source_me.vertices[near_index].groups:
+							if elem.group == source_vertex_group.index:
+								near_weight = elem.weight
+								break
+						else:
+							near_weight = 0.0
+						
+						total_weight += near_weight * near_multi
+					
 					average_weight = total_weight / near_vert_multi_total[target_vert.index]
 				else:
 					average_weight = 0.0
@@ -944,8 +945,11 @@ class precision_shape_key_transfer(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_first_remove_all:
-			if target_me.shape_keys:
+			try:
+				target_ob.active_shape_key_index = 1
 				bpy.ops.object.shape_key_remove(all=True)
+			except:
+				pass
 		
 		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
 		for vert in source_me.vertices:
@@ -1004,16 +1008,20 @@ class precision_shape_key_transfer(bpy.types.Operator):
 			
 			for target_vert in target_me.vertices:
 				
-				total_diff_co = mathutils.Vector((0, 0, 0))
-				
-				for near_index, near_multi in near_vert_data[target_vert.index]:
-					
-					new_diff_co = source_shape_key.data[near_index].co - source_me.vertices[near_index].co
-					
-					total_diff_co += new_diff_co * near_multi
-				
 				if 0 < near_vert_multi_total[target_vert.index]:
+					
+					total_diff_co = mathutils.Vector((0, 0, 0))
+					
+					for near_index, near_multi in near_vert_data[target_vert.index]:
+						
+						shape_key_co = source_ob.matrix_world * source_shape_key.data[near_index].co * target_ob.matrix_world
+						co = source_ob.matrix_world * source_me.vertices[near_index].co * target_ob.matrix_world
+						new_diff_co = shape_key_co - co
+						
+						total_diff_co += new_diff_co * near_multi
+					
 					average_diff_co = total_diff_co / near_vert_multi_total[target_vert.index]
+				
 				else:
 					average_diff_co = mathutils.Vector((0, 0, 0))
 				
