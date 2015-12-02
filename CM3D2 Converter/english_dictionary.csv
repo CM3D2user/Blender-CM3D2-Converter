@@ -207,4 +207,8 @@ modelファイル置き場	Strage of model File
 頂点グループを拡大/縮小	Rescale Vertex Group
 最初に全シェイプキーを削除	Remove All First
 変形のないシェイプキーを削除	Remove Non-Shaped Shape Keys
-高精度・ウェイト転送	Precision Shape Key Transfer
+高精度・ウェイト転送	Precision Vertex Group Transfer
+頂点グループに乗算	Multiply Vertex Group
+高精度・シェイプキー転送	Precision Shape Key Transfer
+シェイプキーの変形に乗算	Multiply Shape Key
+クイック・シェイプキー転送	Quick Shape Key Transfer

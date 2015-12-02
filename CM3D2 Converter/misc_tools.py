@@ -417,8 +417,8 @@ class blur_vertex_group(bpy.types.Operator):
 
 class multiply_vertex_group(bpy.types.Operator):
 	bl_idname = 'object.multiply_vertex_group'
-	bl_label = "頂点グループを拡大/縮小"
-	bl_description = "頂点グループに数値を掛け算して、影響を増減させます"
+	bl_label = "頂点グループに乗算"
+	bl_description = "頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	value = bpy.props.FloatProperty(name="掛ける数", default=1.1, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=2)
@@ -960,8 +960,8 @@ class precision_shape_key_transfer(bpy.types.Operator):
 
 class scale_shape_key(bpy.types.Operator):
 	bl_idname = 'object.scale_shape_key'
-	bl_label = "シェイプキーの変形を拡大/縮小"
-	bl_description = "シェイプキーの変形を強力にしたり、もしくは弱くできます"
+	bl_label = "シェイプキーの変形に乗算"
+	bl_description = "シェイプキーの変形に数値を乗算し、変形の強度を増減させます"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	multi = bpy.props.FloatProperty(name="倍率", description="シェイプキーの拡大率です", default=1.1, min=-10, max=10, soft_min=-10, soft_max=10, step=10, precision=2)
