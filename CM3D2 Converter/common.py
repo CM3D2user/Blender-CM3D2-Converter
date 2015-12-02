@@ -107,7 +107,8 @@ def decorate_material(mate, enable=True):
 				img = tex.image
 				if len(img.pixels):
 					if is_colored:
-						mate.diffuse_color = (mathutils.Color(get_image_average_color(img)[:3]) + mate.diffuse_color) / 2
+						color = mathutils.Color(get_image_average_color(img)[:3])
+						mate.diffuse_color = (color*1.5 + mate.diffuse_color*0.5) / 2
 					else:
 						mate.diffuse_color = get_image_average_color(img)[:3]
 						is_colored = True
@@ -116,7 +117,7 @@ def decorate_material(mate, enable=True):
 			if is_colored:
 				color = mathutils.Color(slot.color[:])
 				color.v += 0.5
-				mate.diffuse_color = (color + mate.diffuse_color) / 2
+				mate.diffuse_color = (color*0.5 + mate.diffuse_color*1.5) / 2
 			else:
 				mate.diffuse_color = slot.color[:]
 				mate.diffuse_color.v += 0.5
