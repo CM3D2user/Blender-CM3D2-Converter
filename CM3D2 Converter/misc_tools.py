@@ -590,8 +590,8 @@ class radius_blur_vertex_group(bpy.types.Operator):
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
-class convert_cm3d2_vertex_group_names(bpy.types.Operator):
-	bl_idname = "object.convert_cm3d2_vertex_group_names"
+class decode_cm3d2_vertex_group_names(bpy.types.Operator):
+	bl_idname = "object.decode_cm3d2_vertex_group_names"
 	bl_label = "頂点グループ名をCM3D2用→Blender用に変換"
 	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)をBlenderで左右対称編集できるように変換します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -640,8 +640,8 @@ class convert_cm3d2_vertex_group_names(bpy.types.Operator):
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
-class convert_cm3d2_vertex_group_names_restore(bpy.types.Operator):
-	bl_idname = "object.convert_cm3d2_vertex_group_names_restore"
+class encode_cm3d2_vertex_group_names(bpy.types.Operator):
+	bl_idname = "object.encode_cm3d2_vertex_group_names"
 	bl_label = "頂点グループ名をBlender用→CM3D2用に変換"
 	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)に戻します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1681,8 +1681,8 @@ class paste_material(bpy.types.Operator):
 		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}
 
-class convert_cm3d2_bone_names(bpy.types.Operator):
-	bl_idname = "armature.convert_cm3d2_bone_names"
+class decode_cm3d2_bone_names(bpy.types.Operator):
+	bl_idname = "armature.decode_cm3d2_bone_names"
 	bl_label = "ボーン名をCM3D2用→Blender用に変換"
 	bl_description = "CM3D2で使われてるボーン名をBlenderで左右対称編集できるように変換します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1713,8 +1713,8 @@ class convert_cm3d2_bone_names(bpy.types.Operator):
 			self.report(type={'INFO'}, message="ボーン名をBlender用に変換しました")
 		return {'FINISHED'}
 
-class convert_cm3d2_bone_names_restore(bpy.types.Operator):
-	bl_idname = "armature.convert_cm3d2_bone_names_restore"
+class encode_cm3d2_bone_names(bpy.types.Operator):
+	bl_idname = "armature.encode_cm3d2_bone_names"
 	bl_label = "ボーン名をBlender用→CM3D2用に変換"
 	bl_description = "CM3D2で使われてるボーン名に元に戻します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2274,9 +2274,24 @@ def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.separator()
-	self.layout.operator(convert_cm3d2_vertex_group_names.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id, text="頂点グループ名を CM3D2 → Blender")
-	self.layout.operator(convert_cm3d2_vertex_group_names_restore.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id, text="頂点グループ名を Blender → CM3D2")
+
+# 頂点グループパネルに項目追加
+def DATA_PT_vertex_groups(self, context):
+	ob = context.active_object
+	if ob:
+		if len(ob.vertex_groups) and ob.type == 'MESH':
+			flag = False
+			for vertex_group in ob.vertex_groups:
+				if not flag and re.search(r'[_ ]([rRlL])[_ ]', vertex_group.name):
+					flag = True
+				if not flag and vertex_group.name.count('*') == 1:
+					if re.search(r'\.([rRlL])$', vertex_group.name):
+						flag = True
+				if flag:
+					row = self.layout.row(align=True)
+					row.operator('object.decode_cm3d2_vertex_group_names', icon='BLENDER', text="CM3D2 → Blender")
+					row.operator('object.encode_cm3d2_vertex_group_names', icon_value=common.preview_collections['main']['KISS'].icon_id, text="Blender → CM3D2")
+					break
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
@@ -2360,8 +2375,8 @@ def DATA_PT_context_arm(self, context):
 					col = self.layout.column(align=True)
 					col.label(text="CM3D2用 ボーン名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
 					row = col.row(align=True)
-					row.operator(convert_cm3d2_bone_names.bl_idname, text="CM3D2 → Blender", icon='BLENDER')
-					row.operator(convert_cm3d2_bone_names_restore.bl_idname, text="Blender → CM3D2", icon='POSE_DATA')
+					row.operator('armature.decode_cm3d2_bone_names', text="CM3D2 → Blender", icon='BLENDER')
+					row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon='POSE_DATA')
 					break
 			
 			bone_data_count = 0
