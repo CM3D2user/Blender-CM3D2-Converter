@@ -201,3 +201,9 @@ modelファイル置き場	Strage of model File
 範囲倍率	Range Multiple
 高精度ウェイト転送	Precision Vertex Group Transfer
 最初に全頂点グループを削除	Remove All First
+掛ける数	Multiply Value
+他頂点グループも調節	Regulation Other Vertex Groups
+高精度シェイプキー転送	Precision Shape Key Transfer
+頂点グループを拡大/縮小	Rescale Vertex Group
+最初に全シェイプキーを削除	Remove All First
+変形のないシェイプキーを削除	Remove Non-Shaped Shape Keys

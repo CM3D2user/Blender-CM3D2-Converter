@@ -184,6 +184,9 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 		target_me = target_ob.data
 		source_me = source_ob.data
 		
+		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
 		if self.is_first_remove_all:
 			if len(target_ob.vertex_groups):
 				bpy.ops.object.vertex_group_remove(all=True)
@@ -262,8 +265,11 @@ class precision_vertex_group_transfer(bpy.types.Operator):
 			
 			if not is_waighted and self.is_remove_empty:
 				target_ob.vertex_groups.remove(target_vertex_group)
+		context.window_manager.progress_end()
 		
 		target_ob.vertex_groups.active_index = 0
+		bpy.ops.object.mode_set(mode=pre_mode)
+		
 		diff_time = time.time() - start_time
 		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
@@ -745,14 +751,18 @@ class shape_key_transfer_ex(bpy.types.Operator):
 				bpy.ops.object.shape_key_remove(all=True)
 			except:
 				pass
-		if not target_me.shape_keys:
-			bpy.ops.object.shape_key_add(from_mix=False)
 		
-		for key_block in source_me.shape_keys.key_blocks[1:]:
-			if key_block.name not in target_me.shape_keys.key_blocks.keys():
+		#if not target_me.shape_keys:
+		#	target_ob.shape_key_add(name=source_me.shape_keys.key_blocks[0].name, from_mix=False)
+		
+		for key_block in source_me.shape_keys.key_blocks[:]:
+			if not target_me.shape_keys:
 				target_key_block = target_ob.shape_key_add(name=key_block.name, from_mix=False)
 			else:
-				target_key_block = target_ob.data.shape_keys.key_blocks[key_block.name]
+				if key_block.name not in target_me.shape_keys.key_blocks.keys():
+					target_key_block = target_ob.shape_key_add(name=key_block.name, from_mix=False)
+				else:
+					target_key_block = target_ob.data.shape_keys.key_blocks[key_block.name]
 			
 			is_shaped = False
 			for target_vert in target_me.vertices:
@@ -885,6 +895,146 @@ class shape_key_transfer_ex_radius(bpy.types.Operator):
 				target_ob.shape_key_remove(target_shape)
 		target_ob.active_shape_key_index = 0
 		context.window_manager.progress_end()
+		return {'FINISHED'}
+
+class precision_shape_key_transfer(bpy.types.Operator):
+	bl_idname = 'object.precision_shape_key_transfer'
+	bl_label = "高精度シェイプキー転送"
+	bl_description = "アクティブなメッシュに他の選択メッシュのシェイプキーを高精度で転送します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	is_first_remove_all = bpy.props.BoolProperty(name="最初に全シェイプキーを削除", default=True)
+	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=2, min=1.1, max=5, soft_min=1.1, soft_max=5, step=10, precision=2)
+	is_remove_empty = bpy.props.BoolProperty(name="変形のないシェイプキーを削除", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		active_ob = context.active_object
+		obs = context.selected_objects
+		if len(obs) != 2:
+			return False
+		for ob in obs:
+			if ob.type != 'MESH':
+				return False
+			if ob.name != active_ob.name:
+				if ob.data.shape_keys:
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
+		self.layout.prop(self, 'extend_range', icon='META_EMPTY')
+		self.layout.prop(self, 'is_remove_empty', icon='X')
+	
+	def execute(self, context):
+		start_time = time.time()
+		
+		target_ob = context.active_object
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				source_ob = ob
+				break
+		target_me = target_ob.data
+		source_me = source_ob.data
+		
+		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		if self.is_first_remove_all:
+			if target_me.shape_keys:
+				bpy.ops.object.shape_key_remove(all=True)
+		
+		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
+		for vert in source_me.vertices:
+			co = source_ob.matrix_world * vert.co
+			kd.insert(co, vert.index)
+		kd.balance()
+		
+		context.window_manager.progress_begin(0, len(target_me.vertices))
+		progress_reduce = len(target_me.vertices) // 200 + 1
+		near_vert_data = []
+		near_vert_multi_total = []
+		for vert in target_me.vertices:
+			near_vert_data.append([])
+			
+			target_co = target_ob.matrix_world * vert.co
+			mini_co, mini_index, mini_dist = kd.find(target_co)
+			radius = mini_dist * self.extend_range
+			diff_radius = radius - mini_dist
+			
+			multi_total = 0.0
+			for co, index, dist in kd.find_range(target_co, radius):
+				if 0 < diff_radius:
+					multi = (diff_radius - (dist - mini_dist)) / diff_radius
+				else:
+					multi = 1.0
+				near_vert_data[-1].append((index, multi))
+				multi_total += multi
+			near_vert_multi_total.append(multi_total)
+			
+			if vert.index % progress_reduce == 0:
+				context.window_manager.progress_update(vert.index)
+		context.window_manager.progress_end()
+		
+		is_shapeds = {}
+		relative_keys = []
+		context.window_manager.progress_begin(0, len(source_me.shape_keys.key_blocks))
+		for source_shape_key_index, source_shape_key in enumerate(source_me.shape_keys.key_blocks):
+			
+			if target_me.shape_keys:
+				if source_shape_key.name in target_me.shape_keys.key_blocks.keys():
+					target_shape_key = target_ob.shape_keys.key_blocks[source_shape_key.name]
+				else:
+					target_shape_key = target_ob.shape_key_add(name=source_shape_key.name, from_mix=False)
+			else:
+				target_shape_key = target_ob.shape_key_add(name=source_shape_key.name, from_mix=False)
+			
+			relative_key_name = source_shape_key.relative_key.name
+			if relative_key_name not in relative_keys:
+				relative_keys.append(relative_key_name)
+			is_shapeds[source_shape_key.name] = False
+			
+			try:
+				target_shape_key.relative_key = target_me.shape_keys.key_blocks[relative_key_name]
+			except:
+				pass
+			
+			for target_vert in target_me.vertices:
+				
+				total_diff_co = mathutils.Vector((0, 0, 0))
+				
+				for near_index, near_multi in near_vert_data[target_vert.index]:
+					
+					new_diff_co = source_shape_key.data[near_index].co - source_me.vertices[near_index].co
+					
+					total_diff_co += new_diff_co * near_multi
+				
+				if 0 < near_vert_multi_total[target_vert.index]:
+					average_diff_co = total_diff_co / near_vert_multi_total[target_vert.index]
+				else:
+					average_diff_co = mathutils.Vector((0, 0, 0))
+				
+				target_shape_key.data[target_vert.index].co = target_me.vertices[target_vert.index].co + average_diff_co
+				if 0.01 < average_diff_co.length:
+					is_shapeds[source_shape_key.name] = True
+			
+			context.window_manager.progress_update(source_shape_key_index)
+		context.window_manager.progress_end()
+		
+		if self.is_remove_empty:
+			for source_shape_key_name, is_shaped in is_shapeds.items():
+				if source_shape_key_name not in relative_keys and not is_shaped:
+					target_shape_key = target_me.shape_keys.key_blocks[source_shape_key_name]
+					target_ob.shape_key_remove(target_shape_key)
+		
+		target_ob.active_shape_key_index = 0
+		bpy.ops.object.mode_set(mode=pre_mode)
+		
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
 class scale_shape_key(bpy.types.Operator):
@@ -2212,6 +2362,7 @@ def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator(shape_key_transfer_ex.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator(shape_key_transfer_ex_radius.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.precision_shape_key_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator(scale_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
