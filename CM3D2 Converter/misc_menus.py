@@ -199,7 +199,7 @@ def DATA_PT_modifiers(self, context):
 			if ob.type == 'MESH':
 				me = ob.data
 				if me.shape_keys and len(ob.modifiers):
-					self.layout.operator('wm.open_url', text="モディファイアを適用できない場合", icon_value=common.preview_collections['main']['KISS'].icon_id).url = "https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier"
+					self.layout.operator('wm.url_open', text="モディファイアを適用できない場合", icon_value=common.preview_collections['main']['KISS'].icon_id).url = "https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier"
 
 # テキストヘッダーに項目追加
 def TEXT_HT_header(self, context):
@@ -415,7 +415,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 				
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
-				self.layout.operator('wm.open_url', text=text, icon=icon).url = link
+				self.layout.operator('wm.url_open', text=text, icon=icon).url = link
 				count += 1
 		except TypeError:
 			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')

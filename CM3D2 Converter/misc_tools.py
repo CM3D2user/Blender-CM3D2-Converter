@@ -2092,19 +2092,6 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 		self.report(type={'INFO'}, message="ボーン情報を削除しました")
 		return {'FINISHED'}
 
-class open_url(bpy.types.Operator):
-	bl_idname = 'wm.open_url'
-	bl_label = "URLを開く"
-	bl_description = "URLをブラウザで開きます"
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	url = bpy.props.StringProperty(name="URL")
-	
-	def execute(self, context):
-		import webbrowser
-		webbrowser.open(self.url)
-		return {'FINISHED'}
-
 class show_image(bpy.types.Operator):
 	bl_idname = 'image.show_image'
 	bl_label = "画像を表示"
