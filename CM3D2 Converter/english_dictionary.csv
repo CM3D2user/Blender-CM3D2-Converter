@@ -237,3 +237,29 @@ texファイルを探す時はここから探します	When you look for a tex f
 mateファイルをマテリアルとして開きます	Open the mate file as material
 ボーン情報をクリップボードにコピーしました	Copied bones information to the clipboard
 強さ	Strength
+モードの切替やエラー個所の選択を行いません	This does not mode switching and select error mesh
+上書きする為のテキストデータが見つかりません	Text data can not be found to override
+シェイプキーの変形をぼかしてスムーズにします	Blurs the shape key deformation and smoothly
+クリップボードからマテリアルを貼り付けました	Pasted the material from the clipboard
+CM3D2で使われてるボーン名に元に戻します	Return original to bone names that have been used in CM3D2
+ボーン情報をクリップボードから貼り付けました	Pasted the bone information from the clipboard
+指定の画像をUV/画像エディターに表示します	Display specified image to UV / image editor
+画像を表示できるエリアが見つかりませんでした	Area that can display the image could not be found
+未知の設定値タイプが見つかりました、中止します	Unknown setting type was found, canceled
+頂点グループ名をBlender用に変換しました	Converted vertex group name for Blender
+カスタムプロパティのボーン情報を全て削除します	Remove all bones information in custom property
+これはmateファイルではありません、中止します	This is not a mate file, canceled
+ウェイトの合計が1.0未満の頂点が見つかりました	Sum of the weights found the vertex of less than 1.0
+ポリゴンを読み込みます、大抵の場合オンでOKです	Read the polygons. And in most cases is good ON
+カスタムメイド3D2のanmファイルを読み込みます	Read the anm file of CM3D2
+アクティブ、もしくは全ての頂点グループをぼかします	Blur active or all vertex group
+マテリアルテキストをクリップボードにコピーしました	Copied the material text to the clipboard
+オブジェクト名の後半は存在するボーン名にして下さい	Please second half of the object names to exist in bone names
+全ての頂点に割り当てのない頂点グループを削除します	Delete vertex group with no allocation to all vertices
+texタイプの設定値の取得に失敗しました、中止します	Failed to get the tex type of setting, canceled
+頂点グループ名をCM3D2用→Blender用に変換	Convert vertex group name Blender for CM3D2
+頂点グループ名をBlender用→CM3D2用に変換	Convert vertex group name CM3D2 for Blender
+メッシュオブジェクトを選択した状態で実行してください	Please running in a state in which you select mesh object
+メッシュオブジェクトの親がアーマチュアではありません	Parent of mesh object is not armature
+変更している場合は設定しておくと役立つかもしれません	This might help if you set when you have changed
+この設定値をテクスチャの色に適用してわかりやすくします	Apply settings to color of texture
