@@ -2244,18 +2244,18 @@ def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator('object.multiply_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
-	self.layout.operator(blur_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator(radius_blur_shape_key.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.blur_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.radius_blur_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):
 	mate = context.material
 	if not mate:
 		col = self.layout.column(align=True)
-		col.operator(new_cm3d2.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+		col.operator('material.new_cm3d2', icon_value=common.preview_collections['main']['KISS'].icon_id)
 		row = col.row(align=True)
 		row.operator('material.import_cm3d2_mate', icon='FILE_FOLDER', text="mateから")
-		row.operator(paste_material.bl_idname, icon='PASTEDOWN', text="クリップボードから")
+		row.operator('material.paste_material', icon='PASTEDOWN', text="クリップボードから")
 	else:
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
@@ -2263,7 +2263,7 @@ def MATERIAL_PT_context_material(self, context):
 			row = box.row()
 			row.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 			row.operator('material.export_cm3d2_mate', icon='FILE_FOLDER', text="")
-			row.operator(copy_material.bl_idname, icon='COPYDOWN', text="")
+			row.operator('material.copy_material', icon='COPYDOWN', text="")
 			
 			type_name = "不明"
 			if mate['shader1'] == 'CM3D2/Toony_Lighted':
@@ -2344,9 +2344,9 @@ def DATA_PT_context_arm(self, context):
 				else:
 					sub_row.label(text="0", icon='CHECKBOX_DEHLT')
 				row = col.row(align=True)
-				row.operator(copy_armature_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
-				row.operator(paste_armature_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
-				row.operator(remove_armature_bone_data_property.bl_idname, icon='X', text="")
+				row.operator('object.copy_armature_bone_data_property', icon='COPYDOWN', text="コピー")
+				row.operator('object.paste_armature_bone_data_property', icon='PASTEDOWN', text="貼り付け")
+				row.operator('object.remove_armature_bone_data_property', icon='X', text="")
 
 # オブジェクトタブに項目追加
 def OBJECT_PT_context_object(self, context):
@@ -2392,9 +2392,9 @@ def OBJECT_PT_context_object(self, context):
 				else:
 					sub_row.label(text="0", icon='CHECKBOX_DEHLT')
 				row = col.row(align=True)
-				row.operator(copy_object_bone_data_property.bl_idname, icon='COPYDOWN', text="コピー")
-				row.operator(paste_object_bone_data_property.bl_idname, icon='PASTEDOWN', text="貼り付け")
-				row.operator(remove_object_bone_data_property.bl_idname, icon='X', text="")
+				row.operator('object.copy_object_bone_data_property', icon='COPYDOWN', text="コピー")
+				row.operator('object.paste_object_bone_data_property', icon='PASTEDOWN', text="貼り付け")
+				row.operator('object.remove_object_bone_data_property', icon='X', text="")
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
@@ -2404,7 +2404,7 @@ def DATA_PT_modifiers(self, context):
 			if ob.type == 'MESH':
 				me = ob.data
 				if me.shape_keys and len(ob.modifiers):
-					self.layout.operator(open_url.bl_idname, text="モディファイアを適用できない場合", icon_value=common.preview_collections['main']['KISS'].icon_id).url = "https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier"
+					self.layout.operator('wm.open_url', text="モディファイアを適用できない場合", icon_value=common.preview_collections['main']['KISS'].icon_id).url = "https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier"
 
 # テキストヘッダーに項目追加
 def TEXT_HT_header(self, context):
@@ -2418,17 +2418,17 @@ def TEXT_HT_header(self, context):
 		for line in txt.as_string().split('\n'):
 			if line:
 				line_count += 1
-		row.operator(show_text.bl_idname, icon='ARMATURE_DATA', text="BoneData (%d)" % line_count).name = 'BoneData'
+		row.operator('text.show_text', icon='ARMATURE_DATA', text="BoneData (%d)" % line_count).name = 'BoneData'
 	if 'LocalBoneData' in text_keys:
 		txt = bpy.data.texts['LocalBoneData']
 		line_count = 0
 		for line in txt.as_string().split('\n'):
 			if line:
 				line_count += 1
-		row.operator(show_text.bl_idname, icon='BONE_DATA', text="LocalBoneData (%d)" % line_count).name = 'LocalBoneData'
+		row.operator('text.show_text', icon='BONE_DATA', text="LocalBoneData (%d)" % line_count).name = 'LocalBoneData'
 	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
-		row.operator(copy_text_bone_data.bl_idname, icon='COPYDOWN', text="")
-		row.operator(paste_text_bone_data.bl_idname, icon='PASTEDOWN', text="")
+		row.operator('text.copy_text_bone_data', icon='COPYDOWN', text="")
+		row.operator('text.paste_text_bone_data', icon='PASTEDOWN', text="")
 	if 'Material:0' in text_keys:
 		self.layout.label(text="", icon='MATERIAL_DATA')
 		row = self.layout.row(align=True)
@@ -2438,13 +2438,13 @@ def TEXT_HT_header(self, context):
 			if name in text_keys:
 				sub_row = row.row(align=True)
 				sub_row.scale_x = 0.5
-				sub_row.operator(show_text.bl_idname, text=str(i)).name = name
+				sub_row.operator('text.show_text', text=str(i)).name = name
 			else:
 				pass_count += 1
 			if 9 < pass_count:
 				break
 		if "Material:0" in text_keys:
-			row.operator(remove_all_material_texts.bl_idname, icon='X', text="")
+			row.operator('text.remove_all_material_texts', icon='X', text="")
 
 # UV/画像エディターのプロパティに項目追加
 def IMAGE_PT_image_properties(self, context):
@@ -2519,23 +2519,23 @@ def TEXTURE_PT_context_texture(self, context):
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
 					if len(img.pixels):
-						sub_box.operator(show_image.bl_idname, text="この画像を表示", icon='ZOOM_IN').image_name = img.name
+						sub_box.operator('image.show_image', text="この画像を表示", icon='ZOOM_IN').image_name = img.name
 					else:
-						sub_box.operator(replace_cm3d2_tex.bl_idname, icon='BORDERMOVE')
+						sub_box.operator('image.replace_cm3d2_tex', icon='BORDERMOVE')
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	elif type == "col":
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'color', text="")
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
-		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
+		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	elif type == "f":
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
 		split = sub_box.split(percentage=0.3)
 		split.label(text="正確な値: ")
 		split.label(text=str(tex_slot.diffuse_color_factor))
-		sub_box.operator(sync_tex_color_ramps.bl_idname, icon='COLOR')
+		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	
 	base_name = common.remove_serial_number(tex.name)
 	description = ""
@@ -2577,15 +2577,15 @@ def TEXTURE_PT_context_texture(self, context):
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
 	self.layout.separator()
-	self.layout.operator(update_cm3d2_converter.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS_sub.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator(show_cm3d2_converter_preference.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('script.update_cm3d2_converter', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS_sub', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('wm.show_cm3d2_converter_preference', icon_value=common.preview_collections['main']['KISS'].icon_id)
 class INFO_MT_help_CM3D2_Converter_RSS_sub(bpy.types.Menu):
 	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS_sub'
 	bl_label = "CM3D2 Converterの更新履歴"
 	
 	def draw(self, context):
-		self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, text="取得に数秒かかります", icon='FILE_REFRESH')
+		self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS', text="取得に数秒かかります", icon='FILE_REFRESH')
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS'
 	bl_label = "CM3D2 Converterの更新履歴"
@@ -2618,7 +2618,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 				
 				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
 				text = "(" + update + ") " + title
-				self.layout.operator(open_url.bl_idname, text=text, icon=icon).url = link
+				self.layout.operator('wm.open_url', text=text, icon=icon).url = link
 				count += 1
 		except TypeError:
 			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')
