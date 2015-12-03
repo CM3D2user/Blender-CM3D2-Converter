@@ -345,6 +345,7 @@ class blur_vertex_group(bpy.types.Operator):
 		bm.free()
 		average_edge_length = sum(edge_lengths) / len(edge_lengths)
 		center_index = int( (len(edge_lengths) - 1) / 2.0 )
+		edge_lengths.sort()
 		average_edge_length = (average_edge_length + edge_lengths[center_index]) / 2
 		radius = average_edge_length * self.radius
 		
