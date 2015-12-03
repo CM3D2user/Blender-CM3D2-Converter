@@ -54,8 +54,8 @@ class update_cm3d2_converter(bpy.types.Operator):
 			self.report(type={'INFO'}, message="Blender-CM3D2-Converterを更新しました、再起動して下さい")
 		return {'FINISHED'}
 
-class quick_vertex_group_transfer(bpy.types.Operator):
-	bl_idname = 'object.quick_vertex_group_transfer'
+class quick_transfer_vertex_group(bpy.types.Operator):
+	bl_idname = 'object.quick_transfer_vertex_group'
 	bl_label = "クイック・ウェイト転送"
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -158,8 +158,8 @@ class quick_vertex_group_transfer(bpy.types.Operator):
 		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
-class precision_vertex_group_transfer(bpy.types.Operator):
-	bl_idname = 'object.precision_vertex_group_transfer'
+class precision_transfer_vertex_group(bpy.types.Operator):
+	bl_idname = 'object.precision_transfer_vertex_group'
 	bl_label = "高精度・ウェイト転送"
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高精度で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -303,9 +303,9 @@ class blur_vertex_group(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 1),
 		('ALL', "全て", "", 2),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象ウェイト", default='ACTIVE')
-	radius = bpy.props.IntProperty(name="範囲:辺×", default=1, min=1, max=10, soft_min=1, soft_max=10, step=1)
-	blur_count = bpy.props.IntProperty(name="処理回数", default=10, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	target = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	radius = bpy.props.FloatProperty(name="範囲倍率", default=3, min=0.1, max=50, soft_min=0.1, soft_max=50, step=50, precision=2)
+	strength = bpy.props.IntProperty(name="強さ", default=1, min=1, max=10, soft_min=1, soft_max=10)
 	items = [
 		('BOTH', "増減両方", "", 1),
 		('ADD', "増加のみ", "", 2),
@@ -325,9 +325,9 @@ class blur_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode', icon='ACTION')
-		#self.layout.prop(self, 'radius', icon='UV_EDGESEL')
-		self.layout.prop(self, 'blur_count', icon='BRUSH_BLUR')
+		self.layout.prop(self, 'target', icon='ACTION')
+		self.layout.prop(self, 'radius', icon='META_EMPTY')
+		self.layout.prop(self, 'strength', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'effect', icon='BRUSH_ADD')
 	
 	def execute(self, context):
@@ -337,82 +337,86 @@ class blur_vertex_group(bpy.types.Operator):
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
+		edge_lengths = []
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		for edge in bm.edges:
+			edge_lengths.append(edge.calc_length())
+		bm.free()
+		average_edge_length = sum(edge_lengths) / len(edge_lengths)
+		center_index = int( (len(edge_lengths) - 1) / 2.0 )
+		average_edge_length = (average_edge_length + edge_lengths[center_index]) / 2
+		radius = average_edge_length * self.radius
+		
+		near_vert_data = []
+		kd = mathutils.kdtree.KDTree(len(me.vertices))
+		for vert in me.vertices:
+			kd.insert(vert.co.copy(), vert.index)
+		kd.balance()
+		for vert in me.vertices:
+			near_vert_data.append([])
+			for co, index, dist in kd.find_range(vert.co, radius):
+				multi = (radius - dist) / radius
+				near_vert_data[-1].append((index, multi))
+		
 		target_vertex_groups = []
-		if self.mode == 'ACTIVE':
+		if self.target == 'ACTIVE':
 			target_vertex_groups.append(ob.vertex_groups.active)
 		else:
 			for vertex_group in ob.vertex_groups:
 				target_vertex_groups.append(vertex_group)
 		
-		bm = bmesh.new()
-		bm.from_mesh(me)
-		bm.verts.ensure_lookup_table()
-		near_vert_data = []
-		for vert in bm.verts:
-			near_vert_data.append([])
-			near_vert_data[-1].append( (vert.index, None) )
-			near_vert_indexs = [vert.index]
-			for radius_count in range(self.radius):
-				for near_vert_index, near_vert_multi in near_vert_data[-1][:]:
-					for edge in bm.verts[near_vert_index].link_edges:
-						for edge_vert in edge.verts:
-							if edge_vert.index not in near_vert_indexs:
-								multi = (self.radius - radius_count) / self.radius
-								near_vert_data[-1].append( (edge_vert.index, multi) )
-								near_vert_indexs.append(edge_vert.index)
-								break
-			del near_vert_data[-1][0]
-		
-		context.window_manager.progress_begin(0, self.blur_count * len(target_vertex_groups) * len(bm.verts))
+		progress_total = len(target_vertex_groups) * self.strength * len(me.vertices)
+		context.window_manager.progress_begin(0, progress_total)
+		progress_reduce = progress_total // 200 + 1
 		progress_count = 0
-		
-		for blur_count_index in range(self.blur_count):
-			for vertex_group in target_vertex_groups:
-				new_vert_weights = []
-				for vert in bm.verts:
-					context.window_manager.progress_update(progress_count)
-					progress_count += 1
-					
-					try:
-						target_vert_weight = vertex_group.weight(vert.index)
-					except:
-						target_vert_weight = 0.0
-					
-					near_weight_average = 0.0
-					near_weight_total = 0.0
-					for near_vert_index, near_vert_multi in near_vert_data[vert.index]:
-						try:
-							near_vert_weight = vertex_group.weight(near_vert_index)
-						except:
-							near_vert_weight = 0.0
-						
-						if self.effect == 'ADD':
-							if target_vert_weight < near_vert_weight:
-								near_weight_average += near_vert_weight
-								near_weight_total += 1
-						elif self.effect == 'SUB':
-							if near_vert_weight < target_vert_weight:
-								near_weight_average += near_vert_weight
-								near_weight_total += 1
-						else:
-							near_weight_average += near_vert_weight
-							near_weight_total += 1
-					
-					if 0.0 < near_weight_total:
-						near_weight_average /= near_weight_total
-						new_vert_weights.append( ((target_vert_weight * 2) + near_weight_average) / 3 )
-					else:
-						new_vert_weights.append(target_vert_weight)
+		for vertex_group in target_vertex_groups:
+			for strength_count in range(self.strength):
 				
-				for vert_index, new_weight in enumerate(new_vert_weights):
-					if new_weight <= 0.001:
-						vertex_group.remove([vert_index])
+				weights = []
+				for vert in me.vertices:
+					for elem in vert.groups:
+						if elem.group == vertex_group.index:
+							weights.append(elem.weight)
+							break
 					else:
-						vertex_group.add([vert_index], new_weight, 'REPLACE')
+						weights.append(0.0)
+				
+				for vert in me.vertices:
+					
+					target_weight = weights[vert.index]
+					
+					total_weight = 0.0
+					total_multi = 0.0
+					for index, multi in near_vert_data[vert.index]:
+						if self.effect == 'ADD':
+							if target_weight <= weights[index]:
+								total_weight += weights[index] * multi
+								total_multi += multi
+						elif self.effect == 'SUB':
+							if weights[index] <= target_weight:
+								total_weight += weights[index] * multi
+								total_multi += multi
+						else:
+							total_weight += weights[index] * multi
+							total_multi += multi
+					
+					if 0 < total_multi:
+						average_weight = total_weight / total_multi
+					else:
+						average_weight = 0.0
+					
+					if 0.001 < average_weight:
+						vertex_group.add([vert.index], average_weight, 'REPLACE')
+						print('rep')
+					else:
+						vertex_group.remove([vert.index])
+					
+					progress_count += 1
+					if progress_count % progress_reduce == 0:
+						context.window_manager.progress_update(progress_count)
 		
-		bm.free()
 		bpy.ops.object.mode_set(mode=pre_mode)
-		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class multiply_vertex_group(bpy.types.Operator):
@@ -478,116 +482,6 @@ class multiply_vertex_group(bpy.types.Operator):
 						vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
-		return {'FINISHED'}
-
-class radius_blur_vertex_group(bpy.types.Operator):
-	bl_idname = 'object.radius_blur_vertex_group'
-	bl_label = "頂点グループ範囲ぼかし"
-	bl_description = "アクティブ、もしくは全ての頂点グループを一定の範囲でぼかします"
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	items = [
-		('ACTIVE', "アクティブのみ", "", 1),
-		('ALL', "全て", "", 2),
-		]
-	mode = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
-	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=1)
-	blur_count = bpy.props.IntProperty(name="処理回数", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	use_clean = bpy.props.BoolProperty(name="ウェイト0.0は頂点グループから除外", default=True)
-	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=False)
-	
-	@classmethod
-	def poll(cls, context):
-		ob = context.active_object
-		if ob:
-			if ob.type == 'MESH':
-				if ob.vertex_groups.active:
-					return True
-		return False
-	
-	def invoke(self, context, event):
-		return context.window_manager.invoke_props_dialog(self)
-	
-	def draw(self, context):
-		self.layout.prop(self, 'mode')
-		self.layout.prop(self, 'radius_multi')
-		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'use_clean')
-		self.layout.prop(self, 'fadeout')
-	
-	def execute(self, context):
-		ob = context.active_object
-		me = ob.data
-		
-		bm = bmesh.new()
-		bm.from_mesh(me)
-		total_len = 0.0
-		for edge in bm.edges:
-			total_len += edge.calc_length()
-		radius = (total_len / len(bm.edges)) * self.radius_multi
-		bm.free()
-		
-		pre_mode = ob.mode
-		bpy.ops.object.mode_set(mode='OBJECT')
-		target_weights = []
-		if (self.mode == 'ACTIVE'):
-			target_weights.append(ob.vertex_groups.active)
-		elif (self.mode == 'ALL'):
-			for vg in ob.vertex_groups:
-				target_weights.append(vg)
-		kd = mathutils.kdtree.KDTree(len(me.vertices))
-		for i, v in enumerate(me.vertices):
-			kd.insert(v.co, i)
-		kd.balance()
-		context.window_manager.progress_begin(0, self.blur_count * len(target_weights) * len(me.vertices))
-		total_count = 0
-		for count in range(self.blur_count):
-			for vg in target_weights:
-				new_weights = []
-				for vert in me.vertices:
-					total_count += 1
-					context.window_manager.progress_update(total_count)
-					for group in vert.groups:
-						if group.group == vg.index:
-							active_weight = group.weight
-							break
-					else:
-						active_weight = 0.0
-					near_weights = []
-					near_weights_len = []
-					for co, index, dist in kd.find_range(vert.co, radius):
-						if index != vert.index:
-							if self.fadeout:
-								vec = co - vert.co
-								near_weights_len.append(radius - vec.length)
-							for group in me.vertices[index].groups:
-								if group.group == vg.index:
-									near_weights.append(group.weight)
-									break
-							else:
-								near_weights.append(0.0)
-					near_weight_average = 0.0
-					near_weights_total = 0
-					for weight_index, weight in enumerate(near_weights):
-						if not self.fadeout:
-							near_weight_average += weight
-							near_weights_total += 1
-						else:
-							multi = near_weights_len[weight_index] / radius
-							near_weight_average += weight * multi
-							near_weights_total += multi
-					try:
-						near_weight_average /= near_weights_total
-					except ZeroDivisionError:
-						near_weight_average = 0.0
-					new_weights.append( (active_weight*2 + near_weight_average) / 3 )
-				for vert, weight in zip(me.vertices, new_weights):
-					if (self.use_clean and weight <= 0.000001):
-						vg.remove([vert.index])
-					else:
-						vg.add([vert.index], weight, 'REPLACE')
-		bpy.ops.object.mode_set(mode=pre_mode)
-		context.window_manager.progress_end()
 		return {'FINISHED'}
 
 class decode_cm3d2_vertex_group_names(bpy.types.Operator):
@@ -2267,13 +2161,12 @@ class replace_cm3d2_tex(bpy.types.Operator):
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
 	self.layout.separator()
-	self.layout.operator('object.quick_vertex_group_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator('object.precision_vertex_group_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.quick_transfer_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.precision_transfer_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.separator()
+	self.layout.operator('object.blur_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.separator()
 	self.layout.operator('object.multiply_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.separator()
-	self.layout.operator(blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator(radius_blur_vertex_group.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # 頂点グループパネルに項目追加
 def DATA_PT_vertex_groups(self, context):

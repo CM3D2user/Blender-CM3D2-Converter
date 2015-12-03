@@ -199,17 +199,41 @@ mateファイル置き場	Strage of mate File
 modelファイル置き場	Strage of model File
 ファイル選択時の初期フォルダ	Folder when File Select
 範囲倍率	Range Multiple
-高精度ウェイト転送	Precision Vertex Group Transfer
+高精度ウェイト転送	Precision Transfer Vertex Group
 最初に全頂点グループを削除	Remove All First
 掛ける数	Multiply Value
 他頂点グループも調節	Regulation Other Vertex Groups
-高精度シェイプキー転送	Precision Shape Key Transfer
+高精度シェイプキー転送	Precision Transfer Shape Key
 頂点グループを拡大/縮小	Rescale Vertex Group
 最初に全シェイプキーを削除	Remove All First
 変形のないシェイプキーを削除	Remove Non-Shaped Shape Keys
-高精度・ウェイト転送	Precision Vertex Group Transfer
+高精度・ウェイト転送	Precision Transfer Vertex Group
 頂点グループに乗算	Multiply Vertex Group
-高精度・シェイプキー転送	Precision Shape Key Transfer
+高精度・シェイプキー転送	Precision Transfer Shape Key
 シェイプキーの変形に乗算	Multiply Shape Key
-クイック・シェイプキー転送	Quick Shape Key Transfer
+クイック・シェイプキー転送	Quick Transfer Shape Key
 対象	Target
+ボーン名をCM3D2用に戻しました	Returned bone names for CM3D2
+modelのインポートが完了しました	Import of the model has been completed
+指定したテキストをこの領域に表示します	Displays the specified text in this area
+表示できるエリアが見つかりませんでした	Area that can be displayed could not be found
+エクスポート時のメッシュ等の拡大率です	This is the scale of mesh at time of export
+マテリアル情報元のテキストが足りません	Material information source of the text is not enough
+modelのエクスポートが完了しました	model export is now complete
+頂点グループ名をBlender用に変換	Convert vertex group name for Blender
+シェーダー情報をテキストに埋め込みます	Embeds the shader information in the text
+ボーン情報をテキストとして読み込みます	Read the bone information as text
+modelインポート時のデフォルトパス	Default path at the time of model import
+mateエクスポート時のデフォルトパス	Default path at the time of mate export
+mateファイルをテキストとして開きます	Open the mate file as text
+頂点グループ名をCM3D2用に戻しました	Returned a vertex group name for CM3D2
+オブジェクト名を設定してからの作成を推奨	Recommended creation of a from to set the object name
+ボーン名をBlender用に変換しました	Converted bone name for Blender
+CM3D2には使えないオブジェクト名です	CM3D2 is the object name can not be used
+空のマテリアルスロットを削除してください	Please delete an empty material slot
+Blenderでモデルを扱うときの拡大率	Scale when dealing with models in Blender
+modelエクスポート時のデフォルトパス	Default path at the time of model export
+texファイルを探す時はここから探します	When you look for a tex file looks for from here
+mateファイルをマテリアルとして開きます	Open the mate file as material
+ボーン情報をクリップボードにコピーしました	Copied bones information to the clipboard
+強さ	Strength
