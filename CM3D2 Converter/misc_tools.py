@@ -312,6 +312,7 @@ class blur_vertex_group(bpy.types.Operator):
 		('SUB', "減少のみ", "", 3),
 		]
 	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
+	is_normalize = bpy.props.BoolProperty(name="他頂点グループも調節", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -329,6 +330,7 @@ class blur_vertex_group(bpy.types.Operator):
 		self.layout.prop(self, 'radius', icon='META_EMPTY')
 		self.layout.prop(self, 'strength', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'effect', icon='BRUSH_ADD')
+		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -343,9 +345,9 @@ class blur_vertex_group(bpy.types.Operator):
 		for edge in bm.edges:
 			edge_lengths.append(edge.calc_length())
 		bm.free()
+		edge_lengths.sort()
 		average_edge_length = sum(edge_lengths) / len(edge_lengths)
 		center_index = int( (len(edge_lengths) - 1) / 2.0 )
-		edge_lengths.sort()
 		average_edge_length = (average_edge_length + edge_lengths[center_index]) / 2
 		radius = average_edge_length * self.radius
 		
@@ -416,6 +418,25 @@ class blur_vertex_group(bpy.types.Operator):
 					progress_count += 1
 					if progress_count % progress_reduce == 0:
 						context.window_manager.progress_update(progress_count)
+					
+					if self.is_normalize:
+						
+						other_weight_total = 0.0
+						for elem in vert.groups:
+							if elem.group != vertex_group.index:
+								other_weight_total += elem.weight
+						
+						diff_weight = average_weight - target_weight
+						new_other_weight_total = other_weight_total - diff_weight
+						if 0 < other_weight_total:
+							other_weight_multi = new_other_weight_total / other_weight_total
+						else:
+							other_weight_multi = 0.0
+						
+						for elem in vert.groups:
+							if elem.group != vertex_group.index:
+								vg = ob.vertex_groups[elem.group]
+								vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
