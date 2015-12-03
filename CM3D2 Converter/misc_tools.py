@@ -1,4 +1,4 @@
-import os, re, sys, bpy, bmesh, mathutils, webbrowser, urllib, zipfile, subprocess, urllib.request, datetime, time
+import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 
 # アドオンアップデート処理
@@ -20,6 +20,8 @@ class update_cm3d2_converter(bpy.types.Operator):
 		self.layout.prop(self, 'is_toggle_console', icon='CONSOLE')
 	
 	def execute(self, context):
+		import os, sys, urllib, zipfile, subprocess, urllib.request
+		
 		zip_path = os.path.join(bpy.app.tempdir, "Blender-CM3D2-Converter-master.zip")
 		addon_path = os.path.dirname(__file__)
 		
@@ -85,6 +87,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
+		import mathutils, time
 		start_time = time.time()
 		
 		target_ob = context.active_object
@@ -191,6 +194,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
+		import mathutils, time
 		start_time = time.time()
 		
 		target_ob = context.active_object
@@ -333,6 +337,7 @@ class blur_vertex_group(bpy.types.Operator):
 		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
 	def execute(self, context):
+		import bmesh, mathutils
 		ob = context.active_object
 		me = ob.data
 		
@@ -520,6 +525,7 @@ class decode_cm3d2_vertex_group_names(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
+		import re
 		ob = context.active_object
 		if ob:
 			if ob.type == 'MESH':
@@ -570,6 +576,7 @@ class encode_cm3d2_vertex_group_names(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
+		import re
 		ob = context.active_object
 		if ob:
 			if ob.type == 'MESH':
@@ -644,6 +651,7 @@ class quick_shape_key_transfer(bpy.types.Operator):
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
+		import mathutils, time
 		start_time = time.time()
 		
 		target_ob = context.active_object
@@ -764,6 +772,7 @@ class precision_shape_key_transfer(bpy.types.Operator):
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
+		import mathutils, time
 		start_time = time.time()
 		
 		target_ob = context.active_object
@@ -965,6 +974,7 @@ class blur_shape_key(bpy.types.Operator):
 		self.layout.prop(self, 'effect')
 	
 	def execute(self, context):
+		import bmesh, mathutils
 		ob = context.active_object
 		me = ob.data
 		shape_keys = me.shape_keys
@@ -1072,6 +1082,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		self.layout.prop(self, 'fadeout')
 	
 	def execute(self, context):
+		import bmesh, mathutils
 		ob = context.active_object
 		me = ob.data
 		
@@ -1210,6 +1221,7 @@ class new_cm3d2(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		import re
 		if not re.search(r'^[^\.]+\.[^\.]+$', common.remove_serial_number(context.active_object.name)):
 			self.layout.label(text="オブジェクト名を設定してからの作成を推奨", icon='CANCEL')
 		self.layout.separator()
@@ -1451,6 +1463,8 @@ class copy_material(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
+		import re, os.path
+		
 		mate = context.material
 		
 		output_text = "1000" + "\n"
@@ -1611,6 +1625,7 @@ class decode_cm3d2_bone_names(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
+		import re
 		ob = context.active_object
 		if ob:
 			if ob.type == 'ARMATURE':
@@ -1643,6 +1658,7 @@ class encode_cm3d2_bone_names(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
+		import re
 		ob = context.active_object
 		if ob:
 			if ob.type == 'ARMATURE':
@@ -1727,6 +1743,7 @@ class paste_text_bone_data(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
+		import re
 		clipboard = context.window_manager.clipboard
 		if "BoneData" in context.blend_data.texts.keys():
 			bone_data_text = context.blend_data.texts["BoneData"]
@@ -1849,6 +1866,7 @@ class paste_object_bone_data_property(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
+		import re
 		ob = context.active_object
 		pass_count = 0
 		for i in range(99999):
@@ -1989,6 +2007,7 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
+		import re
 		ob = context.active_object.data
 		pass_count = 0
 		for i in range(99999):
@@ -2082,6 +2101,7 @@ class open_url(bpy.types.Operator):
 	url = bpy.props.StringProperty(name="URL")
 	
 	def execute(self, context):
+		import webbrowser
 		webbrowser.open(self.url)
 		return {'FINISHED'}
 
@@ -2198,6 +2218,7 @@ def MESH_MT_vertex_group_specials(self, context):
 
 # 頂点グループパネルに項目追加
 def DATA_PT_vertex_groups(self, context):
+	import re
 	ob = context.active_object
 	if ob:
 		if len(ob.vertex_groups) and ob.type == 'MESH':
@@ -2281,6 +2302,7 @@ def MATERIAL_PT_context_material(self, context):
 
 # アーマチュアタブに項目追加
 def DATA_PT_context_arm(self, context):
+	import re
 	ob = context.active_object
 	if ob:
 		if ob.type == 'ARMATURE':
@@ -2328,6 +2350,7 @@ def DATA_PT_context_arm(self, context):
 
 # オブジェクトタブに項目追加
 def OBJECT_PT_context_object(self, context):
+	import re
 	ob = context.active_object
 	if ob:
 		if ob.type == 'MESH':
@@ -2444,6 +2467,8 @@ def IMAGE_HT_header(self, context):
 
 # テクスチャタブに項目追加
 def TEXTURE_PT_context_texture(self, context):
+	import os
+	
 	try:
 		tex_slot = context.texture_slot
 		tex = context.texture
@@ -2567,7 +2592,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	
 	def draw(self, context):
 		try:
-			import re, urllib, urllib.request, xml.sax.saxutils
+			import re, urllib, datetime, urllib.request, xml.sax.saxutils
 			response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/commits/master.atom")
 			html = response.read().decode('utf-8')
 			titles = re.findall(r'\<title\>[ 　\t\r\n]*([^ 　\t\<\>\r\n][^\<]*[^ 　\t\<\>\r\n])[ 　\t\r\n]*\<\/title\>', html)[1:]
