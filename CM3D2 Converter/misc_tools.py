@@ -351,6 +351,8 @@ class blur_vertex_group(bpy.types.Operator):
 		average_edge_length = (average_edge_length + edge_lengths[center_index]) / 2
 		radius = average_edge_length * self.radius
 		
+		context.window_manager.progress_begin(0, len(me.vertices))
+		progress_reduce = len(me.vertices) // 200 + 1
 		near_vert_data = []
 		kd = mathutils.kdtree.KDTree(len(me.vertices))
 		for vert in me.vertices:
@@ -361,6 +363,9 @@ class blur_vertex_group(bpy.types.Operator):
 			for co, index, dist in kd.find_range(vert.co, radius):
 				multi = (radius - dist) / radius
 				near_vert_data[-1].append((index, multi))
+			if vert.index % progress_reduce == 0:
+				context.window_manager.progress_update(vert.index)
+		context.window_manager.progress_end()
 		
 		target_vertex_groups = []
 		if self.target == 'ACTIVE':
@@ -438,6 +443,7 @@ class blur_vertex_group(bpy.types.Operator):
 								vg = ob.vertex_groups[elem.group]
 								vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
 		
+		context.window_manager.progress_end()
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
@@ -507,7 +513,7 @@ class multiply_vertex_group(bpy.types.Operator):
 		return {'FINISHED'}
 
 class decode_cm3d2_vertex_group_names(bpy.types.Operator):
-	bl_idname = "object.decode_cm3d2_vertex_group_names"
+	bl_idname = 'object.decode_cm3d2_vertex_group_names'
 	bl_label = "頂点グループ名をCM3D2用→Blender用に変換"
 	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)をBlenderで左右対称編集できるように変換します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -557,7 +563,7 @@ class decode_cm3d2_vertex_group_names(bpy.types.Operator):
 		return {'FINISHED'}
 
 class encode_cm3d2_vertex_group_names(bpy.types.Operator):
-	bl_idname = "object.encode_cm3d2_vertex_group_names"
+	bl_idname = 'object.encode_cm3d2_vertex_group_names'
 	bl_label = "頂点グループ名をBlender用→CM3D2用に変換"
 	bl_description = "CM3D2で使われてるボーン名(頂点グループ名)に戻します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1500,7 +1506,7 @@ class copy_material(bpy.types.Operator):
 		return {'FINISHED'}
 
 class paste_material(bpy.types.Operator):
-	bl_idname = "material.paste_material"
+	bl_idname = 'material.paste_material'
 	bl_label = "クリップボードからマテリアルを貼り付け"
 	bl_description = "クリップボード内のマテリアル情報から新規マテリアルを作成します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1598,7 +1604,7 @@ class paste_material(bpy.types.Operator):
 		return {'FINISHED'}
 
 class decode_cm3d2_bone_names(bpy.types.Operator):
-	bl_idname = "armature.decode_cm3d2_bone_names"
+	bl_idname = 'armature.decode_cm3d2_bone_names'
 	bl_label = "ボーン名をCM3D2用→Blender用に変換"
 	bl_description = "CM3D2で使われてるボーン名をBlenderで左右対称編集できるように変換します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1630,7 +1636,7 @@ class decode_cm3d2_bone_names(bpy.types.Operator):
 		return {'FINISHED'}
 
 class encode_cm3d2_bone_names(bpy.types.Operator):
-	bl_idname = "armature.encode_cm3d2_bone_names"
+	bl_idname = 'armature.encode_cm3d2_bone_names'
 	bl_label = "ボーン名をBlender用→CM3D2用に変換"
 	bl_description = "CM3D2で使われてるボーン名に元に戻します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1663,7 +1669,7 @@ class encode_cm3d2_bone_names(bpy.types.Operator):
 		return {'FINISHED'}
 
 class show_text(bpy.types.Operator):
-	bl_idname = "text.show_text"
+	bl_idname = 'text.show_text'
 	bl_label = "テキストを表示"
 	bl_description = "指定したテキストをこの領域に表示します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1681,7 +1687,7 @@ class show_text(bpy.types.Operator):
 		return {'FINISHED'}
 
 class copy_text_bone_data(bpy.types.Operator):
-	bl_idname = "text.copy_text_bone_data"
+	bl_idname = 'text.copy_text_bone_data'
 	bl_label = "テキストのボーン情報をコピー"
 	bl_description = "テキストのボーン情報をカスタムプロパティへ貼り付ける形にしてクリップボードにコピーします"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1708,7 +1714,7 @@ class copy_text_bone_data(bpy.types.Operator):
 		return {'FINISHED'}
 
 class paste_text_bone_data(bpy.types.Operator):
-	bl_idname = "text.paste_text_bone_data"
+	bl_idname = 'text.paste_text_bone_data'
 	bl_label = "テキストのボーン情報を貼り付け"
 	bl_description = "クリップボード内のボーン情報をテキストデータに貼り付けます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1750,7 +1756,7 @@ class paste_text_bone_data(bpy.types.Operator):
 		return {'FINISHED'}
 
 class remove_all_material_texts(bpy.types.Operator):
-	bl_idname = "text.remove_all_material_texts"
+	bl_idname = 'text.remove_all_material_texts'
 	bl_label = "マテリアル情報テキストを全削除"
 	bl_description = "CM3D2で使用できるマテリアルテキストを全て削除します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1789,7 +1795,7 @@ class remove_all_material_texts(bpy.types.Operator):
 		return {'FINISHED'}
 
 class copy_object_bone_data_property(bpy.types.Operator):
-	bl_idname = "object.copy_object_bone_data_property"
+	bl_idname = 'object.copy_object_bone_data_property'
 	bl_label = "ボーン情報をコピー"
 	bl_description = "カスタムプロパティのボーン情報をクリップボードにコピーします"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1828,7 +1834,7 @@ class copy_object_bone_data_property(bpy.types.Operator):
 		return {'FINISHED'}
 
 class paste_object_bone_data_property(bpy.types.Operator):
-	bl_idname = "object.paste_object_bone_data_property"
+	bl_idname = 'object.paste_object_bone_data_property'
 	bl_label = "ボーン情報を貼り付け"
 	bl_description = "カスタムプロパティのボーン情報をクリップボードから貼り付けます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1883,7 +1889,7 @@ class paste_object_bone_data_property(bpy.types.Operator):
 		return {'FINISHED'}
 
 class remove_object_bone_data_property(bpy.types.Operator):
-	bl_idname = "object.remove_object_bone_data_property"
+	bl_idname = 'object.remove_object_bone_data_property'
 	bl_label = "ボーン情報を削除"
 	bl_description = "カスタムプロパティのボーン情報を全て削除します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1926,7 +1932,7 @@ class remove_object_bone_data_property(bpy.types.Operator):
 		return {'FINISHED'}
 
 class copy_armature_bone_data_property(bpy.types.Operator):
-	bl_idname = "object.copy_armature_bone_data_property"
+	bl_idname = 'object.copy_armature_bone_data_property'
 	bl_label = "ボーン情報をコピー"
 	bl_description = "カスタムプロパティのボーン情報をクリップボードにコピーします"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -1967,7 +1973,7 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		return {'FINISHED'}
 
 class paste_armature_bone_data_property(bpy.types.Operator):
-	bl_idname = "object.paste_armature_bone_data_property"
+	bl_idname = 'object.paste_armature_bone_data_property'
 	bl_label = "ボーン情報を貼り付け"
 	bl_description = "カスタムプロパティのボーン情報をクリップボードから貼り付けます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2023,7 +2029,7 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		return {'FINISHED'}
 
 class remove_armature_bone_data_property(bpy.types.Operator):
-	bl_idname = "object.remove_armature_bone_data_property"
+	bl_idname = 'object.remove_armature_bone_data_property'
 	bl_label = "ボーン情報を削除"
 	bl_description = "カスタムプロパティのボーン情報を全て削除します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2068,7 +2074,7 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 		return {'FINISHED'}
 
 class open_url(bpy.types.Operator):
-	bl_idname = "wm.open_url"
+	bl_idname = 'wm.open_url'
 	bl_label = "URLを開く"
 	bl_description = "URLをブラウザで開きます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2080,7 +2086,7 @@ class open_url(bpy.types.Operator):
 		return {'FINISHED'}
 
 class show_image(bpy.types.Operator):
-	bl_idname = "image.show_image"
+	bl_idname = 'image.show_image'
 	bl_label = "画像を表示"
 	bl_description = "指定の画像をUV/画像エディターに表示します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2105,7 +2111,7 @@ class show_image(bpy.types.Operator):
 		return {'FINISHED'}
 
 class show_cm3d2_converter_preference(bpy.types.Operator):
-	bl_idname = "wm.show_cm3d2_converter_preference"
+	bl_idname = 'wm.show_cm3d2_converter_preference'
 	bl_label = "CM3D2 Converterの設定画面を開く"
 	bl_description = "CM3D2 Converterアドオンの設定画面を表示します"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2133,7 +2139,7 @@ class show_cm3d2_converter_preference(bpy.types.Operator):
 		return {'FINISHED'}
 
 class sync_tex_color_ramps(bpy.types.Operator):
-	bl_idname = "texture.sync_tex_color_ramps"
+	bl_idname = 'texture.sync_tex_color_ramps'
 	bl_label = "設定をテクスチャの色に同期"
 	bl_description = "この設定値をテクスチャの色に適用してわかりやすくします"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2157,7 +2163,7 @@ class sync_tex_color_ramps(bpy.types.Operator):
 		return {'FINISHED'}
 
 class replace_cm3d2_tex(bpy.types.Operator):
-	bl_idname = "image.replace_cm3d2_tex"
+	bl_idname = 'image.replace_cm3d2_tex'
 	bl_label = "テクスチャを探す"
 	bl_description = "CM3D2本体のインストールフォルダからtexファイルを探して開きます"
 	bl_options = {'REGISTER', 'UNDO'}
@@ -2549,13 +2555,13 @@ def INFO_MT_help(self, context):
 	self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS_sub.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 	self.layout.operator(show_cm3d2_converter_preference.bl_idname, icon_value=common.preview_collections['main']['KISS'].icon_id)
 class INFO_MT_help_CM3D2_Converter_RSS_sub(bpy.types.Menu):
-	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS_sub"
+	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS_sub'
 	bl_label = "CM3D2 Converterの更新履歴"
 	
 	def draw(self, context):
 		self.layout.menu(INFO_MT_help_CM3D2_Converter_RSS.bl_idname, text="取得に数秒かかります", icon='FILE_REFRESH')
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
-	bl_idname = "INFO_MT_help_CM3D2_Converter_RSS"
+	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS'
 	bl_label = "CM3D2 Converterの更新履歴"
 	
 	def draw(self, context):
