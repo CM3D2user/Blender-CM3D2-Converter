@@ -8,16 +8,11 @@ def preferences():
 
 # データ名末尾の「.001」などを削除
 def remove_serial_number(name, enable=True):
-	if not enable:
-		return name
-	return re.sub(r'\.\d{3,}$', "", name)
+	return name if enable else re.sub(r'\.\d{3,}$', "", name)
 
 # 文字列の左右端から空白を削除
 def line_trim(line, enable=True):
-	if not enable:
-		return line
-	line = re.sub(r'^[ 　\t\r\n]*', "", line)
-	return re.sub(r'[ 　\t\r\n]*$', "", line)
+	return line if enable else line.strip(' 　\t\r\n')
 
 # CM3D2専用ファイル用の文字列書き込み
 def write_str(file, s):
@@ -41,8 +36,7 @@ def read_str(file):
 
 # ボーン/ウェイト名を Blender → CM3D2
 def encode_bone_name(name, enable=True):
-	if not enable:
-		return name
+	if not enable: return name
 	if name.count('*') == 1:
 		direction = re.search(r'\.([rRlL])$', name)
 		if direction:
@@ -53,8 +47,7 @@ def encode_bone_name(name, enable=True):
 
 # ボーン/ウェイト名を CM3D2 → Blender
 def decode_bone_name(name, enable=True):
-	if not enable:
-		return name
+	if not enable: return name
 	direction = re.search(r'[_ ]([rRlL])[_ ]', name)
 	if direction:
 		direction = direction.groups()[0]
@@ -63,10 +56,8 @@ def decode_bone_name(name, enable=True):
 
 # CM3D2用マテリアルを設定に合わせて装飾
 def decorate_material(mate, enable=True, me=None, mate_index=-1):
-	if not enable:
-		return
-	if 'shader1' not in mate.keys():
-		return
+	if not enable: return
+	if 'shader1' not in mate.keys(): return
 	
 	shader = mate['shader1']
 	
@@ -129,8 +120,7 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 
 # 画像のおおよその平均色を取得
 def get_image_average_color(img, sample_count=10):
-	if not len(img.pixels):
-		return [0, 0, 0, 1]
+	if not len(img.pixels): return [0, 0, 0, 1]
 	
 	pixel_count = img.size[0] * img.size[1]
 	channels = img.channels
@@ -148,8 +138,7 @@ def get_image_average_color(img, sample_count=10):
 
 # 画像のおおよその平均色を取得 (UV版)
 def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
-	if not len(img.pixels):
-		return [0, 0, 0, 1]
+	if not len(img.pixels): return [0, 0, 0, 1]
 	
 	img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
 	pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
@@ -301,8 +290,7 @@ def replace_cm3d2_tex(img):
 
 # col f タイプの設定値を値に合わせて着色
 def set_texture_color(slot):
-	if not slot or not slot.texture or slot.use:
-		return
+	if not slot or not slot.texture or slot.use: return
 	type = 'f'
 	if slot.use_rgb_to_intensity:
 		type = 'col'
