@@ -69,8 +69,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	def poll(cls, context):
 		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) != 2:
-			return False
+		if len(obs) != 2: return False
 		for ob in obs:
 			if ob.type != 'MESH':
 				return False
@@ -175,8 +174,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 	def poll(cls, context):
 		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) != 2:
-			return False
+		if len(obs) != 2: return False
 		for ob in obs:
 			if ob.type != 'MESH':
 				return False
@@ -323,7 +321,7 @@ class blur_vertex_group(bpy.types.Operator):
 		ob = context.active_object
 		if ob:
 			if ob.type == 'MESH':
-				return bool(ob.vertex_groups.active)
+				return ob.vertex_groups.active
 		return False
 	
 	def invoke(self, context, event):
@@ -466,7 +464,7 @@ class multiply_vertex_group(bpy.types.Operator):
 		ob = context.active_object
 		if ob:
 			if ob.type == 'MESH':
-				return bool(ob.vertex_groups.active)
+				return ob.vertex_groups.active
 		return False
 	
 	def invoke(self, context, event):
@@ -582,9 +580,8 @@ class encode_cm3d2_vertex_group_names(bpy.types.Operator):
 			if ob.type == 'MESH':
 				if ob.vertex_groups.active:
 					for vg in ob.vertex_groups:
-						if vg.name.count('*') == 1:
-							if re.search(r'\.([rRlL])$', vg.name):
-								return True
+						if vg.name.count('*') == 1 and re.search(r'\.([rRlL])$', vg.name):
+							return True
 		return False
 	
 	def execute(self, context):
@@ -633,8 +630,7 @@ class quick_shape_key_transfer(bpy.types.Operator):
 	def poll(cls, context):
 		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) != 2:
-			return False
+		if len(obs) != 2: return False
 		for ob in obs:
 			if ob.type != 'MESH':
 				return False
@@ -753,8 +749,7 @@ class precision_shape_key_transfer(bpy.types.Operator):
 	def poll(cls, context):
 		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) != 2:
-			return False
+		if len(obs) != 2: return False
 		for ob in obs:
 			if ob.type != 'MESH':
 				return False
@@ -907,8 +902,7 @@ class multiply_shape_key(bpy.types.Operator):
 		if context.active_object:
 			ob = context.active_object
 			if ob.type == 'MESH':
-				if ob.active_shape_key:
-					return True
+				return ob.active_shape_key
 		return False
 	
 	def invoke(self, context, event):
@@ -1215,8 +1209,7 @@ class new_cm3d2(bpy.types.Operator):
 	@classmethod
 	def poll(cls, context):
 		if 'material' in dir(context):
-			if not context.material:
-				return True
+			return not context.material
 		return False
 	
 	def invoke(self, context, event):
@@ -1483,8 +1476,7 @@ class copy_material(bpy.types.Operator):
 		if 'material' in dir(context):
 			mate = context.material
 			if mate:
-				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
-					return True
+				return 'shader1' in mate.keys() and 'shader2' in mate.keys()
 		return False
 	
 	def execute(self, context):
@@ -1701,9 +1693,8 @@ class encode_cm3d2_bone_names(bpy.types.Operator):
 			if ob.type == 'ARMATURE':
 				arm = ob.data
 				for bone in arm.bones:
-					if bone.name.count('*') == 1:
-						if re.search(r'\.([rRlL])$', bone.name):
-							return True
+					if bone.name.count('*') == 1 and re.search(r'\.([rRlL])$', bone.name):
+						return True
 		return False
 	
 	def execute(self, context):
@@ -1747,10 +1738,8 @@ class copy_text_bone_data(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if 'BoneData' in context.blend_data.texts.keys():
-			if 'LocalBoneData' in context.blend_data.texts.keys():
-				return True
-		return False
+		texts = context.blend_data.texts
+		return 'BoneData' in texts.keys() and 'LocalBoneData' in texts.keys()
 	
 	def execute(self, context):
 		output_text = ""
@@ -1777,9 +1766,7 @@ class paste_text_bone_data(bpy.types.Operator):
 	@classmethod
 	def poll(cls, context):
 		clipboard = context.window_manager.clipboard
-		if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
-			return True
-		return False
+		return 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard
 	
 	def execute(self, context):
 		import re
@@ -1825,9 +1812,7 @@ class remove_all_material_texts(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if 'Material:0' in context.blend_data.texts.keys():
-			return True
-		return False
+		return 'Material:0' in context.blend_data.texts.keys()
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
@@ -2210,11 +2195,8 @@ class sync_tex_color_ramps(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if 'texture_slot' in dir(context):
-			if context.texture_slot:
-				if 'texture' in dir(context):
-					if context.texture:
-						return True
+		if 'texture_slot' in dir(context) and 'texture' in dir(context):
+			return context.texture_slot and context.texture
 		return False
 	
 	def execute(self, context):
@@ -2236,8 +2218,7 @@ class replace_cm3d2_tex(bpy.types.Operator):
 	def poll(cls, context):
 		if 'texture' in dir(context):
 			tex = context.texture
-			if 'image' in dir(tex):
-				return True
+			return 'image' in dir(tex)
 		return False
 	
 	def execute(self, context):
@@ -2257,9 +2238,7 @@ class sync_object_transform(bpy.types.Operator):
 	@classmethod
 	def poll(cls, context):
 		obs = context.selected_objects
-		if len(obs) != 2:
-			return False
-		return True
+		return len(obs) == 2
 	
 	def execute(self, context):
 		target_ob = context.active_object
