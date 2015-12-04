@@ -88,6 +88,10 @@ def MATERIAL_PT_context_material(self, context):
 				type_name = "ご主人様"
 			elif mate['shader1'] == 'Diffuse':
 				type_name = "リアル"
+			elif mate['shader1'] == 'Transparent/Diffuse':
+				type_name = "リアル 透過"
+			elif mate['shader1'] == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
+				type_name = "法線"
 			
 			row = box.split(percentage=0.3)
 			row.label(text="種類:", icon='ANTIALIASED')
