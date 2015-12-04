@@ -1551,6 +1551,7 @@ class paste_material(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=False, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
 	
 	@classmethod
 	def poll(cls, context):
@@ -1569,6 +1570,7 @@ class paste_material(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'is_decorate')
+		self.layout.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
 	
 	def execute(self, context):
 		data = context.window_manager.clipboard
@@ -1609,6 +1611,15 @@ class paste_material(bpy.types.Operator):
 					slot.color = fs[:3]
 					slot.diffuse_color_factor = fs[3]
 					line_seek += 3
+					
+					# tex探し
+					if self.is_replace_cm3d2_tex:
+						if common.replace_cm3d2_tex(img) and data[0]=='_MainTex':
+							ob = context.active_object
+							me = ob.data
+							for face in me.polygons:
+								if face.material_index == ob.active_material_index:
+									me.uv_textures.active.data[face.index].image = img
 			
 			elif type == 'col':
 				slot = mate.texture_slots.create(slot_index)
