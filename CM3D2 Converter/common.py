@@ -222,8 +222,8 @@ def fild_all_files(directory):
 
 # CM3D2フォルダからテクスチャを検索して空の画像を置換
 def replace_cm3d2_tex(img):
-	path_sum = preferences().default_tex_path0 + preferences().default_tex_path1 + preferences().default_tex_path2 + preferences().default_tex_path3
-	if not path_sum:
+	default_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
+	if not any(default_paths):
 		
 		if preferences().cm3d2_path:
 			cm3d2_dir = preferences().cm3d2_path
