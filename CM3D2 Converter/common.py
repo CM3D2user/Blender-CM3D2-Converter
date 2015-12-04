@@ -173,7 +173,7 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 		uv_index = int(seek_interval * sample_index)
 		x, y = uvs[uv_index]
 		x = int(x * img_width)
-		y = int((1.0-y) * img_height)
+		y = int(y * img_height)
 		
 		for channel_index in range(img_channel):
 			try:
