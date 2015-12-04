@@ -2190,3 +2190,43 @@ class replace_cm3d2_tex(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="見つかりませんでした")
 			return {'CANCELLED'}
 		return {'FINISHED'}
+
+class sync_object_transform(bpy.types.Operator):
+	bl_idname = 'object.sync_object_transform'
+	bl_label = "オブジェクトの位置を合わせる"
+	bl_description = "アクティブオブジェクトの中心位置を、他の選択オブジェクトの中心位置に合わせます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		obs = context.selected_objects
+		if len(obs) != 2:
+			return False
+		for ob in obs:
+			if ob.type != 'MESH':
+				return False
+		return True
+	
+	def execute(self, context):
+		target_ob = context.active_object
+		for ob in context.selected_objects:
+			if target_ob.name != ob.name:
+				source_ob = ob
+				break
+		
+		for area in context.screen.areas:
+			if area.type == 'VIEW_3D':
+				for space in area.spaces:
+					if space.type == 'VIEW_3D':
+						target_space = space
+						break
+		
+		pre_cursor_location = target_space.cursor_location[:]
+		target_space.cursor_location = source_ob.location[:]
+		
+		source_ob.select = False
+		bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+		source_ob.select = True
+		
+		target_space.cursor_location = pre_cursor_location[:]
+		return {'FINISHED'}

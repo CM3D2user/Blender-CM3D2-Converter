@@ -25,8 +25,9 @@ def DATA_PT_vertex_groups(self, context):
 					if re.search(r'\.([rRlL])$', vertex_group.name):
 						flag = True
 				if flag:
-					self.layout.label(text="CM3D2用 頂点グループ名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
-					row = self.layout.row(align=True)
+					col = self.layout.column(align=True)
+					col.label(text="CM3D2用 頂点グループ名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
+					row = col.row(align=True)
 					row.operator('object.decode_cm3d2_vertex_group_names', icon='BLENDER', text="CM3D2 → Blender")
 					row.operator('object.encode_cm3d2_vertex_group_names', icon_value=common.preview_collections['main']['KISS'].icon_id, text="Blender → CM3D2")
 					break
@@ -368,6 +369,10 @@ def TEXTURE_PT_context_texture(self, context):
 		col.label(text="解説", icon='TEXT')
 		for line in description.split('\n'):
 			col.label(text=line)
+
+# オブジェクトタブのトランスフォームパネルに項目追加
+def OBJECT_PT_transform(self, context):
+	self.layout.operator('object.sync_object_transform', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
