@@ -125,17 +125,21 @@ def get_image_average_color(img, sample_count=10):
 	pixel_count = img.size[0] * img.size[1]
 	channels = img.channels
 	
+	average_color = mathutils.Color([0, 0, 0])
 	maximum_saturation = 0.0
 	maximum_saturation_color = mathutils.Color([0, 0, 0])
-	average_color = [0] * channels
 	seek_interval = pixel_count / sample_count
 	for sample_index in range(sample_count):
 		
 		index = int(seek_interval * sample_index) * channels
 		color = mathutils.Color(img.pixels[index:index+3])
+		average_color += color
 		if maximum_saturation < color.s:
-			maximum_saturation_color = color[:]
+			maximum_saturation_color = color
 			maximum_saturation = color.s
+	
+	average_color /= sample_count
+	output_color = (average_color + maximum_saturation) / 2
 	
 	return maximum_saturation_color
 
@@ -158,9 +162,9 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 			uvs.append(loop[uv_lay].uv[:])
 	bm.free()
 	
+	average_color = mathutils.Color([0, 0, 0])
 	maximum_saturation = 0.0
 	maximum_saturation_color = mathutils.Color([0, 0, 0])
-	average_color = [0] * img_channel
 	seek_interval = len(uvs) / sample_count
 	for sample_index in range(sample_count):
 		
@@ -170,12 +174,15 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 		y = int(y * img_height)
 		
 		color = mathutils.Color(pixels[y, x, :3])
+		average_color += color
 		if maximum_saturation < color.s:
-			maximum_saturation_color = color[:]
+			maximum_saturation_color = color
 			maximum_saturation = color.s
 	
-	print(maximum_saturation_color)
-	return maximum_saturation_color
+	average_color /= sample_count
+	output_color = (average_color + maximum_saturation_color) / 2
+	
+	return output_color
 
 # CM3D2のインストールフォルダを取得＋α
 def default_cm3d2_dir(base_dir, file_name, new_ext):
