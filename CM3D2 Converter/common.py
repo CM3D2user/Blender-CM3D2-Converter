@@ -186,24 +186,24 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	return average_color
 
 # CM3D2のインストールフォルダを取得＋α
-def default_cm3d2_dir(dir, file_name, ext):
-	if not dir:
+def default_cm3d2_dir(base_dir, file_name, new_ext):
+	if not base_dir:
 		if preferences().cm3d2_path:
-			dir = os.path.join(preferences().cm3d2_path, "GameData", "*." + ext)
+			base_dir = os.path.join(preferences().cm3d2_path, "GameData", "*." + new_ext)
 		else:
 			try:
 				import winreg
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					dir = winreg.QueryValueEx(key, 'InstallPath')[0]
-					dir = os.path.join(dir, "GameData", "*." + ext)
+					base_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
+					base_dir = os.path.join(base_dir, "GameData", "*." + new_ext)
 			except:
 				pass
 	if file_name:
-		head, tail = os.path.split(dir)
-		dir = os.path.join(head, file_name)
-	root, ext = os.path.splitext(dir)
-	dir = root + "." + ext
-	return dir
+		head, tail = os.path.split(base_dir)
+		base_dir = os.path.join(head, file_name)
+	root, ext = os.path.splitext(base_dir)
+	base_dir = root + "." + new_ext
+	return base_dir
 
 # ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):

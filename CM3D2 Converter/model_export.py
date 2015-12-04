@@ -199,8 +199,11 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
 		
 		# BoneData情報読み込み
+		base_bone_candidate = None
 		bone_data = []
 		if self.bone_info_mode == 'TEXT':
+			if 'BaseBone' in context.blend_data.texts["BoneData"].keys():
+				base_bone_candidate = context.blend_data.texts["BoneData"]['BaseBone']
 			for line in context.blend_data.texts["BoneData"].lines:
 				data = line.body.split(',')
 				if len(data) == 5:
@@ -225,13 +228,15 @@ class export_cm3d2_model(bpy.types.Operator):
 					for f in floats:
 						bone_data[-1]['rot'].append(float(f))
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
+			if self.bone_info_mode == 'OBJECT':
+				target = ob
+			elif self.bone_info_mode == 'ARMATURE':
+				target = arm_ob.data
+			if 'BaseBone' in target.keys():
+				base_bone_candidate = target['BaseBone']
 			pass_count = 0
 			for i in range(9**9):
 				name = "BoneData:" + str(i)
-				if self.bone_info_mode == 'OBJECT':
-					target = ob
-				elif self.bone_info_mode == 'ARMATURE':
-					target = arm_ob.data
 				if name not in target.keys():
 					pass_count += 1
 					if 50 < pass_count:
@@ -266,7 +271,10 @@ class export_cm3d2_model(bpy.types.Operator):
 			if bone['name'] == self.base_bone_name:
 				break
 		else:
-			return self.report_cancel("オブジェクト名の後半は存在するボーン名にして下さい")
+			if base_bone_candidate:
+				return self.report_cancel("オブジェクト名の後半は「" + base_bone_candidate + "」にして下さい")
+			else:
+				return self.report_cancel("オブジェクト名の後半は存在するボーン名にして下さい")
 		context.window_manager.progress_update(2)
 		
 		# LocalBoneData情報読み込み

@@ -227,6 +227,10 @@ def TEXT_HT_header(self, context):
 				line_count += 1
 		row.operator('text.show_text', icon='BONE_DATA', text="LocalBoneData (%d)" % line_count).name = 'LocalBoneData'
 	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
+		if 'BoneData' in texts.keys():
+			if 'BaseBone' not in texts['BoneData'].keys():
+				texts['BoneData']['BaseBone'] = ""
+			row.prop(texts['BoneData'], '["BaseBone"]', text="")
 		row.operator('text.copy_text_bone_data', icon='COPYDOWN', text="")
 		row.operator('text.paste_text_bone_data', icon='PASTEDOWN', text="")
 	if 'Material:0' in text_keys:

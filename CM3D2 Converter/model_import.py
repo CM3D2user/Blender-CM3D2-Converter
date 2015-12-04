@@ -613,6 +613,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["BoneData:" + str(i)] = s
 		if self.is_bone_data_text:
+			txt['BaseBone'] = model_name2
 			txt.current_line_index = 0
 		context.window_manager.progress_update(10)
 		
@@ -641,7 +642,13 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["LocalBoneData:" + str(i)] = s
 		if self.is_bone_data_text:
+			txt['BaseBone'] = model_name2
 			txt.current_line_index = 0
+		
+		if self.is_bone_data_obj_property:
+			ob['BaseBone'] = model_name2
+		if self.is_armature and self.is_bone_data_arm_property:
+			arm['BaseBone'] = model_name2
 		
 		context.window_manager.progress_end()
 		diff_time = time.time() - start_time

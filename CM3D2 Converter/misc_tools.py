@@ -1754,6 +1754,8 @@ class copy_text_bone_data(bpy.types.Operator):
 	
 	def execute(self, context):
 		output_text = ""
+		if 'BaseBone' in context.blend_data.texts['BoneData'].keys():
+			output_text = output_text + "BaseBone:" + context.blend_data.texts['BoneData']['BaseBone'] + "\n"
 		for line in context.blend_data.texts['BoneData'].as_string().split('\n'):
 			if not line:
 				continue
@@ -1794,6 +1796,10 @@ class paste_text_bone_data(bpy.types.Operator):
 			local_bone_data_text = context.blend_data.texts.new("LocalBoneData")
 		
 		for line in context.window_manager.clipboard.split("\n"):
+			r = re.search('^BaseBone:(.+)$', line)
+			if r:
+				bone_data_text['BaseBone'] = r.groups()[0]
+				local_bone_data_text['BaseBone'] = r.groups()[0]
 			r = re.search('^BoneData:(.+)$', line)
 			if r:
 				if line.count(',') == 4:
@@ -1866,6 +1872,8 @@ class copy_object_bone_data_property(bpy.types.Operator):
 		output_text = ""
 		ob = context.active_object
 		pass_count = 0
+		if 'BaseBone' in ob.keys():
+			output_text = output_text + "BaseBone:" + ob['BaseBone'] + "\n"
 		for i in range(99999):
 			name = "BoneData:" + str(i)
 			if name in ob.keys():
@@ -1926,6 +1934,9 @@ class paste_object_bone_data_property(bpy.types.Operator):
 		bone_data_count = 0
 		local_bone_data_count = 0
 		for line in context.window_manager.clipboard.split("\n"):
+			r = re.search('^BaseBone:(.+)$', line)
+			if r:
+				ob['BaseBone'] = r.groups()[0]
 			r = re.search('^BoneData:(.+)$', line)
 			if r:
 				if line.count(',') == 4:
@@ -1966,6 +1977,8 @@ class remove_object_bone_data_property(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		pass_count = 0
+		if 'BaseBone' in ob.keys():
+			del ob['BaseBone']
 		for i in range(99999):
 			name = "BoneData:" + str(i)
 			if name in ob.keys():
@@ -2006,6 +2019,8 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		output_text = ""
 		ob = context.active_object.data
 		pass_count = 0
+		if 'BaseBone' in ob.keys():
+			output_text = output_text + "BaseBone:" + ob['BaseBone'] + "\n"
 		for i in range(99999):
 			name = "BoneData:" + str(i)
 			if name in ob.keys():
@@ -2067,6 +2082,9 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		bone_data_count = 0
 		local_bone_data_count = 0
 		for line in context.window_manager.clipboard.split("\n"):
+			r = re.search('^BaseBone:(.+)$', line)
+			if r:
+				ob['BaseBone'] = r.groups()[0]
 			r = re.search('^BoneData:(.+)$', line)
 			if r:
 				if line.count(',') == 4:
@@ -2109,6 +2127,8 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object.data
 		pass_count = 0
+		if 'BaseBone' in ob.keys():
+			del ob['BaseBone']
 		for i in range(99999):
 			name = "BoneData:" + str(i)
 			if name in ob.keys():
