@@ -3,45 +3,48 @@ from . import common
 
 # 頂点グループメニューに項目追加
 def MESH_MT_vertex_group_specials(self, context):
+	icon_id = common.preview_collections['main']['KISS'].icon_id
 	self.layout.separator()
-	self.layout.operator('object.quick_transfer_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator('object.precision_transfer_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.quick_transfer_vertex_group', icon_value=icon_id)
+	self.layout.operator('object.precision_transfer_vertex_group', icon_value=icon_id)
 	self.layout.separator()
-	self.layout.operator('object.blur_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.blur_vertex_group', icon_value=icon_id)
 	self.layout.separator()
-	self.layout.operator('object.multiply_vertex_group', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.multiply_vertex_group', icon_value=icon_id)
 
 # 頂点グループパネルに項目追加
 def DATA_PT_vertex_groups(self, context):
 	import re
 	ob = context.active_object
-	if ob:
-		if len(ob.vertex_groups) and ob.type == 'MESH':
-			flag = False
-			for vertex_group in ob.vertex_groups:
-				if not flag and re.search(r'[_ ]([rRlL])[_ ]', vertex_group.name):
-					flag = True
-				if not flag and vertex_group.name.count('*') == 1:
-					if re.search(r'\.([rRlL])$', vertex_group.name):
-						flag = True
-				if flag:
-					col = self.layout.column(align=True)
-					col.label(text="CM3D2用 頂点グループ名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
-					row = col.row(align=True)
-					row.operator('object.decode_cm3d2_vertex_group_names', icon='BLENDER', text="CM3D2 → Blender")
-					row.operator('object.encode_cm3d2_vertex_group_names', icon_value=common.preview_collections['main']['KISS'].icon_id, text="Blender → CM3D2")
-					break
+	if not ob: return
+	if not len(ob.vertex_groups) and ob.type != 'MESH': return
+	
+	flag = False
+	for vertex_group in ob.vertex_groups:
+		if not flag and re.search(r'[_ ]([rRlL])[_ ]', vertex_group.name):
+			flag = True
+		if not flag and vertex_group.name.count('*') == 1:
+			if re.search(r'\.([rRlL])$', vertex_group.name):
+				flag = True
+		if flag:
+			col = self.layout.column(align=True)
+			col.label(text="CM3D2用 頂点グループ名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			row = col.row(align=True)
+			row.operator('object.decode_cm3d2_vertex_group_names', icon='BLENDER', text="CM3D2 → Blender")
+			row.operator('object.encode_cm3d2_vertex_group_names', icon_value=common.preview_collections['main']['KISS'].icon_id, text="Blender → CM3D2")
+			break
 
 # シェイプメニューに項目追加
 def MESH_MT_shape_key_specials(self, context):
+	icon_id = common.preview_collections['main']['KISS'].icon_id
 	self.layout.separator()
-	self.layout.operator('object.quick_shape_key_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator('object.precision_shape_key_transfer', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.quick_shape_key_transfer', icon_value=icon_id)
+	self.layout.operator('object.precision_shape_key_transfer', icon_value=icon_id)
 	self.layout.separator()
-	self.layout.operator('object.multiply_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.multiply_shape_key', icon_value=icon_id)
 	self.layout.separator()
-	self.layout.operator('object.blur_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator('object.radius_blur_shape_key', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('object.blur_shape_key', icon_value=icon_id)
+	self.layout.operator('object.radius_blur_shape_key', icon_value=icon_id)
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):
@@ -104,97 +107,97 @@ def MATERIAL_PT_context_material(self, context):
 def DATA_PT_context_arm(self, context):
 	import re
 	ob = context.active_object
-	if ob:
-		if ob.type == 'ARMATURE':
-			arm = ob.data
-			
-			flag = False
-			for bone in arm.bones:
-				if not flag and re.search(r'[_ ]([rRlL])[_ ]', bone.name):
-					flag = True
-				if not flag and bone.name.count('*') == 1:
-					if re.search(r'\.([rRlL])$', bone.name):
-						flag = True
-				if flag:
-					col = self.layout.column(align=True)
-					col.label(text="CM3D2用 ボーン名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
-					row = col.row(align=True)
-					row.operator('armature.decode_cm3d2_bone_names', text="CM3D2 → Blender", icon='BLENDER')
-					row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
-					break
-			
-			bone_data_count = 0
-			if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
-				for key in arm.keys():
-					if re.search(r'^(Local)?BoneData:\d+$', key):
-						bone_data_count += 1
-			enabled_clipboard = False
-			clipboard = context.window_manager.clipboard
-			if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
-				enabled_clipboard = True
-			
-			if bone_data_count or enabled_clipboard:
-				col = self.layout.column(align=True)
-				row = col.row(align=True)
-				row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
-				sub_row = row.row()
-				sub_row.alignment = 'RIGHT'
-				if bone_data_count:
-					sub_row.label(text=str(bone_data_count), icon='CHECKBOX_HLT')
-				else:
-					sub_row.label(text="0", icon='CHECKBOX_DEHLT')
-				row = col.row(align=True)
-				row.operator('object.copy_armature_bone_data_property', icon='COPYDOWN', text="コピー")
-				row.operator('object.paste_armature_bone_data_property', icon='PASTEDOWN', text="貼り付け")
-				row.operator('object.remove_armature_bone_data_property', icon='X', text="")
+	if not ob: return
+	if ob.type != 'ARMATURE': return
+	
+	arm = ob.data
+	flag = False
+	for bone in arm.bones:
+		if not flag and re.search(r'[_ ]([rRlL])[_ ]', bone.name):
+			flag = True
+		if not flag and bone.name.count('*') == 1:
+			if re.search(r'\.([rRlL])$', bone.name):
+				flag = True
+		if flag:
+			col = self.layout.column(align=True)
+			col.label(text="CM3D2用 ボーン名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			row = col.row(align=True)
+			row.operator('armature.decode_cm3d2_bone_names', text="CM3D2 → Blender", icon='BLENDER')
+			row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			break
+	
+	bone_data_count = 0
+	if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+		for key in arm.keys():
+			if re.search(r'^(Local)?BoneData:\d+$', key):
+				bone_data_count += 1
+	enabled_clipboard = False
+	clipboard = context.window_manager.clipboard
+	if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+		enabled_clipboard = True
+	
+	if bone_data_count or enabled_clipboard:
+		col = self.layout.column(align=True)
+		row = col.row(align=True)
+		row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
+		sub_row = row.row()
+		sub_row.alignment = 'RIGHT'
+		if bone_data_count:
+			sub_row.label(text=str(bone_data_count), icon='CHECKBOX_HLT')
+		else:
+			sub_row.label(text="0", icon='CHECKBOX_DEHLT')
+		row = col.row(align=True)
+		row.operator('object.copy_armature_bone_data_property', icon='COPYDOWN', text="コピー")
+		row.operator('object.paste_armature_bone_data_property', icon='PASTEDOWN', text="貼り付け")
+		row.operator('object.remove_armature_bone_data_property', icon='X', text="")
 
 # オブジェクトタブに項目追加
 def OBJECT_PT_context_object(self, context):
 	import re
 	ob = context.active_object
-	if ob:
-		if ob.type == 'MESH':
-			if re.search(r'^[^\.]+\.[^\.]+$', ob.name):
-				name, base = ob.name.split('.')
-				row = self.layout.row(align=True)
-				sub_row = row.row()
-				sub_row.label(text="model名:", icon='SORTALPHA')
-				sub_row.label(text=name)
-				sub_row = row.row()
-				sub_row.label(text="基点ボーン名:", icon='CONSTRAINT_BONE')
-				sub_row.label(text=base)
-			else:
-				#row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
-				pass
-			
+	if not ob: return
+	if ob.type != 'MESH': return
+	if re.search(r'^[^\.]+\.[^\.]+$', ob.name):
+		name, base = ob.name.split('.')
+		row = self.layout.row(align=True)
+		sub_row = row.row()
+		sub_row.label(text="model名:", icon='SORTALPHA')
+		sub_row.label(text=name)
+		sub_row = row.row()
+		sub_row.label(text="基点ボーン名:", icon='CONSTRAINT_BONE')
+		sub_row.label(text=base)
+	else:
+		#row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
+		pass
+	
+	bone_data_count = 0
+	if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+		for key in ob.keys():
+			if re.search(r'^(Local)?BoneData:\d+$', key):
+				bone_data_count += 1
+	enabled_clipboard = False
+	clipboard = context.window_manager.clipboard
+	if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
+		enabled_clipboard = True
+	
+	if bone_data_count or enabled_clipboard:
+		col = self.layout.column(align=True)
+		row = col.row(align=True)
+		row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
+		sub_row = row.row()
+		sub_row.alignment = 'RIGHT'
+		if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
 			bone_data_count = 0
-			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
-				for key in ob.keys():
-					if re.search(r'^(Local)?BoneData:\d+$', key):
-						bone_data_count += 1
-			enabled_clipboard = False
-			clipboard = context.window_manager.clipboard
-			if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
-				enabled_clipboard = True
-			
-			if bone_data_count or enabled_clipboard:
-				col = self.layout.column(align=True)
-				row = col.row(align=True)
-				row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
-				sub_row = row.row()
-				sub_row.alignment = 'RIGHT'
-				if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
-					bone_data_count = 0
-					for key in ob.keys():
-						if re.search(r'^(Local)?BoneData:\d+$', key):
-							bone_data_count += 1
-					sub_row.label(text=str(bone_data_count), icon='CHECKBOX_HLT')
-				else:
-					sub_row.label(text="0", icon='CHECKBOX_DEHLT')
-				row = col.row(align=True)
-				row.operator('object.copy_object_bone_data_property', icon='COPYDOWN', text="コピー")
-				row.operator('object.paste_object_bone_data_property', icon='PASTEDOWN', text="貼り付け")
-				row.operator('object.remove_object_bone_data_property', icon='X', text="")
+			for key in ob.keys():
+				if re.search(r'^(Local)?BoneData:\d+$', key):
+					bone_data_count += 1
+			sub_row.label(text=str(bone_data_count), icon='CHECKBOX_HLT')
+		else:
+			sub_row.label(text="0", icon='CHECKBOX_DEHLT')
+		row = col.row(align=True)
+		row.operator('object.copy_object_bone_data_property', icon='COPYDOWN', text="コピー")
+		row.operator('object.paste_object_bone_data_property', icon='PASTEDOWN', text="貼り付け")
+		row.operator('object.remove_object_bone_data_property', icon='X', text="")
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
@@ -279,17 +282,13 @@ def TEXTURE_PT_context_texture(self, context):
 		mate = context.active_object.active_material
 		mate['shader1']
 		mate['shader2']
-	except:
-		return
-	if not tex_slot:
-		return
+	except: return
+	if not tex_slot: return
+	
 	if tex_slot.use:
-		type = "tex"
+		type = 'tex'
 	else:
-		if tex_slot.use_rgb_to_intensity:
-			type = "col"
-		else:
-			type = "f"
+		type = 'f' if tex_slot.use_rgb_to_intensity else 'col'
 	
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
@@ -297,12 +296,9 @@ def TEXTURE_PT_context_texture(self, context):
 	split.label(text="設定値タイプ:")
 	row = split.row(align=True)
 	
-	if type == 'tex':
-		row.label(text='テクスチャ')
-	elif type == 'col':
-		row.label(text='色')
-	elif type == 'f':
-		row.label(text='値')
+	if type == 'tex': row.label(text='テクスチャ')
+	elif type == 'col': row.label(text='色')
+	elif type == 'f': row.label(text='値')
 	
 	row.prop(tex_slot, 'use', text="")
 	sub_row = row.row(align=True)
@@ -371,6 +367,7 @@ def TEXTURE_PT_context_texture(self, context):
 		description = "モザイクシェーダーにある設定値。\n特に設定の必要なし。"
 	elif base_name == '_FloatValue1':
 		description = "モザイクの大きさ？(未確認)"
+	
 	if description != "":
 		sub_box = box.box()
 		col = sub_box.column(align=True)
@@ -384,10 +381,11 @@ def OBJECT_PT_transform(self, context):
 
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
+	icon_id = common.preview_collections['main']['KISS'].icon_id
 	self.layout.separator()
-	self.layout.operator('script.update_cm3d2_converter', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS_sub', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	self.layout.operator('wm.show_cm3d2_converter_preference', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	self.layout.operator('script.update_cm3d2_converter', icon_value=icon_id)
+	self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS_sub', icon_value=icon_id)
+	self.layout.operator('wm.show_cm3d2_converter_preference', icon_value=icon_id)
 
 class INFO_MT_help_CM3D2_Converter_RSS_sub(bpy.types.Menu):
 	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS_sub'
