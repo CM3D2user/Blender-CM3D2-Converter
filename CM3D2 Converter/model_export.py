@@ -272,7 +272,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				break
 		else:
 			if base_bone_candidate:
-				return self.report_cancel("オブジェクト名の後半は「" + base_bone_candidate + "」にして下さい")
+				self.base_bone_name = base_bone_candidate
 			else:
 				return self.report_cancel("オブジェクト名の後半は存在するボーン名にして下さい")
 		context.window_manager.progress_update(2)
