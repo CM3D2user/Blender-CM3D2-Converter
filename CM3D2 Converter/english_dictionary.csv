@@ -267,3 +267,22 @@ texタイプの設定値の取得に失敗しました、中止します	Failed 
 リアル 透過	Real Trans
 オブジェクトの位置を合わせる	Sync Object Origin
 CM3D2用 頂点グループ名変換	CM3D2 Convert Vertex Group Names
+カスタムメイド3D2のmodelファイルを書き出します	Export model file of CM3D2
+4つのウェイトの合計値が1.0になるように正規化します	Total four weights normalize so that 1.0
+テキスト「BoneData」に有効なデータがありません	There is no valid data in the text "BoneData"
+ウェイトの合計が1.0を超えている頂点が見つかりました	Found vertices total weight exceeds 1.0
+カスタムメイド3D2のmodelファイルを読み込みます	Import model file of CM3D2
+ウェイトを編集する時に役立つアーマチュアを読み込みます	Import the armature to help you edit weights
+表示しているマテリアルをmateファイルとして保存します	Save material that is displayed as mate file
+モザイクシェーダーにある設定値。\n特に設定の必要なし。	モザイクシェーダーにある設定値。\n特に設定の必要なし。
+モザイクシェーダーにある設定値。	Setting value in mosaic shader
+特に設定の必要なし。	No setting required
+CM3D2で使用できるマテリアルテキストを全て削除します	Delete material texts that can be used in CM3D2
+テキスト「BoneData」が見つかりません、中止します	Text "BoneData" can not be found, canceled
+オブジェクトのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the object
+アーマチュアのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the armature
+これはカスタムメイド3D2のモデルファイルではありません	This is not a model file of CM3D2
+ファイルに上書きする場合にバックアップファイルを複製します	Duplicate the backup file if you want to overwrite the file
+CM3D2で使われてるボーン名(頂点グループ名)に戻します	Return to bone names (vertex group names) used in CM3D2
+シェイプキーの変形に数値を乗算し、変形の強度を増減させます	multiplied by number in deformation of the shape key, and increase or intensity of deformation
+クリップボード内のボーン情報をテキストデータに貼り付けます	Paste the bones information in the clipboard to the text data
