@@ -288,7 +288,7 @@ def TEXTURE_PT_context_texture(self, context):
 	if tex_slot.use:
 		type = 'tex'
 	else:
-		type = 'f' if tex_slot.use_rgb_to_intensity else 'col'
+		type = 'col' if tex_slot.use_rgb_to_intensity else 'f'
 	
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)

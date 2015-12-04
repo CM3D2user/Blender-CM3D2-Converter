@@ -8,11 +8,11 @@ def preferences():
 
 # データ名末尾の「.001」などを削除
 def remove_serial_number(name, enable=True):
-	return name if enable else re.sub(r'\.\d{3,}$', "", name)
+	return re.sub(r'\.\d{3,}$', "", name) if enable else name
 
 # 文字列の左右端から空白を削除
 def line_trim(line, enable=True):
-	return line if enable else line.strip(' 　\t\r\n')
+	return line.strip(' 　\t\r\n') if enable else line
 
 # CM3D2専用ファイル用の文字列書き込み
 def write_str(file, s):
@@ -125,16 +125,19 @@ def get_image_average_color(img, sample_count=10):
 	pixel_count = img.size[0] * img.size[1]
 	channels = img.channels
 	
+	maximum_saturation = 0.0
+	maximum_saturation_color = mathutils.Color([0, 0, 0])
 	average_color = [0] * channels
 	seek_interval = pixel_count / sample_count
 	for sample_index in range(sample_count):
-		for channel_index in range(channels):
-			index = int(seek_interval * sample_index) * channels + channel_index
-			average_color[channel_index] += img.pixels[index]
+		
+		index = int(seek_interval * sample_index) * channels
+		color = mathutils.Color(img.pixels[index:index+3])
+		if maximum_saturation < color.s:
+			maximum_saturation_color = color[:]
+			maximum_saturation = color.s
 	
-	for channel_index in range(channels):
-		average_color[channel_index] /= sample_count
-	return average_color
+	return maximum_saturation_color
 
 # 画像のおおよその平均色を取得 (UV版)
 def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
@@ -155,6 +158,8 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 			uvs.append(loop[uv_lay].uv[:])
 	bm.free()
 	
+	maximum_saturation = 0.0
+	maximum_saturation_color = mathutils.Color([0, 0, 0])
 	average_color = [0] * img_channel
 	seek_interval = len(uvs) / sample_count
 	for sample_index in range(sample_count):
@@ -164,15 +169,13 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 		x = int(x * img_width)
 		y = int(y * img_height)
 		
-		for channel_index in range(img_channel):
-			try:
-				average_color[channel_index] += pixels[y, x, channel_index]
-			except:
-				sample_count -= 1
+		color = mathutils.Color(pixels[y, x, :3])
+		if maximum_saturation < color.s:
+			maximum_saturation_color = color[:]
+			maximum_saturation = color.s
 	
-	for channel_index in range(img_channel):
-		average_color[channel_index] /= sample_count
-	return average_color
+	print(maximum_saturation_color)
+	return maximum_saturation_color
 
 # CM3D2のインストールフォルダを取得＋α
 def default_cm3d2_dir(base_dir, file_name, new_ext):
