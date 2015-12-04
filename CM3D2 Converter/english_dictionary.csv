@@ -263,3 +263,7 @@ texタイプの設定値の取得に失敗しました、中止します	Failed 
 メッシュオブジェクトの親がアーマチュアではありません	Parent of mesh object is not armature
 変更している場合は設定しておくと役立つかもしれません	This might help if you set when you have changed
 この設定値をテクスチャの色に適用してわかりやすくします	Apply settings to color of texture
+法線	Normal
+リアル 透過	Real Trans
+オブジェクトの位置を合わせる	Sync Object Origin
+CM3D2用 頂点グループ名変換	CM3D2 Convert Vertex Group Names

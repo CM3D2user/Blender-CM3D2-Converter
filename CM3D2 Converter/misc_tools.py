@@ -1205,6 +1205,8 @@ class new_cm3d2(bpy.types.Operator):
 		('CM3D2/Mosaic', "モザイク", "", 10),
 		('CM3D2/Man', "ご主人様", "", 11),
 		('Diffuse', "リアル", "", 12),
+		('Transparent/Diffuse', "リアル 透過", "", 13),
+		('CM3D2_Debug/Debug_CM3D2_Normal2Color', "法線", "", 14),
 		]
 	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
@@ -1401,6 +1403,29 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_RimShift", 0))
 			f_list.append(("_HiRate", 0.5))
 			f_list.append(("_HiPow", 0.001))
+		elif self.type == 'Transparent/Diffuse':
+			mate['shader1'] = 'Transparent/Diffuse'
+			mate['shader2'] = 'Transparent__Diffuse'
+			tex_list.append(("_MainTex", ob_name, _MainTex))
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
+			f_list.append(("_Shininess", 0))
+			f_list.append(("_OutlineWidth", 0.002))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
+		elif self.type == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
+			mate['shader1'] = 'CM3D2_Debug/Debug_CM3D2_Normal2Color'
+			mate['shader2'] = 'CM3D2_Debug__Debug_CM3D2_Normal2Color'
+			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
+			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
+			col_list.append(("_SpecColor", (1, 1, 1, 1)))
+			f_list.append(("_Shininess", 0))
+			f_list.append(("_OutlineWidth", 0.002))
+			f_list.append(("_RimPower", 25))
+			f_list.append(("_RimShift", 0))
 		
 		slot_count = 0
 		for data in tex_list:
@@ -2202,9 +2227,6 @@ class sync_object_transform(bpy.types.Operator):
 		obs = context.selected_objects
 		if len(obs) != 2:
 			return False
-		for ob in obs:
-			if ob.type != 'MESH':
-				return False
 		return True
 	
 	def execute(self, context):

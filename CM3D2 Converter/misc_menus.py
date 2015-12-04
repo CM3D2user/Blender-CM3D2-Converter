@@ -116,7 +116,7 @@ def DATA_PT_context_arm(self, context):
 					col.label(text="CM3D2用 ボーン名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
 					row = col.row(align=True)
 					row.operator('armature.decode_cm3d2_bone_names', text="CM3D2 → Blender", icon='BLENDER')
-					row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon='POSE_DATA')
+					row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
 					break
 			
 			bone_data_count = 0

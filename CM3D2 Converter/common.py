@@ -70,25 +70,29 @@ def decorate_material(mate, enable=True):
 	
 	shader = mate['shader1']
 	
-	if '/Toony_' in shader:
-		mate.diffuse_shader = 'TOON'
-		mate.diffuse_toon_smooth = 0.01
-		mate.diffuse_toon_size = 1.2
-	if 'Trans' in  shader:
-		mate.use_transparency = True
-		mate.alpha = 0.0
-		mate.texture_slots[0].use_map_alpha = True
-	if 'Unlit/' in shader:
-		mate.emit = 0.5
-	if '_NoZ' in shader:
-		mate.offset_z = 9999
 	if 'CM3D2/Man' == shader:
 		mate.use_shadeless = True
-	if 'CM3D2/Mosaic' == shader:
+	elif 'CM3D2/Mosaic' == shader:
 		mate.use_transparency = True
 		mate.transparency_method = 'RAYTRACE'
 		mate.alpha = 0.25
 		mate.raytrace_transparency.ior = 2
+	elif 'CM3D2_Debug/Debug_CM3D2_Normal2Color' == shader:
+		mate.use_tangent_shading = True
+	
+	else:
+		if '/Toony_' in shader:
+			mate.diffuse_shader = 'TOON'
+			mate.diffuse_toon_smooth = 0.01
+			mate.diffuse_toon_size = 1.2
+		if 'Trans' in  shader:
+			mate.use_transparency = True
+			mate.alpha = 0.0
+			mate.texture_slots[0].use_map_alpha = True
+		if 'Unlit/' in shader:
+			mate.emit = 0.5
+		if '_NoZ' in shader:
+			mate.offset_z = 9999
 	
 	is_colored = False
 	for slot in mate.texture_slots:
