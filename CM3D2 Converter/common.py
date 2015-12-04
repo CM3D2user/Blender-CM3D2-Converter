@@ -186,24 +186,24 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	return average_color
 
 # CM3D2のインストールフォルダを取得＋α
-def default_cm3d2_dir(main_dir, file_name, replace_ext):
-	if not main_dir:
+def default_cm3d2_dir(dir, file_name, ext):
+	if not dir:
 		if preferences().cm3d2_path:
-			main_dir = os.path.join(preferences().cm3d2_path, "GameData", "*." + replace_ext)
+			dir = os.path.join(preferences().cm3d2_path, "GameData", "*." + ext)
 		else:
 			try:
 				import winreg
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
-					main_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
-					main_dir = os.path.join(main_dir, "GameData", "*." + replace_ext)
+					dir = winreg.QueryValueEx(key, 'InstallPath')[0]
+					dir = os.path.join(dir, "GameData", "*." + ext)
 			except:
 				pass
 	if file_name:
-		head, tail = os.path.split(main_dir)
-		main_dir = os.path.join(head, file_name)
-	root, ext = os.path.splitext(main_dir)
-	main_dir = root + "." + replace_ext
-	return main_dir
+		head, tail = os.path.split(dir)
+		dir = os.path.join(head, file_name)
+	root, ext = os.path.splitext(dir)
+	dir = root + "." + ext
+	return dir
 
 # ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):
@@ -214,8 +214,8 @@ def file_backup(filepath, enable=True):
 			shutil.copyfile(filepath, backup_path)
 
 # サブフォルダを再帰的に検索してリスト化
-def fild_all_files(directory):
-	for root, dirs, files in os.walk(directory):
+def fild_all_files(dir):
+	for root, dirs, files in os.walk(dir):
 		yield root
 		for file in files:
 			yield os.path.join(root, file)
@@ -347,14 +347,14 @@ def set_texture_color(slot):
 			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
 
 # 必要なエリアタイプを設定を変更してでも取得
-def get_request_area(context, request_area_type, exception_area_types=['VIEW_3D', 'PROPERTIES', 'INFO']):
+def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES', 'INFO']):
 	request_areas = []
 	candidate_areas = []
 	for area in context.screen.areas:
-		if area.type == request_area_type:
+		if area.type == request_type:
 			request_areas.append(area)
 		else:
-			if area.type not in exception_area_types:
+			if area.type not in except_types:
 				candidate_areas.append(area)
 	
 	if len(request_areas):
@@ -369,5 +369,5 @@ def get_request_area(context, request_area_type, exception_area_types=['VIEW_3D'
 			maximum_area = area
 			maximum_area_size = size
 	
-	maximum_area.type = request_area_type
+	maximum_area.type = request_type
 	return maximum_area
