@@ -1233,6 +1233,7 @@ class new_cm3d2(bpy.types.Operator):
 	
 	def execute(self, context):
 		ob = context.active_object
+		me = ob.data
 		ob_names = common.remove_serial_number(ob.name).split('.')
 		if not context.material_slot:
 			bpy.ops.object.material_slot_add()
@@ -1446,7 +1447,6 @@ class new_cm3d2(bpy.types.Operator):
 			# tex探し
 			if self.is_replace_cm3d2_tex:
 				if common.replace_cm3d2_tex(img) and data[0]=='_MainTex':
-					me = ob.data
 					for face in me.polygons:
 						if face.material_index == ob.active_material_index:
 							me.uv_textures.active.data[face.index].image = img
@@ -1469,7 +1469,7 @@ class new_cm3d2(bpy.types.Operator):
 			slot.texture = tex
 			slot_count += 1
 		
-		common.decorate_material(mate, self.is_decorate)
+		common.decorate_material(mate, self.is_decorate, me, ob.active_material_index)
 		return {'FINISHED'}
 
 class copy_material(bpy.types.Operator):
@@ -1576,6 +1576,9 @@ class paste_material(bpy.types.Operator):
 		data = context.window_manager.clipboard
 		lines = data.split('\n')
 		
+		ob = context.active_object
+		me = ob.data
+		
 		if not context.material_slot:
 			bpy.ops.object.material_slot_add()
 		mate = context.blend_data.materials.new(lines[2])
@@ -1615,8 +1618,6 @@ class paste_material(bpy.types.Operator):
 					# tex探し
 					if self.is_replace_cm3d2_tex:
 						if common.replace_cm3d2_tex(img) and data[0]=='_MainTex':
-							ob = context.active_object
-							me = ob.data
 							for face in me.polygons:
 								if face.material_index == ob.active_material_index:
 									me.uv_textures.active.data[face.index].image = img
@@ -1649,7 +1650,7 @@ class paste_material(bpy.types.Operator):
 				return {'CANCELLED'}
 			slot_index += 1
 		
-		common.decorate_material(mate, self.is_decorate)
+		common.decorate_material(mate, self.is_decorate, me, ob.active_material_index)
 		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}
 

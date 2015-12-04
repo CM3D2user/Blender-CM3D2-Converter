@@ -511,7 +511,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					
 					progress_count += progress_plus_value
 					context.window_manager.progress_update(progress_count)
-				common.decorate_material(mate, self.is_decorate)
+				common.decorate_material(mate, self.is_decorate, me, index)
 			ob.active_material_index = 0
 			context.window_manager.progress_update(7)
 			

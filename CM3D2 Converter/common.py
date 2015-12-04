@@ -1,4 +1,4 @@
-import bpy, os, re, struct, shutil, mathutils
+import bpy, os, re, bmesh, numpy, struct, shutil, mathutils
 
 preview_collections = {}
 
@@ -62,7 +62,7 @@ def decode_bone_name(name, enable=True):
 	return name
 
 # CM3D2用マテリアルを設定に合わせて装飾
-def decorate_material(mate, enable=True):
+def decorate_material(mate, enable=True, me=None, mate_index=-1):
 	if not enable:
 		return
 	if 'shader1' not in mate.keys():
@@ -110,22 +110,17 @@ def decorate_material(mate, enable=True):
 			if 'image' in dir(tex):
 				img = tex.image
 				if len(img.pixels):
-					if is_colored:
-						color = mathutils.Color(get_image_average_color(img)[:3])
-						mate.diffuse_color = (color*1.5 + mate.diffuse_color*0.5) / 2
+					if me:
+						color = mathutils.Color(get_image_average_color_uv(img, me, mate_index)[:3])
 					else:
-						mate.diffuse_color = get_image_average_color(img)[:3]
-						is_colored = True
+						color = mathutils.Color(get_image_average_color(img)[:3])
+					mate.diffuse_color = color
+					is_colored = True
 		
 		elif tex_name == '_RimColor':
-			if is_colored:
-				color = mathutils.Color(slot.color[:])
-				color.v += 0.5
-				mate.diffuse_color = (color*0.5 + mate.diffuse_color*1.5) / 2
-			else:
+			if not is_colored:
 				mate.diffuse_color = slot.color[:]
 				mate.diffuse_color.v += 0.5
-				is_colored = True
 		
 		elif tex_name == '_Shininess':
 			mate.specular_intensity = slot.diffuse_color_factor
@@ -148,6 +143,45 @@ def get_image_average_color(img, sample_count=10):
 			average_color[channel_index] += img.pixels[index]
 	
 	for channel_index in range(channels):
+		average_color[channel_index] /= sample_count
+	return average_color
+
+# 画像のおおよその平均色を取得 (UV版)
+def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
+	if not len(img.pixels):
+		return [0, 0, 0, 1]
+	
+	img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
+	pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
+	
+	bm = bmesh.new()
+	bm.from_mesh(me)
+	
+	uvs = []
+	uv_lay = bm.loops.layers.uv.active
+	for face in bm.faces:
+		if face.material_index != mate_index:
+			continue
+		for loop in face.loops:
+			uvs.append(loop[uv_lay].uv[:])
+	bm.free()
+	
+	average_color = [0] * img_channel
+	seek_interval = len(uvs) / sample_count
+	for sample_index in range(sample_count):
+		
+		uv_index = int(seek_interval * sample_index)
+		x, y = uvs[uv_index]
+		x = int(x * img_width)
+		y = int(y * img_height)
+		
+		for channel_index in range(img_channel):
+			try:
+				average_color[channel_index] += pixels[y, x, channel_index]
+			except:
+				sample_count -= 1
+	
+	for channel_index in range(img_channel):
 		average_color[channel_index] /= sample_count
 	return average_color
 

@@ -36,6 +36,9 @@ class import_cm3d2_mate(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().mate_import_path = self.filepath
 		
+		ob = context.active_object
+		me = ob.data
+		
 		try:
 			file = open(self.filepath, 'rb')
 		except:
@@ -78,8 +81,6 @@ class import_cm3d2_mate(bpy.types.Operator):
 					# tex探し
 					if self.is_replace_cm3d2_tex:
 						if common.replace_cm3d2_tex(img) and tex_name=='_MainTex':
-							ob = context.active_object
-							me = ob.data
 							for face in me.polygons:
 								if face.material_index == ob.active_material_index:
 									me.uv_textures.active.data[face.index].image = img
@@ -110,7 +111,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 			slot_index += 1
 		
 		file.close()
-		common.decorate_material(mate, self.is_decorate)
+		common.decorate_material(mate, self.is_decorate, me, ob.active_material_index)
 		return {'FINISHED'}
 
 class import_cm3d2_mate_text(bpy.types.Operator):
