@@ -81,7 +81,7 @@ texファイル	tex File
 四角面を三角面に	4 Polygon to 3 Polygon
 UVがありません	Not Found UV
 アーマチュア生成	Create Armature
-アーマチュア整頓	Order Armature
+アーマチュア整頓	Order Bone Directions
 内部にパックする	Pack
 mateファイル	mate File
 mateとして保存	Save as mate
@@ -102,7 +102,7 @@ modelファイル	model File
 model名: %s	Model Name: %s
 基点ボーン名: %s	Base Bone Name: %s
 取得に数秒かかります	Wait Seconds
-データ名の連番を削除	Remove Number of Data Name
+データ名の連番を削除	Remove Number in Data Name
 texファイルを保存	Save as tex
 texファイルを開く	Open tex
 texファイル置き場	Strage of tex
@@ -154,13 +154,13 @@ CM3D2インストールフォルダ	CM3D2 Install Folder
 CM3D2用マテリアルを新規作成	Create CM3D2 Material
 モディファイアを適用できない場合	Case of Can't Aplly Modifiers
 割り当てのない頂点グループを削除	Remove Empty Vertex Groups
-テキストにマテリアル情報埋め込み	Set Material Info to Text
+テキストにマテリアル情報埋め込み	Add Material Info in Text
 ウェイトが無いボーンを削除します	Remove Empty Weight Bones
-オブジェクトのカスタムプロパティ	Custom Property of Object
-アーマチュアのカスタムプロパティ	Custom Property of Armature
-ボーン名をBlender用に変換	Convert Bone Names to Blender
+オブジェクトのカスタムプロパティ	Custom Property in Object
+アーマチュアのカスタムプロパティ	Custom Property in Armature
+ボーン名をBlender用に変換	Convert Bone Names for Blender
 マテリアルをクリップボードにコピー	Copy Clipboard Material
-頂点グループ名をCM3D2用に変換	Convert Vertex Groups to CM3D2
+頂点グループ名をCM3D2用に変換	Convert Vertex Group Names for CM3D2
 アクティブオブジェクトがありません	Not Found Active Object
 五角以上のポリゴンが含まれています	In 5 Polygon
 ボーン情報元のモードがおかしいです	Not Found Bone Info Source
@@ -220,7 +220,7 @@ modelのインポートが完了しました	Import of the model has been comple
 エクスポート時のメッシュ等の拡大率です	This is the scale of mesh at time of export
 マテリアル情報元のテキストが足りません	Material information source of the text is not enough
 modelのエクスポートが完了しました	model export is now complete
-頂点グループ名をBlender用に変換	Convert vertex group name for Blender
+頂点グループ名をBlender用に変換	Convert Vertex Group Names for Blender
 シェーダー情報をテキストに埋め込みます	Embeds the shader information in the text
 ボーン情報をテキストとして読み込みます	Read the bone information as text
 modelインポート時のデフォルトパス	Default path at the time of model import
