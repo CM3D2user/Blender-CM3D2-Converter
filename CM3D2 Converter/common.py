@@ -1,5 +1,6 @@
 import bpy, os, re, bmesh, numpy, struct, shutil, mathutils
 
+addon_name = "CM3D2 Converter"
 preview_collections = {}
 
 # このアドオンの設定値群を呼び出す
@@ -205,7 +206,7 @@ def default_cm3d2_dir(base_dir, file_name, new_ext):
 
 # ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):
-	backup_ext = bpy.context.user_preferences.addons[__name__.split('.')[0]].preferences.backup_ext
+	backup_ext = preferences().backup_ext
 	if enable and backup_ext:
 		if os.path.exists(filepath):
 			backup_path = filepath + "." + backup_ext

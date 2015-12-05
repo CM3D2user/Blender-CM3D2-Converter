@@ -2258,7 +2258,7 @@ class show_cm3d2_converter_preference(bpy.types.Operator):
 		my_info = None
 		for module in addon_utils.modules():
 			info = addon_utils.module_bl_info(module)
-			if info['name'] == "CM3D2 Converter":
+			if info['name'] == common.addon_name:
 				my_info = info
 				break
 		area = common.get_request_area(context, 'USER_PREFERENCES')
@@ -2269,7 +2269,7 @@ class show_cm3d2_converter_preference(bpy.types.Operator):
 			if 'COMMUNITY' not in context.window_manager.addon_support:
 				context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY'}
 			if not my_info['show_expanded']:
-				bpy.ops.wm.addon_expand(module=my_info['name'])
+				bpy.ops.wm.addon_expand(module=__name__.split('.')[0])
 		else:
 			self.report(type={'ERROR'}, message="表示できるエリアが見つかりませんでした")
 			return {'CANCELLED'}
