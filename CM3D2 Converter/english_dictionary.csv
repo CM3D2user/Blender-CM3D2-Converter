@@ -245,10 +245,10 @@ CM3D2で使われてるボーン名に元に戻します	Return original to bone
 ボーン情報をクリップボードから貼り付けました	Pasted the bone information from the clipboard
 指定の画像をUV/画像エディターに表示します	Display specified image to UV / image editor
 画像を表示できるエリアが見つかりませんでした	Area that can display the image could not be found
-未知の設定値タイプが見つかりました、中止します	Unknown setting type was found, canceled
+未知の設定値タイプが見つかりました、中止します	Unknown setting type was found, cancelled
 頂点グループ名をBlender用に変換しました	Converted vertex group name for Blender
 カスタムプロパティのボーン情報を全て削除します	Remove all bones information in custom property
-これはmateファイルではありません、中止します	This is not a mate file, canceled
+これはmateファイルではありません、中止します	This is not a mate file, cancelled
 ウェイトの合計が1.0未満の頂点が見つかりました	Sum of the weights found the vertex of less than 1.0
 ポリゴンを読み込みます、大抵の場合オンでOKです	Read the polygons. And in most cases is good ON
 カスタムメイド3D2のanmファイルを読み込みます	Read the anm file of CM3D2
@@ -256,7 +256,7 @@ CM3D2で使われてるボーン名に元に戻します	Return original to bone
 マテリアルテキストをクリップボードにコピーしました	Copied the material text to the clipboard
 オブジェクト名の後半は存在するボーン名にして下さい	Please second half of the object names to exist in bone names
 全ての頂点に割り当てのない頂点グループを削除します	Delete vertex group with no allocation to all vertices
-texタイプの設定値の取得に失敗しました、中止します	Failed to get the tex type of setting, canceled
+texタイプの設定値の取得に失敗しました、中止します	Failed to get the tex type of setting, cancelled
 頂点グループ名をCM3D2用→Blender用に変換	Convert vertex group name Blender for CM3D2
 頂点グループ名をBlender用→CM3D2用に変換	Convert vertex group name CM3D2 for Blender
 メッシュオブジェクトを選択した状態で実行してください	Please running in a state in which you select mesh object
@@ -278,7 +278,7 @@ CM3D2用 頂点グループ名変換	CM3D2 Convert Vertex Group Names
 モザイクシェーダーにある設定値。	Setting value in mosaic shader
 特に設定の必要なし。	No setting required
 CM3D2で使用できるマテリアルテキストを全て削除します	Delete material texts that can be used in CM3D2
-テキスト「BoneData」が見つかりません、中止します	Text "BoneData" can not be found, canceled
+テキスト「BoneData」が見つかりません、中止します	Text "BoneData" can not be found, cancelled
 オブジェクトのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the object
 アーマチュアのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the armature
 これはカスタムメイド3D2のモデルファイルではありません	This is not a model file of CM3D2
@@ -286,3 +286,16 @@ CM3D2で使用できるマテリアルテキストを全て削除します	Delet
 CM3D2で使われてるボーン名(頂点グループ名)に戻します	Return to bone names (vertex group names) used in CM3D2
 シェイプキーの変形に数値を乗算し、変形の強度を増減させます	multiplied by number in deformation of the shape key, and increase or intensity of deformation
 クリップボード内のボーン情報をテキストデータに貼り付けます	Paste the bones information in the clipboard to the text data
+これはカスタムメイド3D2のモーションファイルではありません	This is not a motion file of CM3D2
+表示しているテキストデータをmateファイルとして保存します	Save the text data that is displayed as mate file
+tex col f 以外の設定値が見つかりました、中止します	tex col f other than the set value is found, cancelled
+面をトゥーン処理している\nグラデーション画像を指定します。	面をトゥーン処理している\nグラデーション画像を指定します。
+面をトゥーン処理している	This specifies the gradation image
+グラデーション画像を指定します。	that toon processing a surfaces
+シェイプキーの変形を一定範囲の頂点でぼかしてスムーズにします	This will blur deformation of shape key at vertex of fixed range
+カスタムプロパティのボーン情報をクリップボードにコピーします	Copy bone information of custom properties to the clipboard
+CM3D2 Converterアドオンの設定画面を表示します	Display the setting screen of CM3D2 Converter add-on
+ファイルを開くのに失敗しました、アクセス不可の可能性があります	Failed to open the file, there is a possibility of inaccessible
+クリップボード内のマテリアル情報から新規マテリアルを作成します	Create new material from material information in the clipboard
+カスタムプロパティのボーン情報をクリップボードから貼り付けます	Paste bone information of custom property from the clipboard
+ウェイトが割り当てられていない頂点が見つかりました、中止します	Vertices that weight is not assigned found, cancelled
