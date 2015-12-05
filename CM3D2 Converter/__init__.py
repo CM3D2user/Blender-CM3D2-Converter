@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 113),
+	"version" : (0, 114),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -173,6 +173,9 @@ def register():
 		bpy.context.user_preferences.system.use_international_fonts = True
 	
 	bpy.app.translations.register(__name__, get_english_dictionary())
+	# 余計なお世話
+	dict = { 'ja_JP':{('Operator', "Apply All Modifier"):"全モディファイアを適用", ('Operator', "Apply Selected Modifier"):"選択モディファイアを適用", ('Operator', "Apply_Selected_Modifier"):"選択モディファイアを適用"} }
+	bpy.app.translations.register("Apply Modifier", dict)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -208,6 +211,7 @@ def unregister():
 	common.preview_collections.clear()
 	
 	bpy.app.translations.unregister(__name__)
+	bpy.app.translations.unregister("Apply Modifier")
 
 # メイン関数
 if __name__ == "__main__":
