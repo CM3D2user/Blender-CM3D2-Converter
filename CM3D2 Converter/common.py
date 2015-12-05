@@ -140,6 +140,7 @@ def get_image_average_color(img, sample_count=10):
 	
 	average_color /= sample_count
 	output_color = (average_color + maximum_saturation) / 2
+	output_color.s *= 1.5
 	
 	return maximum_saturation_color
 
@@ -181,6 +182,7 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	
 	average_color /= sample_count
 	output_color = (average_color + maximum_saturation_color) / 2
+	output_color.s *= 1.5
 	
 	return output_color
 
