@@ -139,7 +139,7 @@ def get_image_average_color(img, sample_count=10):
 			maximum_saturation = color.s
 	
 	average_color /= sample_count
-	output_color = (average_color + maximum_saturation) / 2
+	output_color = (average_color + maximum_saturation_color) / 2
 	output_color.s *= 1.5
 	
 	return maximum_saturation_color
@@ -162,6 +162,9 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 		for loop in face.loops:
 			uvs.append(loop[uv_lay].uv[:])
 	bm.free()
+	
+	if len(uvs) <= sample_count:
+		return get_image_average_color(img)
 	
 	average_color = mathutils.Color([0, 0, 0])
 	maximum_saturation = 0.0
