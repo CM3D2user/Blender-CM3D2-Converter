@@ -19,10 +19,8 @@ def line_trim(line, enable=True):
 def write_str(file, s):
 	str_count = len(s.encode('utf-8'))
 	if 128 <= str_count:
-		b = (str_count % 128) + 128
-		file.write(struct.pack('<B', b))
-		b = str_count // 128
-		file.write(struct.pack('<B', b))
+		file.write( struct.pack('<B', (str_count % 128) + 128) )
+		file.write( struct.pack('<B', str_count // 128) )
 	else:
 		file.write(struct.pack('<B', str_count))
 	file.write(s.encode('utf-8'))
@@ -31,14 +29,12 @@ def write_str(file, s):
 def read_str(file):
 	str_index = struct.unpack('<B', file.read(1))[0]
 	if 128 <= str_index:
-		i = struct.unpack('<B', file.read(1))[0]
-		str_index += (i * 128) - 128
+		str_index += (struct.unpack('<B', file.read(1))[0] * 128) - 128
 	return file.read(str_index).decode('utf-8')
 
 # ボーン/ウェイト名を Blender → CM3D2
 def encode_bone_name(name, enable=True):
-	if not enable: return name
-	return re.sub(r'([_ ])\*([_ ].*)\.([rRlL])$', r'\1\3\2', name) if name.count('*') == 1 else name
+	return re.sub(r'([_ ])\*([_ ].*)\.([rRlL])$', r'\1\3\2', name) if name.count('*') == 1 and enable else name
 
 # ボーン/ウェイト名を CM3D2 → Blender
 def decode_bone_name(name, enable=True):
@@ -50,7 +46,6 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 	if 'shader1' not in mate.keys(): return
 	
 	shader = mate['shader1']
-	
 	if 'CM3D2/Man' == shader:
 		mate.use_shadeless = True
 		mate.diffuse_color = (0, 1, 1)
@@ -143,10 +138,9 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
 	pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
 	
+	uvs = []
 	bm = bmesh.new()
 	bm.from_mesh(me)
-	
-	uvs = []
 	uv_lay = bm.loops.layers.uv.active
 	for face in bm.faces:
 		if face.material_index != mate_index:
@@ -202,10 +196,9 @@ def default_cm3d2_dir(base_dir, file_name, new_ext):
 # ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):
 	backup_ext = preferences().backup_ext
-	if enable and backup_ext:
-		if os.path.exists(filepath):
-			backup_path = filepath + "." + backup_ext
-			shutil.copyfile(filepath, backup_path)
+	if enable and backup_ext and os.path.exists(filepath):
+		backup_path = filepath + "." + backup_ext
+		shutil.copyfile(filepath, backup_path)
 
 # サブフォルダを再帰的に検索してリスト化
 def fild_all_files(dir):
@@ -300,7 +293,6 @@ def set_texture_color(slot):
 	if not slot or not slot.texture or slot.use: return
 	
 	type = 'col' if slot.use_rgb_to_intensity else 'f'
-	
 	tex = slot.texture
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
