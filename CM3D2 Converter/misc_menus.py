@@ -45,6 +45,8 @@ def MESH_MT_shape_key_specials(self, context):
 	self.layout.separator()
 	self.layout.operator('object.blur_shape_key', icon_value=icon_id)
 	self.layout.operator('object.radius_blur_shape_key', icon_value=icon_id)
+	self.layout.separator()
+	self.layout.operator('object.change_base_shape_key', icon_value=icon_id)
 
 # マテリアルタブに項目追加
 def MATERIAL_PT_context_material(self, context):

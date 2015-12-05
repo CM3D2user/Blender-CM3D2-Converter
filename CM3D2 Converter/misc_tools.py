@@ -1179,6 +1179,52 @@ class radius_blur_shape_key(bpy.types.Operator):
 		context.window_manager.progress_end()
 		return {'FINISHED'}
 
+class change_base_shape_key(bpy.types.Operator):
+	bl_idname = 'object.change_base_shape_key'
+	bl_label = "このシェイプキーをベースに"
+	bl_description = "アクティブなシェイプキーを他のシェイプキーのベースにします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			return ob.type=='MESH' and 1 <= ob.active_shape_key_index
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		target_shape_key = ob.active_shape_key
+		old_shape_key = me.shape_keys.key_blocks[0]
+		
+		for i in range(9**9):
+			bpy.ops.object.shape_key_move(type='UP')
+			if ob.active_shape_key_index == 0:
+				break
+		
+		target_shape_key.relative_key = target_shape_key
+		old_shape_key.relative_key = target_shape_key
+		
+		for vert in me.vertices:
+			vert.co = target_shape_key.data[vert.index].co.copy()
+		
+		for shape_key in me.shape_keys.key_blocks:
+			if shape_key.name == target_shape_key.name or shape_key.name == old_shape_key.name:
+				continue
+			if shape_key.relative_key.name == old_shape_key.name:
+				shape_key.relative_key = target_shape_key
+				for vert in me.vertices:
+					diff_co = target_shape_key.data[vert.index].co - old_shape_key.data[vert.index].co
+					shape_key.data[vert.index].co = shape_key.data[vert.index].co + diff_co
+		
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
 class new_cm3d2(bpy.types.Operator):
 	bl_idname = 'material.new_cm3d2'
 	bl_label = "CM3D2用マテリアルを新規作成"
