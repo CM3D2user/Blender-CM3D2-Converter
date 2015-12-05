@@ -303,7 +303,9 @@ class blur_vertex_group(bpy.types.Operator):
 	
 	items = [
 		('ACTIVE', "アクティブのみ", "", 1),
-		('ALL', "全て", "", 2),
+		('UP', "アクティブより上", "", 2),
+		('DOWN', "アクティブより下", "", 3),
+		('ALL', "全て", "", 4),
 		]
 	target = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	radius = bpy.props.FloatProperty(name="範囲倍率", default=3, min=0.1, max=50, soft_min=0.1, soft_max=50, step=50, precision=2)
@@ -373,7 +375,15 @@ class blur_vertex_group(bpy.types.Operator):
 		target_vertex_groups = []
 		if self.target == 'ACTIVE':
 			target_vertex_groups.append(ob.vertex_groups.active)
-		else:
+		elif self.target == 'UP':
+			for vertex_group in ob.vertex_groups:
+				if vertex_group.index <= ob.vertex_groups.active_index:
+					target_vertex_groups.append(vertex_group)
+		elif self.target == 'DOWN':
+			for vertex_group in ob.vertex_groups:
+				if ob.vertex_groups.active_index <= vertex_group.index:
+					target_vertex_groups.append(vertex_group)
+		elif self.target == 'ALL':
 			for vertex_group in ob.vertex_groups:
 				target_vertex_groups.append(vertex_group)
 		
@@ -381,8 +391,8 @@ class blur_vertex_group(bpy.types.Operator):
 		context.window_manager.progress_begin(0, progress_total)
 		progress_reduce = progress_total // 200 + 1
 		progress_count = 0
-		for vertex_group in target_vertex_groups:
-			for strength_count in range(self.strength):
+		for strength_count in range(self.strength):
+			for vertex_group in target_vertex_groups:
 				
 				weights = []
 				for vert in me.vertices:
@@ -456,6 +466,13 @@ class multiply_vertex_group(bpy.types.Operator):
 	bl_description = "頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	items = [
+		('ACTIVE', "アクティブのみ", "", 1),
+		('UP', "アクティブより上", "", 2),
+		('DOWN', "アクティブより下", "", 3),
+		('ALL', "全て", "", 4),
+		]
+	target = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	value = bpy.props.FloatProperty(name="倍率", default=1.1, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=2)
 	is_normalize = bpy.props.BoolProperty(name="他頂点グループも調節", default=True)
 	
@@ -471,46 +488,62 @@ class multiply_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		self.layout.prop(self, 'target', icon='ACTION')
 		self.layout.prop(self, 'value', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
-		vertex_group = ob.vertex_groups.active
 		
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		for vert in me.vertices:
-			
-			old_weight = -1
-			other_weight_total = 0.0
-			for elem in vert.groups:
-				if elem.group == vertex_group.index:
-					old_weight = elem.weight
-				else:
-					other_weight_total += elem.weight
-			if old_weight == -1:
-				continue
-			
-			new_weight = old_weight * self.value
-			vertex_group.add([vert.index], new_weight, 'REPLACE')
-			
-			if self.is_normalize:
+		target_vertex_groups = []
+		if self.target == 'ACTIVE':
+			target_vertex_groups.append(ob.vertex_groups.active)
+		elif self.target == 'UP':
+			for vertex_group in ob.vertex_groups:
+				if vertex_group.index <= ob.vertex_groups.active_index:
+					target_vertex_groups.append(vertex_group)
+		elif self.target == 'DOWN':
+			for vertex_group in ob.vertex_groups:
+				if ob.vertex_groups.active_index <= vertex_group.index:
+					target_vertex_groups.append(vertex_group)
+		elif self.target == 'ALL':
+			for vertex_group in ob.vertex_groups:
+				target_vertex_groups.append(vertex_group)
+		
+		for vertex_group in target_vertex_groups:
+			for vert in me.vertices:
 				
-				diff_weight = new_weight - old_weight
-				
-				new_other_weight_total = other_weight_total - diff_weight
-				if 0 < other_weight_total:
-					other_weight_multi = new_other_weight_total / other_weight_total
-				else:
-					other_weight_multi = 0.0
-				
+				old_weight = -1
+				other_weight_total = 0.0
 				for elem in vert.groups:
-					if elem.group != vertex_group.index:
-						vg = ob.vertex_groups[elem.group]
-						vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
+					if elem.group == vertex_group.index:
+						old_weight = elem.weight
+					else:
+						other_weight_total += elem.weight
+				if old_weight == -1:
+					continue
+				
+				new_weight = old_weight * self.value
+				vertex_group.add([vert.index], new_weight, 'REPLACE')
+				
+				if self.is_normalize:
+					
+					diff_weight = new_weight - old_weight
+					
+					new_other_weight_total = other_weight_total - diff_weight
+					if 0 < other_weight_total:
+						other_weight_multi = new_other_weight_total / other_weight_total
+					else:
+						other_weight_multi = 0.0
+					
+					for elem in vert.groups:
+						if elem.group != vertex_group.index:
+							vg = ob.vertex_groups[elem.group]
+							vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
@@ -893,7 +926,9 @@ class multiply_shape_key(bpy.types.Operator):
 	multi = bpy.props.FloatProperty(name="倍率", description="シェイプキーの拡大率です", default=1.1, min=-10, max=10, soft_min=-10, soft_max=10, step=10, precision=2)
 	items = [
 		('ACTIVE', "アクティブのみ", "", 1),
-		('ALL', "全て", "", 2),
+		('UP', "アクティブより上", "", 2),
+		('DOWN', "アクティブより下", "", 3),
+		('ALL', "全て", "", 4),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	
@@ -918,12 +953,22 @@ class multiply_shape_key(bpy.types.Operator):
 		shape_keys = me.shape_keys
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		target_shapes = []
 		if self.mode == 'ACTIVE':
-			target_shapes = [ob.active_shape_key]
+			target_shapes.append(ob.active_shape_key)
+		elif self.mode == 'UP':
+			for index, key_block in enumerate(shape_keys.key_blocks):
+				if index <= ob.active_shape_key_index:
+					target_shapes.append(key_block)
+		elif self.mode == 'UP':
+			for index, key_block in enumerate(shape_keys.key_blocks):
+				if ob.active_shape_key_index <= index:
+					target_shapes.append(key_block)
 		elif self.mode == 'ALL':
-			target_shapes = []
 			for key_block in shape_keys.key_blocks:
 				target_shapes.append(key_block)
+		
 		for shape in target_shapes:
 			data = shape.data
 			for i, vert in enumerate(me.vertices):

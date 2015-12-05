@@ -309,7 +309,7 @@ CM3D2 Converterアドオンの設定画面を表示します	Display the setting
 設定すれば、texを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use tex
 mateファイルの出力に失敗、中止します。 構文を見直して下さい	failure to output of mate file, cancelled. Please review the syntax
 テキスト「LocalBoneData」に有効なデータがありません	There is no valid data in the text "LocalBoneData"
-アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます	Embedded bone informations on custom properties in armature data
+アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます	Add bone informations on custom properties in armature data
 設定すれば、mateを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use mate
 頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます	Multiply by value to weight of vertex groups, to increase or decrease weights
 表示しているマテリアルをテキスト形式でクリップボードにコピーします	Copy the material to the clipboard in text format
