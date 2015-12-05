@@ -104,6 +104,8 @@ def MATERIAL_PT_context_material(self, context):
 			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
 			box.prop(mate, '["shader1"]', icon='MATERIAL', text="シェーダー1")
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
+			
+			box.operator('material.decorate_material', icon='TEXTURE_SHADED')
 
 # アーマチュアタブに項目追加
 def DATA_PT_context_arm(self, context):

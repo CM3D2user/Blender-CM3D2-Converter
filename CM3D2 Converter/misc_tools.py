@@ -1704,6 +1704,36 @@ class paste_material(bpy.types.Operator):
 		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}
 
+class decorate_material(bpy.types.Operator):
+	bl_idname = 'material.decorate_material'
+	bl_label = "マテリアルを装飾"
+	bl_description = "スロット内のマテリアルを全て設定に合わせて装飾します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if not ob: return False
+		if ob.type != 'MESH': return False
+		for slot in ob.material_slots:
+			mate = slot.material
+			if mate:
+				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+					return True
+		return False
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		for slot_index, slot in enumerate(ob.material_slots):
+			mate = slot.material
+			if mate:
+				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+					common.decorate_material(mate, True, me, slot_index)
+		
+		return {'FINISHED'}
+
 class decode_cm3d2_bone_names(bpy.types.Operator):
 	bl_idname = 'armature.decode_cm3d2_bone_names'
 	bl_label = "ボーン名をCM3D2用→Blender用に変換"
