@@ -37,22 +37,11 @@ def read_str(file):
 # ボーン/ウェイト名を Blender → CM3D2
 def encode_bone_name(name, enable=True):
 	if not enable: return name
-	if name.count('*') == 1:
-		direction = re.search(r'\.([rRlL])$', name)
-		if direction:
-			direction = direction.groups()[0]
-			name = re.sub(r'\.[rRlL]$', '', name)
-			name = re.sub(r'([_ ])\*([_ ])', r'\1'+direction+r'\2', name)
-	return name
+	return re.sub(r'([_ ])\*([_ ].*)\.([rRlL])$', r'\1\3\2', name) if name.count('*') == 1 else name
 
 # ボーン/ウェイト名を CM3D2 → Blender
 def decode_bone_name(name, enable=True):
-	if not enable: return name
-	direction = re.search(r'[_ ]([rRlL])[_ ]', name)
-	if direction:
-		direction = direction.groups()[0]
-		name = re.sub(r'([_ ])[rRlL]([_ ])', r'\1*\2', name) + "." + direction
-	return name
+	return re.sub(r'([_ ])([rRlL])([_ ].*)$', r'\1*\3.\2', name) if enable else name
 
 # CM3D2用マテリアルを設定に合わせて装飾
 def decorate_material(mate, enable=True, me=None, mate_index=-1):
