@@ -219,8 +219,8 @@ def fild_all_files(dir):
 		for file in files:
 			yield os.path.join(root, file)
 
-# CM3D2フォルダからテクスチャを検索して空の画像を置換
-def replace_cm3d2_tex(img):
+# テクスチャ置き場のパスのリストを返す
+def get_default_tex_paths():
 	default_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
 	if not any(default_paths):
 		
@@ -232,7 +232,7 @@ def replace_cm3d2_tex(img):
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
 					cm3d2_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
 			except:
-				return False
+				return []
 		
 		target_dir = [os.path.join(cm3d2_dir, "GameData", "texture")]
 		target_dir.append(os.path.join(cm3d2_dir, "GameData", "texture2"))
@@ -252,6 +252,11 @@ def replace_cm3d2_tex(img):
 			path = preferences().__getattribute__('default_tex_path' + str(index))
 			if path:
 				tex_dirs.append(path)
+	return tex_dirs
+
+# テクスチャを検索して空の画像へ置換
+def replace_cm3d2_tex(img):
+	tex_dirs = get_default_tex_paths()
 	
 	if 'cm3d2_path' in img.keys():
 		source_path = img['cm3d2_path']
