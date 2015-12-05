@@ -63,13 +63,18 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 	
 	if 'CM3D2/Man' == shader:
 		mate.use_shadeless = True
+		mate.diffuse_color = (0, 1, 1)
+		return
 	elif 'CM3D2/Mosaic' == shader:
 		mate.use_transparency = True
 		mate.transparency_method = 'RAYTRACE'
 		mate.alpha = 0.25
 		mate.raytrace_transparency.ior = 2
+		return
 	elif 'CM3D2_Debug/Debug_CM3D2_Normal2Color' == shader:
 		mate.use_tangent_shading = True
+		mate.diffuse_color = (0.5, 0.5, 1)
+		return
 	
 	else:
 		if '/Toony_' in shader:
