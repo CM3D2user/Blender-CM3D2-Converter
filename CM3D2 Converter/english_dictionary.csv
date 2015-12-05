@@ -303,3 +303,25 @@ CM3D2 Converterアドオンの設定画面を表示します	Display the setting
 他シェイプを調整	Adjust Other Shapes
 このシェイプキーをベースに	To Base This Shape Key
 マテリアルを装飾	Decorate Materials
+スロット内のマテリアルを全て設定に合わせて装飾します	Decorate all to match material setting in slots
+アクティブなシェイプキーを他のシェイプキーのベースにします	Make active shape key to base of other shape key
+設定すれば、anmを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use anm
+設定すれば、texを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use tex
+mateファイルの出力に失敗、中止します。 構文を見直して下さい	failure to output of mate file, cancelled. Please review the syntax
+テキスト「LocalBoneData」に有効なデータがありません	There is no valid data in the text "LocalBoneData"
+アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます	Embedded bone informations on custom properties in armature data
+設定すれば、mateを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use mate
+頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます	Multiply by value to weight of vertex groups, to increase or decrease weights
+表示しているマテリアルをテキスト形式でクリップボードにコピーします	Copy the material to the clipboard in text format
+テキスト「LocalBoneData」が見つかりません、中止します	Text "LocalBoneData" can not be found, cancelled
+アーマチュアが見つかりません、親にするかモディファイアにして下さい	Armature can not be found, please add modifier or parent
+メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます	Add bone informations to custom property in mesh object
+CM3D2で使用されるテクスチャファイル(.tex)を読み込みます	Read texture file (.tex) to be used in CM3D2
+設定すれば、modelを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use model
+ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません	Failed to open the file, does not exist or inaccessible file
+陰部分の面をトゥーン処理している\nグラデーション画像を指定します。	陰部分の面をトゥーン処理している\nグラデーション画像を指定します。
+陰部分の面をトゥーン処理している	Set gradient image that
+グラデーション画像を指定します。	shade of face is toon processing
+「○○.001」のような連番が付属したデータ名からこれらを削除します	Remove them from the serial number is included with the data name, such as "XXX.001"
+多角ポリゴンが見つかりました、正常に出力できなかった可能性があります	Polygonal polygon was found, there is a possibility that can not be output correctly
+CM3D2で使用されるテクスチャファイル(.tex)として保存します	Save as texture file (.tex) to be used in CM3D2
