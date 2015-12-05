@@ -1185,12 +1185,22 @@ class change_base_shape_key(bpy.types.Operator):
 	bl_description = "アクティブなシェイプキーを他のシェイプキーのベースにします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	is_deform_mesh = bpy.props.BoolProperty(name="素メッシュを調整", default=True)
+	is_deform_other_shape = bpy.props.BoolProperty(name="他シェイプを調整", default=True)
+	
 	@classmethod
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
 			return ob.type=='MESH' and 1 <= ob.active_shape_key_index
 		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'is_deform_mesh', icon='MESH_DATA')
+		self.layout.prop(self, 'is_deform_other_shape', icon='SHAPEKEY_DATA')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -1210,17 +1220,19 @@ class change_base_shape_key(bpy.types.Operator):
 		target_shape_key.relative_key = target_shape_key
 		old_shape_key.relative_key = target_shape_key
 		
-		for vert in me.vertices:
-			vert.co = target_shape_key.data[vert.index].co.copy()
+		if self.is_deform_mesh:
+			for vert in me.vertices:
+				vert.co = target_shape_key.data[vert.index].co.copy()
 		
-		for shape_key in me.shape_keys.key_blocks:
-			if shape_key.name == target_shape_key.name or shape_key.name == old_shape_key.name:
-				continue
-			if shape_key.relative_key.name == old_shape_key.name:
-				shape_key.relative_key = target_shape_key
-				for vert in me.vertices:
-					diff_co = target_shape_key.data[vert.index].co - old_shape_key.data[vert.index].co
-					shape_key.data[vert.index].co = shape_key.data[vert.index].co + diff_co
+		if self.is_deform_other_shape:
+			for shape_key in me.shape_keys.key_blocks:
+				if shape_key.name == target_shape_key.name or shape_key.name == old_shape_key.name:
+					continue
+				if shape_key.relative_key.name == old_shape_key.name:
+					shape_key.relative_key = target_shape_key
+					for vert in me.vertices:
+						diff_co = target_shape_key.data[vert.index].co - old_shape_key.data[vert.index].co
+						shape_key.data[vert.index].co = shape_key.data[vert.index].co + diff_co
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}

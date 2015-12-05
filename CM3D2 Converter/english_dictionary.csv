@@ -299,3 +299,6 @@ CM3D2 Converterアドオンの設定画面を表示します	Display the setting
 クリップボード内のマテリアル情報から新規マテリアルを作成します	Create new material from material information in the clipboard
 カスタムプロパティのボーン情報をクリップボードから貼り付けます	Paste bone information of custom property from the clipboard
 ウェイトが割り当てられていない頂点が見つかりました、中止します	Vertices that weight is not assigned found, cancelled
+素メッシュを調整	Adjust Original Mesh
+他シェイプを調整	Adjust Other Shapes
+このシェイプキーをベースに	To Base This Shape Key
