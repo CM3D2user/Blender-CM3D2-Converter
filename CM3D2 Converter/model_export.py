@@ -52,6 +52,9 @@ class export_cm3d2_model(bpy.types.Operator):
 			return self.report_cancel("アクティブオブジェクトがありません")
 		if ob.type != 'MESH':
 			return self.report_cancel("メッシュオブジェクトを選択した状態で実行してください")
+		for mod in ob.modifiers:
+			if mod.type not in ['ARMATURE', 'SUBSURF']:
+				return self.report_cancel("モディファイアを適用するか消してください")
 		if not len(ob.material_slots):
 			return self.report_cancel("マテリアルがありません")
 		for slot in ob.material_slots:
