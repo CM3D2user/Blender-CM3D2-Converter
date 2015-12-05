@@ -82,10 +82,8 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 	
 	is_colored = False
 	for slot in mate.texture_slots:
-		if not slot:
-			continue
-		if not slot.texture:
-			continue
+		if not slot: continue
+		if not slot.texture: continue
 		
 		tex = slot.texture
 		tex_name = remove_serial_number(tex.name)
@@ -115,7 +113,7 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 
 # 画像のおおよその平均色を取得
 def get_image_average_color(img, sample_count=10):
-	if not len(img.pixels): return [0, 0, 0, 1]
+	if not len(img.pixels): return mathutils.Color([0, 0, 0])
 	
 	pixel_count = img.size[0] * img.size[1]
 	channels = img.channels
@@ -136,12 +134,11 @@ def get_image_average_color(img, sample_count=10):
 	average_color /= sample_count
 	output_color = (average_color + maximum_saturation_color) / 2
 	output_color.s *= 1.5
-	
 	return maximum_saturation_color
 
 # 画像のおおよその平均色を取得 (UV版)
 def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
-	if not len(img.pixels): return [0, 0, 0, 1]
+	if not len(img.pixels): return mathutils.Color([0, 0, 0])
 	
 	img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
 	pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
@@ -181,7 +178,6 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	average_color /= sample_count
 	output_color = (average_color + maximum_saturation_color) / 2
 	output_color.s *= 1.5
-	
 	return output_color
 
 # CM3D2のインストールフォルダを取得＋α
@@ -195,8 +191,7 @@ def default_cm3d2_dir(base_dir, file_name, new_ext):
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
 					base_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
 					base_dir = os.path.join(base_dir, "GameData", "*." + new_ext)
-			except:
-				pass
+			except: pass
 	if file_name:
 		head, tail = os.path.split(base_dir)
 		base_dir = os.path.join(head, file_name)
@@ -231,8 +226,7 @@ def get_default_tex_paths():
 				import winreg
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
 					cm3d2_dir = winreg.QueryValueEx(key, 'InstallPath')[0]
-			except:
-				return []
+			except: return []
 		
 		target_dir = [os.path.join(cm3d2_dir, "GameData", "texture")]
 		target_dir.append(os.path.join(cm3d2_dir, "GameData", "texture2"))
@@ -280,8 +274,7 @@ def replace_cm3d2_tex(img):
 				if file_name == source_tex_name:
 					try:
 						file = open(path, 'rb')
-					except:
-						return False
+					except: return False
 					header_ext = read_str(file)
 					if header_ext == 'CM3D2_TEX':
 						file.seek(4, 1)
@@ -290,8 +283,7 @@ def replace_cm3d2_tex(img):
 						png_path = os.path.splitext(path)[0] + ".png"
 						try:
 							png_file = open(png_path, 'wb')
-						except:
-							return False
+						except: return False
 						png_file.write(file.read(png_size))
 						png_file.close()
 						file.close()
@@ -306,9 +298,8 @@ def replace_cm3d2_tex(img):
 # col f タイプの設定値を値に合わせて着色
 def set_texture_color(slot):
 	if not slot or not slot.texture or slot.use: return
-	type = 'f'
-	if slot.use_rgb_to_intensity:
-		type = 'col'
+	
+	type = 'col' if slot.use_rgb_to_intensity else 'f'
 	
 	tex = slot.texture
 	base_name = remove_serial_number(tex.name)
