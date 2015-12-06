@@ -110,23 +110,22 @@ def get_image_average_color(img, sample_count=10):
 	pixel_count = img.size[0] * img.size[1]
 	channels = img.channels
 	
-	average_color = mathutils.Color([0, 0, 0])
-	maximum_saturation = 0.0
-	maximum_saturation_color = mathutils.Color([0, 0, 0])
+	max_s = 0.0
+	max_s_color, average_color = mathutils.Color([0, 0, 0]), mathutils.Color([0, 0, 0])
 	seek_interval = pixel_count / sample_count
 	for sample_index in range(sample_count):
 		
 		index = int(seek_interval * sample_index) * channels
 		color = mathutils.Color(img.pixels[index:index+3])
 		average_color += color
-		if maximum_saturation < color.s:
-			maximum_saturation_color = color
-			maximum_saturation = color.s
+		if max_s < color.s:
+			max_s_color = color
+			max_s = color.s
 	
 	average_color /= sample_count
-	output_color = (average_color + maximum_saturation_color) / 2
+	output_color = (average_color + max_s_color) / 2
 	output_color.s *= 1.5
-	return maximum_saturation_color
+	return max_s_color
 
 # 画像のおおよその平均色を取得 (UV版)
 def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
@@ -140,8 +139,7 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	bm.from_mesh(me)
 	uv_lay = bm.loops.layers.uv.active
 	for face in bm.faces:
-		if face.material_index != mate_index:
-			continue
+		if face.material_index != mate_index: continue
 		for loop in face.loops:
 			uvs.append(loop[uv_lay].uv[:])
 	bm.free()
@@ -150,24 +148,22 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 		return get_image_average_color(img)
 	
 	average_color = mathutils.Color([0, 0, 0])
-	maximum_saturation = 0.0
-	maximum_saturation_color = mathutils.Color([0, 0, 0])
+	max_s = 0.0
+	max_s_color = mathutils.Color([0, 0, 0])
 	seek_interval = len(uvs) / sample_count
 	for sample_index in range(sample_count):
 		
 		uv_index = int(seek_interval * sample_index)
 		x, y = uvs[uv_index]
-		x = int(x * img_width)
-		y = int(y * img_height)
+		x, y = int(x * img_width), int(y * img_height)
 		
 		color = mathutils.Color(pixels[y, x, :3])
 		average_color += color
-		if maximum_saturation < color.s:
-			maximum_saturation_color = color
-			maximum_saturation = color.s
+		if max_s < color.s:
+			max_s_color, max_s = color, color.s
 	
 	average_color /= sample_count
-	output_color = (average_color + maximum_saturation_color) / 2
+	output_color = (average_color + max_s_color) / 2
 	output_color.s *= 1.5
 	return output_color
 
@@ -184,18 +180,15 @@ def default_cm3d2_dir(base_dir, file_name, new_ext):
 					base_dir = os.path.join(base_dir, "GameData", "*." + new_ext)
 			except: pass
 	if file_name:
-		head, tail = os.path.split(base_dir)
-		base_dir = os.path.join(head, file_name)
-	root, ext = os.path.splitext(base_dir)
-	base_dir = root + "." + new_ext
+		base_dir = os.path.join(os.path.split(base_dir)[0], file_name)
+	base_dir = os.path.splitext(base_dir)[0] + "." + new_ext
 	return base_dir
 
 # ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):
 	backup_ext = preferences().backup_ext
 	if enable and backup_ext and os.path.exists(filepath):
-		backup_path = filepath + "." + backup_ext
-		shutil.copyfile(filepath, backup_path)
+		shutil.copyfile(filepath, filepath+"."+backup_ext)
 
 # サブフォルダを再帰的に検索してリスト化
 def fild_all_files(dir):
@@ -206,12 +199,12 @@ def fild_all_files(dir):
 
 # テクスチャ置き場のパスのリストを返す
 def get_default_tex_paths():
+	tex_dirs = []
 	default_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
 	if not any(default_paths):
 		
-		if preferences().cm3d2_path:
-			cm3d2_dir = preferences().cm3d2_path
-		else:
+		cm3d2_dir = preferences().cm3d2_path
+		if not cm3d2_dir:
 			try:
 				import winreg
 				with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\KISS\カスタムメイド3D2') as key:
@@ -223,7 +216,6 @@ def get_default_tex_paths():
 		target_dir.append(os.path.join(cm3d2_dir, "Sybaris", "GameData"))
 		target_dir.append(os.path.join(cm3d2_dir, "Mod"))
 		
-		tex_dirs = []
 		for path in target_dir:
 			if os.path.isdir(path):
 				tex_dirs.append(path)
@@ -231,7 +223,6 @@ def get_default_tex_paths():
 		for index, path in enumerate(tex_dirs):
 			preferences().__setattr__('default_tex_path' + str(index), path)
 	else:
-		tex_dirs = []
 		for index in range(4):
 			path = preferences().__getattribute__('default_tex_path' + str(index))
 			if path:
@@ -344,12 +335,11 @@ def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES
 	if not len(candidate_areas):
 		return None
 	
-	maximum_area_size = -1
+	max_area_size = -1
 	for area in candidate_areas:
 		size = area.width * area.height
-		if maximum_area_size < size:
-			maximum_area = area
-			maximum_area_size = size
+		if max_area_size < size:
+			max_area, max_area_size = area, size
 	
-	maximum_area.type = request_type
-	return maximum_area
+	max_area.type = request_type
+	return max_area
