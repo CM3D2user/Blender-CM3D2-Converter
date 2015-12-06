@@ -44,7 +44,7 @@ class import_cm3d2_tex(bpy.types.Operator):
 			png_path = root + ".png"
 			is_png_overwrite = os.path.exists(png_path)
 			if self.mode == 'PACK' and is_png_overwrite:
-				png_path = png_path + ".temp.png"
+				png_path += ".temp.png"
 			png_file = open(png_path, 'wb')
 			png_file.write(file.read(png_size))
 			png_file.close()

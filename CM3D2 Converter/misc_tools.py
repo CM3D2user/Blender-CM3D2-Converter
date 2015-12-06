@@ -1581,11 +1581,11 @@ class copy_material(bpy.types.Operator):
 		mate = context.material
 		
 		output_text = "1000" + "\n"
-		output_text = output_text + mate.name.lower() + "\n"
-		output_text = output_text + mate.name + "\n"
-		output_text = output_text + mate['shader1'] + "\n"
-		output_text = output_text + mate['shader2'] + "\n"
-		output_text = output_text + "\n"
+		output_text += mate.name.lower() + "\n"
+		output_text += mate.name + "\n"
+		output_text += mate['shader1'] + "\n"
+		output_text += mate['shader2'] + "\n"
+		output_text += "\n"
 		
 		for tex_slot in mate.texture_slots:
 			if not tex_slot:
@@ -1598,8 +1598,8 @@ class copy_material(bpy.types.Operator):
 					type = 'col'
 				else:
 					type = 'f'
-			output_text = output_text + type + "\n"
-			output_text = output_text + "\t" + common.remove_serial_number(tex.name) + "\n"
+			output_text += type + "\n"
+			output_text += "\t" + common.remove_serial_number(tex.name) + "\n"
 			if type == 'tex':
 				try:
 					img = tex.image
@@ -1607,8 +1607,8 @@ class copy_material(bpy.types.Operator):
 					self.report(type={'ERROR'}, message="texタイプの設定値の取得に失敗しました、中止します")
 					return {'CANCELLED'}
 				if img:
-					output_text = output_text + '\ttex2d' + "\n"
-					output_text = output_text + "\t" + common.remove_serial_number(img.name) + "\n"
+					output_text += '\ttex2d' + "\n"
+					output_text += "\t" + common.remove_serial_number(img.name) + "\n"
 					if 'cm3d2_path' in img.keys():
 						path = img['cm3d2_path']
 					else:
@@ -1617,16 +1617,16 @@ class copy_material(bpy.types.Operator):
 					path = re.sub(r'^[\/\.]*', "", path)
 					if not re.search(r'^assets/texture/', path, re.I):
 						path = "Assets/texture/texture/" + os.path.basename(path)
-					output_text = output_text + "\t" + path + "\n"
+					output_text += "\t" + path + "\n"
 					col = tex_slot.color
-					output_text = output_text + "\t" + " ".join([str(col[0]), str(col[1]), str(col[2]), str(tex_slot.diffuse_color_factor)]) + "\n"
+					output_text += "\t" + " ".join([str(col[0]), str(col[1]), str(col[2]), str(tex_slot.diffuse_color_factor)]) + "\n"
 				else:
-					output_text = output_text + "\tnull" + "\n"
+					output_text += "\tnull" + "\n"
 			elif type == 'col':
 				col = tex_slot.color
-				output_text = output_text + "\t" + " ".join([str(col[0]), str(col[1]), str(col[2]), str(tex_slot.diffuse_color_factor)]) + "\n"
+				output_text += "\t" + " ".join([str(col[0]), str(col[1]), str(col[2]), str(tex_slot.diffuse_color_factor)]) + "\n"
 			elif type == 'f':
-				output_text = output_text + "\t" + str(tex_slot.diffuse_color_factor) + "\n"
+				output_text += "\t" + str(tex_slot.diffuse_color_factor) + "\n"
 		
 		context.window_manager.clipboard = output_text
 		self.report(type={'INFO'}, message="マテリアルテキストをクリップボードにコピーしました")
@@ -1870,15 +1870,15 @@ class copy_text_bone_data(bpy.types.Operator):
 	def execute(self, context):
 		output_text = ""
 		if 'BaseBone' in context.blend_data.texts['BoneData'].keys():
-			output_text = output_text + "BaseBone:" + context.blend_data.texts['BoneData']['BaseBone'] + "\n"
+			output_text += "BaseBone:" + context.blend_data.texts['BoneData']['BaseBone'] + "\n"
 		for line in context.blend_data.texts['BoneData'].as_string().split('\n'):
 			if not line:
 				continue
-			output_text = output_text + "BoneData:" + line + "\n"
+			output_text += "BoneData:" + line + "\n"
 		for line in context.blend_data.texts['LocalBoneData'].as_string().split('\n'):
 			if not line:
 				continue
-			output_text = output_text + "LocalBoneData:" + line + "\n"
+			output_text += "LocalBoneData:" + line + "\n"
 		context.window_manager.clipboard = output_text
 		self.report(type={'INFO'}, message="ボーン情報をクリップボードにコピーしました")
 		return {'FINISHED'}
@@ -1984,11 +1984,11 @@ class copy_object_bone_data_property(bpy.types.Operator):
 		ob = context.active_object
 		pass_count = 0
 		if 'BaseBone' in ob.keys():
-			output_text = output_text + "BaseBone:" + ob['BaseBone'] + "\n"
+			output_text += "BaseBone:" + ob['BaseBone'] + "\n"
 		for i in range(99999):
 			name = "BoneData:" + str(i)
 			if name in ob.keys():
-				output_text = output_text + "BoneData:" + ob[name] + "\n"
+				output_text += "BoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
 			if 10 < pass_count:
@@ -1997,7 +1997,7 @@ class copy_object_bone_data_property(bpy.types.Operator):
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
 			if name in ob.keys():
-				output_text = output_text + "LocalBoneData:" + ob[name] + "\n"
+				output_text += "LocalBoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
 			if 10 < pass_count:
@@ -2131,11 +2131,11 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		ob = context.active_object.data
 		pass_count = 0
 		if 'BaseBone' in ob.keys():
-			output_text = output_text + "BaseBone:" + ob['BaseBone'] + "\n"
+			output_text += "BaseBone:" + ob['BaseBone'] + "\n"
 		for i in range(99999):
 			name = "BoneData:" + str(i)
 			if name in ob.keys():
-				output_text = output_text + "BoneData:" + ob[name] + "\n"
+				output_text += "BoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
 			if 10 < pass_count:
@@ -2144,7 +2144,7 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
 			if name in ob.keys():
-				output_text = output_text + "LocalBoneData:" + ob[name] + "\n"
+				output_text += "LocalBoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
 			if 10 < pass_count:

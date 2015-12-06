@@ -600,11 +600,11 @@ class import_cm3d2_model(bpy.types.Operator):
 			s = ",".join([data['name'], str(data['unknown']), ""])
 			parent_index = data['parent_index']
 			if -1 < parent_index:
-				s = s + bone_data[parent_index]['name'] + ","
+				s += bone_data[parent_index]['name'] + ","
 			else:
-				s = s + "None" + ","
-			s = s + " ".join([str(data['co'][0]), str(data['co'][1]), str(data['co'][2])]) + ","
-			s = s + " ".join([str(data['rot'][0]), str(data['rot'][1]), str(data['rot'][2]), str(data['rot'][3])])
+				s += "None" + ","
+			s += " ".join([str(data['co'][0]), str(data['co'][1]), str(data['co'][2])]) + ","
+			s += " ".join([str(data['rot'][0]), str(data['rot'][1]), str(data['rot'][2]), str(data['rot'][3])])
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
@@ -633,7 +633,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			mat_list.extend(list(data['matrix'][3]))
 			for j, f in enumerate(mat_list):
 				mat_list[j] = str(f)
-			s = s + " ".join(mat_list)
+			s += " ".join(mat_list)
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
