@@ -388,16 +388,10 @@ def INFO_MT_help(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id
 	self.layout.separator()
 	self.layout.operator('script.update_cm3d2_converter', icon_value=icon_id)
-	self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS_sub', icon_value=icon_id)
+	self.layout.operator('wm.call_menu', icon_value=icon_id, text="CM3D2 Converterの更新履歴").name = 'INFO_MT_help_CM3D2_Converter_RSS'
 	self.layout.operator('wm.show_cm3d2_converter_preference', icon_value=icon_id)
 
-class INFO_MT_help_CM3D2_Converter_RSS_sub(bpy.types.Menu):
-	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS_sub'
-	bl_label = "CM3D2 Converterの更新履歴"
-	
-	def draw(self, context):
-		self.layout.menu('INFO_MT_help_CM3D2_Converter_RSS', text="取得に数秒かかります", icon='FILE_REFRESH')
-
+# 更新履歴メニュー
 class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 	bl_idname = 'INFO_MT_help_CM3D2_Converter_RSS'
 	bl_label = "CM3D2 Converterの更新履歴"
