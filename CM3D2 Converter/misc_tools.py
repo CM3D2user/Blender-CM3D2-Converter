@@ -123,13 +123,14 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			is_waighted = False
 			
 			source_weights = []
+			source_weights_append = source_weights.append
 			for source_vert in source_me.vertices:
 				for elem in source_vert.groups:
 					if elem.group == source_vertex_group.index:
-						source_weights.append(elem.weight)
+						source_weights_append(elem.weight)
 						break
 				else:
-					source_weights.append(0.0)
+					source_weights_append(0.0)
 			
 			for target_vert in target_me.vertices:
 				
@@ -216,8 +217,10 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		progress_reduce = len(target_me.vertices) // 200 + 1
 		near_vert_data = []
 		near_vert_multi_total = []
+		near_vert_multi_total_append = near_vert_multi_total.append
 		for vert in target_me.vertices:
 			near_vert_data.append([])
+			near_vert_data_append = near_vert_data[-1].append
 			
 			target_co = target_ob.matrix_world * vert.co
 			
@@ -231,9 +234,9 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 					multi = (diff_radius - (dist - mini_dist)) / diff_radius
 				else:
 					multi = 1.0
-				near_vert_data[-1].append((index, multi))
+				near_vert_data_append((index, multi))
 				multi_total += multi
-			near_vert_multi_total.append(multi_total)
+			near_vert_multi_total_append(multi_total)
 			
 			if vert.index % progress_reduce == 0:
 				context.window_manager.progress_update(vert.index)
@@ -250,13 +253,14 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 			is_waighted = False
 			
 			source_weights = []
+			source_weights_append = source_weights.append
 			for source_vert in source_me.vertices:
 				for elem in source_vert.groups:
 					if elem.group == source_vertex_group.index:
-						source_weights.append(elem.weight)
+						source_weights_append(elem.weight)
 						break
 				else:
-					source_weights.append(0.0)
+					source_weights_append(0.0)
 			
 			for target_vert in target_me.vertices:
 				
@@ -359,9 +363,10 @@ class blur_vertex_group(bpy.types.Operator):
 		kd.balance()
 		for vert in me.vertices:
 			near_vert_data.append([])
+			near_vert_data_append = near_vert_data[-1].append
 			for co, index, dist in kd.find_range(vert.co, radius):
 				multi = (radius - dist) / radius
-				near_vert_data[-1].append((index, multi))
+				near_vert_data_append((index, multi))
 			if vert.index % progress_reduce == 0:
 				context.window_manager.progress_update(vert.index)
 		context.window_manager.progress_end()
@@ -389,13 +394,14 @@ class blur_vertex_group(bpy.types.Operator):
 			for vertex_group in target_vertex_groups:
 				
 				weights = []
+				weights_append = weights.append
 				for vert in me.vertices:
 					for elem in vert.groups:
 						if elem.group == vertex_group.index:
-							weights.append(elem.weight)
+							weights_append(elem.weight)
 							break
 					else:
-						weights.append(0.0)
+						weights_append(0.0)
 				
 				for vert in me.vertices:
 					
@@ -818,8 +824,10 @@ class precision_shape_key_transfer(bpy.types.Operator):
 		progress_reduce = len(target_me.vertices) // 200 + 1
 		near_vert_data = []
 		near_vert_multi_total = []
+		near_vert_multi_total_append = near_vert_multi_total.append
 		for vert in target_me.vertices:
 			near_vert_data.append([])
+			near_vert_data_append = near_vert_data[-1].append
 			
 			target_co = target_ob.matrix_world * vert.co
 			mini_co, mini_index, mini_dist = kd.find(target_co)
@@ -832,9 +840,9 @@ class precision_shape_key_transfer(bpy.types.Operator):
 					multi = (diff_radius - (dist - mini_dist)) / diff_radius
 				else:
 					multi = 1.0
-				near_vert_data[-1].append((index, multi))
+				near_vert_data_append((index, multi))
 				multi_total += multi
-			near_vert_multi_total.append(multi_total)
+			near_vert_multi_total_append(multi_total)
 			
 			if vert.index % progress_reduce == 0:
 				context.window_manager.progress_update(vert.index)
@@ -866,11 +874,6 @@ class precision_shape_key_transfer(bpy.types.Operator):
 			
 			mat1, mat2 = source_ob.matrix_world, target_ob.matrix_world
 			source_shape_keys = [(mat1 * source_shape_key.data[v.index].co * mat2) - (mat1 * source_me.vertices[v.index].co * mat2) for v in source_me.vertices]
-			
-			for source_vert in source_me.vertices:
-				shape_key_co = source_ob.matrix_world * source_shape_key.data[source_vert.index].co * target_ob.matrix_world
-				vert_co = source_ob.matrix_world * source_me.vertices[source_vert.index].co * target_ob.matrix_world
-				source_shape_keys.append(shape_key_co - vert_co)
 			
 			for target_vert in target_me.vertices:
 				
