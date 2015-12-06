@@ -242,11 +242,10 @@ def get_default_tex_paths():
 def replace_cm3d2_tex(img):
 	tex_dirs = get_default_tex_paths()
 	
-	if 'cm3d2_path' in img.keys():
-		source_path = img['cm3d2_path']
-	else:
+	if 'cm3d2_path' not in img.keys():
 		img['cm3d2_path'] = img.filepath
-		source_path = img.filepath
+	source_path = img['cm3d2_path']
+	
 	source_png_name = os.path.basename(source_path).lower()
 	if '*' in source_png_name:
 		source_png_name = remove_serial_number(img.name)
@@ -260,29 +259,29 @@ def replace_cm3d2_tex(img):
 				img.filepath = path
 				img.reload()
 				return True
-			else:
-				if file_name == source_tex_name:
+			
+			elif file_name == source_tex_name:
+				try:
+					file = open(path, 'rb')
+				except: return False
+				
+				header_ext = read_str(file)
+				if header_ext == 'CM3D2_TEX':
+					file.seek(4, 1)
+					read_str(file)
+					png_size = struct.unpack('<i', file.read(4))[0]
+					png_path = os.path.splitext(path)[0] + ".png"
 					try:
-						file = open(path, 'rb')
+						png_file = open(png_path, 'wb')
 					except: return False
-					header_ext = read_str(file)
-					if header_ext == 'CM3D2_TEX':
-						file.seek(4, 1)
-						read_str(file)
-						png_size = struct.unpack('<i', file.read(4))[0]
-						png_path = os.path.splitext(path)[0] + ".png"
-						try:
-							png_file = open(png_path, 'wb')
-						except: return False
-						png_file.write(file.read(png_size))
-						png_file.close()
-						file.close()
-						img.filepath = png_path
-						img.reload()
-						return True
-					else:
-						file.close()
-						return False
+					png_file.write(file.read(png_size))
+					png_file.close() ; file.close()
+					img.filepath = png_path
+					img.reload()
+					return True
+				else:
+					file.close()
+					return False
 	return False
 
 # col f タイプの設定値を値に合わせて着色
