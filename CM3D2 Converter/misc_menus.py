@@ -422,8 +422,16 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 				elif diff_seconds.seconds <= 60 * 60:
 					icon = 'PREVIEW_RANGE'
 				
-				update = re.sub(r'^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\+(\d+):(\d+)', r'\2/\3 \4:\5', update)
-				text = "(" + update + ") " + title
+				if diff_seconds.days:
+					date_str = "%d日前" % diff_seconds.days
+				elif 60 * 60 <= diff_seconds.seconds:
+					date_str = "%d時間前" % int(diff_seconds.seconds / (60 * 60))
+				elif 60 <= diff_seconds.seconds:
+					date_str = "%d分前" % int(diff_seconds.seconds / 60)
+				else:
+					date_str = "%d秒前" % diff_seconds.seconds
+				
+				text = "(" + date_str + ") " + title
 				self.layout.operator('wm.url_open', text=text, icon=icon).url = link
 				count += 1
 		except TypeError:
