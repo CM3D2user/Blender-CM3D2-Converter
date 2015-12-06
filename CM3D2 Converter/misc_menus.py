@@ -401,7 +401,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			import re, urllib, datetime, urllib.request, xml.sax.saxutils
 			response = urllib.request.urlopen("https://github.com/CM3Duser/Blender-CM3D2-Converter/commits/master.atom")
 			html = response.read().decode('utf-8')
-			titles = re.findall(r'\<title\>[ 　\t\r\n]*([^ 　\t\<\>\r\n][^\<]*[^ 　\t\<\>\r\n])[ 　\t\r\n]*\<\/title\>', html)[1:]
+			titles = re.findall(r'\<title\>[　\s]*([^　\s][^\<]*[^　\s])[　\s]*\<\/title\>', html)[1:]
 			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
 			links = re.findall(r'<link [^\<\>]*href="([^"]+)"/>', html)[2:]
 			count = 0
