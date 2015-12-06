@@ -119,8 +119,7 @@ def get_image_average_color(img, sample_count=10):
 		color = mathutils.Color(img.pixels[index:index+3])
 		average_color += color
 		if max_s < color.s:
-			max_s_color = color
-			max_s = color.s
+			max_s_color, max_s = color, color.s
 	
 	average_color /= sample_count
 	output_color = (average_color + max_s_color) / 2

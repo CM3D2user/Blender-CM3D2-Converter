@@ -1331,72 +1331,84 @@ class new_cm3d2(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		ob_names = common.remove_serial_number(ob.name).split('.')
+		ob_name = ob_names[0]
 		if not context.material_slot:
 			bpy.ops.object.material_slot_add()
-		mate = context.blend_data.materials.new(ob_names[0])
+		mate = context.blend_data.materials.new(ob_name)
 		context.material_slot.material = mate
 		tex_list, col_list, f_list = [], [], []
 		
-		ob_name = ob_names[0]
-		
 		base_path = "Assets\\texture\\texture\\"
 		
-		_MainTex = base_path + ob_name + ".png"
-		toonGrayA1 = base_path + r"toon\toonGrayA1.png"
-		_ShadowTex = base_path + ob_name + "_shadow.png"
-		toonDress_shadow = base_path + r"toon\toonDress_shadow.png"
+		_MainTex = ("_MainTex", ob_name, base_path + ob_name + ".png")
+		_ToonRamp = ("_ToonRamp", "toonGrayA1", base_path + r"toon\toonGrayA1.png")
+		_ShadowTex = ("_ShadowTex", ob_name + "_shadow", base_path + ob_name + "_shadow.png")
+		_ShadowRateToon = ("_ShadowRateToon", "toonDress_shadow", base_path + r"toon\toonDress_shadow.png")
+		_HiTex = ("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png")
+		
+		_Color = ("_Color", (1, 1, 1, 1))
+		_ShadowColor = ("_ShadowColor", (0, 0, 0, 1))
+		_RimColor = ("_RimColor", (0.5, 0.5, 0.5, 1))
+		_OutlineColor = ("_OutlineColor", (0, 0, 0, 1))
+		
+		_Shininess = ("_Shininess", 0)
+		_OutlineWidth = ("_OutlineWidth", 0.002)
+		_RimPower = ("_RimPower", 25)
+		_RimShift = ("_RimShift", 0)
+		_HiRate = ("_HiRate", 0.5)
+		_HiPow = ("_HiPow", 0.001)
 		
 		if False:
 			pass
 		elif self.type == 'CM3D2/Toony_Lighted_Outline':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_OutlineWidth", 0.002))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Toony_Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Toony_Lighted_Hair_Outline':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			tex_list.append(("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png"))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_OutlineWidth", 0.002))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
-			f_list.append(("_HiRate", 0.5))
-			f_list.append(("_HiPow", 0.001))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			tex_list.append(_HiTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
+			f_list.append(_HiRate)
+			f_list.append(_HiPow)
 		elif self.type == 'CM3D2/Mosaic':
 			mate['shader1'] = 'CM3D2/Mosaic'
 			mate['shader2'] = 'CM3D2__Mosaic'
@@ -1405,124 +1417,124 @@ class new_cm3d2(bpy.types.Operator):
 		elif self.type == 'Unlit/Texture':
 			mate['shader1'] = 'Unlit/Texture'
 			mate['shader2'] = 'Unlit__Texture'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			col_list.append(("_Color", (1, 1, 1, 1)))
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
 		elif self.type == 'Unlit/Transparent':
 			mate['shader1'] = 'Unlit/Transparent'
 			mate['shader2'] = 'Unlit__Transparent'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 1))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Man':
 			mate['shader1'] = 'CM3D2/Man'
 			mate['shader2'] = 'CM3D2__Man'
-			col_list.append(("_Color", (1, 1, 1, 1)))
+			col_list.append(_Color)
 			f_list.append(("_FloatValue2", 0.5))
 			f_list.append(("_FloatValue3", 1))
 		elif self.type == 'Diffuse':
 			mate['shader1'] = 'Diffuse'
 			mate['shader2'] = 'Diffuse'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			col_list.append(("_Color", (1, 1, 1, 1)))
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
 		elif self.type == 'CM3D2/Toony_Lighted_Trans_NoZ':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans_NoZ'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans_NoZ'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_OutlineWidth", 0.002))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Toony_Lighted_Outline_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline_Trans'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_OutlineWidth", 0.002))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Lighted_Trans'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
 		elif self.type == 'CM3D2/Toony_Lighted':
 			mate['shader1'] = 'CM3D2/Toony_Lighted'
 			mate['shader2'] = 'CM3D2__Toony_Lighted'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Toony_Lighted_Hair':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			tex_list.append(("_ToonRamp", "toonGrayA1", toonGrayA1))
-			tex_list.append(("_ShadowTex", ob_name + "_shadow", _ShadowTex))
-			tex_list.append(("_ShadowRateToon", "toonDress_shadow", toonDress_shadow))
-			tex_list.append(("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png"))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
-			f_list.append(("_HiRate", 0.5))
-			f_list.append(("_HiPow", 0.001))
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			tex_list.append(_HiTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
+			f_list.append(_HiRate)
+			f_list.append(_HiPow)
 		elif self.type == 'Transparent/Diffuse':
 			mate['shader1'] = 'Transparent/Diffuse'
 			mate['shader2'] = 'Transparent__Diffuse'
-			tex_list.append(("_MainTex", ob_name, _MainTex))
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_ShadowColor", (0, 0, 0, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_OutlineWidth", 0.002))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		elif self.type == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
 			mate['shader1'] = 'CM3D2_Debug/Debug_CM3D2_Normal2Color'
 			mate['shader2'] = 'CM3D2_Debug__Debug_CM3D2_Normal2Color'
-			col_list.append(("_Color", (1, 1, 1, 1)))
-			col_list.append(("_RimColor", (0.5, 0.5, 0.5, 1)))
-			col_list.append(("_OutlineColor", (0, 0, 0, 1)))
+			col_list.append(_Color)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
 			col_list.append(("_SpecColor", (1, 1, 1, 1)))
-			f_list.append(("_Shininess", 0))
-			f_list.append(("_OutlineWidth", 0.002))
-			f_list.append(("_RimPower", 25))
-			f_list.append(("_RimShift", 0))
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
 		
 		slot_count = 0
 		for data in tex_list:
