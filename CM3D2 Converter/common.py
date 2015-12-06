@@ -133,14 +133,10 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
 	pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
 	
-	uvs = []
 	bm = bmesh.new()
 	bm.from_mesh(me)
 	uv_lay = bm.loops.layers.uv.active
-	for face in bm.faces:
-		if face.material_index != mate_index: continue
-		for loop in face.loops:
-			uvs.append(loop[uv_lay].uv[:])
+	uvs = [l[uv_lay].uv[:] for f in bm.faces if f.material_index == mate_index for l in f.loops]
 	bm.free()
 	
 	if len(uvs) <= sample_count:
@@ -198,7 +194,6 @@ def fild_all_files(dir):
 
 # テクスチャ置き場のパスのリストを返す
 def get_default_tex_paths():
-	tex_dirs = []
 	default_paths = [preferences().default_tex_path0, preferences().default_tex_path1, preferences().default_tex_path2, preferences().default_tex_path3]
 	if not any(default_paths):
 		
@@ -215,17 +210,12 @@ def get_default_tex_paths():
 		target_dir.append(os.path.join(cm3d2_dir, "Sybaris", "GameData"))
 		target_dir.append(os.path.join(cm3d2_dir, "Mod"))
 		
-		for path in target_dir:
-			if os.path.isdir(path):
-				tex_dirs.append(path)
+		tex_dirs = [path for path in target_dir if os.path.isdir(path)]
 		
 		for index, path in enumerate(tex_dirs):
 			preferences().__setattr__('default_tex_path' + str(index), path)
 	else:
-		for index in range(4):
-			path = preferences().__getattribute__('default_tex_path' + str(index))
-			if path:
-				tex_dirs.append(path)
+		tex_dirs = [preferences().__getattribute__('default_tex_path' + str(i)) for i in range(4) if preferences().__getattribute__('default_tex_path' + str(i))]
 	return tex_dirs
 
 # テクスチャを検索して空の画像へ置換

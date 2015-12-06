@@ -110,11 +110,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			kd.insert(co, vert.index)
 		kd.balance()
 		
-		near_vert_indexs = []
-		for vert in target_me.vertices:
-			target_co = target_ob.matrix_world * vert.co
-			near_index = kd.find(target_co)[1]
-			near_vert_indexs.append(near_index)
+		near_vert_indexs = [kd.find(target_ob.matrix_world * v.co)[1] for v in target_me.vertices]
 		
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
 		for source_vertex_group in source_ob.vertex_groups:
@@ -344,11 +340,9 @@ class blur_vertex_group(bpy.types.Operator):
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		edge_lengths = []
 		bm = bmesh.new()
 		bm.from_mesh(me)
-		for edge in bm.edges:
-			edge_lengths.append(edge.calc_length())
+		edge_lengths = [e.calc_length() for e in bm.edges]
 		bm.free()
 		edge_lengths.sort()
 		average_edge_length = sum(edge_lengths) / len(edge_lengths)
@@ -707,11 +701,7 @@ class quick_shape_key_transfer(bpy.types.Operator):
 			kd.insert(co, vert.index)
 		kd.balance()
 		
-		near_vert_indexs = []
-		for vert in target_me.vertices:
-			target_co = target_ob.matrix_world * vert.co
-			near_index = kd.find(target_co)[1]
-			near_vert_indexs.append(near_index)
+		near_vert_indexs = [kd.find(target_ob.matrix_world * v.co)[1] for v in target_me.vertices]
 		
 		is_shapeds = {}
 		relative_keys = []
@@ -737,11 +727,8 @@ class quick_shape_key_transfer(bpy.types.Operator):
 			except:
 				pass
 			
-			source_shape_keys = []
-			for source_vert in source_me.vertices:
-				shape_key_co = source_ob.matrix_world * source_shape_key.data[source_vert.index].co * target_ob.matrix_world
-				vert_co = source_ob.matrix_world * source_me.vertices[source_vert.index].co * target_ob.matrix_world
-				source_shape_keys.append(shape_key_co - vert_co)
+			mat1, mat2 = source_ob.matrix_world, target_ob.matrix_world
+			source_shape_keys = [(mat1 * source_shape_key.data[v.index].co * mat2) - (mat1 * source_me.vertices[v.index].co * mat2) for v in source_me.vertices]
 			
 			for target_vert in target_me.vertices:
 				
@@ -877,7 +864,9 @@ class precision_shape_key_transfer(bpy.types.Operator):
 			except:
 				pass
 			
-			source_shape_keys = []
+			mat1, mat2 = source_ob.matrix_world, target_ob.matrix_world
+			source_shape_keys = [(mat1 * source_shape_key.data[v.index].co * mat2) - (mat1 * source_me.vertices[v.index].co * mat2) for v in source_me.vertices]
+			
 			for source_vert in source_me.vertices:
 				shape_key_co = source_ob.matrix_world * source_shape_key.data[source_vert.index].co * target_ob.matrix_world
 				vert_co = source_ob.matrix_world * source_me.vertices[source_vert.index].co * target_ob.matrix_world
@@ -1027,18 +1016,12 @@ class blur_shape_key(bpy.types.Operator):
 		if self.mode == 'ACTIVE':
 			target_shapes = [ob.active_shape_key]
 		elif self.mode == 'ALL':
-			target_shapes = []
-			for key_block in shape_keys.key_blocks:
-				target_shapes.append(key_block)
+			target_shapes = [key_block for key_block in shape_keys.key_blocks]
 		context.window_manager.progress_begin(0, len(bm.verts) * len(target_shapes) * self.strength)
 		
 		near_vert_index = []
 		for vert_index, vert in enumerate(bm.verts):
-			near_vert_index.append([])
-			for edge in vert.link_edges:
-				for v in edge.verts:
-					if vert_index != v.index:
-						near_vert_index[-1].append(v.index)
+			near_vert_index.append([v.index for e in vert.link_edges for v in edge.verts if vert_index != v.index])
 		
 		total_count = 0
 		for strength_count in range(self.strength):
@@ -1139,9 +1122,7 @@ class radius_blur_shape_key(bpy.types.Operator):
 		if self.mode == 'ACTIVE':
 			target_shapes = [ob.active_shape_key]
 		elif self.mode == 'ALL':
-			target_shapes = []
-			for key_block in shape_keys.key_blocks:
-				target_shapes.append(key_block)
+			target_shapes = [key_block for key_block in shape_keys.key_blocks]
 		
 		if not self.is_shaped_radius:
 			kd = mathutils.kdtree.KDTree(len(me.vertices))
