@@ -266,10 +266,8 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 				
 				if 0 < near_vert_multi_total[target_vert.index]:
 					
-					total_weight = 0.0
-					
-					for near_index, near_multi in near_vert_data[target_vert.index]:
-						total_weight += source_weights[near_index] * near_multi
+					total_weight = [source_weights[i] * m for i, m in near_vert_data[target_vert.index]]
+					total_weight = sum(total_weight)
 					
 					average_weight = total_weight / near_vert_multi_total[target_vert.index]
 				else:
@@ -429,7 +427,6 @@ class blur_vertex_group(bpy.types.Operator):
 					
 					if 0.001 < average_weight:
 						vertex_group.add([vert.index], average_weight, 'REPLACE')
-						print('rep')
 					else:
 						vertex_group.remove([vert.index])
 					
