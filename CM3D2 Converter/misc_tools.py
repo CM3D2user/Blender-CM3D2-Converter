@@ -101,7 +101,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_first_remove_all:
-			if len(target_ob.vertex_groups):
+			if bpy.ops.object.vertex_group_remove.poll():
 				bpy.ops.object.vertex_group_remove(all=True)
 		
 		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
@@ -204,7 +204,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_first_remove_all:
-			if len(target_ob.vertex_groups):
+			if bpy.ops.object.vertex_group_remove.poll():
 				bpy.ops.object.vertex_group_remove(all=True)
 		
 		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
