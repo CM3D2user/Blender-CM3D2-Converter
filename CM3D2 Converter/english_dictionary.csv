@@ -325,3 +325,12 @@ CM3D2で使用されるテクスチャファイル(.tex)を読み込みます	Re
 「○○.001」のような連番が付属したデータ名からこれらを削除します	Remove them from the serial number is included with the data name, such as "XXX.001"
 多角ポリゴンが見つかりました、正常に出力できなかった可能性があります	Polygonal polygon was found, there is a possibility that can not be output correctly
 CM3D2で使用されるテクスチャファイル(.tex)として保存します	Save as texture file (.tex) to be used in CM3D2
+%d日前	%d days before
+%d分前	%d minutes before
+%d秒前	%d seconds before
+%d時間前	%d hours before
+アクティブより上	Above Active
+アクティブより下	Lower Active
+CM3D2用に変更	Change for CM3D2
+全モディファイアを適用	Apply All Modifiers
+選択モディファイアを適用	Apply Select Modifiers

@@ -106,6 +106,9 @@ def MATERIAL_PT_context_material(self, context):
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
 			
 			box.operator('material.decorate_material', icon='TEXTURE_SHADED')
+		
+		else:
+			self.layout.operator('material.new_cm3d2', text="CM3D2用に変更", icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # アーマチュアタブに項目追加
 def DATA_PT_context_arm(self, context):

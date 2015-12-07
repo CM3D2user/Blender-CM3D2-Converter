@@ -1292,9 +1292,7 @@ class new_cm3d2(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if 'material' in dir(context):
-			return not context.material
-		return False
+		return True
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
@@ -1313,9 +1311,16 @@ class new_cm3d2(bpy.types.Operator):
 		me = ob.data
 		ob_names = common.remove_serial_number(ob.name).split('.')
 		ob_name = ob_names[0]
-		if not context.material_slot:
-			bpy.ops.object.material_slot_add()
-		mate = context.blend_data.materials.new(ob_name)
+		
+		if context.material:
+			mate = context.material
+			for index, slot in enumerate(mate.texture_slots):
+				mate.texture_slots.clear(index)
+		else:
+			if not context.material_slot:
+				bpy.ops.object.material_slot_add()
+			mate = context.blend_data.materials.new(ob_name)
+		
 		context.material_slot.material = mate
 		tex_list, col_list, f_list = [], [], []
 		
