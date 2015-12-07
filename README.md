@@ -2,7 +2,8 @@
 　3Dアダルトゲーム「[カスタムメイド3D2](http://kisskiss.tv/cm3d2/)」で使用されるモデルファイル形式(.model)を  
 　フリー3D統合環境である「[Blender](https://www.blender.org/)」で扱うためのアドオンです。  
 　ある程度Blenderの基本操作をできる人を対象にしています、  
-　初めての人は[チュートリアル](https://www.google.co.jp/#q=Blender+%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB)などから始めましょう。  
+　初めての人は[Blenderのチュートリアル](https://www.google.co.jp/#q=Blender+%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB)などから始めましょう。  
+　慣れてきたら[CM3D2 Converterのチュートリアル](http://seesaawiki.jp/eastpoint/d/blender_MOD01)もやってみましょう。  
 
 ## インストール (Installation)
 　まず、Blender2.7以上([2.75](http://download.blender.org/release/Blender2.75/)推奨)がインストールされており[日本語化](http://ch.nicovideo.jp/hiiragik/blomaga/ar501365)している事が前提です。  
