@@ -6,7 +6,7 @@
 　慣れてきたら[CM3D2 Converterのチュートリアル](http://seesaawiki.jp/eastpoint/d/blender_MOD01)もやってみましょう。  
 
 ## インストール (Installation)
-　まず、Blender2.7以上([2.75](http://download.blender.org/release/Blender2.75/)推奨)がインストールされており[日本語化](http://ch.nicovideo.jp/hiiragik/blomaga/ar501365)している事が前提です。  
+　まず、Blender2.7以上([2.76b](http://download.blender.org/release/Blender2.76/)推奨)がインストールされており[日本語化](http://ch.nicovideo.jp/hiiragik/blomaga/ar501365)している事が前提です。  
 　画面右の「[Download ZIP](https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip)」からファイルをダウンロード・解凍し、  
 　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\  
 　Blender\2.75\scripts\addons\CM3D2 Converter\～.py」となるように配置してください。  
