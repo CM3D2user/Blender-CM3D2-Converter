@@ -71,14 +71,15 @@ class export_cm3d2_model(bpy.types.Operator):
 		if 65535 < len(me.vertices):
 			return self.report_cancel("エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
 		pentagons = [face for face in me.polygons if 5 <= len(face.vertices)]
-		if 0 < len(pentagons):
+		if len(pentagons):
 			if not self.is_batch:
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.select_all(action='DESELECT')
 				bpy.ops.object.mode_set(mode='OBJECT')
 				context.tool_settings.mesh_select_mode = (False, False, True)
-				for face in pentagons:
-					face.select = True
+				for face in me.polygons:
+					if 5 <= len(face.vertices):
+						face.select = True
 				bpy.ops.object.mode_set(mode='EDIT')
 			return self.report_cancel("五角以上のポリゴンが含まれています")
 		return None
