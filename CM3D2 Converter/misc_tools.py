@@ -2482,7 +2482,8 @@ class forced_modifier_apply(bpy.types.Operator):
 			if self.is_applies[index]:
 				try:
 					bpy.ops.object.modifier_apply(modifier=mod.name)
-				except: pass
+				except:
+					ob.modifiers.remove(mod)
 		
 		context.scene.objects.active = ob
 		for shape_index, deforms in enumerate(new_shape_deforms):
