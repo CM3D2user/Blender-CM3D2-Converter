@@ -208,13 +208,12 @@ def OBJECT_PT_context_object(self, context):
 
 # モディファイアタブに項目追加
 def DATA_PT_modifiers(self, context):
-	if 'apply_all_modifier' not in dir(bpy.ops.object):
-		ob = context.active_object
-		if ob:
-			if ob.type == 'MESH':
-				me = ob.data
-				if me.shape_keys and len(ob.modifiers):
-					self.layout.operator('wm.url_open', text="モディファイアを適用できない場合", icon_value=common.preview_collections['main']['KISS'].icon_id).url = "https://sites.google.com/site/matosus304blendernotes/home/download#apply_modifier"
+	ob = context.active_object
+	if ob:
+		if ob.type == 'MESH':
+			me = ob.data
+			if me.shape_keys and len(ob.modifiers):
+				self.layout.operator('object.forced_modifier_apply', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # テキストヘッダーに項目追加
 def TEXT_HT_header(self, context):
