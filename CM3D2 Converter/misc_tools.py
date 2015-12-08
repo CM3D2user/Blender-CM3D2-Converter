@@ -2426,9 +2426,10 @@ class forced_modifier_apply(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
+		pre_relative_keys = [s.relative_key.name for s in me.shape_keys.key_blocks]
+		pre_active_shape_key_index = ob.active_shape_key_index
 		pre_selected_objects = context.selected_objects[:]
 		pre_mode = ob.mode
-		pre_active_shape_key_index = ob.active_shape_key_index
 		
 		shape_names = []
 		shape_deforms = []
@@ -2492,6 +2493,8 @@ class forced_modifier_apply(bpy.types.Operator):
 			
 			for vert in me.vertices:
 				shape.data[vert.index].co = deforms[vert.index].copy()
+		for shape_index, shape in enumerate(me.shape_keys.key_blocks):
+			shape.relative_key = me.shape_keys.key_blocks[pre_relative_keys[shape_index]]
 		
 		ob.active_shape_key_index = pre_active_shape_key_index
 		for o in pre_selected_objects:
