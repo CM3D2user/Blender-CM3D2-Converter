@@ -2431,31 +2431,22 @@ class forced_modifier_apply(bpy.types.Operator):
 		pre_selected_objects = context.selected_objects[:]
 		pre_mode = ob.mode
 		
-		shape_names = []
+		shape_names = [s.name for s in me.shape_keys.key_blocks]
 		shape_deforms = []
 		for shape in me.shape_keys.key_blocks:
-			shape_names.append(shape.name)
-			shape_deforms.append([])
-			for vert in me.vertices:
-				shape_deforms[-1].append(shape.data[vert.index].co.copy())
+			shape_deforms.append([shape.data[v.index].co.copy() for v in me.vertices])
 		
 		ob.active_shape_key_index = len(me.shape_keys.key_blocks) - 1
-		if bpy.ops.object.shape_key_remove.poll():
-			bpy.ops.object.shape_key_remove(all=True)
-		else:
-			for i in me.shape_keys.key_blocks[:]:
-				ob.shape_key_remove(ob.active_shape_key)
+		for i in me.shape_keys.key_blocks[:]:
+			ob.shape_key_remove(ob.active_shape_key)
 		
 		new_shape_deforms = []
 		for shape_index, deforms in enumerate(shape_deforms):
 			
 			temp_ob = ob.copy()
-			temp_ob.data = me.copy()
-			temp_me = temp_ob.data
-			bpy.ops.object.select_all(action='DESELECT')
+			temp_me = me.copy()
+			temp_ob.data = temp_me
 			context.scene.objects.link(temp_ob)
-			temp_ob.select = True
-			context.scene.objects.active = temp_ob
 			
 			for vert in temp_me.vertices:
 				vert.co = deforms[vert.index].copy()
@@ -2468,15 +2459,11 @@ class forced_modifier_apply(bpy.types.Operator):
 						bpy.ops.object.modifier_apply(override, modifier=mod.name)
 					except: pass
 			
-			new_shape_deforms.append([])
-			for vert in temp_me.vertices:
-				new_shape_deforms[-1].append(vert.co.copy())
+			new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
 			
 			context.scene.objects.unlink(temp_ob)
-			temp_me.user_clear()
-			temp_ob.user_clear()
-			context.blend_data.meshes.remove(temp_me)
-			context.blend_data.objects.remove(temp_ob)
+			temp_me.user_clear(), temp_ob.user_clear()
+			context.blend_data.meshes.remove(temp_me), context.blend_data.objects.remove(temp_ob)
 		
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index]:
@@ -2494,6 +2481,7 @@ class forced_modifier_apply(bpy.types.Operator):
 			
 			for vert in me.vertices:
 				shape.data[vert.index].co = deforms[vert.index].copy()
+		
 		for shape_index, shape in enumerate(me.shape_keys.key_blocks):
 			shape.relative_key = me.shape_keys.key_blocks[pre_relative_keys[shape_index]]
 		
