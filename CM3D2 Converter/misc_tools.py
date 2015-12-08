@@ -2480,7 +2480,7 @@ class forced_modifier_apply(bpy.types.Operator):
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index]:
 				try:
-					bpy.ops.object.modifier_apply(override, modifier=mod.name)
+					bpy.ops.object.modifier_apply(modifier=mod.name)
 				except: pass
 		
 		context.scene.objects.active = ob
