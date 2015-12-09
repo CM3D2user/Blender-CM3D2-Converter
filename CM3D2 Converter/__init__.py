@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 146),
+	"version" : (0, 147),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -88,8 +88,9 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
-		box.prop(self, 'scale', icon='MAN_SCALE')
-		box.prop(self, 'is_convert_bone_weight_names', icon='BLENDER')
+		row = box.row()
+		row.prop(self, 'scale', icon='MAN_SCALE')
+		row.prop(self, 'is_convert_bone_weight_names', icon='BLENDER')
 		box.prop(self, 'model_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
 		box.label(text="anmファイル", icon='POSE_HLT')
@@ -120,7 +121,7 @@ def get_english_dictionary():
 		file_path = os.path.join(addon_dir, "english_dictionary.csv")
 		
 		file = codecs.open(file_path, 'r', 'utf-8')
-		lines = [re.sub(r'\r?\n$', "", line) for line in file if re.sub(r'\r?\n$', "", line)]
+		lines = [re.sub(r'\r?\n$', "", line) for line in file if 2 <= len(line.split('\t'))]
 		
 		dict = {}
 		for locale in bpy.app.translations.locales:

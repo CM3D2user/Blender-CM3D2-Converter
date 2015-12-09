@@ -334,3 +334,9 @@ CM3D2で使用されるテクスチャファイル(.tex)として保存します
 CM3D2用に変更	Change for CM3D2
 全モディファイアを適用	Apply All Modifiers
 選択モディファイアを適用	Apply Select Modifiers
+texファイル検索	Search tex Files
+モディファイア強制適用	Forced Apply Modifiers
+適用するモディファイア	Target Modifiers
+基本的にtexファイルを探す	Basically Search tex Files
+モディファイアを適用するか消してください	Apply or Remove Modifiers
+基本的にボーン名/ウェイト名をBlender用に変換	Basically Convert Bone/Weight Names for Blender
