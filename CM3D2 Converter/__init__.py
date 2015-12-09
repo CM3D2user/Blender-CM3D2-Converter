@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 143),
+	"version" : (0, 144),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -75,6 +75,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	mate_import_path = bpy.props.StringProperty(name="mateインポート時のデフォルトパス", subtype='FILE_PATH', description="mateインポート時に最初はここが表示されます、インポート毎に保存されます")
 	mate_export_path = bpy.props.StringProperty(name="mateエクスポート時のデフォルトパス", subtype='FILE_PATH', description="mateエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="基本的にtexファイルを探す", default=True)
 	default_tex_path0 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path1 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
@@ -98,7 +99,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.label(text="mateファイル", icon='MATERIAL')
 		box.prop(self, 'mate_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
-		box.label(text="texファイル置き場", icon='BORDERMOVE')
+		box.label(text="texファイル検索", icon='BORDERMOVE')
+		box.prop(self, 'is_replace_cm3d2_tex', icon='VIEWZOOM')
 		box.prop(self, 'default_tex_path0', icon='TEXTURE', text="その1")
 		box.prop(self, 'default_tex_path1', icon='TEXTURE', text="その2")
 		box.prop(self, 'default_tex_path2', icon='TEXTURE', text="その3")

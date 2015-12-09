@@ -1295,6 +1295,7 @@ class new_cm3d2(bpy.types.Operator):
 		return True
 	
 	def invoke(self, context, event):
+		self.is_replace_cm3d2_tex = common.preferences().is_replace_cm3d2_tex
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -1650,6 +1651,7 @@ class paste_material(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
+		self.is_replace_cm3d2_tex = common.preferences().is_replace_cm3d2_tex
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):

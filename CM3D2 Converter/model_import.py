@@ -40,6 +40,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		else:
 			self.filepath = common.default_cm3d2_dir(common.preferences().model_import_path, "", "model")
 		self.scale = common.preferences().scale
+		self.is_replace_cm3d2_tex = common.preferences().is_replace_cm3d2_tex
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	

@@ -26,6 +26,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 			self.filepath = common.default_cm3d2_dir(common.preferences().mate_default_path, "", "mate")
 		else:
 			self.filepath = common.default_cm3d2_dir(common.preferences().mate_import_path, "", "mate")
+		self.is_replace_cm3d2_tex = common.preferences().is_replace_cm3d2_tex
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
