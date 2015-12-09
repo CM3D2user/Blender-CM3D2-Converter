@@ -164,18 +164,6 @@ def OBJECT_PT_context_object(self, context):
 	ob = context.active_object
 	if not ob: return
 	if ob.type != 'MESH': return
-	if re.search(r'^[^\.]+\.[^\.]+$', ob.name):
-		name, base = ob.name.split('.')
-		row = self.layout.row(align=True)
-		sub_row = row.row()
-		sub_row.label(text="model名:", icon='SORTALPHA')
-		sub_row.label(text=name)
-		sub_row = row.row()
-		sub_row.label(text="基点ボーン名:", icon='CONSTRAINT_BONE')
-		sub_row.label(text=base)
-	else:
-		#row.label(text="CM3D2には使えないオブジェクト名です", icon='ERROR')
-		pass
 	
 	bone_data_count = 0
 	if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
