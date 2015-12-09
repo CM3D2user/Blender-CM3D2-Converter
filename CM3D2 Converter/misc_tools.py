@@ -1326,24 +1326,25 @@ class new_cm3d2(bpy.types.Operator):
 		tex_list, col_list, f_list = [], [], []
 		
 		base_path = "Assets\\texture\\texture\\"
+		pref = common.preferences()
 		
 		_MainTex = ("_MainTex", ob_name, base_path + ob_name + ".png")
-		_ToonRamp = ("_ToonRamp", "toonGrayA1", base_path + r"toon\toonGrayA1.png")
+		_ToonRamp = ("_ToonRamp", pref.new_mate_toonramp_name, pref.new_mate_toonramp_path)
 		_ShadowTex = ("_ShadowTex", ob_name + "_shadow", base_path + ob_name + "_shadow.png")
-		_ShadowRateToon = ("_ShadowRateToon", "toonDress_shadow", base_path + r"toon\toonDress_shadow.png")
+		_ShadowRateToon = ("_ShadowRateToon", pref.new_mate_shadowratetoon_name, pref.new_mate_shadowratetoon_path)
 		_HiTex = ("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png")
 		
-		_Color = ("_Color", (1, 1, 1, 1))
-		_ShadowColor = ("_ShadowColor", (0, 0, 0, 1))
-		_RimColor = ("_RimColor", (0.5, 0.5, 0.5, 1))
-		_OutlineColor = ("_OutlineColor", (0, 0, 0, 1))
+		_Color = ("_Color", pref.new_mate_color)
+		_ShadowColor = ("_ShadowColor", pref.new_mate_shadowcolor)
+		_RimColor = ("_RimColor", pref.new_mate_rimcolor)
+		_OutlineColor = ("_OutlineColor", pref.new_mate_outlinecolor)
 		
-		_Shininess = ("_Shininess", 0)
-		_OutlineWidth = ("_OutlineWidth", 0.002)
-		_RimPower = ("_RimPower", 25)
-		_RimShift = ("_RimShift", 0)
-		_HiRate = ("_HiRate", 0.5)
-		_HiPow = ("_HiPow", 0.001)
+		_Shininess = ("_Shininess", pref.new_mate_shininess)
+		_OutlineWidth = ("_OutlineWidth", pref.new_mate_outlinewidth)
+		_RimPower = ("_RimPower", pref.new_mate_rimpower)
+		_RimShift = ("_RimShift", pref.new_mate_rimshift)
+		_HiRate = ("_HiRate", pref.new_mate_hirate)
+		_HiPow = ("_HiPow", pref.new_mate_hipow)
 		
 		if False:
 			pass
@@ -1522,7 +1523,8 @@ class new_cm3d2(bpy.types.Operator):
 			if data[1] == "":
 				slot_count += 1
 				continue
-			slot.color = [0, 0, 1]
+			slot.color = pref.new_mate_tex_color[:3]
+			slot.diffuse_color_factor = pref.new_mate_tex_color[3]
 			img = context.blend_data.images.new(data[1], 128, 128)
 			img.filepath = data[2]
 			img['cm3d2_path'] = data[2]

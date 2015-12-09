@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 150),
+	"version" : (0, 151),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -82,25 +82,51 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path3 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	
+	
+	new_mate_tex_color = bpy.props.FloatVectorProperty(name="テクスチャ設定値の色", default=(0, 0, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
+	
+	new_mate_toonramp_name = bpy.props.StringProperty(name="_ToonRamp 名前", default="toonGrayA1")
+	new_mate_toonramp_path = bpy.props.StringProperty(name="_ToonRamp パス", default=r"Assets\texture\texture\toon\toonGrayA1.png")
+	
+	new_mate_shadowratetoon_name = bpy.props.StringProperty(name="_ShadowRateToon 名前", default="toonDress_shadow")
+	new_mate_shadowratetoon_path = bpy.props.StringProperty(name="_ShadowRateToon パス", default=r"Assets\texture\texture\toon\toonDress_shadow.png")
+	
+	new_mate_color = bpy.props.FloatVectorProperty(name="_Color", default=(1, 1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
+	new_mate_shadowcolor = bpy.props.FloatVectorProperty(name="_ShadowColor", default=(0, 0, 0, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
+	new_mate_rimcolor = bpy.props.FloatVectorProperty(name="_RimColor", default=(0.5, 0.5, 0.5, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
+	new_mate_outlinecolor = bpy.props.FloatVectorProperty(name="_OutlineColor", default=(0, 0, 0, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
+	
+	new_mate_shininess = bpy.props.FloatProperty(name="_Shininess", default=0, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	new_mate_outlinewidth = bpy.props.FloatProperty(name="_OutlineWidth", default=0.0015, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	new_mate_rimpower = bpy.props.FloatProperty(name="_RimPower", default=25, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	new_mate_rimshift = bpy.props.FloatProperty(name="_RimShift", default=0, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	new_mate_hirate = bpy.props.FloatProperty(name="_HiRate", default=0.5, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	new_mate_hipow = bpy.props.FloatProperty(name="_HiPow", default=0.001, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	
 	def draw(self, context):
 		self.layout.label(text="ここの設定は「ユーザー設定の保存」ボタンを押すまで保存されていません", icon='QUESTION')
 		self.layout.prop(self, 'cm3d2_path', icon_value=common.preview_collections['main']['KISS'].icon_id)
 		self.layout.prop(self, 'backup_ext', icon='FILE_BACKUP')
+		
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
 		row = box.row()
 		row.prop(self, 'scale', icon='MAN_SCALE')
 		row.prop(self, 'is_convert_bone_weight_names', icon='BLENDER')
 		box.prop(self, 'model_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
+		
 		box = self.layout.box()
 		box.label(text="anmファイル", icon='POSE_HLT')
 		box.prop(self, 'anm_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
+		
 		box = self.layout.box()
 		box.label(text="texファイル", icon='FILE_IMAGE')
 		box.prop(self, 'tex_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
+		
 		box = self.layout.box()
 		box.label(text="mateファイル", icon='MATERIAL')
 		box.prop(self, 'mate_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
+		
 		box = self.layout.box()
 		box.label(text="texファイル検索", icon='BORDERMOVE')
 		box.prop(self, 'is_replace_cm3d2_tex', icon='VIEWZOOM')
@@ -108,6 +134,29 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box.prop(self, 'default_tex_path1', icon='LAYER_ACTIVE', text="その2")
 		box.prop(self, 'default_tex_path2', icon='LAYER_ACTIVE', text="その3")
 		box.prop(self, 'default_tex_path3', icon='LAYER_ACTIVE', text="その4")
+		
+		box = self.layout.box()
+		box.label(text="CM3D2用マテリアル新規作成時の初期値", icon='MATERIAL')
+		box.prop(self, 'new_mate_tex_color', icon='COLOR')
+		row = box.row()
+		row.prop(self, 'new_mate_toonramp_name', icon='BRUSH_TEXFILL')
+		row.prop(self, 'new_mate_toonramp_path', icon='ANIM')
+		row = box.row()
+		row.prop(self, 'new_mate_shadowratetoon_name', icon='BRUSH_TEXMASK')
+		row.prop(self, 'new_mate_shadowratetoon_path', icon='ANIM')
+		row = box.row()
+		row.prop(self, 'new_mate_color', icon='COLOR')
+		row.prop(self, 'new_mate_shadowcolor', icon='IMAGE_ALPHA')
+		row.prop(self, 'new_mate_rimcolor', icon='MATCAP_07')
+		row.prop(self, 'new_mate_outlinecolor', icon='SOLID')
+		row = box.row()
+		row.prop(self, 'new_mate_shininess', icon='MATCAP_05')
+		row.prop(self, 'new_mate_outlinewidth', icon='SOLID')
+		row.prop(self, 'new_mate_rimpower', icon='MATCAP_14')
+		row.prop(self, 'new_mate_rimshift', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'new_mate_hirate')
+		row.prop(self, 'new_mate_hipow')
+		
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
