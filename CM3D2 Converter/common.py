@@ -16,14 +16,14 @@ def line_trim(line, enable=True):
 	return line.strip(' 　\t\r\n') if enable else line
 
 # CM3D2専用ファイル用の文字列書き込み
-def write_str(file, s):
-	str_count = len(s.encode('utf-8'))
+def write_str(file, raw_str):
+	str_count = len(raw_str.encode('utf-8'))
 	if 128 <= str_count:
 		file.write( struct.pack('<B', (str_count % 128) + 128) )
 		file.write( struct.pack('<B', str_count // 128) )
 	else:
 		file.write(struct.pack('<B', str_count))
-	file.write(s.encode('utf-8'))
+	file.write(raw_str.encode('utf-8'))
 
 # CM3D2専用ファイル用の文字列読み込み
 def read_str(file):
@@ -310,18 +310,11 @@ def set_texture_color(slot):
 
 # 必要なエリアタイプを設定を変更してでも取得
 def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES', 'INFO']):
-	request_areas = []
-	return_areas = []
-	for area in context.screen.areas:
-		if area.type == request_type:
-			request_areas.append((area, area.width * area.height))
-		elif area.type not in except_types:
-			return_areas.append((area, area.width * area.height))
+	request_areas = [(a, a.width * a.height) for a in context.screen.areas if a.type == request_type]
+	candidate_areas = [(a, a.width * a.height) for a in context.screen.areas if a.type not in except_types]
 	
-	if len(request_areas):
-		return_areas = request_areas[:]
-	if not len(return_areas):
-		return None
+	return_areas = request_areas[:] if len(request_areas) else candidate_areas
+	if not len(return_areas): return None
 	
 	return_areas.sort(key=lambda i: i[1])
 	return_area = return_areas[-1][0]
