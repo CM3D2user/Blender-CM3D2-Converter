@@ -300,18 +300,18 @@ class blur_vertex_group(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('ACTIVE', "アクティブのみ", "", 1),
-		('UP', "アクティブより上", "", 2),
-		('DOWN', "アクティブより下", "", 3),
-		('ALL', "全て", "", 4),
+		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
+		('UP', "アクティブより上", "", 'TRIA_UP_BAR', 2),
+		('DOWN', "アクティブより下", "", 'TRIA_DOWN_BAR', 3),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 4),
 		]
 	target = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	radius = bpy.props.FloatProperty(name="範囲倍率", default=3, min=0.1, max=50, soft_min=0.1, soft_max=50, step=50, precision=2)
 	strength = bpy.props.IntProperty(name="強さ", default=1, min=1, max=10, soft_min=1, soft_max=10)
 	items = [
-		('BOTH', "増減両方", "", 1),
-		('ADD', "増加のみ", "", 2),
-		('SUB', "減少のみ", "", 3),
+		('BOTH', "増減両方", "", 'AUTOMERGE_ON', 1),
+		('ADD', "増加のみ", "", 'TRIA_UP', 2),
+		('SUB', "減少のみ", "", 'TRIA_DOWN', 3),
 		]
 	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
 	is_normalize = bpy.props.BoolProperty(name="他頂点グループも調節", default=True)
@@ -328,10 +328,10 @@ class blur_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'target', icon='ACTION')
+		self.layout.prop(self, 'target', icon='VIEWZOOM')
 		self.layout.prop(self, 'radius', icon='META_EMPTY')
 		self.layout.prop(self, 'strength', icon='ARROW_LEFTRIGHT')
-		self.layout.prop(self, 'effect', icon='BRUSH_ADD')
+		self.layout.prop(self, 'effect', icon='BRUSH_BLUR')
 		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
 	def execute(self, context):
@@ -464,10 +464,10 @@ class multiply_vertex_group(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('ACTIVE', "アクティブのみ", "", 1),
-		('UP', "アクティブより上", "", 2),
-		('DOWN', "アクティブより下", "", 3),
-		('ALL', "全て", "", 4),
+		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
+		('UP', "アクティブより上", "", 'TRIA_UP_BAR', 2),
+		('DOWN', "アクティブより下", "", 'TRIA_DOWN_BAR', 3),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 4),
 		]
 	target = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	value = bpy.props.FloatProperty(name="倍率", default=1.1, min=0.1, max=10, soft_min=0.1, soft_max=10, step=10, precision=2)
@@ -485,7 +485,7 @@ class multiply_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'target', icon='ACTION')
+		self.layout.prop(self, 'target', icon='VIEWZOOM')
 		self.layout.prop(self, 'value', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'is_normalize', icon='ALIGN')
 	
@@ -914,10 +914,10 @@ class multiply_shape_key(bpy.types.Operator):
 	
 	multi = bpy.props.FloatProperty(name="倍率", description="シェイプキーの拡大率です", default=1.1, min=-10, max=10, soft_min=-10, soft_max=10, step=10, precision=2)
 	items = [
-		('ACTIVE', "アクティブのみ", "", 1),
-		('UP', "アクティブより上", "", 2),
-		('DOWN', "アクティブより下", "", 3),
-		('ALL', "全て", "", 4),
+		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
+		('UP', "アクティブより上", "", 'TRIA_UP_BAR', 2),
+		('DOWN', "アクティブより下", "", 'TRIA_DOWN_BAR', 3),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 4),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
 	
@@ -934,7 +934,7 @@ class multiply_shape_key(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'multi', icon='ARROW_LEFTRIGHT')
-		self.layout.prop(self, 'mode', icon='ACTION')
+		self.layout.prop(self, 'mode', icon='VIEWZOOM')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -974,15 +974,15 @@ class blur_shape_key(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('ACTIVE', "アクティブのみ", "", 1),
-		('ALL', "全て", "", 2),
+		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
 	strength = bpy.props.IntProperty(name="処理回数", description="ぼかしの強度(回数)を設定します", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	items = [
-		('BOTH', "増減両方", "", 1),
-		('ADD', "増加のみ", "", 2),
-		('SUB', "減少のみ", "", 3),
+		('BOTH', "増減両方", "", 'AUTOMERGE_ON', 1),
+		('ADD', "増加のみ", "", 'TRIA_UP', 2),
+		('SUB', "減少のみ", "", 'TRIA_DOWN', 3),
 		]
 	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
 	
@@ -997,9 +997,9 @@ class blur_shape_key(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'mode', icon='VIEWZOOM')
 		self.layout.prop(self, 'strength')
-		self.layout.prop(self, 'effect')
+		self.layout.prop(self, 'effect', icon='BRUSH_BLUR')
 	
 	def execute(self, context):
 		import bmesh, mathutils
@@ -1070,15 +1070,15 @@ class radius_blur_shape_key(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('ACTIVE', "アクティブのみ", "", 1),
-		('ALL', "全て", "", 2),
+		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
 	blur_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=100, soft_min=1, soft_max=100, step=1)
 	items = [
-		('BOTH', "増減両方", "", 1),
-		('ADD', "増加のみ", "", 2),
-		('SUB', "減少のみ", "", 3),
+		('BOTH', "増減両方", "", 'AUTOMERGE_ON', 1),
+		('ADD', "増加のみ", "", 'TRIA_UP', 2),
+		('SUB', "減少のみ", "", 'TRIA_DOWN', 3),
 		]
 	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
 	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=100, precision=1)
@@ -1096,9 +1096,9 @@ class radius_blur_shape_key(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode')
+		self.layout.prop(self, 'mode', icon='VIEWZOOM')
 		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'effect')
+		self.layout.prop(self, 'effect', icon='BRUSH_BLUR')
 		self.layout.prop(self, 'radius_multi')
 		self.layout.prop(self, 'is_shaped_radius')
 		self.layout.prop(self, 'fadeout')
@@ -1270,21 +1270,21 @@ class new_cm3d2(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('CM3D2/Toony_Lighted', "トゥーン", "", 0),
-		('CM3D2/Toony_Lighted_Hair', "トゥーン 髪", "", 1),
-		('CM3D2/Toony_Lighted_Trans', "トゥーン 透過", "", 2),
-		('CM3D2/Toony_Lighted_Trans_NoZ', "トゥーン 透過 NoZ", "", 3),
-		('CM3D2/Toony_Lighted_Outline', "トゥーン 輪郭線", "", 4),
-		('CM3D2/Toony_Lighted_Hair_Outline', "トゥーン 輪郭線 髪", "", 5),
-		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 6),
-		('CM3D2/Lighted_Trans', "透過", "", 7),
-		('Unlit/Texture', "発光", "", 8),
-		('Unlit/Transparent', "発光 透過", "", 9),
-		('CM3D2/Mosaic', "モザイク", "", 10),
-		('CM3D2/Man', "ご主人様", "", 11),
-		('Diffuse', "リアル", "", 12),
-		('Transparent/Diffuse', "リアル 透過", "", 13),
-		('CM3D2_Debug/Debug_CM3D2_Normal2Color', "法線", "", 14),
+		('CM3D2/Toony_Lighted', "トゥーン", "", 'SOLID', 0),
+		('CM3D2/Toony_Lighted_Hair', "トゥーン 髪", "", 'PARTICLEMODE', 1),
+		('CM3D2/Toony_Lighted_Trans', "トゥーン 透過", "", 'WIRE', 2),
+		('CM3D2/Toony_Lighted_Trans_NoZ', "トゥーン 透過 NoZ", "", 'DRIVER', 3),
+		('CM3D2/Toony_Lighted_Outline', "トゥーン 輪郭線", "", 'ANTIALIASED', 4),
+		('CM3D2/Toony_Lighted_Hair_Outline', "トゥーン 輪郭線 髪", "", 'PARTICLEMODE', 5),
+		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 'PROP_OFF', 6),
+		('CM3D2/Lighted_Trans', "透過", "", 'VISIBLE_IPO_OFF', 7),
+		('Unlit/Texture', "発光", "", 'PARTICLES', 8),
+		('Unlit/Transparent', "発光 透過", "", 'MOD_PARTICLES', 9),
+		('CM3D2/Mosaic', "モザイク", "", 'ALIASED', 10),
+		('CM3D2/Man', "ご主人様", "", 'ARMATURE_DATA', 11),
+		('Diffuse', "リアル", "", 'BRUSH_CLAY_STRIPS', 12),
+		('Transparent/Diffuse', "リアル 透過", "", 'MATCAP_09', 13),
+		('CM3D2_Debug/Debug_CM3D2_Normal2Color', "法線", "", 'MATCAP_23', 14),
 		]
 	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
@@ -1303,7 +1303,7 @@ class new_cm3d2(bpy.types.Operator):
 		if not re.search(r'^[^\.]+\.[^\.]+$', common.remove_serial_number(context.active_object.name)):
 			self.layout.label(text="オブジェクト名を設定してからの作成を推奨", icon='CANCEL')
 		self.layout.separator()
-		self.layout.prop(self, 'type', icon='ANTIALIASED')
+		self.layout.prop(self, 'type', icon='MATERIAL')
 		self.layout.prop(self, 'is_decorate', icon='TEXTURE_SHADED')
 		self.layout.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
 	

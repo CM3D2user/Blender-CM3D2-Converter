@@ -21,15 +21,15 @@ class export_cm3d2_model(bpy.types.Operator):
 	base_bone_name = bpy.props.StringProperty(name="基点ボーン名", default="*")
 	
 	items = [
-		('TEXT', "テキスト", "", 1),
-		('OBJECT', "オブジェクト内プロパティ", "", 2),
-		('ARMATURE', "アーマチュア内プロパティ", "", 3),
+		('TEXT', "テキスト", "", 'FILE_TEXT', 1),
+		('OBJECT', "オブジェクト内プロパティ", "", 'OBJECT_DATAMODE', 2),
+		('ARMATURE', "アーマチュア内プロパティ", "", 'ARMATURE_DATA', 3),
 		]
 	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT', description="modelファイルに必要なボーン情報をどこから引っ張ってくるか選びます")
 	
 	items = [
-		('TEXT', "テキスト", "", 1),
-		('MATERIAL', "マテリアル", "", 2),
+		('TEXT', "テキスト", "", 'FILE_TEXT', 1),
+		('MATERIAL', "マテリアル", "", 'MATERIAL', 2),
 		]
 	mate_info_mode = bpy.props.EnumProperty(items=items, name="マテリアル情報元", default='MATERIAL', description="modelファイルに必要なマテリアル情報をどこから引っ張ってくるか選びます")
 	
