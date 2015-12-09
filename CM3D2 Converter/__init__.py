@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 145),
+	"version" : (0, 146),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -103,10 +103,10 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box = self.layout.box()
 		box.label(text="texファイル検索", icon='BORDERMOVE')
 		box.prop(self, 'is_replace_cm3d2_tex', icon='VIEWZOOM')
-		box.prop(self, 'default_tex_path0', icon='TEXTURE', text="その1")
-		box.prop(self, 'default_tex_path1', icon='TEXTURE', text="その2")
-		box.prop(self, 'default_tex_path2', icon='TEXTURE', text="その3")
-		box.prop(self, 'default_tex_path3', icon='TEXTURE', text="その4")
+		box.prop(self, 'default_tex_path0', icon='LAYER_ACTIVE', text="その1")
+		box.prop(self, 'default_tex_path1', icon='LAYER_ACTIVE', text="その2")
+		box.prop(self, 'default_tex_path2', icon='LAYER_ACTIVE', text="その3")
+		box.prop(self, 'default_tex_path3', icon='LAYER_ACTIVE', text="その4")
 		row = self.layout.row()
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
