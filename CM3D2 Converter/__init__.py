@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 149),
+	"version" : (0, 150),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -117,23 +117,19 @@ def get_english_dictionary():
 	try:
 		import re, codecs
 		
-		addon_dir = os.path.dirname(__file__)
-		file_path = os.path.join(addon_dir, "english_dictionary.csv")
-		
+		file_path = os.path.join(os.path.dirname(__file__), "english_dictionary.csv")
 		file = codecs.open(file_path, 'r', 'utf-8')
 		lines = [re.sub(r'\r?\n$', "", line) for line in file if 2 <= len(line.split('\t'))]
 		
 		dict = {}
 		for locale in bpy.app.translations.locales:
-			if locale == 'ja_JP':
-				continue
+			if locale == 'ja_JP': continue
 			dict[locale] = {}
 			for line in lines:
-				jp, en = line.split('\t')
+				jp, en = line.split('\t')[0], line.split('\t')[1]
 				for context in bpy.app.translations.contexts:
 					dict[locale][(context, jp)] = en
-	except:
-		dict = {}
+	except: return {}
 	return dict
 
 # プラグインをインストールしたときの処理
@@ -174,9 +170,6 @@ def register():
 		bpy.context.user_preferences.system.use_international_fonts = True
 	
 	bpy.app.translations.register(__name__, get_english_dictionary())
-	# 余計なお世話
-	dict = { 'ja_JP':{('Operator', "Apply All Modifier"):"全モディファイアを適用", ('Operator', "Apply Selected Modifier"):"選択モディファイアを適用", ('Operator', "Apply_Selected_Modifier"):"選択モディファイアを適用"} }
-	bpy.app.translations.register("Apply Modifier", dict)
 
 # プラグインをアンインストールしたときの処理
 def unregister():
@@ -212,7 +205,6 @@ def unregister():
 	common.preview_collections.clear()
 	
 	bpy.app.translations.unregister(__name__)
-	bpy.app.translations.unregister("Apply Modifier")
 
 # メイン関数
 if __name__ == "__main__":
