@@ -37,7 +37,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True, description="四角ポリゴンを三角ポリゴンに変換してから出力します、元のメッシュには影響ありません")
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
-	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
+	is_convert_bone_weight_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
@@ -143,7 +143,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
-		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
+		sub_box.prop(self, 'is_convert_bone_weight_names', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	
 	def execute(self, context):
 		start_time = time.time()
@@ -411,7 +411,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			face_indexs = []
 			weights = []
 			for vg in vert.groups:
-				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
 				if name not in local_bone_names:
 					continue
 				weight = vg.weight
@@ -425,7 +425,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					context.tool_settings.mesh_select_mode = (True, False, False)
 					for vert in me.vertices:
 						for vg in vert.groups:
-							name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_vertex_group_names)
+							name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
 							if name not in local_bone_names:
 								continue
 							if 0.0 < vg.weight:

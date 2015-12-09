@@ -18,7 +18,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_remove_doubles = bpy.props.BoolProperty(name="重複頂点を結合", default=True, description="UVの切れ目でポリゴンが分かれている仕様なので、インポート時にくっつけます")
 	is_seam = bpy.props.BoolProperty(name="シームをつける", default=True, description="UVの切れ目にシームをつけます")
 	
-	is_convert_vertex_group_names = bpy.props.BoolProperty(name="頂点グループ名をBlender用に変換", default=False, description="全ての頂点グループ名をBlenderの左右対称編集で使えるように変換してから読み込みます")
+	is_convert_bone_weight_names = bpy.props.BoolProperty(name="頂点グループ名をBlender用に変換", default=False, description="全ての頂点グループ名をBlenderの左右対称編集で使えるように変換してから読み込みます")
 	is_vertex_group_sort = bpy.props.BoolProperty(name="頂点グループを名前順ソート", default=True, description="頂点グループを名前順でソートします")
 	is_remove_empty_vertex_group = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True, description="全ての頂点に割り当てのない頂点グループを削除します")
 	
@@ -41,6 +41,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			self.filepath = common.default_cm3d2_dir(common.preferences().model_import_path, "", "model")
 		self.scale = common.preferences().scale
 		self.is_replace_cm3d2_tex = common.preferences().is_replace_cm3d2_tex
+		self.is_convert_bone_weight_names = common.preferences().is_convert_bone_weight_names
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -56,7 +57,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box.label("頂点グループ")
 		sub_box.prop(self, 'is_vertex_group_sort', icon='SORTALPHA')
 		sub_box.prop(self, 'is_remove_empty_vertex_group', icon='DISCLOSURE_TRI_DOWN')
-		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX')
+		sub_box.prop(self, 'is_convert_bone_weight_names', icon='BLENDER')
 		sub_box = box.box()
 		sub_box.label("マテリアル")
 		sub_box.prop(self, 'is_replace_cm3d2_tex', icon='BORDERMOVE')
@@ -68,7 +69,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box.label("アーマチュア")
 		sub_box.prop(self, 'is_armature_clean', icon='X')
 		sub_box.prop(self, 'is_armature_arrange', icon='HAIR')
-		sub_box.prop(self, 'is_convert_vertex_group_names', icon='GROUP_VERTEX', text="ボーン名をBlender用に変換")
+		sub_box.prop(self, 'is_convert_bone_weight_names', icon='BLENDER', text="ボーン名をBlender用に変換")
 		box = self.layout.box()
 		box.label("ボーン情報埋め込み場所")
 		box.prop(self, 'is_bone_data_text', icon='TEXT')
@@ -242,7 +243,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			child_data = []
 			for data in bone_data:
 				if not data['parent_name']:
-					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_vertex_group_names))
+					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
 					bone.head = (0, 0, 0)
 					bone.tail = (0, 0.1, 0)
 					
@@ -267,9 +268,9 @@ class import_cm3d2_model(bpy.types.Operator):
 				if len(child_data) <= 0:
 					break
 				data = child_data.pop(0)
-				if common.decode_bone_name(data['parent_name'], self.is_convert_vertex_group_names) in arm.edit_bones.keys():
-					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_vertex_group_names))
-					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_vertex_group_names)]
+				if common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names) in arm.edit_bones.keys():
+					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
+					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names)]
 					bone.parent = parent
 					if data['unknown']:
 						bone.bbone_segments = 2
@@ -281,7 +282,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					rot = mathutils.Quaternion()
 					for j in range(9**9):
 						for b in bone_data:
-							if common.decode_bone_name(b['name'], self.is_convert_vertex_group_names) == temp_parent.name:
+							if common.decode_bone_name(b['name'], self.is_convert_bone_weight_names) == temp_parent.name:
 								c = b['co'].copy()
 								r = b['rot'].copy()
 								break
@@ -323,7 +324,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			if self.is_armature_clean:
 				for bone in arm.edit_bones:
 					for b in local_bone_data:
-						name = common.decode_bone_name(b['name'], self.is_convert_vertex_group_names)
+						name = common.decode_bone_name(b['name'], self.is_convert_bone_weight_names)
 						if bone.name == name:
 							break
 					else:
@@ -399,12 +400,12 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			# 頂点グループ作成
 			for data in local_bone_data:
-				ob.vertex_groups.new(common.decode_bone_name(data['name'], self.is_convert_vertex_group_names))
+				ob.vertex_groups.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
 			context.window_manager.progress_update(3.3)
 			for vert_index, data in enumerate(vertex_data):
 				for weight in data['weights']:
 					if 0.0 < weight['value']:
-						vertex_group = ob.vertex_groups[common.decode_bone_name(weight['name'], self.is_convert_vertex_group_names)]
+						vertex_group = ob.vertex_groups[common.decode_bone_name(weight['name'], self.is_convert_bone_weight_names)]
 						vertex_group.add([vert_index], weight['value'], 'REPLACE')
 			context.window_manager.progress_update(3.7)
 			if self.is_vertex_group_sort:

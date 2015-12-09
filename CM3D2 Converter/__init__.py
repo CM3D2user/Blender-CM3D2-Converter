@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 144),
+	"version" : (0, 145),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -59,6 +59,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	backup_ext = bpy.props.StringProperty(name="バックアップの拡張子 (空欄で無効)", description="エクスポート時にバックアップを作成時この拡張子で複製します、空欄でバックアップを無効", default='bak')
 	
 	scale = bpy.props.FloatProperty(name="倍率", description="Blenderでモデルを扱うときの拡大率", default=5, min=0.01, max=100, soft_min=0.01, soft_max=100, step=10, precision=2)
+	is_convert_bone_weight_names = bpy.props.BoolProperty(name="基本的にボーン名/ウェイト名をBlender用に変換", default=False, description="modelインポート時にボーン名/ウェイト名を変換するかどうかのオプションのデフォルトを設定します")
 	model_default_path = bpy.props.StringProperty(name="modelファイル置き場", subtype='DIR_PATH', description="設定すれば、modelを扱う時は必ずここからファイル選択を始めます")
 	model_import_path = bpy.props.StringProperty(name="modelインポート時のデフォルトパス", subtype='FILE_PATH', description="modelインポート時に最初はここが表示されます、インポート毎に保存されます")
 	model_export_path = bpy.props.StringProperty(name="modelエクスポート時のデフォルトパス", subtype='FILE_PATH', description="modelエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
@@ -75,7 +76,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	mate_import_path = bpy.props.StringProperty(name="mateインポート時のデフォルトパス", subtype='FILE_PATH', description="mateインポート時に最初はここが表示されます、インポート毎に保存されます")
 	mate_export_path = bpy.props.StringProperty(name="mateエクスポート時のデフォルトパス", subtype='FILE_PATH', description="mateエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
-	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="基本的にtexファイルを探す", default=True)
+	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="基本的にtexファイルを探す", default=True, description="texファイルを探すかどうかのオプションのデフォルト値を設定します")
 	default_tex_path0 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path1 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
@@ -88,6 +89,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		box = self.layout.box()
 		box.label(text="modelファイル", icon='MESH_ICOSPHERE')
 		box.prop(self, 'scale', icon='MAN_SCALE')
+		box.prop(self, 'is_convert_bone_weight_names', icon='BLENDER')
 		box.prop(self, 'model_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		box = self.layout.box()
 		box.label(text="anmファイル", icon='POSE_HLT')
