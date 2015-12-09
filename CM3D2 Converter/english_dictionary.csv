@@ -151,7 +151,7 @@ UVの切れ目にシームをつけます	Seam UV Break Edge
 CM3D2インストールフォルダ	CM3D2 Install Folder
 全頂点に変形のないシェイプを削除	Remove Empty Shape Key
 ぼかしの強度(回数)を設定します	Set Blur Count
-CM3D2用マテリアルを新規作成	Create CM3D2 Material
+CM3D2用マテリアルを新規作成	Create Material for CM3D2
 モディファイアを適用できない場合	Case of Can't Aplly Modifiers
 割り当てのない頂点グループを削除	Remove Empty Vertex Groups
 テキストにマテリアル情報埋め込み	Add Material Info in Text
@@ -340,3 +340,13 @@ texファイル検索	Search tex Files
 基本的にtexファイルを探す	Basically Search tex Files
 モディファイアを適用するか消してください	Apply or Remove Modifiers
 基本的にボーン名/ウェイト名をBlender用に変換	Basically Convert Bone/Weight Names for Blender
+テクスチャ設定値の色	Color of Texture Settings
+_ToonRamp 名前	_ToonRamp Name
+_ToonRamp パス	_ToonRamp Path
+_ShadowRateToon 名前	_ShadowRateToon Name
+_ShadowRateToon パス	_ShadowRateToon Path
+CM3D2用マテリアル新規作成時の初期値	Initial Settings when created material for CM3D2
+
+シェイプキーのあるメッシュのモディファイアでも強制的に適用します	Apply will enforce in modifiers of mesh with a shape keys
+texファイルを探すかどうかのオプションのデフォルト値を設定します	Set default value of whether option search tex file
+CM3D2本体のインストールフォルダからtexファイルを探して開きます	Open from CM3D2 installation folder looking for a tex file
