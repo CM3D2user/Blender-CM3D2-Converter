@@ -17,18 +17,19 @@ def line_trim(line, enable=True):
 
 # CM3D2専用ファイル用の文字列書き込み
 def write_str(file, raw_str):
-	str_count = len(raw_str.encode('utf-8'))
-	if 128 <= str_count:
-		file.write( struct.pack('<B', (str_count % 128) + 128) )
-		file.write( struct.pack('<B', str_count // 128) )
-	else:
-		file.write(struct.pack('<B', str_count))
+	b_str = format(len(raw_str.encode('utf-8')), 'b')
+	for i in range(9):
+		if 7 < len(b_str):
+			file.write( struct.pack('<B', int("1"+b_str[-7:], 2)) )
+			b_str = b_str[:-7]
+		else:
+			file.write( struct.pack('<B', int(b_str, 2)) )
+			break
 	file.write(raw_str.encode('utf-8'))
 
 # CM3D2専用ファイル用の文字列読み込み
-def read_str(file):
-	total_b = ""
-	for i in range(99):
+def read_str(file, total_b = ""):
+	for i in range(9):
 		b_str = format(struct.unpack('<B', file.read(1))[0], '08b')
 		total_b = b_str[1:] + total_b
 		if b_str[0] == '0': break
