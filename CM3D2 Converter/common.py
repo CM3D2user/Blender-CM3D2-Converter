@@ -311,24 +311,19 @@ def set_texture_color(slot):
 # 必要なエリアタイプを設定を変更してでも取得
 def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES', 'INFO']):
 	request_areas = []
-	candidate_areas = []
+	return_areas = []
 	for area in context.screen.areas:
 		if area.type == request_type:
-			request_areas.append(area)
-		else:
-			if area.type not in except_types:
-				candidate_areas.append(area)
+			request_areas.append((area, area.width * area.height))
+		elif area.type not in except_types:
+			return_areas.append((area, area.width * area.height))
 	
 	if len(request_areas):
-		candidate_areas = request_areas[:]
-	if not len(candidate_areas):
+		return_areas = request_areas[:]
+	if not len(return_areas):
 		return None
 	
-	max_area_size = -1
-	for area in candidate_areas:
-		size = area.width * area.height
-		if max_area_size < size:
-			max_area, max_area_size = area, size
-	
-	max_area.type = request_type
-	return max_area
+	return_areas.sort(key=lambda i: i[1])
+	return_area = return_areas[-1][0]
+	return_area.type = request_type
+	return return_area
