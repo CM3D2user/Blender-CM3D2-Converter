@@ -27,10 +27,12 @@ def write_str(file, raw_str):
 
 # CM3D2専用ファイル用の文字列読み込み
 def read_str(file):
-	str_index = struct.unpack('<B', file.read(1))[0]
-	if 128 <= str_index:
-		str_index += (struct.unpack('<B', file.read(1))[0] * 128) - 128
-	return file.read(str_index).decode('utf-8')
+	total_b = ""
+	for i in range(99):
+		b_str = format(struct.unpack('<B', file.read(1))[0], '08b')
+		total_b = b_str[1:] + total_b
+		if b_str[0] == '0': break
+	return file.read(int(total_b, 2)).decode('utf-8')
 
 # ボーン/ウェイト名を Blender → CM3D2
 def encode_bone_name(name, enable=True):
