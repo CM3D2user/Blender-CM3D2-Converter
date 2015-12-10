@@ -2601,7 +2601,7 @@ class apply_prime_field(bpy.types.Operator):
 
 class quick_ao_bake_image(bpy.types.Operator):
 	bl_idname = 'object.quick_ao_bake_image'
-	bl_label = "クイック・AOベイク"
+	bl_label = "AO・ベイク"
 	bl_description = "アクティブオブジェクトに素早くAOをベイクします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
@@ -2618,9 +2618,11 @@ class quick_ao_bake_image(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
 		ob = context.active_object
 		if ob:
-			if ob.type == 'MESH' and ob.select:
+			if ob.type == 'MESH':
 				me = ob.data
 				if len(me.uv_layers):
 					return True
@@ -2662,5 +2664,104 @@ class quick_ao_bake_image(bpy.types.Operator):
 		context.scene.render.use_bake_normalize = True
 		
 		bpy.ops.object.bake_image()
+		
+		return {'FINISHED'}
+
+class quick_hemi_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_hemi_bake_image'
+	bl_label = "ヘミライト・ベイク"
+	bl_description = "アクティブオブジェクトに素早くヘミライトの陰をベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " AO Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row()
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		if area:
+			for space in area.spaces:
+				if space.type == 'IMAGE_EDITOR':
+					space.image = img
+					break
+		
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		hided_objects = []
+		for o in context.blend_data.objects:
+			for b, i in enumerate(context.scene.layers):
+				if o.layers[i] and b and ob.name != o.name and not o.hide_render:
+					hided_objects.append(o)
+					o.hide_render = True
+					break
+		
+		pre_mate_data = []
+		for slot_index, slot in enumerate(ob.material_slots):
+			if slot:
+				pre_mate_data.append((slot.material, []))
+				for face in me.polygons:
+					if face.material_index == slot_index:
+						pre_mate_data[-1][1].append(face.index)
+			else:
+				pre_mate_data.append(None)
+		
+		for slot in ob.material_slots[:]:
+			override = context.copy()
+			override['object'] = ob
+			bpy.ops.object.material_slot_remove(override)
+		
+		temp_lamp = context.blend_data.lamps.new("quick_hemi_bake_image_temp", 'HEMI')
+		temp_ob = context.blend_data.objects.new("quick_hemi_bake_image_temp", temp_lamp)
+		context.scene.objects.link(temp_ob)
+		
+		context.scene.render.bake_type = 'FULL'
+		bpy.ops.object.bake_image()
+		
+		context.scene.objects.unlink(temp_ob)
+		temp_lamp.user_clear(), temp_ob.user_clear()
+		context.blend_data.lamps.remove(temp_lamp), context.blend_data.objects.remove(temp_ob)
+		
+		for index, data in enumerate(pre_mate_data):
+			override = context.copy()
+			override['object'] = ob
+			bpy.ops.object.material_slot_add(override)
+			if data:
+				mate, faces = data
+				slot = ob.material_slots[index]
+				slot.material = mate
+				for face_index in faces:
+					me.polygons[face_index].material_index = index
+		
+		for o in hided_objects:
+			o.hide_render = False
 		
 		return {'FINISHED'}
