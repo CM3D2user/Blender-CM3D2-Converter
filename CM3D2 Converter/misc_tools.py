@@ -2620,7 +2620,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
-			if ob.type == 'MESH':
+			if ob.type == 'MESH' and ob.select:
 				me = ob.data
 				if len(me.uv_layers):
 					return True
