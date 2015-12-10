@@ -2421,7 +2421,13 @@ class forced_modifier_apply(bpy.types.Operator):
 	def draw(self, context):
 		ob = context.active_object
 		for index, mod in enumerate(ob.modifiers):
-			self.layout.prop(self, 'is_applies', text=mod.name, index=index)
+			
+			icon = 'MOD_%s' % mod.type
+			try:
+				self.layout.prop(self, 'is_applies', text=mod.name, index=index, icon=icon)
+			except:
+				self.layout.prop(self, 'is_applies', text=mod.name, index=index)
+			
 			if mod.show_viewport:
 				self.is_applies[index] = True
 	
