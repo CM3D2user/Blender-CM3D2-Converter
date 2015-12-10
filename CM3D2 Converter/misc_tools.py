@@ -2598,3 +2598,69 @@ class apply_prime_field(bpy.types.Operator):
 		context.scene.objects.active = ob
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
+
+class quick_ao_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_ao_bake_image'
+	bl_label = "クイック・AOベイク"
+	bl_description = "アクティブオブジェクトに素早くAOをベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	
+	items = [
+		('RAYTRACE', "レイトレース", "", 'BRUSH_TEXFILL', 1),
+		('APPROXIMATE', "近似(AAO)", "", 'MATSPHERE', 2),
+		]
+	ao_gather_method = bpy.props.EnumProperty(items=items, name="処理方法", default='RAYTRACE')
+	ao_samples = bpy.props.IntProperty(name="精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " AO Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row()
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.label(text="AO設定", icon='BRUSH_CREASE')
+		self.layout.prop(self, 'ao_gather_method', icon='NODETREE')
+		self.layout.prop(self, 'ao_samples', icon='ANIM_DATA')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		if area:
+			for space in area.spaces:
+				if space.type == 'IMAGE_EDITOR':
+					space.image = img
+					break
+		
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		context.scene.world.light_settings.gather_method = self.ao_gather_method
+		context.scene.world.light_settings.samples = self.ao_samples
+		context.scene.render.bake_type = 'AO'
+		context.scene.render.use_bake_normalize = True
+		
+		bpy.ops.object.bake_image()
+		
+		return {'FINISHED'}

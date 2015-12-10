@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 155),
+	"version" : (0, 156),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -207,6 +207,7 @@ def register():
 	bpy.types.MESH_MT_vertex_group_specials.append(misc_menus.MESH_MT_vertex_group_specials)
 	bpy.types.OBJECT_PT_context_object.append(misc_menus.OBJECT_PT_context_object)
 	bpy.types.OBJECT_PT_transform.append(misc_menus.OBJECT_PT_transform)
+	bpy.types.RENDER_PT_bake.append(misc_menus.RENDER_PT_bake)
 	bpy.types.TEXTURE_PT_context_texture.append(misc_menus.TEXTURE_PT_context_texture)
 	bpy.types.TEXT_HT_header.append(misc_menus.TEXT_HT_header)
 	bpy.types.VIEW3D_MT_pose_apply.append(misc_menus.VIEW3D_MT_pose_apply)
@@ -247,6 +248,7 @@ def unregister():
 	bpy.types.MESH_MT_vertex_group_specials.remove(misc_menus.MESH_MT_vertex_group_specials)
 	bpy.types.OBJECT_PT_context_object.remove(misc_menus.OBJECT_PT_context_object)
 	bpy.types.OBJECT_PT_transform.remove(misc_menus.OBJECT_PT_transform)
+	bpy.types.RENDER_PT_bake.remove(misc_menus.RENDER_PT_bake)
 	bpy.types.TEXTURE_PT_context_texture.remove(misc_menus.TEXTURE_PT_context_texture)
 	bpy.types.TEXT_HT_header.remove(misc_menus.TEXT_HT_header)
 	bpy.types.VIEW3D_MT_pose_apply.remove(misc_menus.VIEW3D_MT_pose_apply)

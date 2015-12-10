@@ -378,6 +378,10 @@ def VIEW3D_MT_pose_apply(self, context):
 	self.layout.separator()
 	self.layout.operator('pose.apply_prime_field', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
+# ベイクパネルに項目追加
+def RENDER_PT_bake(self, context):
+	self.layout.operator('object.quick_ao_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
+
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id
