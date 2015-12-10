@@ -2691,7 +2691,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		ob = context.active_object
-		self.image_name = ob.name + " AO Bake"
+		self.image_name = ob.name + " Hemi Bake"
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
