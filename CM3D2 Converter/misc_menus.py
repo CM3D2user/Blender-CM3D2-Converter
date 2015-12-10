@@ -373,6 +373,11 @@ def TEXTURE_PT_context_texture(self, context):
 def OBJECT_PT_transform(self, context):
 	self.layout.operator('object.sync_object_transform', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
+# ポーズモードの適用メニューに項目追加
+def VIEW3D_MT_pose_apply(self, context):
+	self.layout.separator()
+	self.layout.operator('pose.apply_prime_field', icon_value=common.preview_collections['main']['KISS'].icon_id)
+
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id

@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 154),
+	"version" : (0, 155),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -209,6 +209,7 @@ def register():
 	bpy.types.OBJECT_PT_transform.append(misc_menus.OBJECT_PT_transform)
 	bpy.types.TEXTURE_PT_context_texture.append(misc_menus.TEXTURE_PT_context_texture)
 	bpy.types.TEXT_HT_header.append(misc_menus.TEXT_HT_header)
+	bpy.types.VIEW3D_MT_pose_apply.append(misc_menus.VIEW3D_MT_pose_apply)
 	
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
@@ -248,6 +249,7 @@ def unregister():
 	bpy.types.OBJECT_PT_transform.remove(misc_menus.OBJECT_PT_transform)
 	bpy.types.TEXTURE_PT_context_texture.remove(misc_menus.TEXTURE_PT_context_texture)
 	bpy.types.TEXT_HT_header.remove(misc_menus.TEXT_HT_header)
+	bpy.types.VIEW3D_MT_pose_apply.remove(misc_menus.VIEW3D_MT_pose_apply)
 	
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)

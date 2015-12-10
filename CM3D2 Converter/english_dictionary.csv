@@ -346,7 +346,6 @@ _ToonRamp パス	_ToonRamp Path
 _ShadowRateToon 名前	_ShadowRateToon Name
 _ShadowRateToon パス	_ShadowRateToon Path
 CM3D2用マテリアル新規作成時の初期値	Initial Settings when created material for CM3D2
-
 シェイプキーのあるメッシュのモディファイアでも強制的に適用します	Apply will enforce in modifiers of mesh with a shape keys
 texファイルを探すかどうかのオプションのデフォルト値を設定します	Set default value of whether option search tex file
 CM3D2本体のインストールフォルダからtexファイルを探して開きます	Open from CM3D2 installation folder looking for a tex file
