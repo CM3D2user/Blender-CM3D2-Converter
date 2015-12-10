@@ -2683,6 +2683,8 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
+	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=3)
+	
 	@classmethod
 	def poll(cls, context):
 		if len(context.selected_objects) != 1:
@@ -2706,6 +2708,8 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		row = self.layout.row()
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.label(text="ヘミライト設定", icon='LAMP_HEMI')
+		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -2748,7 +2752,9 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		temp_lamp = context.blend_data.lamps.new("quick_hemi_bake_image_temp", 'HEMI')
 		temp_ob = context.blend_data.objects.new("quick_hemi_bake_image_temp", temp_lamp)
 		context.scene.objects.link(temp_ob)
+		temp_lamp.energy = self.lamp_energy
 		
+		context.scene.world.light_settings.use_ambient_occlusion = False
 		context.scene.render.bake_type = 'FULL'
 		bpy.ops.object.bake_image()
 		
