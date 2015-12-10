@@ -349,3 +349,18 @@ CM3D2用マテリアル新規作成時の初期値	Initial Settings when created
 シェイプキーのあるメッシュのモディファイアでも強制的に適用します	Apply will enforce in modifiers of mesh with a shape keys
 texファイルを探すかどうかのオプションのデフォルト値を設定します	Set default value of whether option search tex file
 CM3D2本体のインストールフォルダからtexファイルを探して開きます	Open from CM3D2 installation folder looking for a tex file
+幅	Width
+高さ	Height
+精度	Samples
+処理方法	Method
+AO設定	AO Settings
+光の強さ	Lamp Power
+AO・ベイク	Bake AO
+レイトレース	Raytrace
+新規画像設定	New Image Settings
+近似(AAO)	Approximate
+ヘミライト設定	Hemi Lamp Settings
+ヘミライト・ベイク	Bake Hemi Lamp
+現在のポーズで素体化	Set Prime Field by Now Poses
+アーマチュア適用は体積を維持	Preserve Volume when Apply Armatures
+関係するメッシュのアーマチュアを適用	Apply Armatures that relate meshes
