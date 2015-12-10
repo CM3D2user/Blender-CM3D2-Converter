@@ -2426,7 +2426,7 @@ class forced_modifier_apply(bpy.types.Operator):
 			try:
 				self.layout.prop(self, 'is_applies', text=mod.name, index=index, icon=icon)
 			except:
-				self.layout.prop(self, 'is_applies', text=mod.name, index=index)
+				self.layout.prop(self, 'is_applies', text=mod.name, index=index, icon='MODIFIER')
 			
 			if mod.show_viewport:
 				self.is_applies[index] = True
