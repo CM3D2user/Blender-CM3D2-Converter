@@ -2642,7 +2642,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
 		self.layout.prop(self, 'image_name', icon='SORTALPHA')
-		row = self.layout.row()
+		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="AO設定", icon='BRUSH_CREASE')
@@ -2683,7 +2683,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
-	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=3)
+	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=10, soft_min=0, soft_max=10, step=50, precision=2)
 	
 	@classmethod
 	def poll(cls, context):
@@ -2705,11 +2705,11 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
 		self.layout.prop(self, 'image_name', icon='SORTALPHA')
-		row = self.layout.row()
+		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="ヘミライト設定", icon='LAMP_HEMI')
-		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT')
+		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT', slider=True)
 	
 	def execute(self, context):
 		ob = context.active_object
