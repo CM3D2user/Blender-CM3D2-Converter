@@ -2645,7 +2645,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
-		self.layout.label(text="AO設定", icon='BRUSH_CREASE')
+		self.layout.label(text="AO設定", icon='BRUSH_TEXFILL')
 		self.layout.prop(self, 'ao_gather_method', icon='NODETREE')
 		self.layout.prop(self, 'ao_samples', icon='ANIM_DATA')
 	
@@ -2685,6 +2685,9 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	
 	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
 	
+	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
+	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	
 	@classmethod
 	def poll(cls, context):
 		if len(context.selected_objects) != 1:
@@ -2710,6 +2713,10 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="ヘミライト設定", icon='LAMP_HEMI')
 		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT', slider=True)
+		self.layout.label(text="AO設定", icon='BRUSH_TEXFILL')
+		row = self.layout.row(align=True)
+		row.prop(self, 'use_ao', icon='FILE_TICK')
+		row.prop(self, 'ao_samples', icon='ANIM_DATA')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -2754,7 +2761,11 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		context.scene.objects.link(temp_ob)
 		temp_lamp.energy = self.lamp_energy
 		
-		context.scene.world.light_settings.use_ambient_occlusion = False
+		context.scene.world.light_settings.use_ambient_occlusion = self.use_ao
+		if self.use_ao:
+			context.scene.world.light_settings.samples = self.ao_samples
+			context.scene.world.light_settings.ao_blend_type = 'MULTIPLY'
+		
 		context.scene.render.bake_type = 'FULL'
 		bpy.ops.object.bake_image()
 		
@@ -2788,8 +2799,11 @@ class quick_hair_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
+	hair_speculer_factor = bpy.props.FloatProperty(name="髪ハイライトの強さ", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=50, precision=2)
+	
 	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
-	use_ao = bpy.props.BoolProperty(name="AOを使用", default=True)
+	
+	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
 	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
 	
 	@classmethod
@@ -2815,10 +2829,14 @@ class quick_hair_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
-		self.layout.label(text="その他設定", icon='MODIFIER')
+		self.layout.label(text="ヘアー設定", icon='PARTICLEMODE')
+		self.layout.prop(self, 'hair_speculer_factor', icon='MATCAP_09', slider=True)
+		self.layout.label(text="ヘミライト設定", icon='LAMP_HEMI')
 		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT', slider=True)
-		self.layout.prop(self, 'use_ao', icon='BRUSH_TEXFILL')
-		self.layout.prop(self, 'ao_samples', icon='ANIM_DATA')
+		self.layout.label(text="AO設定", icon='BRUSH_TEXFILL')
+		row = self.layout.row(align=True)
+		row.prop(self, 'use_ao', icon='FILE_TICK')
+		row.prop(self, 'ao_samples', icon='ANIM_DATA')
 	
 	def execute(self, context):
 		import os.path
@@ -2886,6 +2904,8 @@ class quick_hair_bake_image(bpy.types.Operator):
 		bpy.ops.object.material_slot_add(override)
 		temp_mate = data_to.materials[0]
 		ob.material_slots[0].material = temp_mate
+		
+		temp_mate.node_tree.nodes["hair_speculer_factor"].inputs[0].default_value = self.hair_speculer_factor
 		
 		bpy.ops.object.bake_image()
 		
