@@ -380,9 +380,12 @@ def VIEW3D_MT_pose_apply(self, context):
 
 # ベイクパネルに項目追加
 def RENDER_PT_bake(self, context):
-	row = self.layout.row(align=True)
+	col = self.layout.column(align=True)
+	row = col.row(align=True)
 	row.operator('object.quick_ao_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	row.operator('object.quick_hemi_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	row = col.row(align=True)
+	row.operator('object.quick_hair_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):

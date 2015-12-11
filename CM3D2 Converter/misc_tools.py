@@ -2683,7 +2683,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
-	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=10, soft_min=0, soft_max=10, step=50, precision=2)
+	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
 	
 	@classmethod
 	def poll(cls, context):
@@ -2765,6 +2765,147 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		for index, data in enumerate(pre_mate_data):
 			override = context.copy()
 			override['object'] = ob
+			bpy.ops.object.material_slot_add(override)
+			if data:
+				mate, faces = data
+				slot = ob.material_slots[index]
+				slot.material = mate
+				for face_index in faces:
+					me.polygons[face_index].material_index = index
+		
+		for o in hided_objects:
+			o.hide_render = False
+		
+		return {'FINISHED'}
+
+class quick_hair_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_hair_bake_image'
+	bl_label = "ヘアー・ベイク"
+	bl_description = "アクティブオブジェクトに素早くCM3D2の髪風のテクスチャをベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	
+	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
+	use_ao = bpy.props.BoolProperty(name="AOを使用", default=True)
+	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Hair Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.label(text="その他設定", icon='MODIFIER')
+		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT', slider=True)
+		self.layout.prop(self, 'use_ao', icon='BRUSH_TEXFILL')
+		self.layout.prop(self, 'ao_samples', icon='ANIM_DATA')
+	
+	def execute(self, context):
+		import os.path
+		
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		if area:
+			for space in area.spaces:
+				if space.type == 'IMAGE_EDITOR':
+					space.image = img
+					break
+		
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		hided_objects = []
+		for o in context.blend_data.objects:
+			for b, i in enumerate(context.scene.layers):
+				if o.layers[i] and b and ob.name != o.name and not o.hide_render:
+					hided_objects.append(o)
+					o.hide_render = True
+					break
+		
+		pre_mate_data = []
+		for slot_index, slot in enumerate(ob.material_slots):
+			if slot:
+				pre_mate_data.append((slot.material, []))
+				for face in me.polygons:
+					if face.material_index == slot_index:
+						pre_mate_data[-1][1].append(face.index)
+			else:
+				pre_mate_data.append(None)
+		
+		for slot in ob.material_slots[:]:
+			bpy.ops.object.material_slot_remove(override)
+		
+		temp_lamp = context.blend_data.lamps.new("quick_hemi_bake_image_lamp_temp", 'HEMI')
+		temp_lamp_ob = context.blend_data.objects.new("quick_hemi_bake_image_lamp_temp", temp_lamp)
+		context.scene.objects.link(temp_lamp_ob)
+		temp_lamp.energy = self.lamp_energy
+		
+		pre_scene_camera = context.scene.camera
+		temp_camera = context.blend_data.cameras.new("quick_hemi_bake_image_camera_temp")
+		temp_camera_ob = context.blend_data.objects.new("quick_hemi_bake_image_camera_temp", temp_camera)
+		context.scene.objects.link(temp_camera_ob)
+		temp_camera_ob.rotation_euler[0] = 1.5708
+		context.scene.camera = temp_camera_ob
+		
+		context.scene.world.light_settings.use_ambient_occlusion = self.use_ao
+		if self.use_ao:
+			context.scene.world.light_settings.samples = self.ao_samples
+			context.scene.world.light_settings.ao_blend_type = 'MULTIPLY'
+		context.scene.render.bake_type = 'FULL'
+		
+		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
+		with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
+			data_to.materials = ["CM3D2 Hair"]
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = data_to.materials[0]
+		ob.material_slots[0].material = temp_mate
+		
+		bpy.ops.object.bake_image()
+		
+		temp_tex = temp_mate.texture_slots[0].texture
+		temp_tex.user_clear()
+		context.blend_data.textures.remove(temp_tex)
+		temp_mate.user_clear()
+		context.blend_data.materials.remove(temp_mate)
+		bpy.ops.object.material_slot_remove(override)
+		
+		context.scene.objects.unlink(temp_camera_ob)
+		temp_camera.user_clear(), temp_camera_ob.user_clear()
+		context.blend_data.cameras.remove(temp_camera), context.blend_data.objects.remove(temp_camera_ob)
+		context.scene.camera = pre_scene_camera
+		
+		context.scene.objects.unlink(temp_lamp_ob)
+		temp_lamp.user_clear(), temp_lamp_ob.user_clear()
+		context.blend_data.lamps.remove(temp_lamp), context.blend_data.objects.remove(temp_lamp_ob)
+		
+		for index, data in enumerate(pre_mate_data):
 			bpy.ops.object.material_slot_add(override)
 			if data:
 				mate, faces = data
