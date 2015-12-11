@@ -2799,7 +2799,8 @@ class quick_hair_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
-	hair_speculer_factor = bpy.props.FloatProperty(name="髪ハイライトの強さ", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=50, precision=2)
+	mate_diffuse_color = bpy.props.FloatVectorProperty(name="髪色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
+	mate_angel_ring_factor = bpy.props.FloatProperty(name="天使の輪の強さ", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=50, precision=2)
 	
 	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
 	
@@ -2830,7 +2831,8 @@ class quick_hair_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="ヘアー設定", icon='PARTICLEMODE')
-		self.layout.prop(self, 'hair_speculer_factor', icon='MATCAP_09', slider=True)
+		self.layout.prop(self, 'mate_diffuse_color', icon='COLOR')
+		self.layout.prop(self, 'mate_angel_ring_factor', icon='MATCAP_09', slider=True)
 		self.layout.label(text="ヘミライト設定", icon='LAMP_HEMI')
 		self.layout.prop(self, 'lamp_energy', icon='LAMP_POINT', slider=True)
 		self.layout.label(text="AO設定", icon='BRUSH_TEXFILL')
@@ -2905,7 +2907,8 @@ class quick_hair_bake_image(bpy.types.Operator):
 		temp_mate = data_to.materials[0]
 		ob.material_slots[0].material = temp_mate
 		
-		temp_mate.node_tree.nodes["hair_speculer_factor"].inputs[0].default_value = self.hair_speculer_factor
+		temp_mate.diffuse_color = self.mate_diffuse_color
+		temp_mate.node_tree.nodes["mate_angel_ring_factor"].inputs[0].default_value = self.mate_angel_ring_factor
 		
 		bpy.ops.object.bake_image()
 		
