@@ -2971,6 +2971,7 @@ class hair_bunch_add(bpy.types.Operator):
 		ob.select = True
 		
 		curve.dimensions = '3D'
+		curve.resolution_u = 5
 		
 		spline = curve.splines.new('NURBS')
 		
@@ -2998,6 +2999,7 @@ class hair_bunch_add(bpy.types.Operator):
 		
 		bevel_curve.dimensions = '2D'
 		bevel_curve.fill_mode = 'NONE'
+		bevel_curve.resolution_u = 2
 		
 		spline = bevel_curve.splines.new('NURBS')
 		spline.points.add(7)
@@ -3042,14 +3044,14 @@ class hair_bunch_add(bpy.types.Operator):
 	
 	def set_bevel_spline(self, spline):
 		r = self.radius
-		spline.points[0].co = [0, -r, 0, 1]
+		spline.points[0].co = [ 0, -r, 0, 1]
 		spline.points[1].co = [-r, -r, 0, 0.354]
-		spline.points[2].co = [-r, 0, 0, 1]
-		spline.points[3].co = [-r, r, 0, 0.354]
-		spline.points[4].co = [0, r, 0, 1]
-		spline.points[5].co = [r, r, 0, 0.354]
-		spline.points[6].co = [r, 0, 0, 1]
-		spline.points[7].co = [r, -r, 0, 0.354]
+		spline.points[2].co = [-r,  0, 0, 1]
+		spline.points[3].co = [-r,  r, 0, 0.354]
+		spline.points[4].co = [ 0,  r, 0, 1]
+		spline.points[5].co = [ r,  r, 0, 0.354]
+		spline.points[6].co = [ r,  0, 0, 1]
+		spline.points[7].co = [ r, -r, 0, 0.354]
 	
 	def set_spline(self, spline, context):
 		diff_co = self.end_location - context.space_data.cursor_location
