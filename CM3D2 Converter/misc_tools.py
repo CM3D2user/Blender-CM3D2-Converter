@@ -2621,6 +2621,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		]
 	ao_gather_method = bpy.props.EnumProperty(items=items, name="処理方法", default='RAYTRACE')
 	ao_samples = bpy.props.IntProperty(name="精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	ao_hide_other = bpy.props.BoolProperty(name="他オブジェクトの影響を受けない", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -2648,6 +2649,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		self.layout.label(text="AO設定", icon='BRUSH_TEXFILL')
 		self.layout.prop(self, 'ao_gather_method', icon='NODETREE')
 		self.layout.prop(self, 'ao_samples', icon='ANIM_DATA')
+		self.layout.prop(self, 'ao_hide_other', icon='VISIBLE_IPO_OFF')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -2669,7 +2671,19 @@ class quick_ao_bake_image(bpy.types.Operator):
 		context.scene.render.bake_type = 'AO'
 		context.scene.render.use_bake_normalize = True
 		
+		hided_objects = []
+		if self.ao_hide_other:
+			for o in context.blend_data.objects:
+				for b, i in enumerate(context.scene.layers):
+					if o.layers[i] and b and ob.name != o.name and not o.hide_render:
+						hided_objects.append(o)
+						o.hide_render = True
+						break
+		
 		bpy.ops.object.bake_image()
+		
+		for o in hided_objects:
+			o.hide_render = False
 		
 		return {'FINISHED'}
 
@@ -2687,6 +2701,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	
 	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
 	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	ao_hide_other = bpy.props.BoolProperty(name="他オブジェクトの影響を受けない", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -2717,6 +2732,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'use_ao', icon='FILE_TICK')
 		row.prop(self, 'ao_samples', icon='ANIM_DATA')
+		self.layout.prop(self, 'ao_hide_other', icon='VISIBLE_IPO_OFF')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -2734,12 +2750,13 @@ class quick_hemi_bake_image(bpy.types.Operator):
 			elem.image = img
 		
 		hided_objects = []
-		for o in context.blend_data.objects:
-			for b, i in enumerate(context.scene.layers):
-				if o.layers[i] and b and ob.name != o.name and not o.hide_render:
-					hided_objects.append(o)
-					o.hide_render = True
-					break
+		if self.ao_hide_other:
+			for o in context.blend_data.objects:
+				for b, i in enumerate(context.scene.layers):
+					if o.layers[i] and b and ob.name != o.name and not o.hide_render:
+						hided_objects.append(o)
+						o.hide_render = True
+						break
 		
 		pre_mate_data = []
 		for slot_index, slot in enumerate(ob.material_slots):
@@ -2806,6 +2823,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 	
 	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
 	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	ao_hide_other = bpy.props.BoolProperty(name="他オブジェクトの影響を受けない", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -2839,6 +2857,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'use_ao', icon='FILE_TICK')
 		row.prop(self, 'ao_samples', icon='ANIM_DATA')
+		self.layout.prop(self, 'ao_hide_other', icon='VISIBLE_IPO_OFF')
 	
 	def execute(self, context):
 		import os.path
@@ -2861,12 +2880,13 @@ class quick_hair_bake_image(bpy.types.Operator):
 			elem.image = img
 		
 		hided_objects = []
-		for o in context.blend_data.objects:
-			for b, i in enumerate(context.scene.layers):
-				if o.layers[i] and b and ob.name != o.name and not o.hide_render:
-					hided_objects.append(o)
-					o.hide_render = True
-					break
+		if self.ao_hide_other:
+			for o in context.blend_data.objects:
+				for b, i in enumerate(context.scene.layers):
+					if o.layers[i] and b and ob.name != o.name and not o.hide_render:
+						hided_objects.append(o)
+						o.hide_render = True
+						break
 		
 		pre_mate_data = []
 		for slot_index, slot in enumerate(ob.material_slots):
@@ -2961,7 +2981,10 @@ class hair_bunch_add(bpy.types.Operator):
 		
 		self.pre_draw = bpy.types.VIEW3D_HT_header.draw
 		def header_draw(self, context):
-			self.layout.label(text="ホイール:太さ変更、ホイールクリック:ランダム強度変更、ZXキー:高さ変更")
+			row = self.layout.row(align=True)
+			row.label(text="ホイール:太さ変更")
+			row.label(text="ホイールクリック:ランダム強度変更")
+			row.label(text="ZXキー:高さ変更")
 		bpy.types.VIEW3D_HT_header.draw = header_draw
 		
 		if context.active_object:
