@@ -2957,6 +2957,10 @@ class hair_bunch_add(bpy.types.Operator):
 	def invoke(self, context, event):
 		import bpy_extras.view3d_utils
 		
+		if context.active_object.mode != 'OBJECT':
+			self.report(type={'ERROR'}, message="オブジェクトモードで実行してください")
+			return {'CANCELLED'}
+		
 		self.end_location = bpy_extras.view3d_utils.region_2d_to_location_3d(context.region, context.region_data, (event.mouse_region_x, event.mouse_region_y), context.space_data.cursor_location)
 		
 		curve = context.blend_data.curves.new("Hair Bunch", 'CURVE')
@@ -3064,5 +3068,9 @@ class hair_bunch_add(bpy.types.Operator):
 		spline.points[-1].co = list(self.end_location[:]) + [1]
 	
 	def execute(self, context):
-		self.set_spline(self.spline, context)
+		try:
+			self.set_spline(self.spline, context)
+		except:
+			self.report(type={'ERROR'}, message="オブジェクトモードで実行してください")
+			return {'CANCELLED'}
 		return {'FINISHED'}
