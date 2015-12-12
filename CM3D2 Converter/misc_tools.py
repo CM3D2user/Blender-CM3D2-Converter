@@ -2957,6 +2957,11 @@ class hair_bunch_add(bpy.types.Operator):
 	def invoke(self, context, event):
 		import bpy_extras.view3d_utils
 		
+		self.pre_draw = bpy.types.VIEW3D_HT_header.draw
+		def header_draw(self, context):
+			self.layout.label(text="ホイールで房のサイズを変更＋新しいランダムな変形")
+		bpy.types.VIEW3D_HT_header.draw = header_draw
+		
 		if context.active_object:
 			if context.active_object.mode != 'OBJECT':
 				self.report(type={'ERROR'}, message="オブジェクトモードで実行してください")
@@ -3032,6 +3037,8 @@ class hair_bunch_add(bpy.types.Operator):
 			self.set_bevel_spline(self.bevel_spline)
 			self.object.update_tag({'OBJECT', 'DATA'})
 		elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+			bpy.types.VIEW3D_HT_header.draw = self.pre_draw
+			context.area.tag_redraw()	
 			return {'FINISHED'}
 		elif event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS':
 			context.scene.objects.unlink(self.object)
@@ -3040,6 +3047,8 @@ class hair_bunch_add(bpy.types.Operator):
 			self.curve.user_clear(), self.bevel_curve.user_clear()
 			context.blend_data.objects.remove(self.object), context.blend_data.objects.remove(self.bevel_object)
 			context.blend_data.curves.remove(self.curve), context.blend_data.curves.remove(self.bevel_curve)
+			bpy.types.VIEW3D_HT_header.draw = self.pre_draw
+			context.area.tag_redraw()
 			return {'CANCELLED'}
 		
 		return {'RUNNING_MODAL'}
