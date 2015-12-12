@@ -3056,20 +3056,21 @@ class hair_bunch_add(bpy.types.Operator):
 	def get_random_point(self, co):
 		import random
 		r = self.radius * 0.5
-		co[0] = co[0] + random.uniform(-r, r)
-		co[1] = co[1] + random.uniform(-r, r)
+		co.x = co.x + random.uniform(-r, r)
+		co.y = co.y + random.uniform(-r, r)
 		return co
 	
 	def set_bevel_spline(self, spline):
+		import math, mathutils
 		r = self.radius
-		spline.points[0].co = self.get_random_point([ 0, -r, 0, 1])
-		spline.points[1].co = self.get_random_point([-r, -r, 0, 0.354])
-		spline.points[2].co = self.get_random_point([-r,  0, 0, 1])
-		spline.points[3].co = self.get_random_point([-r,  r, 0, 0.354])
-		spline.points[4].co = self.get_random_point([ 0,  r, 0, 1])
-		spline.points[5].co = self.get_random_point([ r,  r, 0, 0.354])
-		spline.points[6].co = self.get_random_point([ r,  0, 0, 1])
-		spline.points[7].co = self.get_random_point([ r, -r, 0, 0.354])
+		vec = mathutils.Vector((0, r, 0))
+		min_rad = -math.radians(360 / len(spline.points))
+		for index, point in enumerate(spline.points):
+			eul = mathutils.Euler((0, 0, min_rad * index), 'XYZ')
+			now_vec = vec.copy()
+			now_vec.rotate(eul)
+			now_vec = self.get_random_point(now_vec)
+			point.co = list(now_vec[:]) + [1]
 	
 	def set_spline(self, spline, context):
 		diff_co = self.end_location - context.space_data.cursor_location
