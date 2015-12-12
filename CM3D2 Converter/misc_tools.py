@@ -2738,6 +2738,9 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
+		override = context.copy()
+		override['object'] = ob
+		
 		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		if area:
@@ -2769,9 +2772,13 @@ class quick_hemi_bake_image(bpy.types.Operator):
 				pre_mate_data.append(None)
 		
 		for slot in ob.material_slots[:]:
-			override = context.copy()
-			override['object'] = ob
 			bpy.ops.object.material_slot_remove(override)
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = context.blend_data.materials.new("quick_hemi_bake_image_temp")
+		ob.material_slots[0].material = temp_mate
+		temp_mate.diffuse_intensity = 1.0
+		temp_mate.diffuse_color = (1, 1, 1)
 		
 		temp_lamp = context.blend_data.lamps.new("quick_hemi_bake_image_temp", 'HEMI')
 		temp_ob = context.blend_data.objects.new("quick_hemi_bake_image_temp", temp_lamp)
@@ -2790,9 +2797,12 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		temp_lamp.user_clear(), temp_ob.user_clear()
 		context.blend_data.lamps.remove(temp_lamp), context.blend_data.objects.remove(temp_ob)
 		
+		bpy.ops.object.material_slot_remove(override)
+		
+		temp_mate.user_clear()
+		context.blend_data.materials.remove(temp_mate)
+		
 		for index, data in enumerate(pre_mate_data):
-			override = context.copy()
-			override['object'] = ob
 			bpy.ops.object.material_slot_add(override)
 			if data:
 				mate, faces = data
