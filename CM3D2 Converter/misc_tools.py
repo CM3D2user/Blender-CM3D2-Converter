@@ -2949,6 +2949,8 @@ class hair_bunch_add(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	radius = bpy.props.FloatProperty(name="房の半径", default=0.1, min=0, max=10, soft_min=0, soft_max=10, step=10, precision=2)
+	random_multi = bpy.props.FloatProperty(name="ランダム要素の強さ", default=0.5, min=0, max=10, soft_min=0, soft_max=10, step=10, precision=2)
+	z_plus = bpy.props.FloatProperty(name="中間のZ軸の高さ", default=0.1, min=0, max=10, soft_min=0, soft_max=10, step=10, precision=2)
 	
 	@classmethod
 	def poll(cls, context):
@@ -2959,7 +2961,7 @@ class hair_bunch_add(bpy.types.Operator):
 		
 		self.pre_draw = bpy.types.VIEW3D_HT_header.draw
 		def header_draw(self, context):
-			self.layout.label(text="ホイールで房のサイズを変更＋新しいランダムな変形")
+			self.layout.label(text="ホイール:太さ変更、ホイールクリック:ランダム強度変更、ZXキー:高さ変更")
 		bpy.types.VIEW3D_HT_header.draw = header_draw
 		
 		if context.active_object:
@@ -3025,9 +3027,12 @@ class hair_bunch_add(bpy.types.Operator):
 	def modal(self, context, event):
 		import bpy_extras.view3d_utils
 		
+		print(event.type, event.value)
+		
 		if event.type == 'MOUSEMOVE':
 			self.end_location = bpy_extras.view3d_utils.region_2d_to_location_3d(context.region, context.region_data, (event.mouse_region_x, event.mouse_region_y), context.space_data.cursor_location)
 			self.execute(context)
+		
 		elif event.type == 'WHEELUPMOUSE' and event.value == 'PRESS':
 			self.radius += 0.05
 			self.set_bevel_spline(self.bevel_spline)
@@ -3036,10 +3041,28 @@ class hair_bunch_add(bpy.types.Operator):
 			self.radius -= 0.05
 			self.set_bevel_spline(self.bevel_spline)
 			self.object.update_tag({'OBJECT', 'DATA'})
+		
+		elif event.type == 'MIDDLEMOUSE' and event.value == 'PRESS':
+			if 0.9 < self.random_multi:
+				self.random_multi = 0.0
+			elif 0.4 < self.random_multi:
+				self.random_multi = 1.0
+			else:
+				self.random_multi = 0.5
+			self.set_bevel_spline(self.bevel_spline)
+		
+		elif event.type == 'Z' and event.value == 'PRESS':
+			self.z_plus += 0.1
+			self.execute(context)
+		elif event.type == 'X' and event.value == 'PRESS':
+			self.z_plus -= 0.1
+			self.execute(context)
+		
 		elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
 			bpy.types.VIEW3D_HT_header.draw = self.pre_draw
 			context.area.tag_redraw()	
 			return {'FINISHED'}
+		
 		elif event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS':
 			context.scene.objects.unlink(self.object)
 			context.scene.objects.unlink(self.bevel_object)
@@ -3055,7 +3078,7 @@ class hair_bunch_add(bpy.types.Operator):
 	
 	def get_random_point(self, co):
 		import random
-		r = self.radius * 0.5
+		r = self.radius * self.random_multi
 		co.x = co.x + random.uniform(-r, r)
 		co.y = co.y + random.uniform(-r, r)
 		return co
@@ -3076,7 +3099,7 @@ class hair_bunch_add(bpy.types.Operator):
 		diff_co = self.end_location - context.space_data.cursor_location
 		
 		plus_co = diff_co * 0.333333
-		plus_co.z = -plus_co.z
+		plus_co.z = -plus_co.z + self.z_plus
 		
 		point1 = diff_co * 0.333333
 		point1 += plus_co * 1
