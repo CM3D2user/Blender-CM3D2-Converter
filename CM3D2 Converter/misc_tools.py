@@ -2980,6 +2980,7 @@ class hair_bunch_add(bpy.types.Operator):
 		spline.points[-1].radius = 0.0
 		spline.use_endpoint_u = True
 		spline.order_u = 4
+		spline.resolution_u = 5
 		
 		self.set_spline(spline, context)
 		
@@ -3005,6 +3006,7 @@ class hair_bunch_add(bpy.types.Operator):
 		spline.points.add(7)
 		spline.use_cyclic_u = True
 		spline.order_u = 4
+		spline.resolution_u = 2
 		
 		self.bevel_object = bevel_ob
 		self.bevel_curve = bevel_curve
