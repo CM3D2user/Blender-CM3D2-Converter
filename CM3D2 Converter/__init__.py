@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 168),
+	"version" : (0, 169),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -201,6 +201,7 @@ def register():
 	bpy.types.DATA_PT_vertex_groups.append(misc_menus.DATA_PT_vertex_groups)
 	bpy.types.IMAGE_HT_header.append(misc_menus.IMAGE_HT_header)
 	bpy.types.IMAGE_PT_image_properties.append(misc_menus.IMAGE_PT_image_properties)
+	bpy.types.INFO_MT_curve_add.append(misc_menus.INFO_MT_curve_add)
 	bpy.types.INFO_MT_help.append(misc_menus.INFO_MT_help)
 	bpy.types.MATERIAL_PT_context_material.append(misc_menus.MATERIAL_PT_context_material)
 	bpy.types.MESH_MT_shape_key_specials.append(misc_menus.MESH_MT_shape_key_specials)
@@ -242,6 +243,7 @@ def unregister():
 	bpy.types.DATA_PT_vertex_groups.remove(misc_menus.DATA_PT_vertex_groups)
 	bpy.types.IMAGE_HT_header.remove(misc_menus.IMAGE_HT_header)
 	bpy.types.IMAGE_PT_image_properties.remove(misc_menus.IMAGE_PT_image_properties)
+	bpy.types.INFO_MT_curve_add.remove(misc_menus.INFO_MT_curve_add)
 	bpy.types.INFO_MT_help.remove(misc_menus.INFO_MT_help)
 	bpy.types.MATERIAL_PT_context_material.remove(misc_menus.MATERIAL_PT_context_material)
 	bpy.types.MESH_MT_shape_key_specials.remove(misc_menus.MESH_MT_shape_key_specials)

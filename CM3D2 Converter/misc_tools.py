@@ -2941,3 +2941,128 @@ class quick_hair_bake_image(bpy.types.Operator):
 			o.hide_render = False
 		
 		return {'FINISHED'}
+
+class hair_bunch_add(bpy.types.Operator):
+	bl_idname = 'curve.hair_bunch_add'
+	bl_label = "髪の房を追加"
+	bl_description = "アニメ調の髪の房を追加します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	radius = bpy.props.FloatProperty(name="房の半径", default=0.1, min=0, max=10, soft_min=0, soft_max=10, step=10, precision=2)
+	
+	@classmethod
+	def poll(cls, context):
+		return True
+	
+	def invoke(self, context, event):
+		import bpy_extras.view3d_utils
+		
+		self.end_location = bpy_extras.view3d_utils.region_2d_to_location_3d(context.region, context.region_data, (event.mouse_region_x, event.mouse_region_y), context.space_data.cursor_location)
+		
+		curve = context.blend_data.curves.new("Hair Bunch", 'CURVE')
+		ob = context.blend_data.objects.new("Hair Bunch", curve)
+		context.scene.objects.link(ob)
+		context.scene.objects.active = ob
+		ob.select = True
+		
+		curve.dimensions = '3D'
+		
+		spline = curve.splines.new('NURBS')
+		
+		spline.points.add(3)
+		spline.points[0].radius = 0.0
+		spline.points[-1].radius = 0.0
+		spline.use_endpoint_u = True
+		spline.order_u = 4
+		
+		self.set_spline(spline, context)
+		
+		self.object = ob
+		self.curve = curve
+		self.spline = spline
+		
+		bevel_curve = context.blend_data.curves.new("Hair Bunch Bevel", 'CURVE')
+		bevel_ob = context.blend_data.objects.new("Hair Bunch Bevel", bevel_curve)
+		context.scene.objects.link(bevel_ob)
+		bevel_ob.select = True
+		curve.bevel_object = bevel_ob
+		
+		bevel_ob.parent = ob
+		bevel_ob.parent_type = 'VERTEX'
+		bevel_ob.parent_vertices = (3, 3, 3)
+		
+		bevel_curve.dimensions = '2D'
+		bevel_curve.fill_mode = 'NONE'
+		
+		spline = bevel_curve.splines.new('NURBS')
+		spline.points.add(7)
+		spline.use_cyclic_u = True
+		spline.order_u = 4
+		
+		self.bevel_object = bevel_ob
+		self.bevel_curve = bevel_curve
+		self.bevel_spline = spline
+		
+		self.set_bevel_spline(spline)
+		
+		context.window_manager.modal_handler_add(self)
+		return {'RUNNING_MODAL'}
+	
+	def modal(self, context, event):
+		import bpy_extras.view3d_utils
+		
+		if event.type == 'MOUSEMOVE':
+			self.end_location = bpy_extras.view3d_utils.region_2d_to_location_3d(context.region, context.region_data, (event.mouse_region_x, event.mouse_region_y), context.space_data.cursor_location)
+			self.execute(context)
+		elif event.type == 'WHEELUPMOUSE' and event.value == 'PRESS':
+			self.radius += 0.05
+			self.set_bevel_spline(self.bevel_spline)
+			self.object.update_tag({'OBJECT', 'DATA'})
+		elif event.type == 'WHEELDOWNMOUSE' and event.value == 'PRESS':
+			self.radius -= 0.05
+			self.set_bevel_spline(self.bevel_spline)
+			self.object.update_tag({'OBJECT', 'DATA'})
+		elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+			return {'FINISHED'}
+		elif event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS':
+			context.scene.objects.unlink(self.object)
+			context.scene.objects.unlink(self.bevel_object)
+			self.object.user_clear(), self.bevel_object.user_clear()
+			self.curve.user_clear(), self.bevel_curve.user_clear()
+			context.blend_data.objects.remove(self.object), context.blend_data.objects.remove(self.bevel_object)
+			context.blend_data.curves.remove(self.curve), context.blend_data.curves.remove(self.bevel_curve)
+			return {'CANCELLED'}
+		
+		return {'RUNNING_MODAL'}
+	
+	def set_bevel_spline(self, spline):
+		r = self.radius
+		spline.points[0].co = [0, -r, 0, 1]
+		spline.points[1].co = [-r, -r, 0, 0.354]
+		spline.points[2].co = [-r, 0, 0, 1]
+		spline.points[3].co = [-r, r, 0, 0.354]
+		spline.points[4].co = [0, r, 0, 1]
+		spline.points[5].co = [r, r, 0, 0.354]
+		spline.points[6].co = [r, 0, 0, 1]
+		spline.points[7].co = [r, -r, 0, 0.354]
+	
+	def set_spline(self, spline, context):
+		diff_co = self.end_location - context.space_data.cursor_location
+		diff_co.z = 0.0
+		
+		diff_z = context.space_data.cursor_location.z - self.end_location.z
+		
+		point1 = diff_co * 0.333333
+		point1.z = context.space_data.cursor_location.z + (diff_z * 0.1)
+		
+		point2 = diff_co * 0.666666
+		point2.z = context.space_data.cursor_location.z + (diff_z * 0.1)
+		
+		spline.points[0].co = list(context.space_data.cursor_location[:]) + [1]
+		spline.points[1].co = list(point1[:]) + [1]
+		spline.points[2].co = list(point2[:]) + [1]
+		spline.points[-1].co = list(self.end_location[:]) + [1]
+	
+	def execute(self, context):
+		self.set_spline(self.spline, context)
+		return {'FINISHED'}

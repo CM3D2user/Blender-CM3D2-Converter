@@ -387,6 +387,11 @@ def RENDER_PT_bake(self, context):
 	row = col.row(align=True)
 	row.operator('object.quick_hair_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
+# カーブ追加メニューに項目追加
+def INFO_MT_curve_add(self, context):
+	self.layout.separator()
+	self.layout.operator('curve.hair_bunch_add', text="髪の房", icon_value=common.preview_collections['main']['KISS'].icon_id)
+
 # ヘルプメニューに項目追加
 def INFO_MT_help(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id
