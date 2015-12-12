@@ -3042,16 +3042,23 @@ class hair_bunch_add(bpy.types.Operator):
 		
 		return {'RUNNING_MODAL'}
 	
+	def get_random_point(self, co):
+		import random
+		r = self.radius * 0.5
+		co[0] = co[0] + random.uniform(-r, r)
+		co[1] = co[1] + random.uniform(-r, r)
+		return co
+	
 	def set_bevel_spline(self, spline):
 		r = self.radius
-		spline.points[0].co = [ 0, -r, 0, 1]
-		spline.points[1].co = [-r, -r, 0, 0.354]
-		spline.points[2].co = [-r,  0, 0, 1]
-		spline.points[3].co = [-r,  r, 0, 0.354]
-		spline.points[4].co = [ 0,  r, 0, 1]
-		spline.points[5].co = [ r,  r, 0, 0.354]
-		spline.points[6].co = [ r,  0, 0, 1]
-		spline.points[7].co = [ r, -r, 0, 0.354]
+		spline.points[0].co = self.get_random_point([ 0, -r, 0, 1])
+		spline.points[1].co = self.get_random_point([-r, -r, 0, 0.354])
+		spline.points[2].co = self.get_random_point([-r,  0, 0, 1])
+		spline.points[3].co = self.get_random_point([-r,  r, 0, 0.354])
+		spline.points[4].co = self.get_random_point([ 0,  r, 0, 1])
+		spline.points[5].co = self.get_random_point([ r,  r, 0, 0.354])
+		spline.points[6].co = self.get_random_point([ r,  0, 0, 1])
+		spline.points[7].co = self.get_random_point([ r, -r, 0, 0.354])
 	
 	def set_spline(self, spline, context):
 		diff_co = self.end_location - context.space_data.cursor_location
