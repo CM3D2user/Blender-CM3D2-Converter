@@ -2945,11 +2945,10 @@ class quick_hair_bake_image(bpy.types.Operator):
 		common.remove_data(temp_mate)
 		bpy.ops.object.material_slot_remove(override)
 		
-		common.remove_data(temp_camera_ob)
 		common.remove_data(temp_camera)
+		common.remove_data(temp_camera_ob)
 		context.scene.camera = pre_scene_camera
 		
-		context.scene.objects.unlink(temp_lamp_ob)
 		common.remove_data(temp_lamp)
 		common.remove_data(temp_lamp_ob)
 		
