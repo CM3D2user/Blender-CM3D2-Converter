@@ -2471,9 +2471,8 @@ class forced_modifier_apply(bpy.types.Operator):
 			
 			new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
 			
-			context.scene.objects.unlink(temp_ob)
-			temp_me.user_clear(), temp_ob.user_clear()
-			context.blend_data.meshes.remove(temp_me), context.blend_data.objects.remove(temp_ob)
+			common.remove_data(temp_me)
+			common.remove_data(temp_ob)
 		
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index]:
@@ -2591,9 +2590,8 @@ class apply_prime_field(bpy.types.Operator):
 				bone.keyframe_insert(data_path='scale', frame=i)
 		bpy.ops.pose.constraints_clear()
 		
-		context.scene.objects.unlink(temp_ob)
-		temp_arm.user_clear(), temp_ob.user_clear()
-		context.blend_data.armatures.remove(temp_arm), context.blend_data.objects.remove(temp_ob)
+		common.remove_data(temp_arm)
+		common.remove_data(temp_ob)
 		
 		bpy.ops.pose.select_all(action='DESELECT')
 		for bone in pre_selected_pose_bones:
@@ -2794,13 +2792,12 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		bpy.ops.object.bake_image()
 		
 		context.scene.objects.unlink(temp_ob)
-		temp_lamp.user_clear(), temp_ob.user_clear()
-		context.blend_data.lamps.remove(temp_lamp), context.blend_data.objects.remove(temp_ob)
+		common.remove_data(temp_lamp)
+		common.remove_data(temp_ob)
 		
 		bpy.ops.object.material_slot_remove(override)
 		
-		temp_mate.user_clear()
-		context.blend_data.materials.remove(temp_mate)
+		common.remove_data(temp_mate)
 		
 		for index, data in enumerate(pre_mate_data):
 			bpy.ops.object.material_slot_add(override)
@@ -2943,20 +2940,18 @@ class quick_hair_bake_image(bpy.types.Operator):
 		bpy.ops.object.bake_image()
 		
 		temp_tex = temp_mate.texture_slots[0].texture
-		temp_tex.user_clear()
-		context.blend_data.textures.remove(temp_tex)
-		temp_mate.user_clear()
-		context.blend_data.materials.remove(temp_mate)
+		
+		common.remove_data(temp_tex)
+		common.remove_data(temp_mate)
 		bpy.ops.object.material_slot_remove(override)
 		
-		context.scene.objects.unlink(temp_camera_ob)
-		temp_camera.user_clear(), temp_camera_ob.user_clear()
-		context.blend_data.cameras.remove(temp_camera), context.blend_data.objects.remove(temp_camera_ob)
+		common.remove_data(temp_camera_ob)
+		common.remove_data(temp_camera)
 		context.scene.camera = pre_scene_camera
 		
 		context.scene.objects.unlink(temp_lamp_ob)
-		temp_lamp.user_clear(), temp_lamp_ob.user_clear()
-		context.blend_data.lamps.remove(temp_lamp), context.blend_data.objects.remove(temp_lamp_ob)
+		common.remove_data(temp_lamp)
+		common.remove_data(temp_lamp_ob)
 		
 		for index, data in enumerate(pre_mate_data):
 			bpy.ops.object.material_slot_add(override)
@@ -3097,12 +3092,10 @@ class hair_bunch_add(bpy.types.Operator):
 			return {'FINISHED'}
 		
 		elif event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS':
-			context.scene.objects.unlink(self.object)
-			context.scene.objects.unlink(self.bevel_object)
-			self.object.user_clear(), self.bevel_object.user_clear()
-			self.curve.user_clear(), self.bevel_curve.user_clear()
-			context.blend_data.objects.remove(self.object), context.blend_data.objects.remove(self.bevel_object)
-			context.blend_data.curves.remove(self.curve), context.blend_data.curves.remove(self.bevel_curve)
+			common.remove_data(self.object)
+			common.remove_data(self.bevel_object)
+			common.remove_data(self.curve)
+			common.remove_data(self.bevel_curve)
 			bpy.types.VIEW3D_HT_header.draw = self.pre_draw
 			context.area.tag_redraw()
 			return {'CANCELLED'}

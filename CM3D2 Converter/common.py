@@ -324,3 +324,16 @@ def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES
 	return_area = return_areas[-1][0]
 	return_area.type = request_type
 	return return_area
+
+# データを完全に削除
+def remove_data(data):
+	if data.__class__.__name__ == 'Object':
+		if data.name in bpy.context.scene.objects.keys():
+			bpy.context.scene.objects.unlink(data)
+	try:
+		data.user_clear()
+	except: pass
+	for data_str in ['armatures', 'cameras', 'curves', 'grease_pencil', 'images', 'lamps', 'materials', 'meshes', 'objects', 'textures']:
+		try:
+			exec('bpy.data.%s.remove(data)' % data_str)
+		except: pass
