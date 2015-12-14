@@ -370,3 +370,15 @@ AOの精度	AO Samples
 ヘアー設定	Hair Settings
 ヘアー・ベイク	Bake Hair
 天使の輪の強さ	Angel Ring Factor
+髪の房	Branch of Hair
+房の半径	Radius of Branch
+髪の房を追加	Add Branch of Hair
+中間のZ軸の高さ	Z Axis Height
+ランダム要素の強さ	Strength of Randam Effect
+ホイール:太さ変更	Wheel:Change Radius
+ZXキー:高さ変更	ZX Keys:Change Height
+アニメ調の髪の房を追加します	Add Branch of Toon Hair
+他オブジェクトの影響を受けない	Not affected by other objects
+ホイールクリック:ランダム強度変更	Wheel Click:Change Random Strength
+オブジェクトモードで実行してください	Please run in object mode
+アクティブオブジェクトに素早くAOをベイクします	Bake quickly AO in the Active Object
