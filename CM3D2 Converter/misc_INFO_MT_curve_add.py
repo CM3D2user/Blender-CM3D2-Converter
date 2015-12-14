@@ -168,9 +168,11 @@ class hair_bunch_add(bpy.types.Operator):
 		
 		point1 = diff_co * 0.333333
 		point1 += plus_co * 1
+		point1 += context.space_data.cursor_location
 		
 		point2 = diff_co * 0.666666
 		point2 += plus_co * 1
+		point2 += context.space_data.cursor_location
 		
 		spline.points[0].co = list(context.space_data.cursor_location[:]) + [1]
 		spline.points[1].co = list(point1[:]) + [1]
