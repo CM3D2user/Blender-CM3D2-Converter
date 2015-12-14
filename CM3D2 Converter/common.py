@@ -333,7 +333,9 @@ def remove_data(data):
 	try:
 		data.user_clear()
 	except: pass
-	for data_str in ['armatures', 'cameras', 'curves', 'grease_pencil', 'images', 'lamps', 'materials', 'meshes', 'objects', 'textures']:
+	for data_str in dir(bpy.data):
+		if data_str[-1] != "s": continue
 		try:
 			exec('bpy.data.%s.remove(data)' % data_str)
 		except: pass
+		else: break
