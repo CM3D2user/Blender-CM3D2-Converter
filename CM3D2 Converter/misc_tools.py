@@ -2941,16 +2941,13 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		temp_tex = temp_mate.texture_slots[0].texture
 		
-		common.remove_data(temp_tex)
-		common.remove_data(temp_mate)
+		common.remove_data([temp_mate, temp_tex])
 		bpy.ops.object.material_slot_remove(override)
 		
-		common.remove_data(temp_camera)
-		common.remove_data(temp_camera_ob)
+		common.remove_data([temp_camera_ob, temp_camera])
 		context.scene.camera = pre_scene_camera
 		
-		common.remove_data(temp_lamp)
-		common.remove_data(temp_lamp_ob)
+		common.remove_data([temp_lamp_ob, temp_lamp])
 		
 		for index, data in enumerate(pre_mate_data):
 			bpy.ops.object.material_slot_add(override)

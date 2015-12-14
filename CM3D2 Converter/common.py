@@ -325,17 +325,26 @@ def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES
 	return_area.type = request_type
 	return return_area
 
-# データを完全に削除
-def remove_data(data):
-	if data.__class__.__name__ == 'Object':
-		if data.name in bpy.context.scene.objects.keys():
-			bpy.context.scene.objects.unlink(data)
-	if 'users' in dir(data) and 'user_clear' in dir(data):
-		if data.users: data.user_clear()
-	for data_str in dir(bpy.data):
-		if data_str[-1] != "s": continue
-		try:
-			if data.__class__.__name__ == eval('bpy.data.%s[0].__class__.__name__' % data_str):
-				exec('bpy.data.%s.remove(data)' % data_str)
-				break
-		except: pass
+# 複数のデータを完全に削除
+def remove_data(target_data):
+	try: target_data = target_data[:]
+	except: target_data = [target_data]
+	
+	for data in target_data:
+		if data.__class__.__name__ == 'Object':
+			if data.name in bpy.context.scene.objects.keys():
+				bpy.context.scene.objects.unlink(data)
+	
+	for data in target_data:
+		if 'users' in dir(data) and 'user_clear' in dir(data):
+			if data.users: data.user_clear()
+	
+	for data in target_data:
+		for data_str in dir(bpy.data):
+			if data_str[-1] != "s": continue
+			try:
+				if data.__class__.__name__ == eval('bpy.data.%s[0].__class__.__name__' % data_str):
+					bpy.context.window_manager.clipboard = 'bpy.data.%s.remove(data)' % data_str
+					exec('bpy.data.%s.remove(data)' % data_str)
+					break
+			except: pass
