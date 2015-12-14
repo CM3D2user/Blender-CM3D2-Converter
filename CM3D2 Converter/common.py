@@ -330,14 +330,12 @@ def remove_data(data):
 	if data.__class__.__name__ == 'Object':
 		if data.name in bpy.context.scene.objects.keys():
 			bpy.context.scene.objects.unlink(data)
-	try:
-		if data.users:
-			data.user_clear()
-	except: pass
+	if 'users' in dir(data) and 'user_clear' in dir(data):
+		if data.users: data.user_clear()
 	for data_str in dir(bpy.data):
 		if data_str[-1] != "s": continue
 		try:
-			if data.name in eval('bpy.data.%s.keys()'):
+			if data.__class__.__name__ == eval('bpy.data.%s[0].__class__.__name__' % data_str):
 				exec('bpy.data.%s.remove(data)' % data_str)
+				break
 		except: pass
-		else: break
