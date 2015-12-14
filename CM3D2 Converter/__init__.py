@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 186),
+	"version" : (0, 187),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -31,8 +31,22 @@ if "bpy" in locals():
 	imp.reload(mate_import)
 	imp.reload(mate_export)
 	
-	imp.reload(misc_menus)
-	imp.reload(misc_tools)
+	imp.reload(misc_DATA_PT_context_arm)
+	imp.reload(misc_DATA_PT_modifiers)
+	imp.reload(misc_DATA_PT_vertex_groups)
+	imp.reload(misc_IMAGE_HT_header)
+	imp.reload(misc_IMAGE_PT_image_properties)
+	imp.reload(misc_INFO_MT_curve_add)
+	imp.reload(misc_INFO_MT_help)
+	imp.reload(misc_MATERIAL_PT_context_material)
+	imp.reload(misc_MESH_MT_shape_key_specials)
+	imp.reload(misc_MESH_MT_vertex_group_specials)
+	imp.reload(misc_OBJECT_PT_context_object)
+	imp.reload(misc_OBJECT_PT_transform)
+	imp.reload(misc_RENDER_PT_bake)
+	imp.reload(misc_TEXTURE_PT_context_texture)
+	imp.reload(misc_TEXT_HT_header)
+	imp.reload(misc_VIEW3D_MT_pose_apply)
 else:
 	from . import common
 	
@@ -47,8 +61,22 @@ else:
 	from . import mate_import
 	from . import mate_export
 	
-	from . import misc_menus
-	from . import misc_tools
+	from . import misc_DATA_PT_context_arm
+	from . import misc_DATA_PT_modifiers
+	from . import misc_DATA_PT_vertex_groups
+	from . import misc_IMAGE_HT_header
+	from . import misc_IMAGE_PT_image_properties
+	from . import misc_INFO_MT_curve_add
+	from . import misc_INFO_MT_help
+	from . import misc_MATERIAL_PT_context_material
+	from . import misc_MESH_MT_shape_key_specials
+	from . import misc_MESH_MT_vertex_group_specials
+	from . import misc_OBJECT_PT_context_object
+	from . import misc_OBJECT_PT_transform
+	from . import misc_RENDER_PT_bake
+	from . import misc_TEXTURE_PT_context_texture
+	from . import misc_TEXT_HT_header
+	from . import misc_VIEW3D_MT_pose_apply
 import bpy, os.path, bpy.utils.previews
 
 # アドオン設定
@@ -196,22 +224,22 @@ def register():
 	bpy.types.TEXT_MT_text.append(mate_import.TEXT_MT_text)
 	bpy.types.TEXT_MT_text.append(mate_export.TEXT_MT_text)
 	
-	bpy.types.DATA_PT_context_arm.append(misc_menus.DATA_PT_context_arm)
-	bpy.types.DATA_PT_modifiers.append(misc_menus.DATA_PT_modifiers)
-	bpy.types.DATA_PT_vertex_groups.append(misc_menus.DATA_PT_vertex_groups)
-	bpy.types.IMAGE_HT_header.append(misc_menus.IMAGE_HT_header)
-	bpy.types.IMAGE_PT_image_properties.append(misc_menus.IMAGE_PT_image_properties)
-	bpy.types.INFO_MT_curve_add.append(misc_menus.INFO_MT_curve_add)
-	bpy.types.INFO_MT_help.append(misc_menus.INFO_MT_help)
-	bpy.types.MATERIAL_PT_context_material.append(misc_menus.MATERIAL_PT_context_material)
-	bpy.types.MESH_MT_shape_key_specials.append(misc_menus.MESH_MT_shape_key_specials)
-	bpy.types.MESH_MT_vertex_group_specials.append(misc_menus.MESH_MT_vertex_group_specials)
-	bpy.types.OBJECT_PT_context_object.append(misc_menus.OBJECT_PT_context_object)
-	bpy.types.OBJECT_PT_transform.append(misc_menus.OBJECT_PT_transform)
-	bpy.types.RENDER_PT_bake.append(misc_menus.RENDER_PT_bake)
-	bpy.types.TEXTURE_PT_context_texture.append(misc_menus.TEXTURE_PT_context_texture)
-	bpy.types.TEXT_HT_header.append(misc_menus.TEXT_HT_header)
-	bpy.types.VIEW3D_MT_pose_apply.append(misc_menus.VIEW3D_MT_pose_apply)
+	bpy.types.DATA_PT_context_arm.append(misc_DATA_PT_context_arm.menu_func)
+	bpy.types.DATA_PT_modifiers.append(misc_DATA_PT_modifiers.menu_func)
+	bpy.types.DATA_PT_vertex_groups.append(misc_DATA_PT_vertex_groups.menu_func)
+	bpy.types.IMAGE_HT_header.append(misc_IMAGE_HT_header.menu_func)
+	bpy.types.IMAGE_PT_image_properties.append(misc_IMAGE_PT_image_properties.menu_func)
+	bpy.types.INFO_MT_curve_add.append(misc_INFO_MT_curve_add.menu_func)
+	bpy.types.INFO_MT_help.append(misc_INFO_MT_help.menu_func)
+	bpy.types.MATERIAL_PT_context_material.append(misc_MATERIAL_PT_context_material.menu_func)
+	bpy.types.MESH_MT_shape_key_specials.append(misc_MESH_MT_shape_key_specials.menu_func)
+	bpy.types.MESH_MT_vertex_group_specials.append(misc_MESH_MT_vertex_group_specials.menu_func)
+	bpy.types.OBJECT_PT_context_object.append(misc_OBJECT_PT_context_object.menu_func)
+	bpy.types.OBJECT_PT_transform.append(misc_OBJECT_PT_transform.menu_func)
+	bpy.types.RENDER_PT_bake.append(misc_RENDER_PT_bake.menu_func)
+	bpy.types.TEXTURE_PT_context_texture.append(misc_TEXTURE_PT_context_texture.menu_func)
+	bpy.types.TEXT_HT_header.append(misc_TEXT_HT_header.menu_func)
+	bpy.types.VIEW3D_MT_pose_apply.append(misc_VIEW3D_MT_pose_apply.menu_func)
 	
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
@@ -238,22 +266,22 @@ def unregister():
 	bpy.types.TEXT_MT_text.remove(mate_import.TEXT_MT_text)
 	bpy.types.TEXT_MT_text.remove(mate_export.TEXT_MT_text)
 	
-	bpy.types.DATA_PT_context_arm.remove(misc_menus.DATA_PT_context_arm)
-	bpy.types.DATA_PT_modifiers.remove(misc_menus.DATA_PT_modifiers)
-	bpy.types.DATA_PT_vertex_groups.remove(misc_menus.DATA_PT_vertex_groups)
-	bpy.types.IMAGE_HT_header.remove(misc_menus.IMAGE_HT_header)
-	bpy.types.IMAGE_PT_image_properties.remove(misc_menus.IMAGE_PT_image_properties)
-	bpy.types.INFO_MT_curve_add.remove(misc_menus.INFO_MT_curve_add)
-	bpy.types.INFO_MT_help.remove(misc_menus.INFO_MT_help)
-	bpy.types.MATERIAL_PT_context_material.remove(misc_menus.MATERIAL_PT_context_material)
-	bpy.types.MESH_MT_shape_key_specials.remove(misc_menus.MESH_MT_shape_key_specials)
-	bpy.types.MESH_MT_vertex_group_specials.remove(misc_menus.MESH_MT_vertex_group_specials)
-	bpy.types.OBJECT_PT_context_object.remove(misc_menus.OBJECT_PT_context_object)
-	bpy.types.OBJECT_PT_transform.remove(misc_menus.OBJECT_PT_transform)
-	bpy.types.RENDER_PT_bake.remove(misc_menus.RENDER_PT_bake)
-	bpy.types.TEXTURE_PT_context_texture.remove(misc_menus.TEXTURE_PT_context_texture)
-	bpy.types.TEXT_HT_header.remove(misc_menus.TEXT_HT_header)
-	bpy.types.VIEW3D_MT_pose_apply.remove(misc_menus.VIEW3D_MT_pose_apply)
+	bpy.types.DATA_PT_context_arm.remove(misc_DATA_PT_context_arm.menu_func)
+	bpy.types.DATA_PT_modifiers.remove(misc_DATA_PT_modifiers.menu_func)
+	bpy.types.DATA_PT_vertex_groups.remove(misc_DATA_PT_vertex_groups.menu_func)
+	bpy.types.IMAGE_HT_header.remove(misc_IMAGE_HT_header.menu_func)
+	bpy.types.IMAGE_PT_image_properties.remove(misc_IMAGE_PT_image_properties.menu_func)
+	bpy.types.INFO_MT_curve_add.remove(misc_INFO_MT_curve_add.menu_func)
+	bpy.types.INFO_MT_help.remove(misc_INFO_MT_help.menu_func)
+	bpy.types.MATERIAL_PT_context_material.remove(misc_MATERIAL_PT_context_material.menu_func)
+	bpy.types.MESH_MT_shape_key_specials.remove(misc_MESH_MT_shape_key_specials.menu_func)
+	bpy.types.MESH_MT_vertex_group_specials.remove(misc_MESH_MT_vertex_group_specials.menu_func)
+	bpy.types.OBJECT_PT_context_object.remove(misc_OBJECT_PT_context_object.menu_func)
+	bpy.types.OBJECT_PT_transform.remove(misc_OBJECT_PT_transform.menu_func)
+	bpy.types.RENDER_PT_bake.remove(misc_RENDER_PT_bake.menu_func)
+	bpy.types.TEXTURE_PT_context_texture.remove(misc_TEXTURE_PT_context_texture.menu_func)
+	bpy.types.TEXT_HT_header.remove(misc_TEXT_HT_header.menu_func)
+	bpy.types.VIEW3D_MT_pose_apply.remove(misc_VIEW3D_MT_pose_apply.menu_func)
 	
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
