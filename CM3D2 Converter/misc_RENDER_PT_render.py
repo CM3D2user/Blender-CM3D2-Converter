@@ -121,8 +121,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 					space.image = img
 					break
 		
-		#common.remove_data([temp_camera_ob, temp_camera])
-		#context.scene.camera = pre_scene_camera
+		common.remove_data([temp_camera_ob, temp_camera])
+		context.scene.camera = pre_scene_camera
 		
 		for o in hided_objects:
 			o.hide_render = False
