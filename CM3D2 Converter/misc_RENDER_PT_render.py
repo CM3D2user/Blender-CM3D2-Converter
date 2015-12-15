@@ -13,6 +13,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	zoom = bpy.props.FloatProperty(name="ズーム", default=5, min=0.1, max=10, soft_min=0.1, soft_max=10, step=20, precision=2)
 	resolution_percentage = bpy.props.IntProperty(name="解像度倍率", default=100, min=50, max=200, soft_min=50, soft_max=200, step=10, subtype='PERCENTAGE')
+	camera_angle = bpy.props.FloatVectorProperty(name="角度", default=(0.576667, 0.576667, 0.578715), min=-10, max=10, soft_min=-10, soft_max=10, step=1, precision=2, subtype='DIRECTION', size=3)
 	use_background_color = bpy.props.BoolProperty(name="背景を使用", default=True)
 	background_color = bpy.props.FloatVectorProperty(name="背景色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
 	
@@ -52,12 +53,13 @@ class render_cm3d2_icon(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.prop(self, 'zoom', icon='VIEWZOOM', slider=True)
 		self.layout.prop(self, 'resolution_percentage', icon='IMAGE_COL', slider=True)
+		self.layout.prop(self, 'camera_angle', text="")
 		row = self.layout.row(align=True)
 		row.prop(self, 'use_background_color', icon='FILE_TICK')
 		row.prop(self, 'background_color', icon='COLOR')
 	
 	def execute(self, context):
-		import mathutils
+		import math, mathutils
 		
 		obs = context.selected_objects
 		
@@ -90,8 +92,12 @@ class render_cm3d2_icon(bpy.types.Operator):
 		context.scene.camera = temp_camera_ob
 		temp_camera.type = 'ORTHO'
 		temp_camera.ortho_scale = self.zoom
-		temp_camera_ob.rotation_euler = (0.954696, 0, 0.785398)
-		temp_camera_ob.location = (10, -10, 10)
+		
+		direct = self.camera_angle.copy()
+		direct.rotate( mathutils.Euler((math.radians(90), 0, 0), 'XYZ') )
+		temp_camera_ob.rotation_mode = 'QUATERNION'
+		temp_camera_ob.rotation_quaternion = direct.to_track_quat('Z', 'Y')
+		temp_camera_ob.location = direct * 10
 		temp_camera_ob.location += center_co
 		
 		context.scene.render.resolution_x = 80
@@ -115,8 +121,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 					space.image = img
 					break
 		
-		common.remove_data([temp_camera_ob, temp_camera])
-		context.scene.camera = pre_scene_camera
+		#common.remove_data([temp_camera_ob, temp_camera])
+		#context.scene.camera = pre_scene_camera
 		
 		for o in hided_objects:
 			o.hide_render = False
