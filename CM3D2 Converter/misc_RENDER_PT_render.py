@@ -122,7 +122,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		temp_camera_ob.location = direct * 10
 		temp_camera_ob.location += center_co
 		vec = mathutils.Vector()
-		vec.x, vec.y = self.camera_move.x, self.camera_move.y
+		vec.x, vec.y = -self.camera_move.x, -self.camera_move.y
 		temp_camera_ob.location += direct.to_track_quat('Z', 'Y') * vec
 		
 		context.scene.render.resolution_x = self.resolution
