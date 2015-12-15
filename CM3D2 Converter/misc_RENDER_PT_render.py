@@ -12,6 +12,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	zoom = bpy.props.FloatProperty(name="ズーム", default=5, min=0.1, max=10, soft_min=0.1, soft_max=10, step=20, precision=2)
+	resolution_percentage = bpy.props.IntProperty(name="解像度倍率", default=100, min=50, max=200, soft_min=50, soft_max=200, step=10, subtype='PERCENTAGE')
 	
 	@classmethod
 	def poll(cls, context):
@@ -28,6 +29,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'zoom', icon='VIEWZOOM', slider=True)
+		self.layout.prop(self, 'resolution_percentage', icon='IMAGE_COL', slider=True)
 	
 	def execute(self, context):
 		import mathutils
@@ -63,7 +65,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		context.scene.render.resolution_x = 80
 		context.scene.render.resolution_y = 80
-		context.scene.render.resolution_percentage = 100
+		context.scene.render.resolution_percentage = self.resolution_percentage
 		
 		context.scene.world.light_settings.use_ambient_occlusion = True
 		context.scene.world.light_settings.ao_blend_type = 'ADD'
