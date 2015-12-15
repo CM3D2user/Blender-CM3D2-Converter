@@ -11,10 +11,11 @@ class render_cm3d2_icon(bpy.types.Operator):
 	bl_description = "CM3D2内のアイコン画像に使用できそうな画像をレンダリングします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	zoom = bpy.props.FloatProperty(name="ズーム", default=5, min=0.1, max=10, soft_min=0.1, soft_max=10, step=20, precision=2)
-	zoom_multi = bpy.props.IntProperty(name="ズーム倍率", default=100, min=10, max=200, soft_min=10, soft_max=200, step=10, subtype='PERCENTAGE')
-	resolution_percentage = bpy.props.IntProperty(name="解像度倍率", default=100, min=10, max=200, soft_min=10, soft_max=200, step=10, subtype='PERCENTAGE')
-	camera_angle = bpy.props.FloatVectorProperty(name="撮影角度", default=(0.576667, 0.576667, 0.578715), min=-10, max=10, soft_min=-10, soft_max=10, step=1, precision=2, subtype='DIRECTION', size=3)
+	zoom_multi = bpy.props.IntProperty(name="ズーム倍率", default=100, min=10, max=190, soft_min=10, soft_max=190, step=10, subtype='PERCENTAGE')
+	resolution = bpy.props.IntProperty(name="解像度", default=80, min=10, max=150, soft_min=10, soft_max=150, subtype='PIXEL')
+	camera_angle = bpy.props.FloatVectorProperty(name="カメラ角度", default=(0.576667, 0.576667, 0.578715), min=-10, max=10, soft_min=-10, soft_max=10, step=1, precision=2, subtype='DIRECTION', size=3)
+	camera_move = bpy.props.FloatVectorProperty(name="カメラ移動", default=(0, 0), min=-10, max=10, soft_min=-10, soft_max=10, step=10, precision=2, subtype='XYZ', size=2)
+	
 	use_background_color = bpy.props.BoolProperty(name="背景を使用", default=True)
 	background_color = bpy.props.FloatVectorProperty(name="背景色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
 	
@@ -53,10 +54,11 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'zoom_multi', icon='VIEWZOOM', slider=True)
-		self.layout.prop(self, 'resolution_percentage', icon='IMAGE_COL', slider=True)
+		self.layout.prop(self, 'resolution', icon='IMAGE_COL', slider=True)
 		col = self.layout.column(align=True)
-		col.label(text="撮影角度")
+		col.label(text="カメラ角度", icon='FILE_REFRESH')
 		col.prop(self, 'camera_angle', text="")
+		self.layout.prop(self, 'camera_move', icon='ARROW_LEFTRIGHT')
 		row = self.layout.row(align=True)
 		row.prop(self, 'use_background_color', icon='FILE_TICK')
 		row.prop(self, 'background_color', icon='COLOR')
@@ -88,13 +90,30 @@ class render_cm3d2_icon(bpy.types.Operator):
 					o.hide_render = True
 					break
 		
+		maxs = [-999, -999, -999]
+		mins = [999, 999, 999]
+		for ob in obs:
+			for i in range(8):
+				for j in range(3):
+					v = ob.bound_box[i][j]
+					if maxs[j] < v:
+						maxs[j] = v
+					if v < mins[j]:
+						mins[j] = v
+		
+		lens = [maxs[0] - mins[0]]
+		lens.append(maxs[1] - mins[1])
+		lens.append(maxs[2] - mins[2])
+		lens.sort()
+		zoom = lens[-1] * 1.2
+		
 		pre_scene_camera = context.scene.camera
 		temp_camera = context.blend_data.cameras.new("render_cm3d2_icon_temp")
 		temp_camera_ob = context.blend_data.objects.new("render_cm3d2_icon_temp", temp_camera)
 		context.scene.objects.link(temp_camera_ob)
 		context.scene.camera = temp_camera_ob
 		temp_camera.type = 'ORTHO'
-		temp_camera.ortho_scale = self.zoom * (self.zoom_multi * 0.01)
+		temp_camera.ortho_scale = zoom * (self.zoom_multi * 0.01)
 		
 		direct = self.camera_angle.copy()
 		direct.rotate( mathutils.Euler((math.radians(90), 0, 0), 'XYZ') )
@@ -102,10 +121,13 @@ class render_cm3d2_icon(bpy.types.Operator):
 		temp_camera_ob.rotation_quaternion = direct.to_track_quat('Z', 'Y')
 		temp_camera_ob.location = direct * 10
 		temp_camera_ob.location += center_co
+		vec = mathutils.Vector()
+		vec.x, vec.y = self.camera_move.x, self.camera_move.y
+		temp_camera_ob.location += direct.to_track_quat('Z', 'Y') * vec
 		
-		context.scene.render.resolution_x = 80
-		context.scene.render.resolution_y = 80
-		context.scene.render.resolution_percentage = self.resolution_percentage
+		context.scene.render.resolution_x = self.resolution
+		context.scene.render.resolution_y = self.resolution
+		context.scene.render.resolution_percentage = 100
 		
 		context.scene.world.light_settings.use_ambient_occlusion = True
 		context.scene.world.light_settings.ao_blend_type = 'ADD'
