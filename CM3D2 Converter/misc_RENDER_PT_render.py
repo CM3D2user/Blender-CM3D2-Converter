@@ -25,6 +25,26 @@ class render_cm3d2_icon(bpy.types.Operator):
 		return True
 	
 	def invoke(self, context, event):
+		obs = context.selected_objects
+		
+		maxs = [-999, -999, -999]
+		mins = [999, 999, 999]
+		for ob in obs:
+			for i in range(8):
+				for j in range(3):
+					v = ob.bound_box[i][j]
+					if maxs[j] < v:
+						maxs[j] = v
+					if v < mins[j]:
+						mins[j] = v
+		
+		lens = [maxs[0] - mins[0]]
+		lens.append(maxs[1] - mins[1])
+		lens.append(maxs[2] - mins[2])
+		lens.sort()
+		
+		self.zoom = lens[-1] * 1.2
+		
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -36,13 +56,18 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		obs = context.selected_objects
 		
-		locs = mathutils.Vector((0, 0, 0))
-		locs_count = 0
+		xs, ys, zs = [], [], []
 		for ob in obs:
 			for vert in ob.data.vertices:
-				locs += ob.matrix_world * vert.co
-			locs_count += len(ob.data.vertices)
-		center_co = locs / locs_count
+				co = ob.matrix_world * vert.co
+				xs.append(co.x)
+				ys.append(co.y)
+				zs.append(co.z)
+		xs.sort(), ys.sort(), zs.sort()
+		center_co = mathutils.Vector((0, 0, 0))
+		center_co.x = (xs[0] + xs[-1]) / 2.0
+		center_co.y = (ys[0] + ys[-1]) / 2.0
+		center_co.z = (zs[0] + zs[-1]) / 2.0
 		
 		hided_objects = []
 		ob_names = [o.name for o in obs]
