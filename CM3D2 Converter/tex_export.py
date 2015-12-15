@@ -20,7 +20,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def poll(cls, context):
 		img = context.edit_image
 		if img:
-			if len(img.pixels) or img.name == "Render Result":
+			if len(img.pixels):
 				return True
 		return False
 	
@@ -61,17 +61,17 @@ class export_cm3d2_tex(bpy.types.Operator):
 		pre_filepath = img.filepath
 		pre_source = img.source
 		bpy.ops.image.save_as(save_as_render=False, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
-		img.filepath = pre_filepath
-		try:
+		if pre_source != 'VIEWER':
+			img.filepath = pre_filepath
 			img.source = pre_source
-		except: pass
 		
 		# pngバイナリを全て読み込み
 		temp_file = open(temp_path, 'rb')
 		temp_data = temp_file.read()
 		temp_file.close()
 		# 一時ファイルを削除
-		os.remove(temp_path)
+		if pre_source != 'VIEWER':
+			os.remove(temp_path)
 		
 		# 本命ファイルに書き込み
 		try:
