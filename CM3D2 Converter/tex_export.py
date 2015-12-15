@@ -20,7 +20,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def poll(cls, context):
 		img = context.edit_image
 		if img:
-			if len(img.pixels):
+			if len(img.pixels) or img.name == "Render Result":
 				return True
 		return False
 	
@@ -62,7 +62,9 @@ class export_cm3d2_tex(bpy.types.Operator):
 		pre_source = img.source
 		bpy.ops.image.save_as(save_as_render=False, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
 		img.filepath = pre_filepath
-		img.source = pre_source
+		try:
+			img.source = pre_source
+		except: pass
 		
 		# pngバイナリを全て読み込み
 		temp_file = open(temp_path, 'rb')
