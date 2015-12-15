@@ -13,6 +13,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	zoom = bpy.props.FloatProperty(name="ズーム", default=5, min=0.1, max=10, soft_min=0.1, soft_max=10, step=20, precision=2)
 	resolution_percentage = bpy.props.IntProperty(name="解像度倍率", default=100, min=50, max=200, soft_min=50, soft_max=200, step=10, subtype='PERCENTAGE')
+	use_background_color = bpy.props.BoolProperty(name="背景を使用", default=True)
+	background_color = bpy.props.FloatVectorProperty(name="背景色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
 	
 	@classmethod
 	def poll(cls, context):
@@ -50,6 +52,9 @@ class render_cm3d2_icon(bpy.types.Operator):
 	def draw(self, context):
 		self.layout.prop(self, 'zoom', icon='VIEWZOOM', slider=True)
 		self.layout.prop(self, 'resolution_percentage', icon='IMAGE_COL', slider=True)
+		row = self.layout.row(align=True)
+		row.prop(self, 'use_background_color', icon='FILE_TICK')
+		row.prop(self, 'background_color', icon='COLOR')
 	
 	def execute(self, context):
 		import mathutils
@@ -97,7 +102,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 		context.scene.world.light_settings.ao_blend_type = 'ADD'
 		context.scene.world.light_settings.gather_method = 'RAYTRACE'
 		context.scene.world.light_settings.samples = 10
-		context.scene.render.alpha_mode = 'TRANSPARENT'
+		context.scene.render.alpha_mode = 'SKY' if self.use_background_color else 'TRANSPARENT'
+		context.scene.world.horizon_color = self.background_color
 		
 		bpy.ops.render.render()
 		
