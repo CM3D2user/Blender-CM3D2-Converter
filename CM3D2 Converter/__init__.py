@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 188),
+	"version" : (0, 189),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -44,9 +44,11 @@ if "bpy" in locals():
 	imp.reload(misc_OBJECT_PT_context_object)
 	imp.reload(misc_OBJECT_PT_transform)
 	imp.reload(misc_RENDER_PT_bake)
+	imp.reload(misc_RENDER_PT_render)
 	imp.reload(misc_TEXTURE_PT_context_texture)
 	imp.reload(misc_TEXT_HT_header)
 	imp.reload(misc_VIEW3D_MT_pose_apply)
+
 else:
 	from . import common
 	
@@ -74,9 +76,11 @@ else:
 	from . import misc_OBJECT_PT_context_object
 	from . import misc_OBJECT_PT_transform
 	from . import misc_RENDER_PT_bake
+	from . import misc_RENDER_PT_render
 	from . import misc_TEXTURE_PT_context_texture
 	from . import misc_TEXT_HT_header
 	from . import misc_VIEW3D_MT_pose_apply
+
 import bpy, os.path, bpy.utils.previews
 
 # アドオン設定
@@ -237,6 +241,7 @@ def register():
 	bpy.types.OBJECT_PT_context_object.append(misc_OBJECT_PT_context_object.menu_func)
 	bpy.types.OBJECT_PT_transform.append(misc_OBJECT_PT_transform.menu_func)
 	bpy.types.RENDER_PT_bake.append(misc_RENDER_PT_bake.menu_func)
+	bpy.types.RENDER_PT_render.append(misc_RENDER_PT_render.menu_func)
 	bpy.types.TEXTURE_PT_context_texture.append(misc_TEXTURE_PT_context_texture.menu_func)
 	bpy.types.TEXT_HT_header.append(misc_TEXT_HT_header.menu_func)
 	bpy.types.VIEW3D_MT_pose_apply.append(misc_VIEW3D_MT_pose_apply.menu_func)
@@ -279,6 +284,7 @@ def unregister():
 	bpy.types.OBJECT_PT_context_object.remove(misc_OBJECT_PT_context_object.menu_func)
 	bpy.types.OBJECT_PT_transform.remove(misc_OBJECT_PT_transform.menu_func)
 	bpy.types.RENDER_PT_bake.remove(misc_RENDER_PT_bake.menu_func)
+	bpy.types.RENDER_PT_render.remove(misc_RENDER_PT_render.menu_func)
 	bpy.types.TEXTURE_PT_context_texture.remove(misc_TEXTURE_PT_context_texture.menu_func)
 	bpy.types.TEXT_HT_header.remove(misc_TEXT_HT_header.menu_func)
 	bpy.types.VIEW3D_MT_pose_apply.remove(misc_VIEW3D_MT_pose_apply.menu_func)
