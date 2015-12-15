@@ -45,9 +45,10 @@ class render_cm3d2_icon(bpy.types.Operator):
 		center_co = locs / locs_count
 		
 		hided_objects = []
+		ob_names = [o.name for o in obs]
 		for o in context.blend_data.objects:
 			for b, i in enumerate(context.scene.layers):
-				if o.layers[i] and b and ob.name != o.name and not o.hide_render:
+				if o.layers[i] and b and o.name not in ob_names and not o.hide_render:
 					hided_objects.append(o)
 					o.hide_render = True
 					break
