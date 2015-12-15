@@ -12,6 +12,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	zoom = bpy.props.FloatProperty(name="ズーム", default=5, min=0.1, max=10, soft_min=0.1, soft_max=10, step=20, precision=2)
+	zoom_multi = bpy.props.FloatProperty(name="ズーム倍率", default=1, min=0.1, max=2, soft_min=0.1, soft_max=2, step=10, precision=2)
 	resolution_percentage = bpy.props.IntProperty(name="解像度倍率", default=100, min=50, max=200, soft_min=50, soft_max=200, step=10, subtype='PERCENTAGE')
 	camera_angle = bpy.props.FloatVectorProperty(name="角度", default=(0.576667, 0.576667, 0.578715), min=-10, max=10, soft_min=-10, soft_max=10, step=1, precision=2, subtype='DIRECTION', size=3)
 	use_background_color = bpy.props.BoolProperty(name="背景を使用", default=True)
@@ -51,7 +52,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'zoom', icon='VIEWZOOM', slider=True)
+		self.layout.prop(self, 'zoom_multi', icon='VIEWZOOM', slider=True)
 		self.layout.prop(self, 'resolution_percentage', icon='IMAGE_COL', slider=True)
 		self.layout.prop(self, 'camera_angle', text="")
 		row = self.layout.row(align=True)
@@ -91,7 +92,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		context.scene.objects.link(temp_camera_ob)
 		context.scene.camera = temp_camera_ob
 		temp_camera.type = 'ORTHO'
-		temp_camera.ortho_scale = self.zoom
+		temp_camera.ortho_scale = self.zoom * self.zoom_multi
 		
 		direct = self.camera_angle.copy()
 		direct.rotate( mathutils.Euler((math.radians(90), 0, 0), 'XYZ') )
