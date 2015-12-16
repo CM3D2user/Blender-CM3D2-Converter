@@ -103,6 +103,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
+	blur_strength = bpy.props.FloatProperty(name="ブラー強度", default=1, min=0.01, max=1, soft_min=0.01, soft_max=1, step=10, precision=2)
 	dirt_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=3, soft_min=1, soft_max=3)
 	
 	@classmethod
@@ -129,6 +130,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="擬似AO設定", icon='BRUSH_TEXFILL')
+		self.layout.prop(self, 'blur_strength', icon='BRUSH_BLUR', slider=True)
 		self.layout.prop(self, 'dirt_count', icon='FILE_REFRESH')
 	
 	def execute(self, context):
@@ -153,7 +155,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		me.vertex_colors.active = vertex_color
 		
 		for i in range(self.dirt_count):
-			bpy.ops.paint.vertex_color_dirt(override, blur_strength=1, blur_iterations=1, clean_angle=3.14159, dirt_angle=0, dirt_only=True)
+			bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=1, clean_angle=3.14159, dirt_angle=0, dirt_only=True)
 		
 		pre_mate_data = []
 		for slot_index, slot in enumerate(ob.material_slots):
