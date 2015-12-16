@@ -25,9 +25,9 @@ class render_cm3d2_icon(bpy.types.Operator):
 		if not len(obs):
 			return False
 		for ob in obs:
-			if ob.type != 'MESH':
-				return False
-		return True
+			if ob.type == 'MESH':
+				return True
+		return False
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
@@ -50,11 +50,12 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		xs, ys, zs = [], [], []
 		for ob in obs:
-			for vert in ob.data.vertices:
-				co = ob.matrix_world * vert.co
-				xs.append(co.x)
-				ys.append(co.y)
-				zs.append(co.z)
+			if ob.type == 'MESH':
+				for vert in ob.data.vertices:
+					co = ob.matrix_world * vert.co
+					xs.append(co.x)
+					ys.append(co.y)
+					zs.append(co.z)
 		xs.sort(), ys.sort(), zs.sort()
 		center_co = mathutils.Vector((0, 0, 0))
 		center_co.x = (xs[0] + xs[-1]) / 2.0
