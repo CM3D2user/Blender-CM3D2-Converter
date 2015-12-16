@@ -6,8 +6,9 @@ def menu_func(self, context):
 	col = self.layout.column(align=True)
 	row = col.row(align=True)
 	row.operator('object.quick_ao_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	row.operator('object.quick_hemi_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	row.operator('object.quick_dirty_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	row = col.row(align=True)
+	row.operator('object.quick_hemi_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
 	row.operator('object.quick_hair_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
 
 class quick_ao_bake_image(bpy.types.Operator):
@@ -92,6 +93,107 @@ class quick_ao_bake_image(bpy.types.Operator):
 		
 		return {'FINISHED'}
 
+class quick_dirty_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_dirty_bake_image'
+	bl_label = "擬似AO・ベイク"
+	bl_description = "アクティブオブジェクトに素早く擬似AOをベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	
+	dirt_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=3, soft_min=1, soft_max=3)
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Dirty Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.label(text="擬似AO設定", icon='BRUSH_TEXFILL')
+		self.layout.prop(self, 'dirt_count', icon='FILE_REFRESH')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		if area:
+			for space in area.spaces:
+				if space.type == 'IMAGE_EDITOR':
+					space.image = img
+					break
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		pre_vertex_color_active_index = me.vertex_colors.active_index
+		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
+		me.vertex_colors.active = vertex_color
+		
+		for i in range(self.dirt_count):
+			bpy.ops.paint.vertex_color_dirt(override, blur_strength=1, blur_iterations=1, clean_angle=3.14159, dirt_angle=0, dirt_only=True)
+		
+		pre_mate_data = []
+		for slot_index, slot in enumerate(ob.material_slots):
+			if slot:
+				pre_mate_data.append((slot.material, []))
+				for face in me.polygons:
+					if face.material_index == slot_index:
+						pre_mate_data[-1][1].append(face.index)
+			else:
+				pre_mate_data.append(None)
+		for slot in ob.material_slots[:]:
+			bpy.ops.object.material_slot_remove(override)
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = context.blend_data.materials.new("quick_dirty_bake_image_temp")
+		ob.material_slots[0].material = temp_mate
+		temp_mate.use_vertex_color_paint = True
+		
+		context.scene.render.bake_type = 'TEXTURE'
+		context.scene.render.use_bake_selected_to_active = False
+		
+		bpy.ops.object.bake_image()
+		
+		bpy.ops.object.material_slot_remove(override)
+		common.remove_data(temp_mate)
+		
+		for index, data in enumerate(pre_mate_data):
+			bpy.ops.object.material_slot_add(override)
+			if data:
+				mate, faces = data
+				slot = ob.material_slots[index]
+				slot.material = mate
+				for face_index in faces:
+					me.polygons[face_index].material_index = index
+		
+		me.vertex_colors.remove(vertex_color)
+		me.vertex_colors.active_index = pre_vertex_color_active_index
+		
+		return {'FINISHED'}
+
 class quick_hemi_bake_image(bpy.types.Operator):
 	bl_idname = 'object.quick_hemi_bake_image'
 	bl_label = "ヘミライト・ベイク"
@@ -153,7 +255,6 @@ class quick_hemi_bake_image(bpy.types.Operator):
 				if space.type == 'IMAGE_EDITOR':
 					space.image = img
 					break
-		
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
@@ -175,7 +276,6 @@ class quick_hemi_bake_image(bpy.types.Operator):
 						pre_mate_data[-1][1].append(face.index)
 			else:
 				pre_mate_data.append(None)
-		
 		for slot in ob.material_slots[:]:
 			bpy.ops.object.material_slot_remove(override)
 		
@@ -203,7 +303,6 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		common.remove_data(temp_ob)
 		
 		bpy.ops.object.material_slot_remove(override)
-		
 		common.remove_data(temp_mate)
 		
 		for index, data in enumerate(pre_mate_data):
