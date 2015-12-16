@@ -130,8 +130,9 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="擬似AO設定", icon='BRUSH_TEXFILL')
-		self.layout.prop(self, 'blur_strength', icon='BRUSH_BLUR', slider=True)
-		self.layout.prop(self, 'dirt_count', icon='FILE_REFRESH')
+		row = self.layout.row(align=True)
+		row.prop(self, 'blur_strength', icon='BRUSH_BLUR', slider=True)
+		row.prop(self, 'dirt_count', icon='FILE_REFRESH')
 	
 	def execute(self, context):
 		ob = context.active_object
