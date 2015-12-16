@@ -207,7 +207,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
 	
-	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
+	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=2, soft_min=0, soft_max=2, step=50, precision=2)
 	
 	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
 	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
@@ -335,7 +335,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 	mate_diffuse_color = bpy.props.FloatVectorProperty(name="髪色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
 	mate_angel_ring_factor = bpy.props.FloatProperty(name="天使の輪の強さ", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=50, precision=2)
 	
-	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=5, soft_min=0, soft_max=10, step=50, precision=2)
+	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=2, soft_min=0, soft_max=2, step=50, precision=2)
 	
 	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
 	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
