@@ -388,3 +388,6 @@ ZXキー:高さ変更	ZX Keys:Change Height
 カメラ角度	Camera Angle
 カメラ移動	Camera Move
 背景を使用	Use Background
+ブラー強度	Blur Strength
+擬似AO設定	Dirty AO Settings
+擬似AO・ベイク	Bake Dirty AO

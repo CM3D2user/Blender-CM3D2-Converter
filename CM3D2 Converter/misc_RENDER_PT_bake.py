@@ -4,12 +4,13 @@ from . import common
 # メニュー等に項目追加
 def menu_func(self, context):
 	col = self.layout.column(align=True)
+	col.label(text="CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
 	row = col.row(align=True)
-	row.operator('object.quick_ao_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	row.operator('object.quick_dirty_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	row.operator('object.quick_ao_bake_image', icon='BRUSH_TEXFILL')
+	row.operator('object.quick_dirty_bake_image', icon='MATSPHERE')
 	row = col.row(align=True)
-	row.operator('object.quick_hemi_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	row.operator('object.quick_hair_bake_image', icon_value=common.preview_collections['main']['KISS'].icon_id)
+	row.operator('object.quick_hemi_bake_image', icon='LAMP_HEMI')
+	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE')
 
 class quick_ao_bake_image(bpy.types.Operator):
 	bl_idname = 'object.quick_ao_bake_image'
