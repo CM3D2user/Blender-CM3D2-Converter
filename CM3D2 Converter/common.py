@@ -348,3 +348,40 @@ def remove_data(target_data):
 					exec('bpy.data.%s.remove(data)' % data_str)
 					break
 			except: pass
+
+# オブジェクトのマテリアルを削除/復元するクラス
+class material_restore:
+	def __init__(self, ob):
+		override = bpy.context.copy()
+		override['object'] = ob
+		self.object = ob
+		
+		self.slots = []
+		for slot in ob.material_slots:
+			if slot: self.slots.append(slot.material)
+			else: self.slots.append(None)
+		
+		self.mesh_data = []
+		for index, slot in enumerate(ob.material_slots):
+			self.mesh_data.append([])
+			for face in ob.data.polygons:
+				if face.material_index == index:
+					self.mesh_data[-1].append(face.index)
+		
+		for slot in ob.material_slots[:]:
+			bpy.ops.object.material_slot_remove(override)
+	
+	def restore(self):
+		override = bpy.context.copy()
+		override['object'] = self.object
+		
+		for slot in self.object.material_slots[:]:
+			bpy.ops.object.material_slot_remove(override)
+		
+		for index, mate in enumerate(self.slots):
+			bpy.ops.object.material_slot_add(override)
+			slot = self.object.material_slots[index]
+			if slot:
+				slot.material = mate
+			for face_index in self.mesh_data[index]:
+				self.object.data.polygons[face_index].material_index = index

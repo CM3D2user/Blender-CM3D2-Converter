@@ -159,17 +159,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		for i in range(self.dirt_count):
 			bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=1, clean_angle=3.14159, dirt_angle=0, dirt_only=True)
 		
-		pre_mate_data = []
-		for slot_index, slot in enumerate(ob.material_slots):
-			if slot:
-				pre_mate_data.append((slot.material, []))
-				for face in me.polygons:
-					if face.material_index == slot_index:
-						pre_mate_data[-1][1].append(face.index)
-			else:
-				pre_mate_data.append(None)
-		for slot in ob.material_slots[:]:
-			bpy.ops.object.material_slot_remove(override)
+		material_restore = common.material_restore(ob)
 		
 		bpy.ops.object.material_slot_add(override)
 		temp_mate = context.blend_data.materials.new("quick_dirty_bake_image_temp")
@@ -181,17 +171,9 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		
 		bpy.ops.object.bake_image()
 		
-		bpy.ops.object.material_slot_remove(override)
 		common.remove_data(temp_mate)
 		
-		for index, data in enumerate(pre_mate_data):
-			bpy.ops.object.material_slot_add(override)
-			if data:
-				mate, faces = data
-				slot = ob.material_slots[index]
-				slot.material = mate
-				for face_index in faces:
-					me.polygons[face_index].material_index = index
+		material_restore.restore()
 		
 		me.vertex_colors.remove(vertex_color)
 		me.vertex_colors.active_index = pre_vertex_color_active_index
@@ -271,17 +253,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 						o.hide_render = True
 						break
 		
-		pre_mate_data = []
-		for slot_index, slot in enumerate(ob.material_slots):
-			if slot:
-				pre_mate_data.append((slot.material, []))
-				for face in me.polygons:
-					if face.material_index == slot_index:
-						pre_mate_data[-1][1].append(face.index)
-			else:
-				pre_mate_data.append(None)
-		for slot in ob.material_slots[:]:
-			bpy.ops.object.material_slot_remove(override)
+		material_restore = common.material_restore(ob)
 		
 		bpy.ops.object.material_slot_add(override)
 		temp_mate = context.blend_data.materials.new("quick_hemi_bake_image_temp")
@@ -306,17 +278,9 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		common.remove_data(temp_lamp)
 		common.remove_data(temp_ob)
 		
-		bpy.ops.object.material_slot_remove(override)
 		common.remove_data(temp_mate)
 		
-		for index, data in enumerate(pre_mate_data):
-			bpy.ops.object.material_slot_add(override)
-			if data:
-				mate, faces = data
-				slot = ob.material_slots[index]
-				slot.material = mate
-				for face_index in faces:
-					me.polygons[face_index].material_index = index
+		material_restore.restore()
 		
 		for o in hided_objects:
 			o.hide_render = False
@@ -405,18 +369,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 						o.hide_render = True
 						break
 		
-		pre_mate_data = []
-		for slot_index, slot in enumerate(ob.material_slots):
-			if slot:
-				pre_mate_data.append((slot.material, []))
-				for face in me.polygons:
-					if face.material_index == slot_index:
-						pre_mate_data[-1][1].append(face.index)
-			else:
-				pre_mate_data.append(None)
-		
-		for slot in ob.material_slots[:]:
-			bpy.ops.object.material_slot_remove(override)
+		material_restore = common.material_restore(ob)
 		
 		temp_lamp = context.blend_data.lamps.new("quick_hemi_bake_image_lamp_temp", 'HEMI')
 		temp_lamp_ob = context.blend_data.objects.new("quick_hemi_bake_image_lamp_temp", temp_lamp)
@@ -452,21 +405,13 @@ class quick_hair_bake_image(bpy.types.Operator):
 		temp_tex = temp_mate.texture_slots[0].texture
 		
 		common.remove_data([temp_mate, temp_tex])
-		bpy.ops.object.material_slot_remove(override)
 		
 		common.remove_data([temp_camera_ob, temp_camera])
 		context.scene.camera = pre_scene_camera
 		
 		common.remove_data([temp_lamp_ob, temp_lamp])
 		
-		for index, data in enumerate(pre_mate_data):
-			bpy.ops.object.material_slot_add(override)
-			if data:
-				mate, faces = data
-				slot = ob.material_slots[index]
-				slot.material = mate
-				for face_index in faces:
-					me.polygons[face_index].material_index = index
+		material_restore.restore()
 		
 		for o in hided_objects:
 			o.hide_render = False
