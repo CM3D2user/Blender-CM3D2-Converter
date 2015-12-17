@@ -78,19 +78,11 @@ class quick_ao_bake_image(bpy.types.Operator):
 		context.scene.render.bake_type = 'AO'
 		context.scene.render.use_bake_normalize = True
 		
-		hided_objects = []
-		if self.ao_hide_other:
-			for o in context.blend_data.objects:
-				for b, i in enumerate(context.scene.layers):
-					if o.layers[i] and b and ob.name != o.name and not o.hide_render:
-						hided_objects.append(o)
-						o.hide_render = True
-						break
+		hide_render_restore = common.hide_render_restore()
 		
 		bpy.ops.object.bake_image()
 		
-		for o in hided_objects:
-			o.hide_render = False
+		hide_render_restore.restore()
 		
 		return {'FINISHED'}
 
@@ -244,14 +236,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		hided_objects = []
-		if self.ao_hide_other:
-			for o in context.blend_data.objects:
-				for b, i in enumerate(context.scene.layers):
-					if o.layers[i] and b and ob.name != o.name and not o.hide_render:
-						hided_objects.append(o)
-						o.hide_render = True
-						break
+		hide_render_restore = common.hide_render_restore()
 		
 		material_restore = common.material_restore(ob)
 		
@@ -282,8 +267,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		
 		material_restore.restore()
 		
-		for o in hided_objects:
-			o.hide_render = False
+		hide_render_restore.restore()
 		
 		return {'FINISHED'}
 
@@ -360,14 +344,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		hided_objects = []
-		if self.ao_hide_other:
-			for o in context.blend_data.objects:
-				for b, i in enumerate(context.scene.layers):
-					if o.layers[i] and b and ob.name != o.name and not o.hide_render:
-						hided_objects.append(o)
-						o.hide_render = True
-						break
+		hide_render_restore = common.hide_render_restore()
 		
 		material_restore = common.material_restore(ob)
 		
@@ -413,7 +390,6 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		material_restore.restore()
 		
-		for o in hided_objects:
-			o.hide_render = False
+		hide_render_restore.restore()
 		
 		return {'FINISHED'}

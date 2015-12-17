@@ -385,3 +385,36 @@ class material_restore:
 				slot.material = mate
 			for face_index in self.mesh_data[index]:
 				self.object.data.polygons[face_index].material_index = index
+
+# 現在のレイヤー内のオブジェクトをレンダリングしなくする/戻す
+class hide_render_restore:
+	def __init__(self, render_objects=[]):
+		try: render_objects = render_objects[:]
+		except: render_objects = [render_objects]
+		
+		if not len(render_objects):
+			render_objects = bpy.context.selected_objects[:]
+		
+		self.render_objects = render_objects[:]
+		self.render_object_names = [ob.name for ob in render_objects]
+		
+		self.rendered_objects = []
+		for ob in render_objects:
+			if ob.hide_render:
+				self.rendered_objects.append(ob)
+				ob.hide_render = False
+		
+		self.hide_rendered_objects = []
+		for ob in bpy.data.objects:
+			for layer_index, is_used in enumerate(bpy.context.scene.layers):
+				if not is_used: continue
+				if ob.layers[layer_index] and is_used and ob.name not in self.render_object_names and not ob.hide_render:
+					self.hide_rendered_objects.append(ob)
+					ob.hide_render = True
+					break
+	
+	def restore(self):
+		for ob in self.rendered_objects:
+			ob.hide_render = True
+		for ob in self.hide_rendered_objects:
+			ob.hide_render = False

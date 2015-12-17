@@ -62,14 +62,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		center_co.y = (ys[0] + ys[-1]) / 2.0
 		center_co.z = (zs[0] + zs[-1]) / 2.0
 		
-		hided_objects = []
-		ob_names = [o.name for o in obs]
-		for o in context.blend_data.objects:
-			for b, i in enumerate(context.scene.layers):
-				if o.layers[i] and b and o.name not in ob_names and not o.hide_render:
-					hided_objects.append(o)
-					o.hide_render = True
-					break
+		hide_render_restore = common.hide_render_restore()
 		
 		maxs = [-999, -999, -999]
 		mins = [999, 999, 999]
@@ -130,7 +123,6 @@ class render_cm3d2_icon(bpy.types.Operator):
 		common.remove_data([temp_camera_ob, temp_camera])
 		context.scene.camera = pre_scene_camera
 		
-		for o in hided_objects:
-			o.hide_render = False
+		hide_render_restore.restore()
 		
 		return {'FINISHED'}
