@@ -151,21 +151,10 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		for i in range(self.dirt_count):
 			bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=1, clean_angle=3.14159, dirt_angle=0, dirt_only=True)
 		
-		material_restore = common.material_restore(ob)
-		
-		bpy.ops.object.material_slot_add(override)
-		temp_mate = context.blend_data.materials.new("quick_dirty_bake_image_temp")
-		ob.material_slots[0].material = temp_mate
-		temp_mate.use_vertex_color_paint = True
-		
-		context.scene.render.bake_type = 'TEXTURE'
+		context.scene.render.bake_type = 'VERTEX_COLORS'
 		context.scene.render.use_bake_selected_to_active = False
 		
 		bpy.ops.object.bake_image()
-		
-		common.remove_data(temp_mate)
-		
-		material_restore.restore()
 		
 		me.vertex_colors.remove(vertex_color)
 		me.vertex_colors.active_index = pre_vertex_color_active_index
