@@ -131,10 +131,7 @@ class hair_bunch_add(bpy.types.Operator):
 			return {'FINISHED'}
 		
 		elif event.type in {'RIGHTMOUSE', 'ESC'} and event.value == 'PRESS':
-			common.remove_data(self.object)
-			common.remove_data(self.bevel_object)
-			common.remove_data(self.curve)
-			common.remove_data(self.bevel_curve)
+			common.remove_data([self.object, self.bevel_object, self.curve, self.bevel_curve])
 			bpy.types.VIEW3D_HT_header.draw = self.pre_draw
 			context.area.tag_redraw()
 			return {'CANCELLED'}
