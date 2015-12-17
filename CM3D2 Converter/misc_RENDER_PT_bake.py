@@ -78,11 +78,11 @@ class quick_ao_bake_image(bpy.types.Operator):
 		context.scene.render.bake_type = 'AO'
 		context.scene.render.use_bake_normalize = True
 		
-		hide_render_restore = common.hide_render_restore()
+		if self.ao_hide_other: hide_render_restore = common.hide_render_restore()
 		
 		bpy.ops.object.bake_image()
 		
-		hide_render_restore.restore()
+		if self.ao_hide_other: hide_render_restore.restore()
 		
 		return {'FINISHED'}
 
@@ -236,7 +236,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		hide_render_restore = common.hide_render_restore()
+		if self.ao_hide_other: hide_render_restore = common.hide_render_restore()
 		material_restore = common.material_restore(ob)
 		
 		bpy.ops.object.material_slot_add(override)
@@ -261,7 +261,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		common.remove_data([temp_lamp, temp_ob, temp_mate])
 		
 		material_restore.restore()
-		hide_render_restore.restore()
+		if self.ao_hide_other: hide_render_restore.restore()
 		
 		return {'FINISHED'}
 
@@ -338,7 +338,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		hide_render_restore = common.hide_render_restore()
+		if self.ao_hide_other: hide_render_restore = common.hide_render_restore()
 		material_restore = common.material_restore(ob)
 		
 		temp_lamp = context.blend_data.lamps.new("quick_hemi_bake_image_lamp_temp", 'HEMI')
@@ -378,6 +378,6 @@ class quick_hair_bake_image(bpy.types.Operator):
 		context.scene.camera = pre_scene_camera
 		
 		material_restore.restore()
-		hide_render_restore.restore()
+		if self.ao_hide_other: hide_render_restore.restore()
 		
 		return {'FINISHED'}
