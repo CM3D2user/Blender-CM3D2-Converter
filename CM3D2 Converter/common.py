@@ -344,7 +344,6 @@ def remove_data(target_data):
 			if data_str[-1] != "s": continue
 			try:
 				if data.__class__.__name__ == eval('bpy.data.%s[0].__class__.__name__' % data_str):
-					bpy.context.window_manager.clipboard = 'bpy.data.%s.remove(data)' % data_str
 					exec('bpy.data.%s.remove(data)' % data_str)
 					break
 			except: pass

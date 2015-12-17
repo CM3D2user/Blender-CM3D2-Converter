@@ -94,7 +94,7 @@ class hair_bunch_add(bpy.types.Operator):
 	def modal(self, context, event):
 		import bpy_extras.view3d_utils
 		
-		print(event.type, event.value)
+		#print(event.type, event.value)
 		
 		if event.type == 'MOUSEMOVE':
 			self.end_location = bpy_extras.view3d_utils.region_2d_to_location_3d(context.region, context.region_data, (event.mouse_region_x, event.mouse_region_y), context.space_data.cursor_location)
