@@ -10,6 +10,8 @@ def menu_func(self, context):
 	row.operator('object.quick_dirty_bake_image', icon='MATSPHERE')
 	row = col.row(align=True)
 	row.operator('object.quick_hemi_bake_image', icon='LAMP_HEMI')
+	row.operator('object.quick_shadow_bake_image', icon='IMAGE_ALPHA')
+	row = col.row(align=True)
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE')
 
 class quick_ao_bake_image(bpy.types.Operator):
@@ -27,7 +29,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		('APPROXIMATE', "近似(AAO)", "", 'MATSPHERE', 2),
 		]
 	ao_gather_method = bpy.props.EnumProperty(items=items, name="処理方法", default='RAYTRACE')
-	ao_samples = bpy.props.IntProperty(name="精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	ao_samples = bpy.props.IntProperty(name="精度", default=20, min=1, max=50, soft_min=1, soft_max=50)
 	ao_hide_other = bpy.props.BoolProperty(name="他オブジェクトの影響を受けない", default=True)
 	
 	@classmethod
@@ -166,7 +168,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=2, soft_min=0, soft_max=2, step=50, precision=2)
 	
 	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
-	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	ao_samples = bpy.props.IntProperty(name="AOの精度", default=20, min=1, max=50, soft_min=1, soft_max=50)
 	ao_hide_other = bpy.props.BoolProperty(name="他オブジェクトの影響を受けない", default=True)
 	
 	@classmethod
@@ -242,6 +244,105 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		
 		return {'FINISHED'}
 
+class quick_shadow_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_shadow_bake_image'
+	bl_label = "影・ベイク"
+	bl_description = "アクティブオブジェクトに素早く影をベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	
+	lamp_max_angle = bpy.props.FloatProperty(name="光源の最大角度", default=0.5236, min=0, max=1.5708, soft_min=0, soft_max=1.5708, step=100, precision=0, subtype='ANGLE', unit='ROTATION')
+	lamp_count = bpy.props.IntProperty(name="光源の数", default=8, min=1, max=20, soft_min=1, soft_max=20)
+	is_shadow_only = bpy.props.BoolProperty(name="影のみ", default=True)
+	
+	@classmethod
+	def poll(cls, context):
+		if not len(context.selected_objects):
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		self.image_name = context.active_object.name + " Shadow Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.label(text="光源設定", icon='LAMP_SUN')
+		self.layout.prop(self, 'lamp_max_angle', icon='LAMP_AREA', slider=True)
+		self.layout.prop(self, 'lamp_count', icon='LAMP_POINT')
+		self.layout.prop(self, 'is_shadow_only', icon='IMAGE_ALPHA')
+	
+	def execute(self, context):
+		import mathutils
+		
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		hide_render_restore = common.hide_render_restore()
+		material_restore = common.material_restore(ob)
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = context.blend_data.materials.new("quick_shadow_bake_image_temp")
+		ob.material_slots[0].material = temp_mate
+		
+		if self.is_shadow_only:
+			temp_hemi = context.blend_data.lamps.new("quick_hemi_bake_image_lamp_temp", 'HEMI')
+			temp_hemi_ob = context.blend_data.objects.new("quick_hemi_bake_image_lamp_temp", temp_hemi)
+			context.scene.objects.link(temp_hemi_ob)
+			temp_hemi.energy = 0.00001
+		
+		new_lamps = []
+		lamp_count = (self.lamp_count * 2) - 1
+		angle_interval = self.lamp_max_angle / self.lamp_count
+		for x_index in range(lamp_count):
+			x_angle = angle_interval * (x_index - self.lamp_count + 1)
+			
+			for y_index in range(lamp_count):
+				y_angle = angle_interval * (y_index - self.lamp_count + 1)
+				
+				temp_lamp = context.blend_data.lamps.new("quick_shadow_bake_image_temp", 'SUN')
+				temp_lamp.shadow_method = 'RAY_SHADOW'
+				temp_lamp_ob = context.blend_data.objects.new("quick_shadow_bake_image_temp", temp_lamp)
+				context.scene.objects.link(temp_lamp_ob)
+				temp_lamp_ob.rotation_mode = 'XYZ'
+				temp_lamp_ob.rotation_euler = mathutils.Euler((x_angle, y_angle, 0), 'XYZ')
+				
+				new_lamps.append(temp_lamp)
+				new_lamps.append(temp_lamp_ob)
+		
+		context.scene.render.bake_type = 'SHADOW'
+		bpy.ops.object.bake_image()
+		
+		common.remove_data([temp_mate] + new_lamps)
+		if self.is_shadow_only: common.remove_data([temp_hemi_ob, temp_hemi])
+		
+		material_restore.restore()
+		hide_render_restore.restore()
+		
+		return {'FINISHED'}
+
 class quick_hair_bake_image(bpy.types.Operator):
 	bl_idname = 'object.quick_hair_bake_image'
 	bl_label = "ヘアー・ベイク"
@@ -258,7 +359,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=2, soft_min=0, soft_max=2, step=50, precision=2)
 	
 	use_ao = bpy.props.BoolProperty(name="AOを使用", default=False)
-	ao_samples = bpy.props.IntProperty(name="AOの精度", default=10, min=1, max=50, soft_min=1, soft_max=50)
+	ao_samples = bpy.props.IntProperty(name="AOの精度", default=20, min=1, max=50, soft_min=1, soft_max=50)
 	ao_hide_other = bpy.props.BoolProperty(name="他オブジェクトの影響を受けない", default=True)
 	
 	@classmethod
