@@ -114,11 +114,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		img = context.blend_data.images["Render Result"]
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
-		if area:
-			for space in area.spaces:
-				if space.type == 'IMAGE_EDITOR':
-					space.image = img
-					break
+		common.set_area_space_attr(area, 'image', img)
 		
 		common.remove_data([temp_camera_ob, temp_camera])
 		context.scene.camera = pre_scene_camera

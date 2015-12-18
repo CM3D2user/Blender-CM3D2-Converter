@@ -121,9 +121,7 @@ class show_image(bpy.types.Operator):
 		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		if area:
-			for space in area.spaces:
-				if space.type == 'IMAGE_EDITOR':
-					space.image = img
+			common.set_area_space_attr(area, 'image', img)
 		else:
 			self.report(type={'ERROR'}, message="画像を表示できるエリアが見つかりませんでした")
 			return {'CANCELLED'}

@@ -64,11 +64,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		
 		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
-		if area:
-			for space in area.spaces:
-				if space.type == 'IMAGE_EDITOR':
-					space.image = img
-					break
+		common.set_area_space_attr(area, 'image', img)
 		
 		for elem in me.uv_textures.active.data:
 			elem.image = img
@@ -136,11 +132,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		
 		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
-		if area:
-			for space in area.spaces:
-				if space.type == 'IMAGE_EDITOR':
-					space.image = img
-					break
+		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
@@ -217,11 +209,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		
 		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
-		if area:
-			for space in area.spaces:
-				if space.type == 'IMAGE_EDITOR':
-					space.image = img
-					break
+		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
@@ -318,11 +306,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
-		if area:
-			for space in area.spaces:
-				if space.type == 'IMAGE_EDITOR':
-					space.image = img
-					break
+		common.set_area_space_attr(area, 'image', img)
 		
 		for elem in me.uv_textures.active.data:
 			elem.image = img

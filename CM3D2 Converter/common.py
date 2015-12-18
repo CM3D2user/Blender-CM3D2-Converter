@@ -417,3 +417,11 @@ class hide_render_restore:
 			ob.hide_render = True
 		for ob in self.hide_rendered_objects:
 			ob.hide_render = False
+
+# 指定エリアに変数をセット
+def set_area_space_attr(area, attr_name, value):
+	if not area: return
+	for space in area.spaces:
+		if space.type == area.type:
+			space.__setattr__(attr_name, value)
+			break
