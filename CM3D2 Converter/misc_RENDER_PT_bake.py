@@ -256,7 +256,7 @@ class quick_shadow_bake_image(bpy.types.Operator):
 	
 	lamp_max_angle = bpy.props.FloatProperty(name="光源の最大角度", default=0.5236, min=0, max=1.5708, soft_min=0, soft_max=1.5708, step=100, precision=0, subtype='ANGLE', unit='ROTATION')
 	lamp_count = bpy.props.IntProperty(name="光源の数", default=8, min=1, max=20, soft_min=1, soft_max=20)
-	is_shadow_only = bpy.props.BoolProperty(name="影のみ", default=True)
+	is_shadow_only = bpy.props.BoolProperty(name="影のみ", default=False)
 	
 	@classmethod
 	def poll(cls, context):
