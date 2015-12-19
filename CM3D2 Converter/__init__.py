@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 221),
+	"version" : (0, 222),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -36,6 +36,7 @@ if "bpy" in locals():
 	imp.reload(misc_DATA_PT_vertex_groups)
 	imp.reload(misc_IMAGE_HT_header)
 	imp.reload(misc_IMAGE_PT_image_properties)
+	imp.reload(misc_INFO_MT_add)
 	imp.reload(misc_INFO_MT_curve_add)
 	imp.reload(misc_INFO_MT_help)
 	imp.reload(misc_MATERIAL_PT_context_material)
@@ -68,6 +69,7 @@ else:
 	from . import misc_DATA_PT_vertex_groups
 	from . import misc_IMAGE_HT_header
 	from . import misc_IMAGE_PT_image_properties
+	from . import misc_INFO_MT_add
 	from . import misc_INFO_MT_curve_add
 	from . import misc_INFO_MT_help
 	from . import misc_MATERIAL_PT_context_material
@@ -233,6 +235,7 @@ def register():
 	bpy.types.DATA_PT_vertex_groups.append(misc_DATA_PT_vertex_groups.menu_func)
 	bpy.types.IMAGE_HT_header.append(misc_IMAGE_HT_header.menu_func)
 	bpy.types.IMAGE_PT_image_properties.append(misc_IMAGE_PT_image_properties.menu_func)
+	bpy.types.INFO_MT_add.append(misc_INFO_MT_add.menu_func)
 	bpy.types.INFO_MT_curve_add.append(misc_INFO_MT_curve_add.menu_func)
 	bpy.types.INFO_MT_help.append(misc_INFO_MT_help.menu_func)
 	bpy.types.MATERIAL_PT_context_material.append(misc_MATERIAL_PT_context_material.menu_func)
@@ -276,6 +279,7 @@ def unregister():
 	bpy.types.DATA_PT_vertex_groups.remove(misc_DATA_PT_vertex_groups.menu_func)
 	bpy.types.IMAGE_HT_header.remove(misc_IMAGE_HT_header.menu_func)
 	bpy.types.IMAGE_PT_image_properties.remove(misc_IMAGE_PT_image_properties.menu_func)
+	bpy.types.INFO_MT_add.remove(misc_INFO_MT_add.menu_func)
 	bpy.types.INFO_MT_curve_add.remove(misc_INFO_MT_curve_add.menu_func)
 	bpy.types.INFO_MT_help.remove(misc_INFO_MT_help.menu_func)
 	bpy.types.MATERIAL_PT_context_material.remove(misc_MATERIAL_PT_context_material.menu_func)

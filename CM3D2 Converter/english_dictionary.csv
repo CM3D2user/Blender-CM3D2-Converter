@@ -392,3 +392,13 @@ ZXキー:高さ変更	ZX Keys:Change Height
 擬似AO設定	Dirty AO Settings
 擬似AO・ベイク	Bake Dirty AO
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
+素体名	Figure Name
+影のみ	Shadow Only
+光源の数	Lamp Count
+光源設定	Lamp Settings
+影・ベイク	Bake Shadow
+Tスタンス素体	T Stance Figure
+光源の最大角度	Max Angle of Lamps
+Tスタンス素体 足のみ	T Stance Figure (Foot Only)
+Tスタンス素体 手のみ	T Stance Figure (Hand Only)
+CM3D2用の素体をインポート	Import Figures for CM3D2
