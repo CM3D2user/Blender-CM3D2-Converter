@@ -78,7 +78,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		
 		if self.ao_hide_other: hide_render_restore = common.hide_render_restore()
 		
-		bpy.ops.object.bake_image('INVOKE_DEFAULT')
+		bpy.ops.object.bake_image()
 		
 		if self.ao_hide_other: hide_render_restore.restore()
 		
