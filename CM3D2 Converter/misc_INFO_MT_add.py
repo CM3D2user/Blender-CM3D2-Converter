@@ -27,8 +27,10 @@ class append_cm3d2_figure(bpy.types.Operator):
 	object_name = bpy.props.StringProperty(name="素体名")
 	
 	def execute(self, context):
-		bpy.ops.object.mode_set(mode='OBJECT')
-		bpy.ops.object.select_all(action='DESELECT')
+		if bpy.ops.object.mode_set.poll():
+			bpy.ops.object.mode_set(mode='OBJECT')
+		if bpy.ops.object.select_all.poll():
+			bpy.ops.object.select_all(action='DESELECT')
 		
 		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
 		with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
