@@ -402,3 +402,11 @@ Tスタンス素体	T Stance Figure
 Tスタンス素体 足のみ	T Stance Figure (Foot Only)
 Tスタンス素体 手のみ	T Stance Figure (Hand Only)
 CM3D2用の素体をインポート	Import Figures for CM3D2
+ライナー	Liner
+金属設定	Metal Settings
+スムーズ1	Smooth 1
+スムーズ2	Smooth 2
+減衰タイプ	Falloff Type
+乳袋防止素体	Anti Milk Bag Figure
+金属・ベイク	Bake Matal
+映り込み強さ	Reflection Strength
