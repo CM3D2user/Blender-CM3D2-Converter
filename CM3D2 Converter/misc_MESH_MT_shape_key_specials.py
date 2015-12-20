@@ -11,7 +11,6 @@ def menu_func(self, context):
 	self.layout.operator('object.multiply_shape_key', icon_value=icon_id)
 	self.layout.separator()
 	self.layout.operator('object.blur_shape_key', icon_value=icon_id)
-	self.layout.operator('object.radius_blur_shape_key', icon_value=icon_id)
 	self.layout.separator()
 	self.layout.operator('object.change_base_shape_key', icon_value=icon_id)
 
@@ -338,15 +337,18 @@ class multiply_shape_key(bpy.types.Operator):
 class blur_shape_key(bpy.types.Operator):
 	bl_idname = 'object.blur_shape_key'
 	bl_label = "シェイプキーぼかし"
-	bl_description = "シェイプキーの変形をぼかしてスムーズにします"
+	bl_description = "アクティブ、もしくは全てのシェイプキーをぼかします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
 		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
-		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 2),
+		('UP', "アクティブより上", "", 'TRIA_UP_BAR', 2),
+		('DOWN', "アクティブより下", "", 'TRIA_DOWN_BAR', 3),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 4),
 		]
-	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
-	strength = bpy.props.IntProperty(name="処理回数", description="ぼかしの強度(回数)を設定します", default=5, min=1, max=100, soft_min=1, soft_max=100, step=1)
+	target = bpy.props.EnumProperty(items=items, name="対象", default='ACTIVE')
+	radius = bpy.props.FloatProperty(name="範囲倍率", default=3, min=0.1, max=50, soft_min=0.1, soft_max=50, step=50, precision=2)
+	strength = bpy.props.IntProperty(name="強さ", default=1, min=1, max=10, soft_min=1, soft_max=10)
 	items = [
 		('BOTH', "増減両方", "", 'AUTOMERGE_ON', 1),
 		('ADD', "増加のみ", "", 'TRIA_UP', 2),
@@ -358,219 +360,116 @@ class blur_shape_key(bpy.types.Operator):
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
-			return ob.type=='MESH' and ob.active_shape_key
+			if ob.type == 'MESH':
+				me = ob.data
+				return me.shape_keys
 		return False
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode', icon='VIEWZOOM')
-		self.layout.prop(self, 'strength')
+		self.layout.prop(self, 'target', icon='VIEWZOOM')
+		self.layout.prop(self, 'radius', icon='META_EMPTY')
+		self.layout.prop(self, 'strength', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'effect', icon='BRUSH_BLUR')
 	
 	def execute(self, context):
 		import bmesh, mathutils
 		ob = context.active_object
 		me = ob.data
-		shape_keys = me.shape_keys
-		
-		bm = bmesh.new()
-		bm.from_mesh(me)
 		
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		if self.mode == 'ACTIVE':
-			target_shapes = [ob.active_shape_key]
-		elif self.mode == 'ALL':
-			target_shapes = [key_block for key_block in shape_keys.key_blocks]
-		context.window_manager.progress_begin(0, len(bm.verts) * len(target_shapes) * self.strength)
-		
-		near_vert_index = []
-		for vert_index, vert in enumerate(bm.verts):
-			near_vert_index.append([v.index for e in vert.link_edges for v in edge.verts if vert_index != v.index])
-		
-		total_count = 0
-		for strength_count in range(self.strength):
-			for shape in target_shapes:
-				data = shape.data
-				new_co = []
-				for vert_index, vert in enumerate(bm.verts):
-					context.window_manager.progress_update(total_count)
-					total_count += 1
-					
-					source_diff_co = data[vert_index].co - vert.co
-					
-					average_co = mathutils.Vector((0, 0, 0))
-					average_total = 0
-					for index in near_vert_index[vert_index]:
-						diff_co = data[index].co - me.vertices[index].co
-						
-						if self.effect == 'ADD':
-							if source_diff_co.length < diff_co.length:
-								average_co += diff_co
-								average_total += 1
-						elif self.effect == 'SUB':
-							if diff_co.length < source_diff_co.length:
-								average_co += diff_co
-								average_total += 1
-						else:
-							average_co += diff_co
-							average_total += 1
-					
-					if 0 < average_total:
-						average_co /= average_total
-						new_co.append(((source_diff_co * 2) + average_co) / 3 + vert.co)
-					else:
-						new_co.append(source_diff_co + vert.co)
-				for i, co in enumerate(new_co):
-					data[i].co = co.copy()
-		
-		bpy.ops.object.mode_set(mode=pre_mode)
-		context.window_manager.progress_end()
-		return {'FINISHED'}
-
-class radius_blur_shape_key(bpy.types.Operator):
-	bl_idname = 'object.radius_blur_shape_key'
-	bl_label = "シェイプキー範囲ぼかし"
-	bl_description = "シェイプキーの変形を一定範囲の頂点でぼかしてスムーズにします"
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	items = [
-		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
-		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 2),
-		]
-	mode = bpy.props.EnumProperty(items=items, name="対象シェイプキー", default='ACTIVE')
-	blur_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=100, soft_min=1, soft_max=100, step=1)
-	items = [
-		('BOTH', "増減両方", "", 'AUTOMERGE_ON', 1),
-		('ADD', "増加のみ", "", 'TRIA_UP', 2),
-		('SUB', "減少のみ", "", 'TRIA_DOWN', 3),
-		]
-	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
-	radius_multi = bpy.props.FloatProperty(name="範囲：辺の長さの平均×", default=2, min=0.1, max=10, soft_min=0.1, soft_max=10, step=100, precision=1)
-	is_shaped_radius = bpy.props.BoolProperty(name="モーフ変形後の範囲", default=False)
-	fadeout = bpy.props.BoolProperty(name="距離で影響減退", default=True)
-	
-	@classmethod
-	def poll(cls, context):
-		ob = context.active_object
-		if ob:
-			return ob.type=='MESH' and ob.active_shape_key
-		return False
-	
-	def invoke(self, context, event):
-		return context.window_manager.invoke_props_dialog(self)
-	
-	def draw(self, context):
-		self.layout.prop(self, 'mode', icon='VIEWZOOM')
-		self.layout.prop(self, 'blur_count')
-		self.layout.prop(self, 'effect', icon='BRUSH_BLUR')
-		self.layout.prop(self, 'radius_multi')
-		self.layout.prop(self, 'is_shaped_radius')
-		self.layout.prop(self, 'fadeout')
-	
-	def execute(self, context):
-		import bmesh, mathutils
-		ob = context.active_object
-		me = ob.data
-		
 		bm = bmesh.new()
 		bm.from_mesh(me)
-		total_len = 0.0
-		for edge in bm.edges:
-			total_len += edge.calc_length()
-		radius = (total_len / len(bm.edges)) * self.radius_multi
+		edge_lengths = [e.calc_length() for e in bm.edges]
 		bm.free()
+		edge_lengths.sort()
+		average_edge_length = sum(edge_lengths) / len(edge_lengths)
+		center_index = int( (len(edge_lengths) - 1) / 2.0 )
+		average_edge_length = (average_edge_length + edge_lengths[center_index]) / 2
+		radius = average_edge_length * self.radius
 		
-		shape_keys = me.shape_keys
-		pre_mode = ob.mode
-		bpy.ops.object.mode_set(mode='OBJECT')
-		if self.mode == 'ACTIVE':
-			target_shapes = [ob.active_shape_key]
-		elif self.mode == 'ALL':
-			target_shapes = [key_block for key_block in shape_keys.key_blocks]
-		
-		if not self.is_shaped_radius:
-			kd = mathutils.kdtree.KDTree(len(me.vertices))
-			for i, v in enumerate(me.vertices):
-				kd.insert(v.co, i)
-			kd.balance()
-			
-			near_verts = []
-			for vert in me.vertices:
-				near_verts.append([])
-				for co, index, dist in kd.find_range(vert.co, radius):
-					diff = vert.co - co
-					multi = (radius - diff.length) / radius
-					near_verts[-1].append((index, multi))
-		
-		context.window_manager.progress_begin(0, self.blur_count * len(target_shapes) * len(me.vertices))
-		total_count = 0
-		for count in range(self.blur_count):
-			for shape in target_shapes:
-				data = shape.data
-				
-				if self.is_shaped_radius:
-					kd = mathutils.kdtree.KDTree(len(me.vertices))
-					for i, v in enumerate(data):
-						kd.insert(v.co, i)
-					kd.balance()
-					near_verts = []
-				
-				new_co = []
-				for vert in me.vertices:
-					context.window_manager.progress_update(total_count)
-					total_count += 1
-					
-					if self.is_shaped_radius:
-						near_verts.append([])
-						for co, index, dist in kd.find_range(data[vert.index].co, radius):
-							diff = data[vert.index].co - co
-							multi = (radius - diff.length) / radius
-							near_verts[-1].append((index, multi))
-					
-					source_diff_co = data[vert.index].co - vert.co
-					
-					average_co = mathutils.Vector((0, 0, 0))
-					nears_total = 0
-					for index, multi in near_verts[vert.index]:
-						diff_co = data[index].co - me.vertices[index].co
-						if self.fadeout:
-							if self.effect == 'ADD':
-								if source_diff_co.length < diff_co.length:
-									average_co += diff_co * multi
-									nears_total += multi
-							elif self.effect == 'SUB':
-								if diff_co.length < source_diff_co.length:
-									average_co += diff_co * multi
-									nears_total += multi
-							else:
-								average_co += diff_co * multi
-								nears_total += multi
-						else:
-							if self.effect == 'ADD':
-								if source_diff_co.length < diff_co.length:
-									average_co += diff_co
-									nears_total += 1
-							elif self.effect == 'SUB':
-								if diff_co.length < source_diff_co.length:
-									average_co += diff_co
-									nears_total += 1
-							else:
-								average_co += diff_co
-								nears_total += 1
-					
-					if 0 < nears_total:
-						average_co /= nears_total
-						new_co.append(((source_diff_co * 2) + average_co) / 3 + vert.co)
-					else:
-						new_co.append(source_diff_co + vert.co)
-				for i, co in enumerate(new_co):
-					data[i].co = co.copy()
-		bpy.ops.object.mode_set(mode=pre_mode)
+		context.window_manager.progress_begin(0, len(me.vertices))
+		progress_reduce = len(me.vertices) // 200 + 1
+		near_vert_data = []
+		kd = mathutils.kdtree.KDTree(len(me.vertices))
+		for vert in me.vertices:
+			kd.insert(vert.co.copy(), vert.index)
+		kd.balance()
+		for vert in me.vertices:
+			near_vert_data.append([])
+			near_vert_data_append = near_vert_data[-1].append
+			for co, index, dist in kd.find_range(vert.co, radius):
+				multi = (radius - dist) / radius
+				near_vert_data_append((index, multi))
+			if vert.index % progress_reduce == 0:
+				context.window_manager.progress_update(vert.index)
 		context.window_manager.progress_end()
+		
+		target_shape_keys = []
+		if self.target == 'ACTIVE':
+			target_shape_keys.append(ob.active_shape_key)
+		elif self.target == 'UP':
+			for index, shape_key in enumerate(me.shape_keys.key_blocks):
+				if index <= ob.active_shape_key_index:
+					target_shape_keys.append(shape_key)
+		elif self.target == 'DOWN':
+			for index, shape_key in enumerate(me.shape_keys.key_blocks):
+				if ob.active_shape_key_index <= index:
+					target_shape_keys.append(shape_key)
+		elif self.target == 'ALL':
+			for index, shape_key in enumerate(me.shape_keys.key_blocks):
+				target_shape_keys.append(shape_key)
+		
+		progress_total = len(target_shape_keys) * self.strength * len(me.vertices)
+		context.window_manager.progress_begin(0, progress_total)
+		progress_reduce = progress_total // 200 + 1
+		progress_count = 0
+		for strength_count in range(self.strength):
+			for shape_key in target_shape_keys:
+				
+				shapes = []
+				shapes_append = shapes.append
+				for index, vert in enumerate(me.vertices):
+					co = shape_key.data[index].co - vert.co
+					shapes_append(co)
+				
+				for vert in me.vertices:
+					
+					target_shape = shapes[vert.index]
+					
+					total_shape = mathutils.Vector()
+					total_multi = 0.0
+					for index, multi in near_vert_data[vert.index]:
+						co = shapes[index]
+						if self.effect == 'ADD':
+							if target_shape.length <= co.length:
+								total_shape += co * multi
+								total_multi += multi
+						elif self.effect == 'SUB':
+							if co.length <= target_shape.length:
+								total_shape += co * multi
+								total_multi += multi
+						else:
+							total_shape += co * multi
+							total_multi += multi
+					
+					if 0 < total_multi:
+						average_shape = total_shape / total_multi
+					else:
+						average_shape = mathutils.Vector()
+					
+					shape_key.data[vert.index].co = vert.co + average_shape
+					
+					progress_count += 1
+					if progress_count % progress_reduce == 0:
+						context.window_manager.progress_update(progress_count)
+		
+		context.window_manager.progress_end()
+		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
 class change_base_shape_key(bpy.types.Operator):
