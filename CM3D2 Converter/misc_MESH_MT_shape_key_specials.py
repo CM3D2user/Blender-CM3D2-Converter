@@ -360,7 +360,7 @@ class blur_shape_key(bpy.types.Operator):
 		('SMOOTH1', "スムーズ1", "", 'SMOOTHCURVE', 2),
 		('SMOOTH2', "スムーズ2", "", 'SMOOTHCURVE', 3),
 		]
-	blend = bpy.props.EnumProperty(items=items, name="減衰タイプ", default='SMOOTH1')
+	blend = bpy.props.EnumProperty(items=items, name="減衰タイプ", default='LINER')
 	
 	@classmethod
 	def poll(cls, context):
