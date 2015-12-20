@@ -355,6 +355,12 @@ class blur_shape_key(bpy.types.Operator):
 		('SUB', "減少のみ", "", 'TRIA_DOWN', 3),
 		]
 	effect = bpy.props.EnumProperty(items=items, name="ぼかし効果", default='BOTH')
+	items = [
+		('LINER', "ライナー", "", 'LINCURVE', 1),
+		('SMOOTH1', "スムーズ1", "", 'SMOOTHCURVE', 2),
+		('SMOOTH2', "スムーズ2", "", 'SMOOTHCURVE', 3),
+		]
+	blend = bpy.props.EnumProperty(items=items, name="減衰タイプ", default='SMOOTH1')
 	
 	@classmethod
 	def poll(cls, context):
@@ -373,6 +379,7 @@ class blur_shape_key(bpy.types.Operator):
 		self.layout.prop(self, 'radius', icon='META_EMPTY')
 		self.layout.prop(self, 'strength', icon='ARROW_LEFTRIGHT')
 		self.layout.prop(self, 'effect', icon='BRUSH_BLUR')
+		self.layout.prop(self, 'blend', icon='IPO_SINE')
 	
 	def execute(self, context):
 		import bmesh, mathutils
@@ -404,6 +411,10 @@ class blur_shape_key(bpy.types.Operator):
 			near_vert_data_append = near_vert_data[-1].append
 			for co, index, dist in kd.find_range(vert.co, radius):
 				multi = (radius - dist) / radius
+				if self.blend == 'SMOOTH1':
+					multi = common.in_out_quad_blend(multi)
+				elif self.blend == 'SMOOTH2':
+					multi = common.bezier_blend(multi)
 				near_vert_data_append((index, multi))
 			if vert.index % progress_reduce == 0:
 				context.window_manager.progress_update(vert.index)

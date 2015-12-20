@@ -1,4 +1,4 @@
-import bpy, os, re, bmesh, numpy, struct, shutil, mathutils
+import bpy, os, re, math, bmesh, numpy, struct, shutil, mathutils
 
 addon_name = "CM3D2 Converter"
 preview_collections = {}
@@ -425,3 +425,13 @@ def set_area_space_attr(area, attr_name, value):
 		if space.type == area.type:
 			space.__setattr__(attr_name, value)
 			break
+
+# スムーズなグラフを返す1
+def in_out_quad_blend(f):
+	if f <= 0.5:
+		return 2.0 * math.sqrt(f)
+	f -= 0.5
+	return 2.0 * f * (1.0 - f) + 0.5
+# スムーズなグラフを返す2
+def bezier_blend(f):
+	return math.sqrt(f) * (3.0 - 2.0 * f)
