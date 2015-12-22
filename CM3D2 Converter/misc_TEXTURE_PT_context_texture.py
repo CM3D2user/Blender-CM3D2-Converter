@@ -18,6 +18,7 @@ def menu_func(self, context):
 		type = 'tex'
 	else:
 		type = 'col' if tex_slot.use_rgb_to_intensity else 'f'
+	base_name = common.remove_serial_number(tex.name)
 	
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
@@ -47,6 +48,11 @@ def menu_func(self, context):
 						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
+					if base_name == "_ToonRamp":
+						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp')
+					elif base_name == "_ShadowRateToon":
+						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon')
+					
 					if len(img.pixels):
 						sub_box.operator('image.show_image', text="この画像を表示", icon='ZOOM_IN').image_name = img.name
 					else:
@@ -66,7 +72,6 @@ def menu_func(self, context):
 		split.label(text=str(tex_slot.diffuse_color_factor))
 		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	
-	base_name = common.remove_serial_number(tex.name)
 	description = ""
 	if base_name == '_MainTex':
 		description = "面の色を決定するテクスチャを指定。\n普段テスクチャと呼んでいるものは基本コレです。\nテクスチャパスは適当でも動いたりしますが、\nテクスチャ名はきちんと決めましょう。"
@@ -103,6 +108,70 @@ def menu_func(self, context):
 		col.label(text="解説", icon='TEXT')
 		for line in description.split('\n'):
 			col.label(text=line)
+
+# _ToonRamp設定メニュー
+class TEXTURE_PT_context_texture_ToonRamp(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_ToonRamp'
+	bl_label = "_ToonRamp 設定"
+	
+	def draw(self, context):
+		l = self.layout
+		l.operator('texture.set_default_toon_textures', text="NoTex", icon='SPACE2').name = "NoTex"
+		l.operator('texture.set_default_toon_textures', text="ToonBlackA1", icon='SPACE2').name = "ToonBlackA1"
+		l.operator('texture.set_default_toon_textures', text="ToonBlueA1", icon='SPACE2').name = "ToonBlueA1"
+		l.operator('texture.set_default_toon_textures', text="ToonBlueA2", icon='SPACE2').name = "ToonBlueA2"
+		l.operator('texture.set_default_toon_textures', text="ToonBrownA1", icon='SPACE2').name = "ToonBrownA1"
+		l.operator('texture.set_default_toon_textures', text="ToonDress_Shadow", icon='LAYER_USED').name = "ToonDress_Shadow"
+		l.operator('texture.set_default_toon_textures', text="ToonFace", icon='SPACE2').name = "ToonFace"
+		l.operator('texture.set_default_toon_textures', text="ToonFace_Shadow", icon='LAYER_USED').name = "ToonFace_Shadow"
+		l.operator('texture.set_default_toon_textures', text="ToonFace002", icon='SPACE2').name = "ToonFace002"
+		l.operator('texture.set_default_toon_textures', text="ToonGrayA1", icon='SPACE2').name = "ToonGrayA1"
+		l.operator('texture.set_default_toon_textures', text="ToonGreenA1", icon='SPACE2').name = "ToonGreenA1"
+		l.operator('texture.set_default_toon_textures', text="ToonGreenA2", icon='SPACE2').name = "ToonGreenA2"
+		l.operator('texture.set_default_toon_textures', text="ToonOrangeA1", icon='SPACE2').name = "ToonOrangeA1"
+		l.operator('texture.set_default_toon_textures', text="ToonPinkA1", icon='SPACE2').name = "ToonPinkA1"
+		l.operator('texture.set_default_toon_textures', text="ToonPinkA2", icon='SPACE2').name = "ToonPinkA2"
+		l.operator('texture.set_default_toon_textures', text="ToonPurpleA1", icon='SPACE2').name = "ToonPurpleA1"
+		l.operator('texture.set_default_toon_textures', text="ToonRedA1", icon='SPACE2').name = "ToonRedA1"
+		l.operator('texture.set_default_toon_textures', text="ToonRedA2", icon='SPACE2').name = "ToonRedA2"
+		l.operator('texture.set_default_toon_textures', text="ToonSkin", icon='SPACE2').name = "ToonSkin"
+		l.operator('texture.set_default_toon_textures', text="ToonSkin_Shadow", icon='LAYER_USED').name = "ToonSkin_Shadow"
+		l.operator('texture.set_default_toon_textures', text="ToonSkin002", icon='SPACE2').name = "ToonSkin002"
+		l.operator('texture.set_default_toon_textures', text="ToonYellowA1", icon='SPACE2').name = "ToonYellowA1"
+		l.operator('texture.set_default_toon_textures', text="ToonYellowA2", icon='SPACE2').name = "ToonYellowA2"
+		l.operator('texture.set_default_toon_textures', text="ToonYellowA3", icon='SPACE2').name = "ToonYellowA3"
+
+# _ShadowRateToon設定メニュー
+class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_ShadowRateToon'
+	bl_label = "_ShadowRateToon 設定"
+	
+	def draw(self, context):
+		l = self.layout
+		l.operator('texture.set_default_toon_textures', text="NoTex", icon='LAYER_USED').name = "NoTex"
+		l.operator('texture.set_default_toon_textures', text="ToonBlackA1", icon='LAYER_USED').name = "ToonBlackA1"
+		l.operator('texture.set_default_toon_textures', text="ToonBlueA1", icon='LAYER_USED').name = "ToonBlueA1"
+		l.operator('texture.set_default_toon_textures', text="ToonBlueA2", icon='LAYER_USED').name = "ToonBlueA2"
+		l.operator('texture.set_default_toon_textures', text="ToonBrownA1", icon='LAYER_USED').name = "ToonBrownA1"
+		l.operator('texture.set_default_toon_textures', text="ToonDress_Shadow", icon='SPACE2').name = "ToonDress_Shadow"
+		l.operator('texture.set_default_toon_textures', text="ToonFace", icon='LAYER_USED').name = "ToonFace"
+		l.operator('texture.set_default_toon_textures', text="ToonFace_Shadow", icon='SPACE2').name = "ToonFace_Shadow"
+		l.operator('texture.set_default_toon_textures', text="ToonFace002", icon='LAYER_USED').name = "ToonFace002"
+		l.operator('texture.set_default_toon_textures', text="ToonGrayA1", icon='LAYER_USED').name = "ToonGrayA1"
+		l.operator('texture.set_default_toon_textures', text="ToonGreenA1", icon='LAYER_USED').name = "ToonGreenA1"
+		l.operator('texture.set_default_toon_textures', text="ToonGreenA2", icon='LAYER_USED').name = "ToonGreenA2"
+		l.operator('texture.set_default_toon_textures', text="ToonOrangeA1", icon='LAYER_USED').name = "ToonOrangeA1"
+		l.operator('texture.set_default_toon_textures', text="ToonPinkA1", icon='LAYER_USED').name = "ToonPinkA1"
+		l.operator('texture.set_default_toon_textures', text="ToonPinkA2", icon='LAYER_USED').name = "ToonPinkA2"
+		l.operator('texture.set_default_toon_textures', text="ToonPurpleA1", icon='LAYER_USED').name = "ToonPurpleA1"
+		l.operator('texture.set_default_toon_textures', text="ToonRedA1", icon='LAYER_USED').name = "ToonRedA1"
+		l.operator('texture.set_default_toon_textures', text="ToonRedA2", icon='LAYER_USED').name = "ToonRedA2"
+		l.operator('texture.set_default_toon_textures', text="ToonSkin", icon='LAYER_USED').name = "ToonSkin"
+		l.operator('texture.set_default_toon_textures', text="ToonSkin_Shadow", icon='SPACE2').name = "ToonSkin_Shadow"
+		l.operator('texture.set_default_toon_textures', text="ToonSkin002", icon='LAYER_USED').name = "ToonSkin002"
+		l.operator('texture.set_default_toon_textures', text="ToonYellowA1", icon='LAYER_USED').name = "ToonYellowA1"
+		l.operator('texture.set_default_toon_textures', text="ToonYellowA2", icon='LAYER_USED').name = "ToonYellowA2"
+		l.operator('texture.set_default_toon_textures', text="ToonYellowA3", icon='LAYER_USED').name = "ToonYellowA3"
 
 class show_image(bpy.types.Operator):
 	bl_idname = 'image.show_image'
@@ -167,4 +236,28 @@ class sync_tex_color_ramps(bpy.types.Operator):
 					if not slot:
 						continue
 					common.set_texture_color(slot)
+		return {'FINISHED'}
+
+class set_default_toon_textures(bpy.types.Operator):
+	bl_idname = 'texture.set_default_toon_textures'
+	bl_label = "トゥーンを選択"
+	bl_description = "CM3D2にデフォルトで入っているトゥーンテクスチャを選択できます"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	name = bpy.props.StringProperty(name="テクスチャ名")
+	dir = bpy.props.StringProperty(name="パス", default="Assets\\texture\\texture\\toon\\")
+	
+	@classmethod
+	def poll(cls, context):
+		if 'texture_slot' in dir(context) and 'texture' in dir(context):
+			if context.texture_slot and context.texture:
+				name = common.remove_serial_number(context.texture.name)
+				return name == "_ToonRamp" or name == "_ShadowRateToon"
+		return False
+	
+	def execute(self, context):
+		img = context.texture.image
+		img.name = self.name
+		img.filepath = self.dir + self.name + ".png"
+		img['cm3d2_path'] = img.filepath
 		return {'FINISHED'}
