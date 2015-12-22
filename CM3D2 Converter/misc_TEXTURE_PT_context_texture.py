@@ -49,9 +49,9 @@ def menu_func(self, context):
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
 					if base_name == "_ToonRamp":
-						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp')
+						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp', icon='COLOR')
 					elif base_name == "_ShadowRateToon":
-						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon')
+						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon', icon='COLOR')
 					
 					if len(img.pixels):
 						sub_box.operator('image.show_image', text="この画像を表示", icon='ZOOM_IN').image_name = img.name
