@@ -358,7 +358,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		bm.from_mesh(me)
 		uv_lay = bm.loops.layers.uv.active
 		vert_uvs = []
-		vert_iuv = []
+		vert_iuv = {}
+		vert_indices = {}
 		vert_count = 0
 		for vert in bm.verts:
 			vert_uvs.append([])
@@ -366,8 +367,9 @@ class export_cm3d2_model(bpy.types.Operator):
 				uv = loop[uv_lay].uv
 				if uv not in vert_uvs[-1]:
 					vert_uvs[-1].append(uv)
-					iuv_str = " ".join([str(vert.index), str(uv.x), str(uv.y)])
-					vert_iuv.append(hash(iuv_str))
+					iuv_hash = hash(repr([vert.index, uv.x, uv.y]))
+					vert_iuv[iuv_hash] = vert_count
+					vert_indices[vert.index] = vert_count
 					vert_count += 1
 		if 65535 < vert_count:
 			return self.report_cancel("頂点数がまだ多いです (現在%d頂点)。あと%d頂点以上減らしてください、中止します" % (vert_count, vert_count - 65535))
@@ -512,15 +514,10 @@ class export_cm3d2_model(bpy.types.Operator):
 					for loop in face.loops:
 						uv = loop[uv_lay].uv
 						index = loop.vert.index
-						try:
-							iuv_str = " ".join([str(index), str(uv.x), str(uv.y)])
-							vert_index = vert_iuv.index(hash(iuv_str))
-						except ValueError:
-							vert_index = 0
-							for i, s in enumerate(vert_iuv):
-								if int(s.split(' ')[0]) == index:
-									vert_index = i
-									break
+						iuv_hash = hash(repr([index, uv.x, uv.y]))
+						vert_index = vert_iuv.get(iuv_hash)
+						if vert_index is None:
+							vert_index = vert_indices.get(index, 0)
 						faces.append(vert_index)
 					face_count += 1
 				elif len(face.verts) == 4 and self.is_convert_tris:
@@ -533,17 +530,12 @@ class export_cm3d2_model(bpy.types.Operator):
 						f1 = [0, 1, 3]
 						f2 = [1, 2, 3]
 					for i, loop in enumerate(face.loops):
+						uv = loop[uv_lay].uv
+						iuv_hash = hash(repr([loop.vert.index, uv.x, uv.y]))
+						vert_index = vert_iuv.get(iuv_hash)
 						if i in f1:
-							uv = loop[uv_lay].uv
-							index = loop.vert.index
-							iuv_str = " ".join([str(index), str(uv.x), str(uv.y)])
-							vert_index = vert_iuv.index(hash(iuv_str))
 							faces.append(vert_index)
 						if i in f2:
-							uv = loop[uv_lay].uv
-							index = loop.vert.index
-							iuv_str = " ".join([str(index), str(uv.x), str(uv.y)])
-							vert_index = vert_iuv.index(hash(iuv_str))
 							faces2.append(vert_index)
 					face_count += 2
 				else:

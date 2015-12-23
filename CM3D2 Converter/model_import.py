@@ -1,4 +1,5 @@
 import bpy, os, re, math, struct, mathutils, bmesh, time
+from collections import Counter
 from . import common
 
 # メインオペレーター
@@ -142,27 +143,26 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		# 頂点情報読み込み
 		vertex_data = []
-		comparison_data = []
 		for i in range(vertex_count):
-			vertex_data.append({})
 			co = struct.unpack('<3f', file.read(3*4))
 			no = struct.unpack('<3f', file.read(3*4))
 			uv = struct.unpack('<2f', file.read(2*4))
-			vertex_data[i]['co'] = co
-			vertex_data[i]['normal'] = no
-			vertex_data[i]['uv'] = uv
-			comparison_str = " ".join([str(co[0]), str(co[1]), str(co[2]), str(no[0]), str(no[1]), str(no[2])])
-			comparison_data.append(hash(comparison_str))
+			vertex_data.append({'co': co, 'normal': no, 'uv': uv})
+		comparison_data = list(hash(repr(v['co'] + v['normal'])) for v in vertex_data)
+		comparison_counter = Counter(comparison_data)
+		comparison_data = list((comparison_counter[h] > 1) for h in comparison_data)
+		del comparison_counter
 		unknown_count = struct.unpack('<i', file.read(4))[0]
 		for i in range(unknown_count):
 			struct.unpack('<4f', file.read(4*4))
 		for i in range(vertex_count):
-			vertex_data[i]['weights'] = [{}, {}, {}, {}]
-			for j in range(4):
-				vertex_data[i]['weights'][j]['index'] = struct.unpack('<H', file.read(2))[0]
-				vertex_data[i]['weights'][j]['name'] = local_bone_data[vertex_data[i]['weights'][j]['index']]['name']
-			for j in range(4):
-				vertex_data[i]['weights'][j]['value'] = struct.unpack('<f', file.read(4))[0]
+			indexes = list(struct.unpack('<H', file.read(2))[0] for j in range(4))
+			values  = list(struct.unpack('<f', file.read(4))[0] for j in range(4))
+			vertex_data[i]['weights'] = list({
+					'index': index,
+					'value': value,
+					'name': local_bone_data[index]['name'],
+				} for index, value in zip(indexes, values))
 		context.window_manager.progress_update(0.5)
 		
 		# 面情報読み込み
@@ -524,18 +524,9 @@ class import_cm3d2_model(bpy.types.Operator):
 			bpy.ops.mesh.select_all(action='DESELECT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			if self.is_remove_doubles:
-				progress_plus_value = 1.0 / len(me.vertices)
-				progress_count = 7.0
-				progress_reduce = len(me.vertices) // 200 + 1
-				for i, vert in enumerate(me.vertices):
-					if comparison_data[i] in comparison_data[:i]:
+				for is_comparison, vert in zip(comparison_data, me.vertices):
+					if is_comparison:
 						vert.select = True
-					else:
-						 if comparison_data[i] in comparison_data[i+1:]:
-						 	vert.select = True
-					progress_count += progress_plus_value
-					if i % progress_reduce == 0:
-						context.window_manager.progress_update(progress_count)
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
 				bpy.ops.object.mode_set(mode='OBJECT')
