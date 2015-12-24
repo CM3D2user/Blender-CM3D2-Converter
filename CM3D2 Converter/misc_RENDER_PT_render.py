@@ -12,15 +12,19 @@ class render_cm3d2_icon(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('FACE_TEXTURE', "面に割り当てているテクスチャでレンダリング", "", 'FACESEL_HLT', 1),
-		('NOW_MATERIAL', "現在のマテリアルでレンダリング", "", 'MATERIAL', 2),
+		('FACE_TEXTURE', "面のテクスチャでレンダリング", "", 'FACESEL_HLT', 1),
+		('NOW_MATERIAL', "今のマテリアルでレンダリング", "", 'MATERIAL', 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="モード", default='FACE_TEXTURE')
 	
-	zoom_multi = bpy.props.IntProperty(name="ズーム倍率", default=100, min=10, max=190, soft_min=10, soft_max=190, step=10, subtype='PERCENTAGE')
+	use_freestyle = bpy.props.BoolProperty(name="輪郭線を描画", default=True)
+	line_thickness = bpy.props.FloatProperty(name="線の太さ", default=0.2, min=0, max=0.5, soft_min=0, soft_max=0.5, step=10, precision=2, subtype='PIXEL')
+	line_color = bpy.props.FloatVectorProperty(name="線の色", default=(0, 0, 0), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
+	
 	resolution = bpy.props.IntProperty(name="解像度", default=80, min=10, max=150, soft_min=10, soft_max=150, subtype='PIXEL')
 	camera_angle = bpy.props.FloatVectorProperty(name="カメラ角度", default=(0.576667, 0.576667, 0.578715), min=-10, max=10, soft_min=-10, soft_max=10, step=1, precision=2, subtype='DIRECTION', size=3)
 	camera_move = bpy.props.FloatVectorProperty(name="カメラ移動", default=(0, 0), min=-10, max=10, soft_min=-10, soft_max=10, step=10, precision=2, subtype='XYZ', size=2)
+	zoom_multi = bpy.props.IntProperty(name="ズーム倍率", default=100, min=10, max=190, soft_min=10, soft_max=190, step=10, subtype='PERCENTAGE')
 	
 	use_background_color = bpy.props.BoolProperty(name="背景を使用", default=True)
 	background_color = bpy.props.FloatVectorProperty(name="背景色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
@@ -39,16 +43,26 @@ class render_cm3d2_icon(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode')
-		self.layout.prop(self, 'zoom_multi', icon='VIEWZOOM', slider=True)
 		self.layout.prop(self, 'resolution', icon='IMAGE_COL', slider=True)
+		self.layout.prop(self, 'mode', icon='TEXTURE_SHADED')
+		self.layout.separator()
+		
+		row = self.layout.split(percentage=1/3, align=True)
+		row.prop(self, 'use_freestyle', icon='LINE_DATA')
+		row.prop(self, 'line_thickness', icon='ARROW_LEFTRIGHT', slider=True, text="太")
+		row.prop(self, 'line_color', icon='COLOR', text="")
+		self.layout.separator()
+		
 		col = self.layout.column(align=True)
 		col.label(text="カメラ角度", icon='FILE_REFRESH')
 		col.prop(self, 'camera_angle', text="")
 		self.layout.prop(self, 'camera_move', icon='ARROW_LEFTRIGHT')
-		row = self.layout.row(align=True)
-		row.prop(self, 'use_background_color', icon='FILE_TICK')
-		row.prop(self, 'background_color', icon='COLOR')
+		self.layout.prop(self, 'zoom_multi', icon='VIEWZOOM', slider=True)
+		self.layout.separator()
+		
+		row = self.layout.split(percentage=0.5, align=True)
+		row.prop(self, 'use_background_color', icon='WORLD')
+		row.prop(self, 'background_color', icon='COLOR', text="")
 	
 	def execute(self, context):
 		import math, mathutils
@@ -142,7 +156,21 @@ class render_cm3d2_icon(bpy.types.Operator):
 		context.scene.render.alpha_mode = 'SKY' if self.use_background_color else 'TRANSPARENT'
 		context.scene.world.horizon_color = self.background_color
 		
+		if self.use_freestyle:
+			pre_use_freestyle = context.scene.render.use_freestyle
+			pre_line_thickness = context.scene.render.line_thickness
+			context.scene.render.use_freestyle = True
+			context.scene.render.line_thickness = self.line_thickness
+			temp_lineset = context.scene.render.layers.active.freestyle_settings.linesets.new("temp")
+			temp_lineset.linestyle.color = self.line_color
+		
 		bpy.ops.render.render()
+		
+		if self.use_freestyle:
+			context.scene.render.use_freestyle = pre_use_freestyle
+			context.scene.render.line_thickness = pre_line_thickness
+			common.remove_data([temp_lineset.linestyle])
+			context.scene.render.layers.active.freestyle_settings.linesets.remove(temp_lineset)
 		
 		img = context.blend_data.images["Render Result"]
 		area = common.get_request_area(context, 'IMAGE_EDITOR')

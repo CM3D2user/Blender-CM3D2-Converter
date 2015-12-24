@@ -424,3 +424,9 @@ _ShadowRateToon 設定	_ShadowRateToon Settings
 CM3D2用ベイク	Bakes for CM3D2
 ベイク用の画像を作成	Create Image for Bake
 モード	Mode
+太	Thick
+線の色	Line Color
+線の太さ	Line Thickness
+輪郭線を描画	Draw Line
+面のテクスチャでレンダリング	Rendering by Face Textures
+今のマテリアルでレンダリング	Rendering by Now Material
