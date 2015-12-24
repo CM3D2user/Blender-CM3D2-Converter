@@ -12,7 +12,9 @@ def menu_func(self, context):
 	row.operator('object.quick_hemi_bake_image', icon='LAMP_HEMI')
 	row.operator('object.quick_shadow_bake_image', icon='IMAGE_ALPHA')
 	row = col.row(align=True)
+	row.operator('object.quick_side_shadow_bake_image', icon='ARROW_LEFTRIGHT')
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19')
+	row = col.row(align=True)
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE')
 
 class quick_ao_bake_image(bpy.types.Operator):
@@ -341,6 +343,85 @@ class quick_shadow_bake_image(bpy.types.Operator):
 		
 		material_restore.restore()
 		hide_render_restore.restore()
+		
+		return {'FINISHED'}
+
+class quick_side_shadow_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_side_shadow_bake_image'
+	bl_label = "側面陰・ベイク"
+	bl_description = "アクティブオブジェクトに素早く側面陰をベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	
+	@classmethod
+	def poll(cls, context):
+		if not len(context.selected_objects):
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		self.image_name = context.active_object.name + " SideShadow Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		material_restore = common.material_restore(ob)
+		
+		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
+		with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
+			data_to.materials = ["Side Shadow"]
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = data_to.materials[0]
+		ob.material_slots[0].material = temp_mate
+		
+		temp_lamp = context.blend_data.lamps.new("quick_side_shadow_bake_image_lamp_temp", 'HEMI')
+		temp_lamp_ob = context.blend_data.objects.new("quick_side_shadow_bake_image_lamp_temp", temp_lamp)
+		context.scene.objects.link(temp_lamp_ob)
+		
+		pre_scene_camera = context.scene.camera
+		temp_camera = context.blend_data.cameras.new("quick_side_shadow_bake_image_camera_temp")
+		temp_camera_ob = context.blend_data.objects.new("quick_side_shadow_bake_image_camera_temp", temp_camera)
+		context.scene.objects.link(temp_camera_ob)
+		temp_camera_ob.rotation_euler[0] = 1.5708
+		context.scene.camera = temp_camera_ob
+		
+		context.scene.world.light_settings.use_ambient_occlusion = False
+		
+		context.scene.render.bake_type = 'FULL'
+		bpy.ops.object.bake_image()
+		
+		common.remove_data([temp_mate, temp_lamp_ob, temp_lamp, temp_camera_ob, temp_camera])
+		context.scene.camera = pre_scene_camera
+		
+		material_restore.restore()
 		
 		return {'FINISHED'}
 
