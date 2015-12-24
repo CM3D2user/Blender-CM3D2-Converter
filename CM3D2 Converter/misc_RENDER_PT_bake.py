@@ -4,18 +4,69 @@ from . import common
 # メニュー等に項目追加
 def menu_func(self, context):
 	col = self.layout.column(align=True)
-	col.label(text="CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
+	col.label(text="CM3D2用ベイク", icon_value=common.preview_collections['main']['KISS'].icon_id)
 	row = col.row(align=True)
-	row.operator('object.quick_ao_bake_image', icon='BRUSH_TEXFILL')
-	row.operator('object.quick_dirty_bake_image', icon='MATSPHERE')
+	row.operator('object.add_bake_image', icon='IMAGE_COL', text="新規画像")
+	row.operator('object.quick_ao_bake_image', icon='BRUSH_TEXFILL', text="AO")
+	row.operator('object.quick_dirty_bake_image', icon='MATSPHERE', text="擬似AO")
 	row = col.row(align=True)
-	row.operator('object.quick_hemi_bake_image', icon='LAMP_HEMI')
-	row.operator('object.quick_shadow_bake_image', icon='IMAGE_ALPHA')
+	row.operator('object.quick_hemi_bake_image', icon='LAMP_HEMI', text="ヘミライト")
+	row.operator('object.quick_shadow_bake_image', icon='IMAGE_ALPHA', text="影")
+	row.operator('object.quick_side_shadow_bake_image', icon='ARROW_LEFTRIGHT', text="側面陰")
 	row = col.row(align=True)
-	row.operator('object.quick_side_shadow_bake_image', icon='ARROW_LEFTRIGHT')
-	row.operator('object.quick_metal_bake_image', icon='MATCAP_19')
-	row = col.row(align=True)
-	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE')
+	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
+	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE', text="髪")
+
+class add_bake_image(bpy.types.Operator):
+	bl_idname = 'object.add_bake_image'
+	bl_label = "ベイク用の画像を作成"
+	bl_description = "アクティブオブジェクトに素早くベイク用の空の画像を用意します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	image_color = bpy.props.FloatVectorProperty(name="色", default=(1, 1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.prop(self, 'image_color', icon='COLOR')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		
+		img.generated_color = self.image_color
+		
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		return {'FINISHED'}
 
 class quick_ao_bake_image(bpy.types.Operator):
 	bl_idname = 'object.quick_ao_bake_image'
@@ -358,7 +409,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if not len(context.selected_objects):
+		if len(context.selected_objects) != 1:
 			return False
 		ob = context.active_object
 		if ob:
@@ -440,7 +491,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		if not len(context.selected_objects):
+		if len(context.selected_objects) != 1:
 			return False
 		ob = context.active_object
 		if ob:
