@@ -11,6 +11,12 @@ class render_cm3d2_icon(bpy.types.Operator):
 	bl_description = "CM3D2内のアイコン画像に使用できそうな画像をレンダリングします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	items = [
+		('FACE_TEXTURE', "面に割り当てているテクスチャでレンダリング", "", 'FACESEL_HLT', 1),
+		('NOW_MATERIAL', "現在のマテリアルでレンダリング", "", 'MATERIAL', 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="モード", default='FACE_TEXTURE')
+	
 	zoom_multi = bpy.props.IntProperty(name="ズーム倍率", default=100, min=10, max=190, soft_min=10, soft_max=190, step=10, subtype='PERCENTAGE')
 	resolution = bpy.props.IntProperty(name="解像度", default=80, min=10, max=150, soft_min=10, soft_max=150, subtype='PIXEL')
 	camera_angle = bpy.props.FloatVectorProperty(name="カメラ角度", default=(0.576667, 0.576667, 0.578715), min=-10, max=10, soft_min=-10, soft_max=10, step=1, precision=2, subtype='DIRECTION', size=3)
@@ -33,6 +39,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		self.layout.prop(self, 'mode')
 		self.layout.prop(self, 'zoom_multi', icon='VIEWZOOM', slider=True)
 		self.layout.prop(self, 'resolution', icon='IMAGE_COL', slider=True)
 		col = self.layout.column(align=True)
@@ -46,7 +53,31 @@ class render_cm3d2_icon(bpy.types.Operator):
 	def execute(self, context):
 		import math, mathutils
 		
+		override = context.copy()
+		
 		obs = context.selected_objects
+		
+		if self.mode == 'FACE_TEXTURE':
+			material_restores = []
+			temp_mates = []
+			for ob in obs:
+				material_restores.append( common.material_restore(ob) )
+				override['object'] = ob
+				bpy.ops.object.material_slot_add(override)
+				temp_mate = context.blend_data.materials.new("temp")
+				ob.material_slots[0].material = temp_mate
+				temp_mate.use_shadeless = True
+				temp_mate.use_face_texture = True
+				temp_mates.append(temp_mate)
+		elif self.mode == 'NOW_MATERIAL':
+			pre_mate_settings = []
+			for ob in obs:
+				pre_mate_settings.append([])
+				for slot in ob.material_slots:
+					if not slot: continue
+					mate = slot.material
+					pre_mate_settings[-1].append([mate, mate.use_shadeless])
+					mate.use_shadeless = True
 		
 		xs, ys, zs = [], [], []
 		for ob in obs:
@@ -103,10 +134,11 @@ class render_cm3d2_icon(bpy.types.Operator):
 		context.scene.render.resolution_y = self.resolution
 		context.scene.render.resolution_percentage = 100
 		
-		context.scene.world.light_settings.use_ambient_occlusion = True
+		context.scene.world.light_settings.use_ambient_occlusion = False
 		context.scene.world.light_settings.ao_blend_type = 'ADD'
 		context.scene.world.light_settings.gather_method = 'RAYTRACE'
 		context.scene.world.light_settings.samples = 10
+		
 		context.scene.render.alpha_mode = 'SKY' if self.use_background_color else 'TRANSPARENT'
 		context.scene.world.horizon_color = self.background_color
 		
@@ -118,6 +150,15 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		common.remove_data([temp_camera_ob, temp_camera])
 		context.scene.camera = pre_scene_camera
+		
+		if self.mode == 'FACE_TEXTURE':
+			for material_restore in material_restores:
+				material_restore.restore()
+			common.remove_data(temp_mates)
+		elif self.mode == 'NOW_MATERIAL':
+			for ob_mate in pre_mate_settings:
+				for mate, is_shadeless in ob_mate:
+					mate.use_shadeless = is_shadeless
 		
 		hide_render_restore.restore()
 		
