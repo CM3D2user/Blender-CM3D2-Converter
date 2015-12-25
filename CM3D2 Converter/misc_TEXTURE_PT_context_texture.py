@@ -48,6 +48,9 @@ def menu_func(self, context):
 						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
+					if base_name == "_MainTex":
+						sub_box.operator('texture.auto_set_color_value', icon='RECOVER_AUTO')
+					
 					if base_name == "_ToonRamp":
 						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp', icon='COLOR')
 					elif base_name == "_ShadowRateToon":
@@ -63,6 +66,8 @@ def menu_func(self, context):
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'color', text="")
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
+		if base_name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+			sub_box.operator('texture.auto_set_color_value', icon='RECOVER_AUTO')
 		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	elif type == "f":
 		sub_box = box.box()
@@ -260,4 +265,101 @@ class set_default_toon_textures(bpy.types.Operator):
 		img.name = self.name
 		img.filepath = self.dir + self.name + ".png"
 		img['cm3d2_path'] = img.filepath
+		return {'FINISHED'}
+
+class auto_set_color_value(bpy.types.Operator):
+	bl_idname = 'texture.auto_set_color_value'
+	bl_label = "色設定値を自動設定"
+	bl_description = "色関係の設定値をテクスチャの色情報から自動で設定します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if not ob: return False
+		if ob.type != 'MESH': return False
+		mate = ob.active_material
+		if not mate: return False
+		for slot in mate.texture_slots:
+			if not slot: continue
+			tex = slot.texture
+			name = common.remove_serial_number(tex.name)
+			if name == '_MainTex':
+				img = tex.image
+				if not img: return False
+				if not len(img.pixels): return False
+				break
+		else: return False
+		if 'texture_slot' in dir(context) and 'texture' in dir(context):
+			slot = context.texture_slot
+			tex = context.texture
+			name = common.remove_serial_number(tex.name)
+			
+			if name == '_MainTex':
+				for slot in mate.texture_slots:
+					if not slot: continue
+					tex = slot.texture
+					name = common.remove_serial_number(tex.name)
+					if name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+						return True
+				return False
+			elif name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+				return True
+		return False
+	
+	def execute(self, context):
+		import numpy
+		
+		ob = context.active_object
+		me = ob.data
+		mate = ob.active_material
+		active_slot = context.texture_slot
+		active_tex = context.texture
+		tex_name = common.remove_serial_number(active_tex.name)
+		
+		target_slots = []
+		if tex_name == '_MainTex':
+			for slot in mate.texture_slots:
+				if not slot: continue
+				name = common.remove_serial_number(slot.texture.name)
+				if name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+					target_slots.append(slot)
+			img = active_tex.image
+		elif tex_name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+			target_slots.append(active_slot)
+			for slot in mate.texture_slots:
+				if not slot: continue
+				name = common.remove_serial_number(slot.texture.name)
+				if name == '_MainTex':
+					img = slot.texture.image
+					break
+		
+		sample_count = 10
+		img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
+		pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
+		
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		uv_lay = bm.loops.layers.uv.active
+		uvs = [l[uv_lay].uv[:] for f in bm.faces if f.material_index == ob.active_material_index for l in f.loops]
+		bm.free()
+		
+		average_color = mathutils.Color([0, 0, 0])
+		seek_interval = len(uvs) / sample_count
+		for sample_index in range(sample_count):
+			
+			uv_index = int(seek_interval * sample_index)
+			x, y = uvs[uv_index]
+			x, y = int(x * img_width), int(y * img_height)
+			
+			color = mathutils.Color(pixels[y, x, :3])
+			average_color += color
+		average_color /= sample_count
+		average_color.s *= 2.2
+		average_color.v *= 0.3
+		
+		for slot in target_slots:
+			slot.color = average_color[:3]
+			common.set_texture_color(slot)
+		
 		return {'FINISHED'}
