@@ -70,17 +70,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			return self.report_cancel("UVがありません")
 		if 65535 < len(me.vertices):
 			return self.report_cancel("エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
-		pentagons = [face.index for face in me.polygons if 5 <= len(face.vertices)]
-		if len(pentagons):
-			if not self.is_batch:
-				bpy.ops.object.mode_set(mode='EDIT')
-				bpy.ops.mesh.select_all(action='DESELECT')
-				bpy.ops.object.mode_set(mode='OBJECT')
-				context.tool_settings.mesh_select_mode = (False, False, True)
-				for face_index in pentagons:
-					me.polygons[face_index].select = True
-				bpy.ops.object.mode_set(mode='EDIT')
-			return self.report_cancel("五角以上のポリゴンが含まれています")
 		return None
 		
 	def invoke(self, context, event):
@@ -501,9 +490,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		progress_count = 7.0
 		progress_reduce = (len(ob.material_slots) * len(bm.faces)) // 200 + 1
 		for mate_index, slot in enumerate(ob.material_slots):
-			face_count = 0
-			faces = []
-			faces2 = []
+			tris_faces = []
 			for face in bm.faces:
 				progress_count += progress_plus_value
 				if face.index % progress_reduce == 0:
@@ -511,15 +498,14 @@ class export_cm3d2_model(bpy.types.Operator):
 				if face.material_index != mate_index:
 					continue
 				if len(face.verts) == 3:
-					for loop in face.loops:
+					for loop in reversed(face.loops):
 						uv = loop[uv_lay].uv
 						index = loop.vert.index
 						iuv_hash = hash(repr([index, uv.x, uv.y]))
 						vert_index = vert_iuv.get(iuv_hash)
 						if vert_index is None:
 							vert_index = vert_indices.get(index, 0)
-						faces.append(vert_index)
-					face_count += 1
+						tris_faces.append(vert_index)
 				elif len(face.verts) == 4 and self.is_convert_tris:
 					v1 = face.loops[0].vert.co - face.loops[2].vert.co
 					v2 = face.loops[1].vert.co - face.loops[3].vert.co
@@ -529,7 +515,8 @@ class export_cm3d2_model(bpy.types.Operator):
 					else:
 						f1 = [0, 1, 3]
 						f2 = [1, 2, 3]
-					for i, loop in enumerate(face.loops):
+					faces, faces2 = [], []
+					for i, loop in enumerate(reversed(face.loops)):
 						uv = loop[uv_lay].uv
 						iuv_hash = hash(repr([loop.vert.index, uv.x, uv.y]))
 						vert_index = vert_iuv.get(iuv_hash)
@@ -537,20 +524,41 @@ class export_cm3d2_model(bpy.types.Operator):
 							faces.append(vert_index)
 						if i in f2:
 							faces2.append(vert_index)
-					face_count += 2
-				else:
-					error_face_count += 1
-					continue
-			file.write(struct.pack('<i', face_count * 3))
-			faces.reverse()
-			for face in faces:
-				file.write(struct.pack('<H', face))
-			if len(faces2):
-				faces2.reverse()
-				for face in faces2:
-					file.write(struct.pack('<H', face))
-		if 1 <= error_face_count:
-			self.report(type={'INFO'}, message="多角ポリゴンが見つかりました、正常に出力できなかった可能性があります" % error_face_count)
+					for i in faces:
+						tris_faces.append(i)
+					for i in faces2:
+						tris_faces.append(i)
+				elif 5 <= len(face.verts) and self.is_convert_tris:
+					face_count = len(face.verts) - 2
+					
+					tris = []
+					seek_min, seek_max = 0, len(face.verts) - 1
+					for i in range(face_count):
+						if not i % 2:
+							tris.append([seek_min, seek_min+1, seek_max])
+							seek_min += 1
+						else:
+							tris.append([seek_min, seek_max-1, seek_max])
+							seek_max -= 1
+					
+					tris_indexs = [[] for i in tris]
+					for i, loop in enumerate(reversed(face.loops)):
+						
+						uv = loop[uv_lay].uv
+						iuv_hash = hash(repr([loop.vert.index, uv.x, uv.y]))
+						vert_index = vert_iuv.get(iuv_hash)
+						
+						for tris_index, points in enumerate(tris):
+							if i in points:
+								tris_indexs[tris_index].append(vert_index)
+					
+					for points in tris_indexs:
+						for point in points:
+							tris_faces.append(point)
+			
+			file.write(struct.pack('<i', len(tris_faces)))
+			for face_index in tris_faces:
+				file.write(struct.pack('<H', face_index))
 		context.window_manager.progress_update(8)
 		
 		# マテリアルを書き出し
