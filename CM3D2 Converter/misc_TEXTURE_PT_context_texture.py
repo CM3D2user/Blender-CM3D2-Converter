@@ -273,6 +273,9 @@ class auto_set_color_value(bpy.types.Operator):
 	bl_description = "色関係の設定値をテクスチャの色情報から自動で設定します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	saturation_multi = bpy.props.FloatProperty(name="彩度の乗算値", default=2.2, min=0, max=5, soft_min=0, soft_max=5, step=10, precision=2)
+	value_multi = bpy.props.FloatProperty(name="明度の乗算値", default=0.3, min=0, max=5, soft_min=0, soft_max=5, step=10, precision=2)
+	
 	@classmethod
 	def poll(cls, context):
 		ob = context.active_object
@@ -306,6 +309,17 @@ class auto_set_color_value(bpy.types.Operator):
 			elif name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
 				return True
 		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		row = self.layout.row()
+		row.label(text="", icon='SMOOTH')
+		row.prop(self, 'saturation_multi')
+		row = self.layout.row()
+		row.label(text="", icon='SOLID')
+		row.prop(self, 'value_multi')
 	
 	def execute(self, context):
 		import numpy
@@ -355,8 +369,8 @@ class auto_set_color_value(bpy.types.Operator):
 			color = mathutils.Color(pixels[y, x, :3])
 			average_color += color
 		average_color /= sample_count
-		average_color.s *= 2.2
-		average_color.v *= 0.3
+		average_color.s *= self.saturation_multi
+		average_color.v *= self.value_multi
 		
 		for slot in target_slots:
 			slot.color = average_color[:3]

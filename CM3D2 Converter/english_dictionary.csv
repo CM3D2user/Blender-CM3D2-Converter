@@ -431,3 +431,5 @@ CM3D2用ベイク	Bakes for CM3D2
 面のテクスチャでレンダリング	Rendering by Face Textures
 今のマテリアルでレンダリング	Rendering by Now Material
 色設定値を自動設定	Auto Set Color Values
+彩度の乗算値	Saturation Multiply
+明度の乗算値	Value Multiply
