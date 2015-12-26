@@ -62,19 +62,26 @@ def menu_func(self, context):
 						sub_box.operator('image.replace_cm3d2_tex', icon='BORDERMOVE')
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
+	
 	elif type == "col":
 		sub_box = box.box()
-		sub_box.prop(tex_slot, 'color', text="")
-		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
-		if base_name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
-			sub_box.operator('texture.auto_set_color_value', icon='RECOVER_AUTO')
+		
+		row = sub_box.split(percentage=0.7, align=True)
+		row.prop(tex_slot, 'color', text="")
+		row.operator('texture.auto_set_color_value', icon='RECOVER_AUTO', text="自動設定")
+		
+		row = sub_box.row(align=True)
+		op = row.operator('wm.context_set_float', text="", icon='TRIA_LEFT')
+		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 0
+		row.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
+		op = row.operator('wm.context_set_float', text="", icon='TRIA_RIGHT')
+		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 1
+		
 		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
+	
 	elif type == "f":
 		sub_box = box.box()
 		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
-		split = sub_box.split(percentage=0.3)
-		split.label(text="正確な値: ")
-		split.label(text=str(tex_slot.diffuse_color_factor))
 		
 		data_path = 'texture_slot.diffuse_color_factor'
 		if base_name == '_Shininess':
@@ -91,6 +98,10 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 1.0
 		
 		elif base_name == '_OutlineWidth':
+			split = sub_box.split(percentage=0.3)
+			split.label(text="正確な値: ")
+			split.label(text=str(tex_slot.diffuse_color_factor))
+			
 			row = sub_box.row(align=True)
 			op = row.operator('wm.context_set_float', text="0.001", icon='MATSPHERE')
 			op.data_path, op.value = data_path, 0.001
