@@ -139,6 +139,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		if not self.is_batch:
 			common.preferences().model_export_path = self.filepath
+			common.preferences().scale = 1.0 / self.scale
 		
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)

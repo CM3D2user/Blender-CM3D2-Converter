@@ -81,6 +81,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		start_time = time.time()
 		
 		common.preferences().model_import_path = self.filepath
+		common.preferences().scale = self.scale
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
 		
