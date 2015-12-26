@@ -433,3 +433,17 @@ CM3D2用ベイク	Bakes for CM3D2
 色設定値を自動設定	Auto Set Color Values
 彩度の乗算値	Saturation Multiply
 明度の乗算値	Value Multiply
+アクティブオブジェクトに素早く影をベイクします	Bake quickly shadow to the active object
+アクティブ、もしくは全てのシェイプキーをぼかします	Blur active or all shape key
+アクティブオブジェクトに素早く側面陰をベイクします	Bake quickly side shade to the active object
+アクティブオブジェクトに素早く金属風にベイクします	Bake quickly metal to the active object
+CM3D2関係の素体を現在のシーンにインポートします	Import figures as CM3D2 the current scene
+アクティブオブジェクトに素早く擬似AOをベイクします	Bake quickly dirty AO to the active object
+色関係の設定値をテクスチャの色情報から自動で設定します	Set Colors automatically from color information of the texture
+アクティブオブジェクトに素早くヘミライトの陰をベイクします	Bake quickly hemi lamp to the active object
+現在のポーズで衣装をモデリングしやすくする素体を作成します	Create figure to facilitate modeling the costume in the current pose
+アクティブオブジェクトに素早くベイク用の空の画像を用意します	Provide empty image for quick bake in the active object
+CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
+CM3D2にデフォルトで入っているトゥーンテクスチャを選択できます	You can select a toon textures that comes by default CM3D2
+アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します	The active mesh it will transfer the shape keys of other selected mesh at high speed
+アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します	The active mesh it will transfer the vertex group of other selected mesh at high speed
