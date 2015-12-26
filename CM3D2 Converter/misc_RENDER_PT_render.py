@@ -40,6 +40,16 @@ class render_cm3d2_icon(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
+		obs = context.selected_objects
+		for ob in obs:
+			if ob.type != 'MESH': continue
+			me = ob.data
+			if not len(me.uv_textures): continue
+			if me.uv_textures.active.data[0].image:
+				self.mode = 'FACE_TEXTURE'
+				break
+		else:
+			self.mode = 'NOW_MATERIAL'
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
