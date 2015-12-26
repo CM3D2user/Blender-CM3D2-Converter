@@ -1,5 +1,6 @@
 # Blender-CM3D2-Converter
 　(Google Translate: [English](https://translate.google.com/translate?sl=ja&tl=en&u=https://github.com/CM3Duser/Blender-CM3D2-Converter) [中文](https://translate.googleusercontent.com/translate_c?sl=ja&tl=zh-CN&u=https://github.com/CM3Duser/Blender-CM3D2-Converter))  
+　  
 　3Dアダルトゲーム「[カスタムメイド3D2](http://kisskiss.tv/cm3d2/)」で使用されるモデルファイル形式(.model)を  
 　フリー3D統合環境である「[Blender](https://www.blender.org/)」で扱うためのアドオンです。  
 　ある程度Blenderの基本操作をできる人を対象にしています、  
