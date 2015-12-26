@@ -313,7 +313,7 @@ def set_texture_color(slot):
 			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
 
 # 必要なエリアタイプを設定を変更してでも取得
-def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES', 'INFO']):
+def get_request_area(context, request_type, except_types=['VIEW_3D', 'PROPERTIES', 'INFO', 'USER_PREFERENCES']):
 	request_areas = [(a, a.width * a.height) for a in context.screen.areas if a.type == request_type]
 	candidate_areas = [(a, a.width * a.height) for a in context.screen.areas if a.type not in except_types]
 	
