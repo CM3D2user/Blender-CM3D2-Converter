@@ -75,6 +75,54 @@ def menu_func(self, context):
 		split = sub_box.split(percentage=0.3)
 		split.label(text="正確な値: ")
 		split.label(text=str(tex_slot.diffuse_color_factor))
+		
+		data_path = 'texture_slot.diffuse_color_factor'
+		if base_name == '_Shininess':
+			row = sub_box.row(align=True)
+			op = row.operator('wm.context_set_float', text="0.0", icon='MATCAP_10')
+			op.data_path, op.value = data_path, 0.0
+			op = row.operator('wm.context_set_float', text="0.25")
+			op.data_path, op.value = data_path, 0.25
+			op = row.operator('wm.context_set_float', text="0.5")
+			op.data_path, op.value = data_path, 0.5
+			op = row.operator('wm.context_set_float', text="0.75")
+			op.data_path, op.value = data_path, 0.75
+			op = row.operator('wm.context_set_float', text="1.0", icon='MATCAP_09')
+			op.data_path, op.value = data_path, 1.0
+		
+		elif base_name == '_OutlineWidth':
+			row = sub_box.row(align=True)
+			op = row.operator('wm.context_set_float', text="0.001", icon='MATSPHERE')
+			op.data_path, op.value = data_path, 0.001
+			op = row.operator('wm.context_set_float', text="0.0015")
+			op.data_path, op.value = data_path, 0.0015
+			op = row.operator('wm.context_set_float', text="0.002", icon='ANTIALIASED')
+			op.data_path, op.value = data_path, 0.002
+		
+		elif base_name == '_RimPower':
+			row = sub_box.row(align=True)
+			op = row.operator('wm.context_set_float', text="0", icon='BRUSH_TEXFILL')
+			op.data_path, op.value = data_path, 0
+			op = row.operator('wm.context_set_float', text="10")
+			op.data_path, op.value = data_path, 10
+			op = row.operator('wm.context_set_float', text="20")
+			op.data_path, op.value = data_path, 20
+			op = row.operator('wm.context_set_float', text="30", icon='MATCAP_07')
+			op.data_path, op.value = data_path, 30
+		
+		elif base_name == '_RimShift':
+			row = sub_box.row(align=True)
+			op = row.operator('wm.context_set_float', text="0.0", icon='FULLSCREEN_EXIT')
+			op.data_path, op.value = data_path, 0.0
+			op = row.operator('wm.context_set_float', text="0.25")
+			op.data_path, op.value = data_path, 0.25
+			op = row.operator('wm.context_set_float', text="0.5")
+			op.data_path, op.value = data_path, 0.5
+			op = row.operator('wm.context_set_float', text="0.75")
+			op.data_path, op.value = data_path, 0.75
+			op = row.operator('wm.context_set_float', text="1.0", icon='FULLSCREEN_ENTER')
+			op.data_path, op.value = data_path, 1.0
+		
 		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	
 	description = ""
