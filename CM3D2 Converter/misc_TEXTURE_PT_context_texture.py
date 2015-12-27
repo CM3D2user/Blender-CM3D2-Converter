@@ -117,7 +117,7 @@ def menu_func(self, context):
 			
 			row = sub_box.row(align=True)
 			op = row.operator('wm.context_set_float', text="1", icon='BRUSH_TEXFILL')
-			op.data_path, op.value = data_path, 0
+			op.data_path, op.value = data_path, 1
 			op = row.operator('wm.context_set_float', text="10")
 			op.data_path, op.value = data_path, 10
 			op = row.operator('wm.context_set_float', text="20")
