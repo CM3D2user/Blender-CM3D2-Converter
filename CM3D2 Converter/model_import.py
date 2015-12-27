@@ -648,7 +648,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		context.window_manager.progress_end()
 		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + "Seconds")
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		self.report(type={'INFO'}, message="modelのインポートが完了しました")
 		return {'FINISHED'}
 
