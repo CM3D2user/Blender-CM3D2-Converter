@@ -26,7 +26,10 @@ class import_cm3d2_tex(bpy.types.Operator):
 		return {'RUNNING_MODAL'}
 	
 	def draw(self, context):
-		self.layout.prop(self, 'mode', icon='FILESEL')
+		box = self.layout.box()
+		col = box.column(align=True)
+		col.label(text="展開方法", icon='FILESEL')
+		col.prop(self, 'mode', icon='FILESEL', expand=True)
 	
 	def execute(self, context):
 		common.preferences().tex_import_path = self.filepath

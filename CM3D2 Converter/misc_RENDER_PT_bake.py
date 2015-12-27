@@ -110,7 +110,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="AO設定", icon='BRUSH_TEXFILL')
-		self.layout.prop(self, 'ao_gather_method', icon='NODETREE')
+		self.layout.prop(self, 'ao_gather_method', icon='NODETREE', expand=True)
 		self.layout.prop(self, 'ao_samples', icon='ANIM_DATA')
 		self.layout.prop(self, 'ao_hide_other', icon='VISIBLE_IPO_OFF')
 	
