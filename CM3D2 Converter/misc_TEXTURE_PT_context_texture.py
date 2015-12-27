@@ -448,8 +448,6 @@ class auto_set_color_value(bpy.types.Operator):
 		row.prop(self, 'value_multi')
 	
 	def execute(self, context):
-		import numpy
-		
 		ob = context.active_object
 		me = ob.data
 		mate = ob.active_material
@@ -475,7 +473,6 @@ class auto_set_color_value(bpy.types.Operator):
 		
 		sample_count = 10
 		img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
-		pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
 		
 		bm = bmesh.new()
 		bm.from_mesh(me)
@@ -491,7 +488,9 @@ class auto_set_color_value(bpy.types.Operator):
 			x, y = uvs[uv_index]
 			x, y = int(x * img_width), int(y * img_height)
 			
-			color = mathutils.Color(pixels[y, x, :3])
+			pixel_index = ((y * img_width) + x) * img_channel
+			color = mathutils.Color(img.pixels[pixel_index:pixel_index+3])
+			
 			average_color += color
 		average_color /= sample_count
 		average_color.s *= self.saturation_multi

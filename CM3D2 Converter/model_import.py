@@ -460,6 +460,8 @@ class import_cm3d2_model(bpy.types.Operator):
 			progress_plus_value = 1.0 / progress_count_total
 			progress_count = 6.0
 			
+			tex_storage_files = common.get_tex_storage_files()
+			
 			face_seek = 0
 			for index, data in enumerate(material_data):
 				override = context.copy()
@@ -491,7 +493,7 @@ class import_cm3d2_model(bpy.types.Operator):
 							
 							# tex探し
 							if self.is_replace_cm3d2_tex:
-								if common.replace_cm3d2_tex(img) and tex_data['name']=='_MainTex':
+								if common.replace_cm3d2_tex(img, tex_storage_files) and tex_data['name']=='_MainTex':
 									for face in me.polygons:
 										if face.material_index == index:
 											me.uv_textures.active.data[face.index].image = img

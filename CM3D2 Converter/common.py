@@ -1,7 +1,8 @@
-import bpy, os, re, math, bmesh, numpy, struct, shutil, mathutils
+import bpy, os, re, math, bmesh, struct, shutil, mathutils
 
 addon_name = "CM3D2 Converter"
 preview_collections = {}
+tex_storage_files = []
 
 # このアドオンの設定値群を呼び出す
 def preferences():
@@ -134,7 +135,6 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 	if not len(img.pixels): return mathutils.Color([0, 0, 0])
 	
 	img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
-	pixels = numpy.array(img.pixels).reshape(img_height, img_width, img_channel)
 	
 	bm = bmesh.new()
 	bm.from_mesh(me)
@@ -155,7 +155,9 @@ def get_image_average_color_uv(img, me=None, mate_index=-1, sample_count=10):
 		x, y = uvs[uv_index]
 		x, y = int(x * img_width), int(y * img_height)
 		
-		color = mathutils.Color(pixels[y, x, :3])
+		pixel_index = ((y * img_width) + x) * img_channel
+		color = mathutils.Color(img.pixels[pixel_index:pixel_index+3])
+		
 		average_color += color
 		if max_s < color.s:
 			max_s_color, max_s = color, color.s
@@ -222,9 +224,19 @@ def get_default_tex_paths():
 		tex_dirs = [preferences().__getattribute__('default_tex_path' + str(i)) for i in range(4) if preferences().__getattribute__('default_tex_path' + str(i))]
 	return tex_dirs
 
-# テクスチャを検索して空の画像へ置換
-def replace_cm3d2_tex(img):
+# テクスチャ置き場の全ファイルを返す
+def get_tex_storage_files():
+	files = []
 	tex_dirs = get_default_tex_paths()
+	for tex_dir in tex_dirs:
+		files.extend(fild_all_files(tex_dir))
+	return files
+
+# テクスチャを検索して空の画像へ置換
+def replace_cm3d2_tex(img, files=None):
+	global tex_storage_files
+	if not files:
+		files = tex_storage_files[:]
 	
 	if 'cm3d2_path' not in img.keys():
 		img['cm3d2_path'] = img.filepath
@@ -235,8 +247,14 @@ def replace_cm3d2_tex(img):
 		source_png_name = remove_serial_number(img.name)
 	source_tex_name = os.path.splitext(source_png_name)[0] + ".tex"
 	
+	tex_dirs = [None] if files else get_default_tex_paths()
+	
 	for tex_dir in tex_dirs:
-		for path in fild_all_files(tex_dir):
+		
+		if not files:
+			files = fild_all_files(tex_dir)
+		
+		for path in files:
 			file_name = os.path.basename(path).lower()
 			
 			if file_name == source_png_name:
@@ -266,6 +284,8 @@ def replace_cm3d2_tex(img):
 				else:
 					file.close()
 					return False
+		
+		if files: return False
 	return False
 
 # col f タイプの設定値を値に合わせて着色
