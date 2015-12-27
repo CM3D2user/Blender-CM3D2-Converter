@@ -24,17 +24,19 @@ def menu_func(self, context):
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 	split = box.split(percentage=0.3)
 	split.label(text="設定値タイプ:")
-	row = split.row(align=True)
+	row = split.row()
 	
 	if type == 'tex': row.label(text='テクスチャ')
 	elif type == 'col': row.label(text='色')
 	elif type == 'f': row.label(text='値')
 	
-	row.prop(tex_slot, 'use', text="")
-	sub_row = row.row(align=True)
+	check_row = row.row(align=True)
+	check_row.prop(tex_slot, 'use', text="")
+	sub_row = check_row.row()
 	sub_row.prop(tex_slot, 'use_rgb_to_intensity', text="")
 	if tex_slot.use:
 		sub_row.enabled = False
+	row.operator('texture.sync_tex_color_ramps', icon='COLOR', text="色同期")
 	box.prop(tex, 'name', icon='SORTALPHA', text="設定値名")
 	
 	if type == "tex":
@@ -76,8 +78,6 @@ def menu_func(self, context):
 		row.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 		op = row.operator('wm.context_set_float', text="", icon='TRIA_RIGHT')
 		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 1
-		
-		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	
 	elif type == "f":
 		sub_box = box.box()
@@ -133,8 +133,6 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.75
 			op = row.operator('wm.context_set_float', text="1.0", icon='FULLSCREEN_ENTER')
 			op.data_path, op.value = data_path, 1.0
-		
-		sub_box.operator('texture.sync_tex_color_ramps', icon='COLOR')
 	
 	description = ""
 	if base_name == '_MainTex':
