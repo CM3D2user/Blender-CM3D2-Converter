@@ -157,7 +157,7 @@ def menu_func(self, context):
 		description = ["リムライトの色を指定。", "リムライトとは縁にできる光の反射のことです。"]
 	elif base_name == '_OutlineColor':
 		description = "輪郭線の色を指定。\n面の色が単色の場合は、\nそれを少し暗くしたものを指定してもいいかも。"
-		description = ["輪郭線の色を指定。", "黒にするか、テクスチャの明度を", "落としてものを指定するとより良いでしょう。"]
+		description = ["輪郭線の色を指定。", "黒にするか、テクスチャの明度を", "落としたものを指定するとより良いでしょう。"]
 	elif base_name == '_Shininess':
 		description = ["スペキュラーの強さを指定。0.0～1.0で指定。", "スペキュラーとは面の角度と光源の角度によって", "できるハイライトのことです。", "金属、皮、ガラスなどに使うと良いでしょう。"]
 	elif base_name == '_OutlineWidth':

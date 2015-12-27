@@ -456,3 +456,32 @@ CM3D2にデフォルトで入っているトゥーンテクスチャを選択で
 色同期	Color Sync
 値リスト	Value List
 全てが対象	Target is All
+面の色を指定。	specifies color of a surface.
+輪郭線の色を指定。	Specifies color of an outline.
+輪郭線の太さを指定。	Specifies thickness of outline.
+リムライトの色を指定。	Specifies color of rim light.
+リムライトの幅を指定。	Specifies width of rim light.
+黒色で有効、白色で無効。	Enabled in black, disabled in white.
+リムライトの強さを指定。	Specifies strength of rim light.
+影の色を指定。白色で無効。	Specifies color of shadow. Disabled in white.
+できるハイライトのことです。	highlight that will be generated.
+面の色を決定するテクスチャを指定。	Specifies texture to determine color of surface.
+テクスチャパスは適当でも動きます。	Texture path will move even appropriate.
+この値は10以上なことも多いです。	This value is often be a 10 or more.
+0.002は太め、0.001は細め。	0.002 thick, 0.001 narrowed.
+0に近い値だと正常に表示されません。	Not displayed correctly that value close to 0.
+白色で無効。基本的に白色で良いでしょう。	Disabled in white. It would be a basically white.
+別の物体に遮られてできた「影」の色です。	Was blocked by another object is color of "shadow".
+陰部分の面の色を決定するテクスチャを指定。	Specifies texture to determine color of surface of shade.
+金属、皮、ガラスなどに使うと良いでしょう。	Metal, leather, glass, you might want to use.
+しかし、テクスチャ名はきちんと決めましょう。	However, the texture name Let's decide properly.
+リムライトとは縁にできる光の反射のことです。	"rim light" it is reflection of light that can be on edge.
+スペキュラーとは面の角度と光源の角度によって	Specular by angle of light source
+0.0～1.0で指定。0.5でもかなり強い。	Specified in 0.0 and 1.0. 0.5 Even fairly strong.
+普段テスクチャと呼んでいるものは基本コレです。	What we call everyday and "texture" is the basic this.
+スペキュラーの強さを指定。0.0～1.0で指定。	Specifies strength of specular. Specified in 0.0 and 1.0.
+暗い部分に乗算するグラデーション画像を指定します。	Specifies a gradient image to be multiplied in the dark part.
+「_ShadowRateToon」で範囲を指定します。	Specify range by "_ShadowRateToon".
+「_ShadowTex」を有効にする部分を指定します。	Specify parts to enable "_ShadowTex".
+黒にするか、テクスチャの明度を	Either black, it would be better
+落としたものを指定するとより良いでしょう。	if you specify what dropped the lightness of texture.
