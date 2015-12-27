@@ -98,7 +98,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 			for ob in obs:
 				pre_mate_settings.append([])
 				for slot in ob.material_slots:
-					if not slot: continue
+					if not slot.material: continue
 					mate = slot.material
 					pre_mate_settings[-1].append([mate, mate.use_shadeless])
 					mate.use_shadeless = True
