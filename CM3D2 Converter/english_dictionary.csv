@@ -448,3 +448,8 @@ CM3D2にデフォルトで入っているトゥーンテクスチャを選択で
 アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します	The active mesh it will transfer the shape keys of other selected mesh at high speed
 アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します	The active mesh it will transfer the vertex group of other selected mesh at high speed
 自動設定	Set Auto
+ポーズ	Pose
+ボーン情報	Bone Info
+オリジナル	Original
+ポージング	Posing
+ボーン名変換	Convert Bone Names
