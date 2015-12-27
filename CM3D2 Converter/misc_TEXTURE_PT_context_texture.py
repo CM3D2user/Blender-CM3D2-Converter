@@ -50,9 +50,6 @@ def menu_func(self, context):
 						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
-					if base_name == "_MainTex":
-						sub_box.operator('texture.auto_set_color_value', icon='RECOVER_AUTO')
-					
 					if base_name == "_ToonRamp":
 						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp', icon='COLOR')
 					elif base_name == "_ShadowRateToon":
@@ -395,6 +392,7 @@ class auto_set_color_value(bpy.types.Operator):
 	bl_description = "色関係の設定値をテクスチャの色情報から自動で設定します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
+	is_all = bpy.props.BoolProperty(name="全てが対象", default=True)
 	saturation_multi = bpy.props.FloatProperty(name="彩度の乗算値", default=2.2, min=0, max=5, soft_min=0, soft_max=5, step=10, precision=2)
 	value_multi = bpy.props.FloatProperty(name="明度の乗算値", default=0.3, min=0, max=5, soft_min=0, soft_max=5, step=10, precision=2)
 	
@@ -436,6 +434,7 @@ class auto_set_color_value(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
+		self.layout.prop(self, 'is_all', icon='ACTION')
 		row = self.layout.row()
 		row.label(text="", icon='SMOOTH')
 		row.prop(self, 'saturation_multi')
@@ -454,21 +453,20 @@ class auto_set_color_value(bpy.types.Operator):
 		tex_name = common.remove_serial_number(active_tex.name)
 		
 		target_slots = []
-		if tex_name == '_MainTex':
+		if self.is_all:
 			for slot in mate.texture_slots:
 				if not slot: continue
 				name = common.remove_serial_number(slot.texture.name)
 				if name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
 					target_slots.append(slot)
-			img = active_tex.image
-		elif tex_name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+		else:
 			target_slots.append(active_slot)
-			for slot in mate.texture_slots:
-				if not slot: continue
-				name = common.remove_serial_number(slot.texture.name)
-				if name == '_MainTex':
-					img = slot.texture.image
-					break
+		for slot in mate.texture_slots:
+			if not slot: continue
+			name = common.remove_serial_number(slot.texture.name)
+			if name == '_MainTex':
+				img = slot.texture.image
+				break
 		
 		sample_count = 10
 		img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
