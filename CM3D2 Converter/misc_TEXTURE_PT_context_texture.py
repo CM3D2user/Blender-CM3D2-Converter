@@ -324,6 +324,7 @@ class replace_cm3d2_tex(bpy.types.Operator):
 		if not common.replace_cm3d2_tex(img):
 			self.report(type={'ERROR'}, message="見つかりませんでした")
 			return {'CANCELLED'}
+		tex.image_user.use_auto_refresh = True
 		return {'FINISHED'}
 
 class sync_tex_color_ramps(bpy.types.Operator):
