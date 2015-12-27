@@ -78,10 +78,13 @@ def menu_func(self, context):
 	
 	elif type == "f":
 		sub_box = box.box()
-		sub_box.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+		row = sub_box.row(align=True)
+		row.prop(tex_slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
 		
 		data_path = 'texture_slot.diffuse_color_factor'
 		if base_name == '_Shininess':
+			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
+			
 			row = sub_box.row(align=True)
 			op = row.operator('wm.context_set_float', text="0.0", icon='MATCAP_10')
 			op.data_path, op.value = data_path, 0.0
@@ -93,13 +96,9 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.75
 			op = row.operator('wm.context_set_float', text="1.0", icon='MATCAP_09')
 			op.data_path, op.value = data_path, 1.0
-			
-			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
 		
 		elif base_name == '_OutlineWidth':
-			split = sub_box.split(percentage=0.3)
-			split.label(text="正確な値: ")
-			split.label(text=str(tex_slot.diffuse_color_factor))
+			row.menu('TEXTURE_PT_context_texture_values_OutlineWidth', icon='DOWNARROW_HLT', text="")
 			
 			row = sub_box.row(align=True)
 			op = row.operator('wm.context_set_float', text="0.001", icon='MATSPHERE')
@@ -109,9 +108,13 @@ def menu_func(self, context):
 			op = row.operator('wm.context_set_float', text="0.002", icon='ANTIALIASED')
 			op.data_path, op.value = data_path, 0.002
 			
-			row.menu('TEXTURE_PT_context_texture_values_OutlineWidth', icon='DOWNARROW_HLT', text="")
+			split = sub_box.split(percentage=0.3)
+			split.label(text="正確な値: ")
+			split.label(text=str(tex_slot.diffuse_color_factor))
 		
 		elif base_name == '_RimPower':
+			row.menu('TEXTURE_PT_context_texture_values_RimPower', icon='DOWNARROW_HLT', text="")
+			
 			row = sub_box.row(align=True)
 			op = row.operator('wm.context_set_float', text="0", icon='BRUSH_TEXFILL')
 			op.data_path, op.value = data_path, 0
@@ -121,10 +124,10 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 20
 			op = row.operator('wm.context_set_float', text="30", icon='MATCAP_07')
 			op.data_path, op.value = data_path, 30
-			
-			row.menu('TEXTURE_PT_context_texture_values_RimPower', icon='DOWNARROW_HLT', text="")
 		
 		elif base_name == '_RimShift':
+			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
+			
 			row = sub_box.row(align=True)
 			op = row.operator('wm.context_set_float', text="0.0", icon='FULLSCREEN_EXIT')
 			op.data_path, op.value = data_path, 0.0
@@ -136,8 +139,6 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.75
 			op = row.operator('wm.context_set_float', text="1.0", icon='FULLSCREEN_ENTER')
 			op.data_path, op.value = data_path, 1.0
-			
-			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
 	
 	description = ""
 	if base_name == '_MainTex':
