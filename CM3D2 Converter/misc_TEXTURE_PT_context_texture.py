@@ -276,6 +276,8 @@ class TEXTURE_PT_context_texture_values_RimPower(bpy.types.Menu):
 		for i in range(16):
 			value = round(i * 2, 0)
 			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
+			if value == 0:
+				icon = 'ERROR'
 			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
 			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
 
