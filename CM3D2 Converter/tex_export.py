@@ -60,7 +60,18 @@ class export_cm3d2_tex(bpy.types.Operator):
 		img = context.edit_image
 		pre_filepath = img.filepath
 		pre_source = img.source
-		bpy.ops.image.save_as(save_as_render=False, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
+		override = context.copy()
+		override['edit_image'] = img
+		try:
+			bpy.ops.image.save_as(override, save_as_render=False, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
+			is_remove = True
+		except:
+			if os.path.exists(img.filepath):
+				temp_path = img.filepath
+				is_remove = False
+			else:
+				self.report(type={'ERROR'}, message="PNGファイルの取得に失敗しました")
+				return {'CANCELLED'}
 		if pre_source != 'VIEWER':
 			img.filepath = pre_filepath
 			img.source = pre_source
@@ -70,7 +81,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 		temp_data = temp_file.read()
 		temp_file.close()
 		# 一時ファイルを削除
-		if pre_source != 'VIEWER':
+		if is_remove and pre_source != 'VIEWER':
 			os.remove(temp_path)
 		
 		# 本命ファイルに書き込み

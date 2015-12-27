@@ -56,7 +56,11 @@ def menu_func(self, context):
 						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon', icon='NLA')
 					
 					if len(img.pixels):
-						sub_box.operator('image.show_image', text="この画像を表示", icon='ZOOM_IN').image_name = img.name
+						row = sub_box.row()
+						row.operator('image.show_image', text="画像を表示", icon='ZOOM_IN').image_name = img.name
+						
+						row.operator('image.quick_export_cm3d2_tex', text="texで保存", icon='FILESEL')
+						
 					else:
 						sub_box.operator('image.replace_cm3d2_tex', icon='BORDERMOVE')
 				#box.prop(tex_slot, 'color', text="")
@@ -504,4 +508,31 @@ class auto_set_color_value(bpy.types.Operator):
 			slot.color = average_color[:3]
 			common.set_texture_color(slot)
 		
+		return {'FINISHED'}
+
+class quick_export_cm3d2_tex(bpy.types.Operator):
+	bl_idname = 'image.quick_export_cm3d2_tex'
+	bl_label = "texで保存"
+	bl_description = "テクスチャの画像を同フォルダにtexとして保存します"
+	bl_options = {'REGISTER'}
+	
+	def execute(self, context):
+		import os.path
+		
+		try:
+			slot = context.texture_slot
+			tex = context.texture
+			img = tex.image
+			img.pixels[0]
+		except:
+			self.report(type={'ERROR'}, message="失敗しました")
+			return {'CANCELLED'}
+		
+		override = context.copy()
+		override['edit_image'] = img
+		filepath = os.path.splitext(img.filepath)[0] + ".tex"
+		path = "assets/texture/texture/" + os.path.basename(img.filepath)
+		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path)
+		
+		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました")
 		return {'FINISHED'}

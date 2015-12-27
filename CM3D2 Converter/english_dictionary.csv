@@ -485,3 +485,7 @@ CM3D2にデフォルトで入っているトゥーンテクスチャを選択で
 「_ShadowTex」を有効にする部分を指定します。	Specify parts to enable "_ShadowTex".
 黒にするか、テクスチャの明度を	Either black, it would be better
 落としたものを指定するとより良いでしょう。	if you specify what dropped the lightness of texture.
+texで保存	Save as tex
+失敗しました	failed
+PNGファイルの取得に失敗しました	Failed to get PNG file
+同フォルダにtexとして保存しました	Saved as tex in same folder
