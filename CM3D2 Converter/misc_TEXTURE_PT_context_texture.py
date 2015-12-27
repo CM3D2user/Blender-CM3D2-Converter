@@ -532,6 +532,13 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		override['edit_image'] = img
 		filepath = os.path.splitext(img.filepath)[0] + ".tex"
 		path = "assets/texture/texture/" + os.path.basename(img.filepath)
+		if os.path.exists(filepath):
+			file = open(filepath, 'rb')
+			header_ext = common.read_str(file)
+			if header_ext == 'CM3D2_TEX':
+				file.seek(4, 1)
+				path = common.read_str(file)
+			file.close()
 		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path)
 		
 		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました")
