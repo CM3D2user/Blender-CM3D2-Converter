@@ -234,8 +234,8 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		# アーマチュア作成
 		if self.is_armature:
-			arm = bpy.data.armatures.new(model_name1 + "." + model_name2 + ".armature")
-			arm_ob = bpy.data.objects.new(model_name1 + "." + model_name2 + ".armature", arm)
+			arm = bpy.data.armatures.new(model_name1 + ".armature")
+			arm_ob = bpy.data.objects.new(model_name1 + ".armature", arm)
 			bpy.context.scene.objects.link(arm_ob)
 			arm_ob.select = True
 			bpy.context.scene.objects.active = arm_ob
@@ -361,7 +361,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		if self.is_mesh:
 			# メッシュ作成
-			me = context.blend_data.meshes.new(model_name1 + "." + model_name2)
+			me = context.blend_data.meshes.new(model_name1)
 			verts, faces = [], []
 			for data in vertex_data:
 				co = list(data['co'][:])
@@ -376,7 +376,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			context.window_manager.progress_update(2.5)
 			me.from_pydata(verts, [], faces)
 			# オブジェクト化
-			ob = context.blend_data.objects.new(model_name1 + "." + model_name2, me)
+			ob = context.blend_data.objects.new(model_name1, me)
 			context.scene.objects.link(ob)
 			ob.select = True
 			context.scene.objects.active = ob
@@ -443,7 +443,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				if data['type'] == 'morph':
 					if morph_count == 0:
 						bpy.ops.object.shape_key_add(from_mix=False)
-						me.shape_keys.name = model_name1 + "." + model_name2
+						me.shape_keys.name = model_name1
 					shape_key = ob.shape_key_add(name=data['name'], from_mix=False)
 					for vert in data['data']:
 						co = vert['co']

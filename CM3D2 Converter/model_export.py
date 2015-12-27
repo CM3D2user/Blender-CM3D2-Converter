@@ -80,7 +80,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		# model名とか
 		ob_names = common.remove_serial_number(ob.name, self.is_arrange_name).split('.')
 		self.model_name = ob_names[0]
-		self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
+		self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'Auto'
 		
 		# ボーン情報元のデフォルトオプションを取得
 		if self.bone_info_mode == 'OBJECT':
@@ -123,7 +123,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		box = self.layout.box()
 		box.prop(self, 'version', icon='LINENUMBERS_ON')
 		box.prop(self, 'model_name', icon='SORTALPHA')
-		box.prop(self, 'base_bone_name', icon='CONSTRAINT_BONE')
+		
+		row = box.row()
+		row.prop(self, 'base_bone_name', icon='CONSTRAINT_BONE')
+		if self.base_bone_name == 'Auto':
+			row.enabled = False
+		
 		box = self.layout.box()
 		col = box.column(align=True)
 		col.label(text="ボーン情報元", icon='BONE_DATA')
@@ -193,7 +198,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if self.model_name == '*':
 			self.model_name = ob_names[0]
 		if self.base_bone_name == '*':
-			self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'body'
+			self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'Auto'
 		
 		# BoneData情報読み込み
 		base_bone_candidate = None
@@ -268,7 +273,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			if bone['name'] == self.base_bone_name:
 				break
 		else:
-			if base_bone_candidate:
+			if base_bone_candidate and self.base_bone_name == 'Auto':
 				self.base_bone_name = base_bone_candidate
 			else:
 				return self.report_cancel("オブジェクト名の後半は存在するボーン名にして下さい")
