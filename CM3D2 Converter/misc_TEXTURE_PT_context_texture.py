@@ -320,12 +320,29 @@ class set_default_toon_textures(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
-		import os.path
+		import os.path, struct
 		img = context.texture.image
 		img.name = self.name
-		img.filepath = os.path.join( os.path.dirname(img.filepath), self.name + ".png" )
-		img['cm3d2_path'] = img.filepath
+		
+		png_path = os.path.join( os.path.dirname(img.filepath), self.name + ".png" )
+		tex_path = os.path.splitext(png_path)[0] + ".tex"
+		if not os.path.exists(png_path):
+			if os.path.exists(tex_path):
+				print(tex_path)
+				tex_file = open(tex_path, 'rb')
+				header_ext = common.read_str(tex_file)
+				if header_ext == 'CM3D2_TEX':
+					tex_file.seek(4, 1)
+					common.read_str(tex_file)
+					png_size = struct.unpack('<i', tex_file.read(4))[0]
+					png_file = open(png_path, 'wb')
+					png_file.write(tex_file.read(png_size))
+					png_file.close()
+				tex_file.close()
+		img.filepath = png_path
 		img.reload()
+		
+		img['cm3d2_path'] = img.filepath
 		return {'FINISHED'}
 
 class auto_set_color_value(bpy.types.Operator):
