@@ -103,6 +103,8 @@ class apply_prime_field(bpy.types.Operator):
 		for bone in pre_selected_pose_bones:
 			arm.bones[bone.name].select = True
 		
+		arm['is T Stance'] = 1
+		
 		for o in pre_selected_objects:
 			o.select = True
 		context.scene.objects.active = ob

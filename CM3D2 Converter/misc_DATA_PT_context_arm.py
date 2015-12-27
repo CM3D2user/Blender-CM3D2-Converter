@@ -9,20 +9,7 @@ def menu_func(self, context):
 	if ob.type != 'ARMATURE': return
 	
 	arm = ob.data
-	flag = False
-	for bone in arm.bones:
-		if not flag and re.search(r'[_ ]([rRlL])[_ ]', bone.name):
-			flag = True
-		if not flag and bone.name.count('*') == 1:
-			if re.search(r'\.([rRlL])$', bone.name):
-				flag = True
-		if flag:
-			col = self.layout.column(align=True)
-			col.label(text="CM3D2用 ボーン名変換", icon_value=common.preview_collections['main']['KISS'].icon_id)
-			row = col.row(align=True)
-			row.operator('armature.decode_cm3d2_bone_names', text="CM3D2 → Blender", icon='BLENDER')
-			row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
-			break
+	is_boxed = False
 	
 	bone_data_count = 0
 	if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
@@ -33,11 +20,15 @@ def menu_func(self, context):
 	clipboard = context.window_manager.clipboard
 	if 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard:
 		enabled_clipboard = True
-	
 	if bone_data_count or enabled_clipboard:
-		col = self.layout.column(align=True)
+		if not is_boxed:
+			box = self.layout.box()
+			box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			is_boxed = True
+		
+		col = box.column(align=True)
 		row = col.row(align=True)
-		row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
+		row.label(text="ボーン情報", icon='CONSTRAINT_BONE')
 		sub_row = row.row()
 		sub_row.alignment = 'RIGHT'
 		if bone_data_count:
@@ -48,6 +39,40 @@ def menu_func(self, context):
 		row.operator('object.copy_armature_bone_data_property', icon='COPYDOWN', text="コピー")
 		row.operator('object.paste_armature_bone_data_property', icon='PASTEDOWN', text="貼り付け")
 		row.operator('object.remove_armature_bone_data_property', icon='X', text="")
+	
+	flag = False
+	for bone in arm.bones:
+		if not flag and re.search(r'[_ ]([rRlL])[_ ]', bone.name):
+			flag = True
+		if not flag and bone.name.count('*') == 1:
+			if re.search(r'\.([rRlL])$', bone.name):
+				flag = True
+		if flag:
+			if not is_boxed:
+				box = self.layout.box()
+				box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
+				is_boxed = True
+			
+			col = box.column(align=True)
+			col.label(text="ボーン名変換", icon='SORTALPHA')
+			row = col.row(align=True)
+			row.operator('armature.decode_cm3d2_bone_names', text="CM3D2 → Blender", icon='BLENDER')
+			row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			break
+	
+	if 'is T Stance' in arm.keys():
+		if not is_boxed:
+			box = self.layout.box()
+			box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			is_boxed = True
+		
+		col = box.column(align=True)
+		col.label(text="ポーズ", icon='POSE_HLT')
+		row = col.row(align=True)
+		op = row.operator('wm.context_set_int', icon='ARMATURE_DATA', text="オリジナル")
+		op.data_path, op.value = 'scene.frame_current', 0
+		op = row.operator('wm.context_set_int', icon='POSE_DATA', text="ポージング")
+		op.data_path, op.value = 'scene.frame_current', 1
 
 class decode_cm3d2_bone_names(bpy.types.Operator):
 	bl_idname = 'armature.decode_cm3d2_bone_names'
