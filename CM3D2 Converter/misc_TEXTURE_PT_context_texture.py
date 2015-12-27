@@ -309,7 +309,7 @@ class set_default_toon_textures(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	name = bpy.props.StringProperty(name="テクスチャ名")
-	dir = bpy.props.StringProperty(name="パス", default="Assets\\texture\\texture\\toon\\")
+	#dir = bpy.props.StringProperty(name="パス", default="Assets\\texture\\texture\\toon\\")
 	
 	@classmethod
 	def poll(cls, context):
@@ -320,10 +320,12 @@ class set_default_toon_textures(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
+		import os.path
 		img = context.texture.image
 		img.name = self.name
-		img.filepath = self.dir + self.name + ".png"
+		img.filepath = os.path.join( os.path.dirname(img.filepath), self.name + ".png" )
 		img['cm3d2_path'] = img.filepath
+		img.reload()
 		return {'FINISHED'}
 
 class auto_set_color_value(bpy.types.Operator):
