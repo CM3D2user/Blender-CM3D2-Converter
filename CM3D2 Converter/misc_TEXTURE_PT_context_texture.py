@@ -96,6 +96,8 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.75
 			op = row.operator('wm.context_set_float', text="1.0", icon='MATCAP_09')
 			op.data_path, op.value = data_path, 1.0
+			
+			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
 		
 		elif base_name == '_OutlineWidth':
 			split = sub_box.split(percentage=0.3)
@@ -109,6 +111,8 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.0015
 			op = row.operator('wm.context_set_float', text="0.002", icon='ANTIALIASED')
 			op.data_path, op.value = data_path, 0.002
+			
+			row.menu('TEXTURE_PT_context_texture_values_OutlineWidth', icon='DOWNARROW_HLT', text="")
 		
 		elif base_name == '_RimPower':
 			row = sub_box.row(align=True)
@@ -120,6 +124,8 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 20
 			op = row.operator('wm.context_set_float', text="30", icon='MATCAP_07')
 			op.data_path, op.value = data_path, 30
+			
+			row.menu('TEXTURE_PT_context_texture_values_RimPower', icon='DOWNARROW_HLT', text="")
 		
 		elif base_name == '_RimShift':
 			row = sub_box.row(align=True)
@@ -133,6 +139,8 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.75
 			op = row.operator('wm.context_set_float', text="1.0", icon='FULLSCREEN_ENTER')
 			op.data_path, op.value = data_path, 1.0
+			
+			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
 	
 	description = ""
 	if base_name == '_MainTex':
@@ -236,6 +244,42 @@ class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
 		l.operator(cmd, text="ToonYellowA1", icon='LAYER_USED').name = "ToonYellowA1"
 		l.operator(cmd, text="ToonYellowA2", icon='LAYER_USED').name = "ToonYellowA2"
 		l.operator(cmd, text="ToonYellowA3", icon='LAYER_USED').name = "ToonYellowA3"
+
+# 0.0～1.0までの値設定メニュー
+class TEXTURE_PT_context_texture_values_normal(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_values_normal'
+	bl_label = "値リスト"
+	
+	def draw(self, context):
+		for i in range(11):
+			value = round(i * 0.1, 1)
+			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
+			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
+			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
+
+# _OutlineWidth用の値設定メニュー
+class TEXTURE_PT_context_texture_values_OutlineWidth(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_values_OutlineWidth'
+	bl_label = "値リスト"
+	
+	def draw(self, context):
+		for i in range(16):
+			value = round(i * 0.0002, 4)
+			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
+			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
+			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
+
+# _RimPower用の値設定メニュー
+class TEXTURE_PT_context_texture_values_RimPower(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_values_RimPower'
+	bl_label = "値リスト"
+	
+	def draw(self, context):
+		for i in range(16):
+			value = round(i * 2, 0)
+			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
+			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
+			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
 
 class show_image(bpy.types.Operator):
 	bl_idname = 'image.show_image'
