@@ -116,7 +116,7 @@ def menu_func(self, context):
 			row.menu('TEXTURE_PT_context_texture_values_RimPower', icon='DOWNARROW_HLT', text="")
 			
 			row = sub_box.row(align=True)
-			op = row.operator('wm.context_set_float', text="0", icon='BRUSH_TEXFILL')
+			op = row.operator('wm.context_set_float', text="1", icon='BRUSH_TEXFILL')
 			op.data_path, op.value = data_path, 0
 			op = row.operator('wm.context_set_float', text="10")
 			op.data_path, op.value = data_path, 10
