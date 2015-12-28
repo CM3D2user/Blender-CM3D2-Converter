@@ -24,8 +24,16 @@ class add_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	image_color = bpy.props.FloatVectorProperty(name="色", default=(1, 1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
 	
 	@classmethod
@@ -57,7 +65,8 @@ class add_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
@@ -75,8 +84,16 @@ class quick_ao_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	items = [
 		('RAYTRACE', "レイトレース", "", 'BRUSH_TEXFILL', 1),
@@ -118,7 +135,8 @@ class quick_ao_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
@@ -145,8 +163,16 @@ class quick_dirty_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	blur_strength = bpy.props.FloatProperty(name="ブラー強度", default=1, min=0.01, max=1, soft_min=0.01, soft_max=1, step=10, precision=2)
 	dirt_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=3, soft_min=1, soft_max=3)
@@ -186,7 +212,8 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -216,8 +243,16 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	lamp_energy = bpy.props.FloatProperty(name="光の強さ", default=1, min=0, max=2, soft_min=0, soft_max=2, step=50, precision=2)
 	
@@ -263,7 +298,8 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -305,8 +341,16 @@ class quick_shadow_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	lamp_max_angle = bpy.props.FloatProperty(name="光源の最大角度", default=0.5236, min=0, max=1.5708, soft_min=0, soft_max=1.5708, step=100, precision=0, subtype='ANGLE', unit='ROTATION')
 	lamp_count = bpy.props.IntProperty(name="光源の数", default=8, min=1, max=20, soft_min=1, soft_max=20)
@@ -348,7 +392,8 @@ class quick_shadow_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -404,8 +449,16 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	@classmethod
 	def poll(cls, context):
@@ -437,7 +490,8 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -483,8 +537,16 @@ class quick_metal_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	mate_color = bpy.props.FloatVectorProperty(name="色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR')
 	environment_strength = bpy.props.FloatProperty(name="映り込み強さ", default=1, min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2)
@@ -522,7 +584,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -573,8 +635,16 @@ class quick_hair_bake_image(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
-	image_width = bpy.props.IntProperty(name="幅", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
-	image_height = bpy.props.IntProperty(name="高さ", default=1024, min=1, max=8192, soft_min=1, soft_max=8192, subtype='PIXEL')
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	mate_diffuse_color = bpy.props.FloatVectorProperty(name="髪色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
 	mate_angel_ring_factor = bpy.props.FloatProperty(name="天使の輪の強さ", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=50, precision=2)
@@ -628,7 +698,8 @@ class quick_hair_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
-		img = context.blend_data.images.new(self.image_name, self.image_width, self.image_height, alpha=True)
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
