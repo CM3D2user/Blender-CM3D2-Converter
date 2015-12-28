@@ -175,7 +175,10 @@ class quick_dirty_bake_image(bpy.types.Operator):
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	blur_strength = bpy.props.FloatProperty(name="ブラー強度", default=1, min=0.01, max=1, soft_min=0.01, soft_max=1, step=10, precision=2)
-	dirt_count = bpy.props.IntProperty(name="処理回数", default=1, min=1, max=3, soft_min=1, soft_max=3)
+	blur_iterations = bpy.props.IntProperty(name="ブラー反復度", default=1, min=0, max=40, soft_min=0, soft_max=40)
+	clean_angle = bpy.props.FloatProperty(name="ハイライト角度", default=3.14159, min=0, max=3.14159, soft_min=0, soft_max=3.14159, step=3, precision=0, subtype='ANGLE')
+	dirt_angle = bpy.props.FloatProperty(name="擬似AO角度", default=0, min=0, max=3.14159, soft_min=0, soft_max=3.14159, step=3, precision=0, subtype='ANGLE')
+	dirt_only = bpy.props.BoolProperty(name="擬似AOのみ", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -202,8 +205,12 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="擬似AO設定", icon='BRUSH_TEXFILL')
 		row = self.layout.row(align=True)
-		row.prop(self, 'blur_strength', icon='BRUSH_BLUR', slider=True)
-		row.prop(self, 'dirt_count', icon='FILE_REFRESH')
+		row.prop(self, 'blur_strength', icon='NONE', slider=True)
+		row.prop(self, 'blur_iterations', icon='NONE')
+		self.layout.prop(self, 'clean_angle', icon='NONE', slider=True)
+		row = self.layout.row(align=True)
+		row.prop(self, 'dirt_angle', icon='NONE', slider=True)
+		row.prop(self, 'dirt_only', icon='FILE_TICK')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -223,8 +230,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
 		me.vertex_colors.active = vertex_color
 		
-		for i in range(self.dirt_count):
-			bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=1, clean_angle=3.14159, dirt_angle=0, dirt_only=True)
+		bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=self.blur_iterations, clean_angle=self.clean_angle, dirt_angle=self.dirt_angle, dirt_only=self.dirt_only)
 		
 		context.scene.render.bake_type = 'VERTEX_COLORS'
 		context.scene.render.use_bake_selected_to_active = False
