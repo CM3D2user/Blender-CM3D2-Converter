@@ -75,14 +75,10 @@ def menu_func(self, context):
 		
 		row = sub_box.row(align=True)
 		op = row.operator('wm.context_set_float', text="", icon='TRIA_LEFT')
-		factor = context.texture_slot.diffuse_color_factor - 0.2
-		if factor < 0: factor = 0
-		op.data_path, op.value = 'texture_slot.diffuse_color_factor', factor
+		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 0
 		row.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 		op = row.operator('wm.context_set_float', text="", icon='TRIA_RIGHT')
-		factor = context.texture_slot.diffuse_color_factor + 0.2
-		if 1 < factor: factor = 1
-		op.data_path, op.value = 'texture_slot.diffuse_color_factor', factor
+		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 1
 	
 	elif type == "f":
 		sub_box = box.box()
