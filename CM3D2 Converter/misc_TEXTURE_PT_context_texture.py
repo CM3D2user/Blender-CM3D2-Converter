@@ -374,7 +374,7 @@ class set_default_toon_textures(bpy.types.Operator):
 		img = context.texture.image
 		img.name = self.name
 		
-		png_path = os.path.join( os.path.dirname(img.filepath), self.name + ".png" )
+		png_path = os.path.join( os.path.dirname(bpy.path.abspath(img.filepath)), self.name + ".png" )
 		tex_path = os.path.splitext(png_path)[0] + ".tex"
 		if not os.path.exists(png_path):
 			if os.path.exists(tex_path):
@@ -392,7 +392,7 @@ class set_default_toon_textures(bpy.types.Operator):
 		img.filepath = png_path
 		img.reload()
 		
-		img['cm3d2_path'] = img.filepath
+		img['cm3d2_path'] = bpy.path.abspath(img.filepath)
 		return {'FINISHED'}
 
 class auto_set_color_value(bpy.types.Operator):
@@ -526,8 +526,8 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		
 		override = context.copy()
 		override['edit_image'] = img
-		filepath = os.path.splitext(img.filepath)[0] + ".tex"
-		path = "assets/texture/texture/" + os.path.basename(img.filepath)
+		filepath = os.path.splitext( bpy.path.abspath(img.filepath) )[0] + ".tex"
+		path = "assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
 		if 'cm3d2_path' in img.keys():
 			path = img['cm3d2_path']
 		if os.path.exists(filepath):

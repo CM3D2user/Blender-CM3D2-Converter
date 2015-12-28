@@ -229,6 +229,7 @@ def get_tex_storage_files():
 	files = []
 	tex_dirs = get_default_tex_paths()
 	for tex_dir in tex_dirs:
+		tex_dir = bpy.path.abspath(tex_dir)
 		files.extend(fild_all_files(tex_dir))
 	return files
 
@@ -239,7 +240,7 @@ def replace_cm3d2_tex(img, files=None):
 		files = tex_storage_files[:]
 	
 	if 'cm3d2_path' not in img.keys():
-		img['cm3d2_path'] = img.filepath
+		img['cm3d2_path'] = bpy.path.abspath(img.filepath)
 	source_path = img['cm3d2_path']
 	
 	source_png_name = os.path.basename(source_path).lower()
@@ -255,6 +256,7 @@ def replace_cm3d2_tex(img, files=None):
 			files = fild_all_files(tex_dir)
 		
 		for path in files:
+			path = bpy.path.abspath(path)
 			file_name = os.path.basename(path).lower()
 			
 			if file_name == source_png_name:

@@ -27,7 +27,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def invoke(self, context, event):
 		img = context.edit_image
 		if img.filepath:
-			common.preferences().tex_export_path = img.filepath
+			common.preferences().tex_export_path = bpy.path.abspath(img.filepath)
 		if common.preferences().tex_default_path:
 			self.filepath = common.default_cm3d2_dir(common.preferences().tex_default_path, common.remove_serial_number(img.name), "tex")
 		else:
@@ -58,7 +58,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 		
 		# とりあえずpngで保存
 		img = context.edit_image
-		pre_filepath = img.filepath
+		pre_filepath = bpy.path.abspath(img.filepath)
 		pre_source = img.source
 		override = context.copy()
 		override['edit_image'] = img
@@ -66,8 +66,8 @@ class export_cm3d2_tex(bpy.types.Operator):
 			bpy.ops.image.save_as(override, save_as_render=False, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
 			is_remove = True
 		except:
-			if os.path.exists(img.filepath):
-				temp_path = img.filepath
+			if os.path.exists( bpy.path.abspath(img.filepath) ):
+				temp_path = bpy.path.abspath(img.filepath)
 				is_remove = False
 			else:
 				self.report(type={'ERROR'}, message="PNGファイルの取得に失敗しました")

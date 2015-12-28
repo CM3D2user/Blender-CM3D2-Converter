@@ -593,7 +593,7 @@ class export_cm3d2_model(bpy.types.Operator):
 							if 'cm3d2_path' in img.keys():
 								path = img['cm3d2_path']
 							else:
-								path = img.filepath
+								path = bpy.path.abspath(img.filepath)
 							path = path.replace('\\', '/')
 							path = re.sub(r'^[\/\.]*', "", path)
 							if not re.search(r'^assets/texture/', path, re.I):
