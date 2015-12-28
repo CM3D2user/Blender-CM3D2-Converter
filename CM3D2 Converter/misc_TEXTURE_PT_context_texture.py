@@ -532,6 +532,8 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		override['edit_image'] = img
 		filepath = os.path.splitext(img.filepath)[0] + ".tex"
 		path = "assets/texture/texture/" + os.path.basename(img.filepath)
+		if 'cm3d2_path' in img.keys():
+			path = img['cm3d2_path']
 		if os.path.exists(filepath):
 			file = open(filepath, 'rb')
 			header_ext = common.read_str(file)
