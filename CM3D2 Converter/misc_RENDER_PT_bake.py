@@ -584,6 +584,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 		override = context.copy()
 		override['object'] = ob
 		
+		image_width, image_height = int(self.image_width), int(self.image_height)
 		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
