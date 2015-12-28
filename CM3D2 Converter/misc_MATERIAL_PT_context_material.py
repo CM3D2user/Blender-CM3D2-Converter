@@ -20,40 +20,56 @@ def menu_func(self, context):
 			row.operator('material.copy_material', icon='COPYDOWN', text="")
 			
 			type_name = "不明"
+			icon = 'ERROR'
 			if mate['shader1'] == 'CM3D2/Toony_Lighted':
 				type_name = "トゥーン"
+				icon = 'SOLID'
 			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Hair':
 				type_name = "トゥーン 髪"
+				icon = 'PARTICLEMODE'
 			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Trans':
 				type_name = "トゥーン 透過"
+				icon = 'WIRE'
 			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Trans_NoZ':
 				type_name = "トゥーン 透過 NoZ"
+				icon = 'DRIVER'
 			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Outline':
 				type_name = "トゥーン 輪郭線"
+				icon = 'ANTIALIASED'
 			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Hair_Outline':
 				type_name = "トゥーン 輪郭線 髪"
+				icon = 'PARTICLEMODE'
 			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Outline_Trans':
 				type_name = "トゥーン 輪郭線 透過"
+				icon = 'PROP_OFF'
 			elif mate['shader1'] == 'CM3D2/Lighted_Trans':
 				type_name = "透過"
+				icon = 'VISIBLE_IPO_OFF'
 			elif mate['shader1'] == 'Unlit/Texture':
 				type_name = "発光"
+				icon = 'PARTICLES'
 			elif mate['shader1'] == 'Unlit/Transparent':
 				type_name = "発光 透過"
+				icon = 'MOD_PARTICLES'
 			elif mate['shader1'] == 'CM3D2/Mosaic':
 				type_name = "モザイク"
+				icon = 'ALIASED'
 			elif mate['shader1'] == 'CM3D2/Man':
 				type_name = "ご主人様"
+				icon = 'ARMATURE_DATA'
 			elif mate['shader1'] == 'Diffuse':
 				type_name = "リアル"
+				icon = 'BRUSH_CLAY_STRIPS'
 			elif mate['shader1'] == 'Transparent/Diffuse':
 				type_name = "リアル 透過"
+				icon = 'MATCAP_09'
 			elif mate['shader1'] == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
 				type_name = "法線"
+				icon = 'MATCAP_23'
 			
-			row = box.split(percentage=0.3)
-			row.label(text="種類:", icon='ANTIALIASED')
-			row.label(text=type_name)
+			row = box.split(percentage=0.31)
+			row.label(text="種類:")
+			row.label(text=type_name, icon=icon)
 			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
 			box.prop(mate, '["shader1"]', icon='MATERIAL', text="シェーダー1")
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
