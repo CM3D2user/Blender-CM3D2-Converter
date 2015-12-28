@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 283),
+	"version" : (0, 284),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -254,8 +254,16 @@ def register():
 	pcoll.load('KISS', os.path.join(dir, "kiss.png"), 'IMAGE')
 	common.preview_collections['main'] = pcoll
 	
-	if not bpy.context.user_preferences.system.use_international_fonts:
-		bpy.context.user_preferences.system.use_international_fonts = True
+	system = bpy.context.user_preferences.system
+	if not system.use_international_fonts:
+		system.use_international_fonts = True
+	if not system.use_translate_interface:
+		system.use_translate_interface = True
+	try:
+		import locale
+		if system.language == 'DEFAULT' and locale.getdefaultlocale()[0] != 'ja_JP':
+			system.language = 'en_US'
+	except: pass
 	
 	bpy.app.translations.register(__name__, get_english_dictionary())
 
