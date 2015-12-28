@@ -410,6 +410,7 @@ class auto_set_color_value(bpy.types.Operator):
 		ob = context.active_object
 		if not ob: return False
 		if ob.type != 'MESH': return False
+		me = ob.data
 		mate = ob.active_material
 		if not mate: return False
 		for slot in mate.texture_slots:
@@ -418,24 +419,19 @@ class auto_set_color_value(bpy.types.Operator):
 			name = common.remove_serial_number(tex.name)
 			if name == '_MainTex':
 				img = tex.image
-				if not img: return False
-				if not len(img.pixels): return False
-				break
+				if img:
+					if len(img.pixels):
+						break
+				if me.uv_textures.active:
+					if me.uv_textures.active.data[0].image:
+						if len(me.uv_textures.active.data[0].image.pixels):
+							break
 		else: return False
 		if 'texture_slot' in dir(context) and 'texture' in dir(context):
 			slot = context.texture_slot
 			tex = context.texture
 			name = common.remove_serial_number(tex.name)
-			
-			if name == '_MainTex':
-				for slot in mate.texture_slots:
-					if not slot: continue
-					tex = slot.texture
-					name = common.remove_serial_number(tex.name)
-					if name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
-						return True
-				return False
-			elif name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
+			if name in ['_ShadowColor', '_RimColor', '_OutlineColor']:
 				return True
 		return False
 	
@@ -468,12 +464,16 @@ class auto_set_color_value(bpy.types.Operator):
 					target_slots.append(slot)
 		else:
 			target_slots.append(active_slot)
+		
 		for slot in mate.texture_slots:
 			if not slot: continue
 			name = common.remove_serial_number(slot.texture.name)
 			if name == '_MainTex':
 				img = slot.texture.image
-				break
+				if img:
+					break
+		else:
+			img = me.uv_textures.active.data[0].image
 		
 		sample_count = 10
 		img_width, img_height, img_channel = img.size[0], img.size[1], img.channels
