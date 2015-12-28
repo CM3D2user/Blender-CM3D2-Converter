@@ -1,496 +1,437 @@
-色	Color
-値	Value
-全て	All
-倍率	Scale
-透過	Trans
-発光	Emit
-種類	Type
-不明	Unknown
-0個	0
-解説	Description
-パス	Path
+(開発中) CM3D2 Motion (.anm)	(WIP) CM3D2 Motion (.anm)
+カスタムメイド3D2のanmファイルを読み込みます	Read the anm file of CM3D2
+ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません	Failed to open the file, does not exist or inaccessible file
+これはカスタムメイド3D2のモーションファイルではありません	This is not a motion file of CM3D2
+Software\KISS\カスタムメイド3D2	Software\KISS\カスタムメイド3D2
+mateとして保存	Save as mate
+表示しているマテリアルをmateファイルとして保存します	Save material that is displayed as mate file
+ファイルをバックアップ	Backup File
+ファイルに上書きする場合にバックアップファイルを複製します	Duplicate the backup file if you want to overwrite the file
+ファイルバージョン	File Version
 名前1	Name1
 名前2	Name2
-リアル	Real
-画像名	Image Name
-種類:	Type:
-%d個	%d
+ファイルを開くのに失敗しました、アクセス不可の可能性があります	Failed to open the file, there is a possibility of inaccessible
+texタイプの設定値の取得に失敗しました、中止します	Failed to get the tex type of setting, cancelled
+表示しているテキストデータをmateファイルとして保存します	Save the text data that is displayed as mate file
+tex col f 以外の設定値が見つかりました、中止します	tex col f other than the set value is found, cancelled
+mateファイルの出力に失敗、中止します。 構文を見直して下さい	failure to output of mate file, cancelled. Please review the syntax
+mateを開く	Open mate
+mateファイルをマテリアルとして開きます	Open the mate file as material
+種類に合わせてマテリアルを装飾	Decorate Material
+テクスチャを探す	Search Texture
+CM3D2本体のインストールフォルダからtexファイルを探して開きます	Open from CM3D2 installation folder looking for a tex file
+これはmateファイルではありません、中止します	This is not a mate file, cancelled
+未知の設定値タイプが見つかりました、中止します	Unknown setting type was found, cancelled
+mateファイルをテキストとして開きます	Open the mate file as text
+現在のテキストに上書き	Overwrite Now Text
+上書きする為のテキストデータが見つかりません	Text data can not be found to override
+CM3D2用	CM3D2
+ボーン情報	Bone Info
 コピー	Copy
-その1	1
-その2	2
-その3	3
-その4	4
-処理回数	Process Count
-増減両方	Add and Subtract
-増加のみ	Add Only
-減少のみ	Subtract Only
+貼り付け	Paste
+ボーン名変換	Convert Bone Names
+CM3D2 → Blender	CM3D2 > Blender
+Blender → CM3D2	Blender > CM3D2
+ポーズ	Pose
+オリジナル	Original
+ポージング	Posing
+ボーン名をCM3D2用→Blender用に変換	Bone Names CM3D2 > Blender
+変換できる名前が見つかりませんでした	Not Found Convertable Name
+ボーン名をBlender用に変換しました	Converted bone name for Blender
+ボーン名をBlender用→CM3D2用に変換	Bone Names Blender > CM3D2
+CM3D2で使われてるボーン名に元に戻します	Return original to bone names that have been used in CM3D2
+ボーン名をCM3D2用に戻しました	Returned bone names for CM3D2
+ボーン情報をコピー	Copy Bone Info
+カスタムプロパティのボーン情報をクリップボードにコピーします	Copy bone information of custom properties to the clipboard
+ボーン情報をクリップボードにコピーしました	Copied bones information to the clipboard
+ボーン情報を貼り付け	Paste Bone Info
+カスタムプロパティのボーン情報をクリップボードから貼り付けます	Paste bone information of custom property from the clipboard
+ボーン情報をクリップボードから貼り付けました	Pasted the bone information from the clipboard
+ボーン情報を削除	Remove Bone Info
+カスタムプロパティのボーン情報を全て削除します	Remove all bones information in custom property
+ボーン情報を削除しました	Removed Bone Info
+モディファイア強制適用	Forced Apply Modifiers
+シェイプキーのあるメッシュのモディファイアでも強制的に適用します	Apply will enforce in modifiers of mesh with a shape keys
+適用するモディファイア	Target Modifiers
+CM3D2用 頂点グループ名変換	CM3D2 Convert Vertex Group Names
+頂点グループ名をCM3D2用→Blender用に変換	Convert vertex group name Blender for CM3D2
+頂点グループ名をBlender用に変換しました	Converted vertex group name for Blender
+頂点グループ名をBlender用→CM3D2用に変換	Convert vertex group name CM3D2 for Blender
+CM3D2で使われてるボーン名(頂点グループ名)に戻します	Return to bone names (vertex group names) used in CM3D2
+頂点グループ名をCM3D2用に戻しました	Returned a vertex group name for CM3D2
+CM3D2用: 内部パス	CM3D2: In Path
+内部パス	In Path
+乳袋防止素体	Anti Milk Bag Figure
+Tスタンス素体	T Stance Figure
+Tスタンス素体 足のみ	T Stance Figure (Foot Only)
+Tスタンス素体 手のみ	T Stance Figure (Hand Only)
+CM3D2用の素体をインポート	Import Figures for CM3D2
+CM3D2関係の素体を現在のシーンにインポートします	Import figures as CM3D2 the current scene
+素体名	Figure Name
+髪の房	Branch of Hair
+髪の房を追加	Add Branch of Hair
+アニメ調の髪の房を追加します	Add Branch of Toon Hair
+房の半径	Radius of Branch
+ランダム要素の強さ	Strength of Randam Effect
+中間のZ軸の高さ	Z Axis Height
+ホイール:太さ変更	Wheel:Change Radius
+ホイールクリック:ランダム強度変更	Wheel Click:Change Random Strength
+ZXキー:高さ変更	ZX Keys:Change Height
+オブジェクトモードで実行してください	Please run in object mode
+CM3D2 Converterの更新履歴	Change Log of CM3D2 Converter
+%d日前	%d days before
+%d時間前	%d hours before
+%d分前	%d minutes before
+%d秒前	%d seconds before
+更新の取得に失敗しました	Failed Get Update Info
+CM3D2 Converterを更新	Update CM3D2 Converter
+更新後にBlenderを再起動	Restart Blender
+再起動後にコンソールを閉じる	Close Console
+CM3D2 Converterの設定画面を開く	Show Setting Panel of CM3D2 Converter
+CM3D2 Converterアドオンの設定画面を表示します	Display the setting screen of CM3D2 Converter add-on
+表示できるエリアが見つかりませんでした	Area that can be displayed could not be found
+mateから	From mate
+クリップボードから	From Clipboard
+不明	Unknown
 トゥーン	Toon
+トゥーン 髪	Toon Hair
+トゥーン 透過	Toon Trans
+トゥーン 透過 NoZ	Toon Trans NoZ
+トゥーン 輪郭線	Toon Outline
+トゥーン 輪郭線 髪	Toon Outline Hair
+トゥーン 輪郭線 透過	Toon Outline Trans
+透過	Trans
+発光	Emit
+発光 透過	Emit Trans
 モザイク	Mosaic
 ご主人様	Man
-貼り付け	Paste
-内部パス	In Path
-設定値名	Value Name
-テキスト	Text
-メッシュ	Mesh
-展開方法	Open Type
-範囲:辺×	Range: Edge x 
-ぼかし効果	Bluer Effect
-発光 透過	Emit Trans
-テキスト名	Text Name
-画像を表示	Show Image
-テクスチャ	Texture
-色の透明度	Color Alpha
-マテリアル	Material
-対象ウェイト	Target Weight
-トゥーン 髪	Toon Hair
-URLを開く	Open URL
-mateから	From mate
-CM3D2用	CM3D2
+リアル	Real
+リアル 透過	Real Trans
+法線	Normal
+種類:	Type:
 マテリアル名	Material Name
 シェーダー1	Shader1
 シェーダー2	Shader2
-テクスチャ名	Texture Name
-model名	Model Name
-基点ボーン名	Base Bone Name
-ボーン情報元	Bone Source
-バッチモード	Batch Mode
-メッシュ生成	Create Mesh
-頂点グループ	Vertex Group
-アーマチュア	Armature
-mateを開く	Open mate
-アクティブのみ	Active Only
-距離で影響減退	Fadeout Effect by Length
-トゥーン 透過	Toon Trans
-テキストを表示	Show Text
-CM3D2用:	CM3D2:
-設定値タイプ:	Value Type:
-テクスチャパス	Texture Path
-この画像を表示	Show This Image
-重複頂点を結合	Remove Doubles
-シームをつける	Add Seam
-anmファイル	anm File
-texファイル	tex File
-テクスチャを探す	Search Texture
-対象頂点グループ	Target Vertex Group
-対象シェイプキー	Target Shape Key
-トゥーン 輪郭線	Toon Outline
-使用する分は保管	Storage Use Piece
-ボーン情報を削除	Remove Bone Info
-正確な値: %s	Accurate Value: %s
-マテリアル情報元	Material Source
-四角面を三角面に	4 Polygon to 3 Polygon
-UVがありません	Not Found UV
-アーマチュア生成	Create Armature
-アーマチュア整頓	Order Bone Directions
-内部にパックする	Pack
-mateファイル	mate File
-mateとして保存	Save as mate
-ファイルバージョン	File Version
-頂点グループぼかし	Blur Vertex Group
-精度 (分割回数)	Accuracy (Subdivide Count)
-シェイプキーぼかし	Blur Shape Key
-モーフ変形後の範囲	After Shaped Mesh Range
-ボーン情報をコピー	Copy Bone Info
-クリップボードから	From Clipboard
-メッシュオプション	Mesh Option
-不要なボーンを削除	Remove Useless Bone
-modelファイル	model File
-シェイプキー強制転送	Forced Transfer Shape Keys
-トゥーン 輪郭線 髪	Toon Outline Hair
-ボーン情報を貼り付け	Paste Bone Info
-見つかりませんでした	Not Found
-model名: %s	Model Name: %s
-基点ボーン名: %s	Base Bone Name: %s
-取得に数秒かかります	Wait Seconds
-データ名の連番を削除	Remove Number in Data Name
-texファイルを保存	Save as tex
-texファイルを開く	Open tex
-texファイル置き場	Strage of tex
-ファイルをバックアップ	Backup File
-現在のテキストに上書き	Overwrite Now Text
-クイック・ウェイト転送	Quick Transfer Weights
-頂点グループ範囲ぼかし	Blur Range Vertex Group
-範囲：辺の長さの平均×	Range: Edge Length Average x 
-シェイプキー範囲ぼかし	Blur Range Shape Key
-トゥーン 透過 NoZ	Toon Trans NoZ
-トゥーン 輪郭線 透過	Toon Outline Trans
-CM3D2用ボーン情報	CM3D2 Bone Info
-マテリアルがありません	Not Found Material
-ボーン情報埋め込み場所	Location of Bone Info
-最初に頂点グループ全削除	First Remove All Vertex Groups
-既にあるシェイプは全削除	Remove Already Shapes
-シェイプキーの拡大率です	Scale of Shape Key
-ボーン情報を削除しました	Removed Bone Info
-CM3D2用: 内部パス	CM3D2: In Path
-更新の取得に失敗しました	Failed Get Update Info
-オブジェクト内プロパティ	Property in Object
-アーマチュア内プロパティ	Property in Armature
-ウェイトの合計を1.0に	Weights Total to 1.0
-シェイプキー強制転送・範囲	Forced Transfer Range Shape Key
-URLをブラウザで開きます	Open URL
-設定をテクスチャの色に同期	Sync Texture Color
-CM3D2用 ボーン名変換	CM3D2 Convert Bone Names
-頂点グループを名前順ソート	Sort Vertex Groups
-インポート時デフォルトパス	Default Path for Import
-再起動後にコンソールを閉じる	Close Console
-テキストのボーン情報をコピー	Copy Text Bone Info
-BoneData (%d行)	BoneData (%d lines)
-モザイクの大きさ？(未確認)	Mosaic Size
-PNGに変換してPNGを開く	Convert PNG and Open PNG
-エクスポート時デフォルトパス	Default Path for Export
-種類に合わせてマテリアルを装飾	Decorate Material
-更新後にBlenderを再起動	Restart Blender
-割り当ての無い頂点グループ削除	Remove Empty Vertex Groups
-シェイプキーの変形を拡大/縮小	Rescale Shape Key
-テキストのボーン情報を貼り付け	Paste Text Bone Info
-マテリアル情報テキストを全削除	Remove All Material Info Text
-指定された画像が見つかりません	Not Found Image
-CM3D2 → Blender	CM3D2 > Blender
-Blender → CM3D2	Blender > CM3D2
-UVの切れ目にシームをつけます	Seam UV Break Edge
-CM3D2インストールフォルダ	CM3D2 Install Folder
-全頂点に変形のないシェイプを削除	Remove Empty Shape Key
-ぼかしの強度(回数)を設定します	Set Blur Count
+CM3D2用に変更	Change for CM3D2
 CM3D2用マテリアルを新規作成	Create Material for CM3D2
-モディファイアを適用できない場合	Case of Can't Aplly Modifiers
-割り当てのない頂点グループを削除	Remove Empty Vertex Groups
-テキストにマテリアル情報埋め込み	Add Material Info in Text
-ウェイトが無いボーンを削除します	Remove Empty Weight Bones
-オブジェクトのカスタムプロパティ	Custom Property in Object
-アーマチュアのカスタムプロパティ	Custom Property in Armature
-ボーン名をBlender用に変換	Convert Bone Names for Blender
-マテリアルをクリップボードにコピー	Copy Clipboard Material
-頂点グループ名をCM3D2用に変換	Convert Vertex Group Names for CM3D2
-アクティブオブジェクトがありません	Not Found Active Object
-五角以上のポリゴンが含まれています	In 5 Polygon
-ボーン情報元のモードがおかしいです	Not Found Bone Info Source
-頂点グループを名前順でソートします	Sort Vertex Groups by Name
-anmインポート時のデフォルトパス	Default Path of anm Import
-texインポート時のデフォルトパス	Default Path of tex Import
-CM3D2 Converterを更新	Update CM3D2 Converter
-ウェイト0.0は頂点グループから除外	Remove Weight 0.0
-変換できる名前が見つかりませんでした	Not Found Convertable Name
-インポート時のメッシュ等の拡大率です	Scale of Meshes
-ボーンを分かりやすい向きに変更します	Order Bone Directions
-バックアップの拡張子 (空欄で無効)	Backup Extension (Disable if Empty)
-anmエクスポート時のデフォルトパス	Default Path of anm Export
-texエクスポート時のデフォルトパス	Default Path of tex Export
-mateインポート時のデフォルトパス	Default Path of mate Export
-ウェイト0.0の頂点はグループから除外	Remove Weight 0.0
-クリップボードからマテリアルを貼り付け	Paste Material by Clipboard
-LocalBoneData (%d行)	LocalBoneData (%d)
-CM3D2 Converterの更新履歴	Change Log of CM3D2 Converter
-ボーン名をCM3D2用→Blender用に変換	Bone Names CM3D2 > Blender
-ボーン名をBlender用→CM3D2用に変換	Bone Names Blender > CM3D2
-CM3D2 Converterの設定画面を開く	Show Setting Panel of CM3D2 Converter
-(開発中) CM3D2 Motion (.anm)	(WIP) CM3D2 Motion (.anm)
-正確な値: 	Accurate Value: 
-model名:	Model Name:
-基点ボーン名:	Base Bone Name:
-ファイル > インポート/エクスポート > CM3D2 Model (.model)	File > Import/Export > CM3D2 Model (.model)
-ここの設定は「ユーザー設定の保存」ボタンを押すまで保存されていません	Here settings is not saved until you press the "Save User Settings" button
-頂点グループ名を CM3D2 → Blender	Vertex Group Names CM3D2 → Blender
-頂点グループ名を Blender → CM3D2	Vertex Group Names Blender → CM3D2
-Software\KISS\カスタムメイド3D2	Software\KISS\カスタムメイド3D2
-カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います	This is done import / export of dedicated file for the CustomMaid3D2
-選択時の初期位置	Selection First Dir
-anmファイル置き場	Strage of anm File
-mateファイル置き場	Strage of mate File
-modelファイル置き場	Strage of model File
-ファイル選択時の初期フォルダ	Folder when File Select
-範囲倍率	Range Multiple
-高精度ウェイト転送	Precision Transfer Vertex Group
-最初に全頂点グループを削除	Remove All First
-掛ける数	Multiply Value
-他頂点グループも調節	Regulation Other Vertex Groups
-高精度シェイプキー転送	Precision Transfer Shape Key
-頂点グループを拡大/縮小	Rescale Vertex Group
-最初に全シェイプキーを削除	Remove All First
-変形のないシェイプキーを削除	Remove Non-Shaped Shape Keys
-高精度・ウェイト転送	Precision Transfer Vertex Group
-頂点グループに乗算	Multiply Vertex Group
-高精度・シェイプキー転送	Precision Transfer Shape Key
-シェイプキーの変形に乗算	Multiply Shape Key
-クイック・シェイプキー転送	Quick Transfer Shape Key
-対象	Target
-ボーン名をCM3D2用に戻しました	Returned bone names for CM3D2
-modelのインポートが完了しました	Import of the model has been completed
-指定したテキストをこの領域に表示します	Displays the specified text in this area
-表示できるエリアが見つかりませんでした	Area that can be displayed could not be found
-エクスポート時のメッシュ等の拡大率です	This is the scale of mesh at time of export
-マテリアル情報元のテキストが足りません	Material information source of the text is not enough
-modelのエクスポートが完了しました	model export is now complete
-頂点グループ名をBlender用に変換	Convert Vertex Group Names for Blender
-シェーダー情報をテキストに埋め込みます	Embeds the shader information in the text
-ボーン情報をテキストとして読み込みます	Read the bone information as text
-modelインポート時のデフォルトパス	Default path at the time of model import
-mateエクスポート時のデフォルトパス	Default path at the time of mate export
-mateファイルをテキストとして開きます	Open the mate file as text
-頂点グループ名をCM3D2用に戻しました	Returned a vertex group name for CM3D2
+種類	Type
 オブジェクト名を設定してからの作成を推奨	Recommended creation of a from to set the object name
-ボーン名をBlender用に変換しました	Converted bone name for Blender
-CM3D2には使えないオブジェクト名です	CM3D2 is the object name can not be used
-空のマテリアルスロットを削除してください	Please delete an empty material slot
-Blenderでモデルを扱うときの拡大率	Scale when dealing with models in Blender
-modelエクスポート時のデフォルトパス	Default path at the time of model export
-texファイルを探す時はここから探します	When you look for a tex file looks for from here
-mateファイルをマテリアルとして開きます	Open the mate file as material
-ボーン情報をクリップボードにコピーしました	Copied bones information to the clipboard
-強さ	Strength
-モードの切替やエラー個所の選択を行いません	This does not mode switching and select error mesh
-上書きする為のテキストデータが見つかりません	Text data can not be found to override
-シェイプキーの変形をぼかしてスムーズにします	Blurs the shape key deformation and smoothly
-クリップボードからマテリアルを貼り付けました	Pasted the material from the clipboard
-CM3D2で使われてるボーン名に元に戻します	Return original to bone names that have been used in CM3D2
-ボーン情報をクリップボードから貼り付けました	Pasted the bone information from the clipboard
-指定の画像をUV/画像エディターに表示します	Display specified image to UV / image editor
-画像を表示できるエリアが見つかりませんでした	Area that can display the image could not be found
-未知の設定値タイプが見つかりました、中止します	Unknown setting type was found, cancelled
-頂点グループ名をBlender用に変換しました	Converted vertex group name for Blender
-カスタムプロパティのボーン情報を全て削除します	Remove all bones information in custom property
-これはmateファイルではありません、中止します	This is not a mate file, cancelled
-ウェイトの合計が1.0未満の頂点が見つかりました	Sum of the weights found the vertex of less than 1.0
-ポリゴンを読み込みます、大抵の場合オンでOKです	Read the polygons. And in most cases is good ON
-カスタムメイド3D2のanmファイルを読み込みます	Read the anm file of CM3D2
-アクティブ、もしくは全ての頂点グループをぼかします	Blur active or all vertex group
-マテリアルテキストをクリップボードにコピーしました	Copied the material text to the clipboard
-オブジェクト名の後半は存在するボーン名にして下さい	Please second half of the object names to exist in bone names
-全ての頂点に割り当てのない頂点グループを削除します	Delete vertex group with no allocation to all vertices
-texタイプの設定値の取得に失敗しました、中止します	Failed to get the tex type of setting, cancelled
-頂点グループ名をCM3D2用→Blender用に変換	Convert vertex group name Blender for CM3D2
-頂点グループ名をBlender用→CM3D2用に変換	Convert vertex group name CM3D2 for Blender
-メッシュオブジェクトを選択した状態で実行してください	Please running in a state in which you select mesh object
-メッシュオブジェクトの親がアーマチュアではありません	Parent of mesh object is not armature
-変更している場合は設定しておくと役立つかもしれません	This might help if you set when you have changed
-この設定値をテクスチャの色に適用してわかりやすくします	Apply settings to color of texture
-法線	Normal
-リアル 透過	Real Trans
-オブジェクトの位置を合わせる	Sync Object Origin
-CM3D2用 頂点グループ名変換	CM3D2 Convert Vertex Group Names
-カスタムメイド3D2のmodelファイルを書き出します	Export model file of CM3D2
-4つのウェイトの合計値が1.0になるように正規化します	Total four weights normalize so that 1.0
-テキスト「BoneData」に有効なデータがありません	There is no valid data in the text "BoneData"
-ウェイトの合計が1.0を超えている頂点が見つかりました	Found vertices total weight exceeds 1.0
-カスタムメイド3D2のmodelファイルを読み込みます	Import model file of CM3D2
-ウェイトを編集する時に役立つアーマチュアを読み込みます	Import the armature to help you edit weights
-表示しているマテリアルをmateファイルとして保存します	Save material that is displayed as mate file
-モザイクシェーダーにある設定値。\n特に設定の必要なし。	モザイクシェーダーにある設定値。\n特に設定の必要なし。
-モザイクシェーダーにある設定値。	Setting value in mosaic shader
-特に設定の必要なし。	No setting required
-CM3D2で使用できるマテリアルテキストを全て削除します	Delete material texts that can be used in CM3D2
-テキスト「BoneData」が見つかりません、中止します	Text "BoneData" can not be found, cancelled
-オブジェクトのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the object
-アーマチュアのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the armature
-これはカスタムメイド3D2のモデルファイルではありません	This is not a model file of CM3D2
-ファイルに上書きする場合にバックアップファイルを複製します	Duplicate the backup file if you want to overwrite the file
-CM3D2で使われてるボーン名(頂点グループ名)に戻します	Return to bone names (vertex group names) used in CM3D2
-シェイプキーの変形に数値を乗算し、変形の強度を増減させます	multiplied by number in deformation of the shape key, and increase or intensity of deformation
-クリップボード内のボーン情報をテキストデータに貼り付けます	Paste the bones information in the clipboard to the text data
-これはカスタムメイド3D2のモーションファイルではありません	This is not a motion file of CM3D2
-表示しているテキストデータをmateファイルとして保存します	Save the text data that is displayed as mate file
-tex col f 以外の設定値が見つかりました、中止します	tex col f other than the set value is found, cancelled
-面をトゥーン処理している\nグラデーション画像を指定します。	面をトゥーン処理している\nグラデーション画像を指定します。
-面をトゥーン処理している	This specifies the gradation image
-グラデーション画像を指定します。	that toon processing a surfaces
-シェイプキーの変形を一定範囲の頂点でぼかしてスムーズにします	This will blur deformation of shape key at vertex of fixed range
-カスタムプロパティのボーン情報をクリップボードにコピーします	Copy bone information of custom properties to the clipboard
-CM3D2 Converterアドオンの設定画面を表示します	Display the setting screen of CM3D2 Converter add-on
-ファイルを開くのに失敗しました、アクセス不可の可能性があります	Failed to open the file, there is a possibility of inaccessible
+クリップボードからマテリアルを貼り付け	Paste Material by Clipboard
 クリップボード内のマテリアル情報から新規マテリアルを作成します	Create new material from material information in the clipboard
-カスタムプロパティのボーン情報をクリップボードから貼り付けます	Paste bone information of custom property from the clipboard
-ウェイトが割り当てられていない頂点が見つかりました、中止します	Vertices that weight is not assigned found, cancelled
-素メッシュを調整	Adjust Original Mesh
-他シェイプを調整	Adjust Other Shapes
-このシェイプキーをベースに	To Base This Shape Key
+クリップボードからマテリアルを貼り付けました	Pasted the material from the clipboard
+マテリアルをクリップボードにコピー	Copy Clipboard Material
+表示しているマテリアルをテキスト形式でクリップボードにコピーします	Copy the material to the clipboard in text format
+マテリアルテキストをクリップボードにコピーしました	Copied the material text to the clipboard
 マテリアルを装飾	Decorate Materials
 スロット内のマテリアルを全て設定に合わせて装飾します	Decorate all to match material setting in slots
-アクティブなシェイプキーを他のシェイプキーのベースにします	Make active shape key to base of other shape key
-設定すれば、anmを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use anm
-設定すれば、texを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use tex
-mateファイルの出力に失敗、中止します。 構文を見直して下さい	failure to output of mate file, cancelled. Please review the syntax
-テキスト「LocalBoneData」に有効なデータがありません	There is no valid data in the text "LocalBoneData"
-アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます	Add bone informations on custom properties in armature data
-設定すれば、mateを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use mate
-頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます	Multiply by value to weight of vertex groups, to increase or decrease weights
-表示しているマテリアルをテキスト形式でクリップボードにコピーします	Copy the material to the clipboard in text format
-テキスト「LocalBoneData」が見つかりません、中止します	Text "LocalBoneData" can not be found, cancelled
-アーマチュアが見つかりません、親にするかモディファイアにして下さい	Armature can not be found, please add modifier or parent
-メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます	Add bone informations to custom property in mesh object
-CM3D2で使用されるテクスチャファイル(.tex)を読み込みます	Read texture file (.tex) to be used in CM3D2
-設定すれば、modelを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use model
-ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません	Failed to open the file, does not exist or inaccessible file
-陰部分の面をトゥーン処理している\nグラデーション画像を指定します。	陰部分の面をトゥーン処理している\nグラデーション画像を指定します。
-陰部分の面をトゥーン処理している	Set gradient image that
-グラデーション画像を指定します。	shade of face is toon processing
-「○○.001」のような連番が付属したデータ名からこれらを削除します	Remove them from the serial number is included with the data name, such as "XXX.001"
-多角ポリゴンが見つかりました、正常に出力できなかった可能性があります	Polygonal polygon was found, there is a possibility that can not be output correctly
-CM3D2で使用されるテクスチャファイル(.tex)として保存します	Save as texture file (.tex) to be used in CM3D2
-%d日前	%d days before
-%d分前	%d minutes before
-%d秒前	%d seconds before
-%d時間前	%d hours before
+クイック・シェイプキー転送	Quick Transfer Shape Key
+アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します	The active mesh it will transfer the shape keys of other selected mesh at high speed
+最初に全シェイプキーを削除	Remove All First
+変形のないシェイプキーを削除	Remove Non-Shaped Shape Keys
+高精度・シェイプキー転送	Precision Transfer Shape Key
+範囲倍率	Range Multiple
+シェイプキーの変形に乗算	Multiply Shape Key
+シェイプキーの変形に数値を乗算し、変形の強度を増減させます	multiplied by number in deformation of the shape key, and increase or intensity of deformation
+倍率	Scale
+シェイプキーの拡大率です	Scale of Shape Key
+アクティブのみ	Active Only
 アクティブより上	Above Active
 アクティブより下	Lower Active
-CM3D2用に変更	Change for CM3D2
-全モディファイアを適用	Apply All Modifiers
-選択モディファイアを適用	Apply Select Modifiers
-texファイル検索	Search tex Files
-モディファイア強制適用	Forced Apply Modifiers
-適用するモディファイア	Target Modifiers
-基本的にtexファイルを探す	Basically Search tex Files
+全て	All
+対象	Target
+シェイプキーぼかし	Blur Shape Key
+アクティブ、もしくは全てのシェイプキーをぼかします	Blur active or all shape key
+強さ	Strength
+増減両方	Add and Subtract
+増加のみ	Add Only
+減少のみ	Subtract Only
+ぼかし効果	Bluer Effect
+ライナー	Liner
+スムーズ1	Smooth 1
+スムーズ2	Smooth 2
+減衰タイプ	Falloff Type
+このシェイプキーをベースに	To Base This Shape Key
+アクティブなシェイプキーを他のシェイプキーのベースにします	Make active shape key to base of other shape key
+素メッシュを調整	Adjust Original Mesh
+他シェイプを調整	Adjust Other Shapes
+クイック・ウェイト転送	Quick Transfer Weights
+アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します	The active mesh it will transfer the vertex group of other selected mesh at high speed
+最初に全頂点グループを削除	Remove All First
+割り当てのない頂点グループを削除	Remove Empty Vertex Groups
+高精度・ウェイト転送	Precision Transfer Vertex Group
+頂点グループぼかし	Blur Vertex Group
+アクティブ、もしくは全ての頂点グループをぼかします	Blur active or all vertex group
+他頂点グループも調節	Regulation Other Vertex Groups
+頂点グループに乗算	Multiply Vertex Group
+頂点グループのウェイトに数値を乗算し、ウェイトの強度を増減させます	Multiply by value to weight of vertex groups, to increase or decrease weights
+CM3D2用ボーン情報	CM3D2 Bone Info
+オブジェクトの位置を合わせる	Sync Object Origin
+CM3D2用ベイク	Bakes for CM3D2
+新規画像	New Image
+擬似AO	Dirty AO
+ヘミライト	Hemi Lamp
+影	Shadow
+側面陰	Side Shadow
+金属	Metal
+髪	Hair
+ベイク用の画像を作成	Create Image for Bake
+アクティブオブジェクトに素早くベイク用の空の画像を用意します	Provide empty image for quick bake in the active object
+画像名	Image Name
+幅	Width
+高	Height
+色	Color
+新規画像設定	New Image Settings
+AO・ベイク	Bake AO
+アクティブオブジェクトに素早くAOをベイクします	Bake quickly AO in the Active Object
+レイトレース	Raytrace
+近似(AAO)	Approximate
+処理方法	Method
+精度	Samples
+他オブジェクトの影響を受けない	Not affected by other objects
+AO設定	AO Settings
+擬似AO・ベイク	Bake Dirty AO
+アクティブオブジェクトに素早く擬似AOをベイクします	Bake quickly dirty AO to the active object
+ブラー強度	Blur Strength
+ブラー反復度	Blur Iterations
+ハイライト角度	Highlight Angle
+擬似AO角度	Dirt Angle
+擬似AOのみ	Dirt Only
+擬似AO設定	Dirty AO Settings
+ヘミライト・ベイク	Bake Hemi Lamp
+アクティブオブジェクトに素早くヘミライトの陰をベイクします	Bake quickly hemi lamp to the active object
+光の強さ	Lamp Power
+AOを使用	Use AO
+AOの精度	AO Samples
+ヘミライト設定	Hemi Lamp Settings
+影・ベイク	Bake Shadow
+アクティブオブジェクトに素早く影をベイクします	Bake quickly shadow to the active object
+光源の最大角度	Max Angle of Lamps
+光源の数	Lamp Count
+影のみ	Shadow Only
+光源設定	Lamp Settings
+側面陰・ベイク	Bake Side Shadow
+アクティブオブジェクトに素早く側面陰をベイクします	Bake quickly side shade to the active object
+金属・ベイク	Bake Matal
+アクティブオブジェクトに素早く金属風にベイクします	Bake quickly metal to the active object
+映り込み強さ	Reflection Strength
+金属設定	Metal Settings
+ヘアー・ベイク	Bake Hair
+髪色	Hair Color
+天使の輪の強さ	Angel Ring Factor
+ヘアー設定	Hair Settings
+CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
+CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
+面のテクスチャで	By Face Textures
+今のマテリアルで	By Corrent Materials
+モード	Mode
+輪郭線を描画	Draw Line
+線の太さ	Line Thickness
+線の色	Line Color
+解像度	Resolution
+カメラ角度	Camera Angle
+カメラ移動	Camera Move
+ズーム倍率	Zoom Multi
+背景を使用	Use Background
+背景色	Background Color
+テクスチャ参照方法	Texture Reference Method
+輪郭線	Freestyle
+設定値タイプ:	Value Type:
+テクスチャ	Texture
+値	Value
+色同期	Color Sync
+設定値名	Value Name
+テクスチャ名	Texture Name
+テクスチャパス	Texture Path
+画像を表示	Show Image
+texで保存	Save as tex
+色の透明度	Color Alpha
+自動設定	Set Auto
+正確な値: 	Accurate Value: 
+面の色を決定するテクスチャを指定。	Specifies texture to determine color of surface.
+普段テスクチャと呼んでいるものは基本コレです。	What we call everyday and "texture" is the basic this.
+テクスチャパスは適当でも動きます。	Texture path will move even appropriate.
+しかし、テクスチャ名はきちんと決めましょう。	However, the texture name Let's decide properly.
+暗い部分に乗算するグラデーション画像を指定します。	Specifies a gradient image to be multiplied in the dark part.
+陰部分の面の色を決定するテクスチャを指定。	Specifies texture to determine color of surface of shade.
+「_ShadowRateToon」で範囲を指定します。	Specify range by "_ShadowRateToon".
+「_ShadowTex」を有効にする部分を指定します。	Specify parts to enable "_ShadowTex".
+黒色で有効、白色で無効。	Enabled in black, disabled in white.
+面の色を指定。	specifies color of a surface.
+白色で無効。基本的に白色で良いでしょう。	Disabled in white. It would be a basically white.
+影の色を指定。白色で無効。	Specifies color of shadow. Disabled in white.
+別の物体に遮られてできた「影」の色です。	Was blocked by another object is color of "shadow".
+リムライトの色を指定。	Specifies color of rim light.
+リムライトとは縁にできる光の反射のことです。	"rim light" it is reflection of light that can be on edge.
+輪郭線の色を指定。	Specifies color of an outline.
+黒にするか、テクスチャの明度を	Either black, it would be better
+落としたものを指定するとより良いでしょう。	if you specify what dropped the lightness of texture.
+スペキュラーの強さを指定。0.0～1.0で指定。	Specifies strength of specular. Specified in 0.0 and 1.0.
+スペキュラーとは面の角度と光源の角度によって	Specular by angle of light source
+できるハイライトのことです。	highlight that will be generated.
+金属、皮、ガラスなどに使うと良いでしょう。	Metal, leather, glass, you might want to use.
+輪郭線の太さを指定。	Specifies thickness of outline.
+0.002は太め、0.001は細め。	0.002 thick, 0.001 narrowed.
+リムライトの強さを指定。	Specifies strength of rim light.
+この値は10以上なことも多いです。	This value is often be a 10 or more.
+0に近い値だと正常に表示されません。	Not displayed correctly that value close to 0.
+リムライトの幅を指定。	Specifies width of rim light.
+0.0～1.0で指定。0.5でもかなり強い。	Specified in 0.0 and 1.0. 0.5 Even fairly strong.
+モザイクシェーダーにある設定値。	Setting value in mosaic shader
+特に設定の必要なし。	No setting required
+モザイクの大きさ？(未確認)	Mosaic Size
+解説	Description
+_ToonRamp 設定	_ToonRamp Settings
+_ShadowRateToon 設定	_ShadowRateToon Settings
+値リスト	Value List
+指定の画像をUV/画像エディターに表示します	Display specified image to UV / image editor
+指定された画像が見つかりません	Not Found Image
+画像を表示できるエリアが見つかりませんでした	Area that can display the image could not be found
+見つかりませんでした	Not Found
+設定をテクスチャの色に同期	Sync Texture Color
+この設定値をテクスチャの色に適用してわかりやすくします	Apply settings to color of texture
+トゥーンを選択	Select Toons
+CM3D2にデフォルトで入っているトゥーンテクスチャを選択できます	You can select a toon textures that comes by default CM3D2
+パス	Path
+色設定値を自動設定	Auto Set Color Values
+色関係の設定値をテクスチャの色情報から自動で設定します	Set Colors automatically from color information of the texture
+全てが対象	Target is All
+彩度の乗算値	Saturation Multiply
+明度の乗算値	Value Multiply
+失敗しました	failed
+同フォルダにtexとして保存しました	Saved as tex in same folder
+CM3D2用:	CM3D2:
+テキストを表示	Show Text
+指定したテキストをこの領域に表示します	Displays the specified text in this area
+テキスト名	Text Name
+テキストのボーン情報をコピー	Copy Text Bone Info
+テキストのボーン情報を貼り付け	Paste Text Bone Info
+クリップボード内のボーン情報をテキストデータに貼り付けます	Paste the bones information in the clipboard to the text data
+マテリアル情報テキストを全削除	Remove All Material Info Text
+CM3D2で使用できるマテリアルテキストを全て削除します	Delete material texts that can be used in CM3D2
+使用する分は保管	Storage Use Piece
+現在のポーズで素体化	Set Prime Field by Now Poses
+現在のポーズで衣装をモデリングしやすくする素体を作成します	Create figure to facilitate modeling the costume in the current pose
+関係するメッシュのアーマチュアを適用	Apply Armatures that relate meshes
+アーマチュア適用は体積を維持	Preserve Volume when Apply Armatures
+カスタムメイド3D2のmodelファイルを書き出します	Export model file of CM3D2
+エクスポート時のメッシュ等の拡大率です	This is the scale of mesh at time of export
+model名	Model Name
+基点ボーン名	Base Bone Name
+テキスト	Text
+オブジェクト内プロパティ	Property in Object
+アーマチュア内プロパティ	Property in Armature
+ボーン情報元	Bone Source
+マテリアル	Material
+マテリアル情報元	Material Source
+データ名の連番を削除	Remove Number in Data Name
+「○○.001」のような連番が付属したデータ名からこれらを削除します	Remove them from the serial number is included with the data name, such as "XXX.001"
+四角面を三角面に	4 Polygon to 3 Polygon
+ウェイトの合計を1.0に	Weights Total to 1.0
+4つのウェイトの合計値が1.0になるように正規化します	Total four weights normalize so that 1.0
+頂点グループ名をCM3D2用に変換	Convert Vertex Group Names for CM3D2
+バッチモード	Batch Mode
+モードの切替やエラー個所の選択を行いません	This does not mode switching and select error mesh
+アクティブオブジェクトがありません	Not Found Active Object
+メッシュオブジェクトを選択した状態で実行してください	Please running in a state in which you select mesh object
 モディファイアを適用するか消してください	Apply or Remove Modifiers
+マテリアルがありません	Not Found Material
+空のマテリアルスロットを削除してください	Please delete an empty material slot
+UVがありません	Not Found UV
+メッシュオプション	Mesh Option
+テキスト「BoneData」が見つかりません、中止します	Text "BoneData" can not be found, cancelled
+テキスト「LocalBoneData」が見つかりません、中止します	Text "LocalBoneData" can not be found, cancelled
+オブジェクトのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the object
+メッシュオブジェクトの親がアーマチュアではありません	Parent of mesh object is not armature
+アーマチュアが見つかりません、親にするかモディファイアにして下さい	Armature can not be found, please add modifier or parent
+アーマチュアのカスタムプロパティにボーン情報がありません	There are no bones information on custom properties of the armature
+ボーン情報元のモードがおかしいです	Not Found Bone Info Source
+マテリアル情報元のテキストが足りません	Material information source of the text is not enough
+テキスト「BoneData」に有効なデータがありません	There is no valid data in the text "BoneData"
+オブジェクト名の後半は存在するボーン名にして下さい	Please second half of the object names to exist in bone names
+テキスト「LocalBoneData」に有効なデータがありません	There is no valid data in the text "LocalBoneData"
+ウェイトが割り当てられていない頂点が見つかりました、中止します	Vertices that weight is not assigned found, cancelled
+ウェイトの合計が1.0を超えている頂点が見つかりました	Found vertices total weight exceeds 1.0
+ウェイトの合計が1.0未満の頂点が見つかりました	Sum of the weights found the vertex of less than 1.0
+modelのエクスポートが完了しました	model export is now complete
+カスタムメイド3D2のmodelファイルを読み込みます	Import model file of CM3D2
+インポート時のメッシュ等の拡大率です	Scale of Meshes
+メッシュ生成	Create Mesh
+ポリゴンを読み込みます、大抵の場合オンでOKです	Read the polygons. And in most cases is good ON
+重複頂点を結合	Remove Doubles
+シームをつける	Add Seam
+UVの切れ目にシームをつけます	Seam UV Break Edge
+頂点グループ名をBlender用に変換	Convert Vertex Group Names for Blender
+頂点グループを名前順ソート	Sort Vertex Groups
+頂点グループを名前順でソートします	Sort Vertex Groups by Name
+全ての頂点に割り当てのない頂点グループを削除します	Delete vertex group with no allocation to all vertices
+テキストにマテリアル情報埋め込み	Add Material Info in Text
+シェーダー情報をテキストに埋め込みます	Embeds the shader information in the text
+アーマチュア生成	Create Armature
+ウェイトを編集する時に役立つアーマチュアを読み込みます	Import the armature to help you edit weights
+不要なボーンを削除	Remove Useless Bone
+ウェイトが無いボーンを削除します	Remove Empty Weight Bones
+アーマチュア整頓	Order Bone Directions
+ボーンを分かりやすい向きに変更します	Order Bone Directions
+ボーン情報をテキストとして読み込みます	Read the bone information as text
+オブジェクトのカスタムプロパティ	Custom Property in Object
+メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます	Add bone informations to custom property in mesh object
+アーマチュアのカスタムプロパティ	Custom Property in Armature
+アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます	Add bone informations on custom properties in armature data
+メッシュ	Mesh
+頂点グループ	Vertex Group
+アーマチュア	Armature
+ボーン名をBlender用に変換	Convert Bone Names for Blender
+ボーン情報埋め込み場所	Location of Bone Info
+これはカスタムメイド3D2のモデルファイルではありません	This is not a model file of CM3D2
+modelのインポートが完了しました	Import of the model has been completed
+texファイルを保存	Save as tex
+CM3D2で使用されるテクスチャファイル(.tex)として保存します	Save as texture file (.tex) to be used in CM3D2
+PNGファイルの取得に失敗しました	Failed to get PNG file
+texファイルを開く	Open tex
+CM3D2で使用されるテクスチャファイル(.tex)を読み込みます	Read texture file (.tex) to be used in CM3D2
+内部にパックする	Pack
+PNGに変換してPNGを開く	Convert PNG and Open PNG
+展開方法	Open Type
+ファイル > インポート/エクスポート > CM3D2 Model (.model)	File > Import/Export > CM3D2 Model (.model)
+カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います	This is done import / export of dedicated file for the CustomMaid3D2
+CM3D2インストールフォルダ	CM3D2 Install Folder
+変更している場合は設定しておくと役立つかもしれません	This might help if you set when you have changed
+バックアップの拡張子 (空欄で無効)	Backup Extension (Disable if Empty)
+Blenderでモデルを扱うときの拡大率	Scale when dealing with models in Blender
 基本的にボーン名/ウェイト名をBlender用に変換	Basically Convert Bone/Weight Names for Blender
+modelファイル置き場	Strage of model File
+設定すれば、modelを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use model
+modelインポート時のデフォルトパス	Default path at the time of model import
+modelエクスポート時のデフォルトパス	Default path at the time of model export
+anmファイル置き場	Strage of anm File
+設定すれば、anmを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use anm
+anmインポート時のデフォルトパス	Default Path of anm Import
+anmエクスポート時のデフォルトパス	Default Path of anm Export
+texファイル置き場	Strage of tex
+設定すれば、texを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use tex
+texインポート時のデフォルトパス	Default Path of tex Import
+texエクスポート時のデフォルトパス	Default Path of tex Export
+mateファイル置き場	Strage of mate File
+設定すれば、mateを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use mate
+mateインポート時のデフォルトパス	Default Path of mate Export
+mateエクスポート時のデフォルトパス	Default path at the time of mate export
+基本的にtexファイルを探す	Basically Search tex Files
+texファイルを探すかどうかのオプションのデフォルト値を設定します	Set default value of whether option search tex file
+texファイルを探す時はここから探します	When you look for a tex file looks for from here
 テクスチャ設定値の色	Color of Texture Settings
 _ToonRamp 名前	_ToonRamp Name
 _ToonRamp パス	_ToonRamp Path
 _ShadowRateToon 名前	_ShadowRateToon Name
 _ShadowRateToon パス	_ShadowRateToon Path
+ここの設定は「ユーザー設定の保存」ボタンを押すまで保存されていません	Here settings is not saved until you press the "Save User Settings" button
+modelファイル	model File
+ファイル選択時の初期フォルダ	Folder when File Select
+anmファイル	anm File
+texファイル	tex File
+mateファイル	mate File
+texファイル検索	Search tex Files
+その1	1
+その2	2
+その3	3
+その4	4
 CM3D2用マテリアル新規作成時の初期値	Initial Settings when created material for CM3D2
-シェイプキーのあるメッシュのモディファイアでも強制的に適用します	Apply will enforce in modifiers of mesh with a shape keys
-texファイルを探すかどうかのオプションのデフォルト値を設定します	Set default value of whether option search tex file
-CM3D2本体のインストールフォルダからtexファイルを探して開きます	Open from CM3D2 installation folder looking for a tex file
-幅	Width
-高さ	Height
-精度	Samples
-処理方法	Method
-AO設定	AO Settings
-光の強さ	Lamp Power
-AO・ベイク	Bake AO
-レイトレース	Raytrace
-新規画像設定	New Image Settings
-近似(AAO)	Approximate
-ヘミライト設定	Hemi Lamp Settings
-ヘミライト・ベイク	Bake Hemi Lamp
-現在のポーズで素体化	Set Prime Field by Now Poses
-アーマチュア適用は体積を維持	Preserve Volume when Apply Armatures
-関係するメッシュのアーマチュアを適用	Apply Armatures that relate meshes
-髪色	Hair Color
-AOを使用	Use AO
-AOの精度	AO Samples
-ヘアー設定	Hair Settings
-ヘアー・ベイク	Bake Hair
-天使の輪の強さ	Angel Ring Factor
-髪の房	Branch of Hair
-房の半径	Radius of Branch
-髪の房を追加	Add Branch of Hair
-中間のZ軸の高さ	Z Axis Height
-ランダム要素の強さ	Strength of Randam Effect
-ホイール:太さ変更	Wheel:Change Radius
-ZXキー:高さ変更	ZX Keys:Change Height
-アニメ調の髪の房を追加します	Add Branch of Toon Hair
-他オブジェクトの影響を受けない	Not affected by other objects
-ホイールクリック:ランダム強度変更	Wheel Click:Change Random Strength
-オブジェクトモードで実行してください	Please run in object mode
-アクティブオブジェクトに素早くAOをベイクします	Bake quickly AO in the Active Object
-解像度	Resolution
-背景色	Background Color
-ズーム倍率	Zoom Multi
-カメラ角度	Camera Angle
-カメラ移動	Camera Move
-背景を使用	Use Background
-ブラー強度	Blur Strength
-擬似AO設定	Dirty AO Settings
-擬似AO・ベイク	Bake Dirty AO
-CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
-素体名	Figure Name
-影のみ	Shadow Only
-光源の数	Lamp Count
-光源設定	Lamp Settings
-影・ベイク	Bake Shadow
-Tスタンス素体	T Stance Figure
-光源の最大角度	Max Angle of Lamps
-Tスタンス素体 足のみ	T Stance Figure (Foot Only)
-Tスタンス素体 手のみ	T Stance Figure (Hand Only)
-CM3D2用の素体をインポート	Import Figures for CM3D2
-ライナー	Liner
-金属設定	Metal Settings
-スムーズ1	Smooth 1
-スムーズ2	Smooth 2
-減衰タイプ	Falloff Type
-乳袋防止素体	Anti Milk Bag Figure
-金属・ベイク	Bake Matal
-映り込み強さ	Reflection Strength
-トゥーンを選択	Select Toons
-_ToonRamp 設定	_ToonRamp Settings
-_ShadowRateToon 設定	_ShadowRateToon Settings
-影	Shadow
-髪	Hair
-金属	Metal
-側面陰	Side Shadow
-新規画像	New Image
-擬似AO	Dirty AO
-ヘミライト	Hemi Lamp
-側面陰・ベイク	Bake Side Shadow
-CM3D2用ベイク	Bakes for CM3D2
-ベイク用の画像を作成	Create Image for Bake
-モード	Mode
-太	Thick
-線の色	Line Color
-線の太さ	Line Thickness
-輪郭線を描画	Draw Line
-面のテクスチャでレンダリング	Rendering by Face Textures
-今のマテリアルでレンダリング	Rendering by Now Material
-色設定値を自動設定	Auto Set Color Values
-彩度の乗算値	Saturation Multiply
-明度の乗算値	Value Multiply
-アクティブオブジェクトに素早く影をベイクします	Bake quickly shadow to the active object
-アクティブ、もしくは全てのシェイプキーをぼかします	Blur active or all shape key
-アクティブオブジェクトに素早く側面陰をベイクします	Bake quickly side shade to the active object
-アクティブオブジェクトに素早く金属風にベイクします	Bake quickly metal to the active object
-CM3D2関係の素体を現在のシーンにインポートします	Import figures as CM3D2 the current scene
-アクティブオブジェクトに素早く擬似AOをベイクします	Bake quickly dirty AO to the active object
-色関係の設定値をテクスチャの色情報から自動で設定します	Set Colors automatically from color information of the texture
-アクティブオブジェクトに素早くヘミライトの陰をベイクします	Bake quickly hemi lamp to the active object
-現在のポーズで衣装をモデリングしやすくする素体を作成します	Create figure to facilitate modeling the costume in the current pose
-アクティブオブジェクトに素早くベイク用の空の画像を用意します	Provide empty image for quick bake in the active object
-CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
-CM3D2にデフォルトで入っているトゥーンテクスチャを選択できます	You can select a toon textures that comes by default CM3D2
-アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します	The active mesh it will transfer the shape keys of other selected mesh at high speed
-アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します	The active mesh it will transfer the vertex group of other selected mesh at high speed
-自動設定	Set Auto
-ポーズ	Pose
-ボーン情報	Bone Info
-オリジナル	Original
-ポージング	Posing
-ボーン名変換	Convert Bone Names
-色同期	Color Sync
-値リスト	Value List
-全てが対象	Target is All
-面の色を指定。	specifies color of a surface.
-輪郭線の色を指定。	Specifies color of an outline.
-輪郭線の太さを指定。	Specifies thickness of outline.
-リムライトの色を指定。	Specifies color of rim light.
-リムライトの幅を指定。	Specifies width of rim light.
-黒色で有効、白色で無効。	Enabled in black, disabled in white.
-リムライトの強さを指定。	Specifies strength of rim light.
-影の色を指定。白色で無効。	Specifies color of shadow. Disabled in white.
-できるハイライトのことです。	highlight that will be generated.
-面の色を決定するテクスチャを指定。	Specifies texture to determine color of surface.
-テクスチャパスは適当でも動きます。	Texture path will move even appropriate.
-この値は10以上なことも多いです。	This value is often be a 10 or more.
-0.002は太め、0.001は細め。	0.002 thick, 0.001 narrowed.
-0に近い値だと正常に表示されません。	Not displayed correctly that value close to 0.
-白色で無効。基本的に白色で良いでしょう。	Disabled in white. It would be a basically white.
-別の物体に遮られてできた「影」の色です。	Was blocked by another object is color of "shadow".
-陰部分の面の色を決定するテクスチャを指定。	Specifies texture to determine color of surface of shade.
-金属、皮、ガラスなどに使うと良いでしょう。	Metal, leather, glass, you might want to use.
-しかし、テクスチャ名はきちんと決めましょう。	However, the texture name Let's decide properly.
-リムライトとは縁にできる光の反射のことです。	"rim light" it is reflection of light that can be on edge.
-スペキュラーとは面の角度と光源の角度によって	Specular by angle of light source
-0.0～1.0で指定。0.5でもかなり強い。	Specified in 0.0 and 1.0. 0.5 Even fairly strong.
-普段テスクチャと呼んでいるものは基本コレです。	What we call everyday and "texture" is the basic this.
-スペキュラーの強さを指定。0.0～1.0で指定。	Specifies strength of specular. Specified in 0.0 and 1.0.
-暗い部分に乗算するグラデーション画像を指定します。	Specifies a gradient image to be multiplied in the dark part.
-「_ShadowRateToon」で範囲を指定します。	Specify range by "_ShadowRateToon".
-「_ShadowTex」を有効にする部分を指定します。	Specify parts to enable "_ShadowTex".
-黒にするか、テクスチャの明度を	Either black, it would be better
-落としたものを指定するとより良いでしょう。	if you specify what dropped the lightness of texture.
-texで保存	Save as tex
-失敗しました	failed
-PNGファイルの取得に失敗しました	Failed to get PNG file
-同フォルダにtexとして保存しました	Saved as tex in same folder
-高	Height
-輪郭線	Freestyle
-面のテクスチャで	By Face Textures
-今のマテリアルで	By Corrent Materials
-テクスチャ参照方法	Texture Reference Method
