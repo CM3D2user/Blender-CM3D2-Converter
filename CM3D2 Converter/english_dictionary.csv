@@ -489,3 +489,8 @@ texで保存	Save as tex
 失敗しました	failed
 PNGファイルの取得に失敗しました	Failed to get PNG file
 同フォルダにtexとして保存しました	Saved as tex in same folder
+高	Height
+輪郭線	Freestyle
+面のテクスチャで	By Face Textures
+今のマテリアルで	By Corrent Materials
+テクスチャ参照方法	Texture Reference Method

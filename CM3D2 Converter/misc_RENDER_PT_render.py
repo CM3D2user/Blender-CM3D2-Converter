@@ -12,8 +12,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
-		('FACE_TEXTURE', "面のテクスチャでレンダリング", "", 'FACESEL_HLT', 1),
-		('NOW_MATERIAL', "今のマテリアルでレンダリング", "", 'MATERIAL', 2),
+		('FACE_TEXTURE', "面のテクスチャで", "", 'FACESEL_HLT', 1),
+		('NOW_MATERIAL', "今のマテリアルで", "", 'MATERIAL', 2),
 		]
 	mode = bpy.props.EnumProperty(items=items, name="モード", default='FACE_TEXTURE')
 	
@@ -54,12 +54,15 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'resolution', icon='IMAGE_COL', slider=True)
-		self.layout.prop(self, 'mode', icon='TEXTURE_SHADED')
+		col = self.layout.column(align=True)
+		col.label(text="テクスチャ参照方法", icon='TEXTURE_SHADED')
+		row = col.row()
+		row.prop(self, 'mode', icon='TEXTURE_SHADED', expand=True)
 		self.layout.separator()
 		
 		row = self.layout.split(percentage=1/3, align=True)
-		row.prop(self, 'use_freestyle', icon='LINE_DATA')
-		row.prop(self, 'line_thickness', icon='ARROW_LEFTRIGHT', slider=True, text="太")
+		row.prop(self, 'use_freestyle', icon='LINE_DATA', text="輪郭線")
+		row.prop(self, 'line_thickness', icon='ARROW_LEFTRIGHT', slider=True, text="")
 		row.prop(self, 'line_color', icon='COLOR', text="")
 		self.layout.separator()
 		
