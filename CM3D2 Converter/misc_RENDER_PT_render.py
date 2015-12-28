@@ -177,7 +177,45 @@ class render_cm3d2_icon(bpy.types.Operator):
 			temp_lineset = context.scene.render.layers.active.freestyle_settings.linesets.new("temp")
 			temp_lineset.linestyle.color = self.line_color
 		
+		# コンポジットノード #
+		pre_use_nodes = context.scene.use_nodes
+		context.scene.use_nodes = True
+		node_tree = context.scene.node_tree
+		for node in node_tree.nodes:
+			node_tree.nodes.remove(node)
+		
+		in_node = node_tree.nodes.new('CompositorNodeRLayers')
+		in_node.location = (0, 0)
+		
+		out_node = node_tree.nodes.new('CompositorNodeComposite')
+		out_node.location = (500, 0)
+		
+		img_node = node_tree.nodes.new('CompositorNodeImage')
+		img_node.location = (0, -300)
+		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
+		
+		if "Icon Alpha" in context.blend_data.images.keys():
+			icon_alpha_img = context.blend_data.images["Icon Alpha"]
+		else:
+			with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
+				data_to.images = ["Icon Alpha"]
+			icon_alpha_img = data_to.images[0]
+		
+		img_node.image = icon_alpha_img
+		
+		mix_node = node_tree.nodes.new('CompositorNodeMixRGB')
+		mix_node.location = (250, -100)
+		mix_node.blend_type = 'MULTIPLY'
+		
+		node_tree.links.new(out_node.inputs[0], in_node.outputs[0])
+		node_tree.links.new(mix_node.inputs[1], in_node.outputs[1])
+		node_tree.links.new(mix_node.inputs[2], img_node.outputs[0])
+		node_tree.links.new(out_node.inputs[1], mix_node.outputs[0])
+		# コンポジットノード #
+		
 		bpy.ops.render.render()
+		
+		context.scene.use_nodes = pre_use_nodes
 		
 		if self.use_freestyle:
 			context.scene.render.use_freestyle = pre_use_freestyle
