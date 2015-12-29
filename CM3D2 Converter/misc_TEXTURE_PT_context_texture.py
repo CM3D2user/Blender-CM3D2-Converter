@@ -36,7 +36,6 @@ def menu_func(self, context):
 	sub_row.prop(tex_slot, 'use_rgb_to_intensity', text="")
 	if tex_slot.use:
 		sub_row.enabled = False
-	row.operator('texture.sync_tex_color_ramps', icon='COLOR', text="色同期")
 	box.prop(tex, 'name', icon='SORTALPHA', text="設定値名")
 	
 	if type == "tex":
@@ -143,6 +142,8 @@ def menu_func(self, context):
 			op.data_path, op.value = data_path, 0.75
 			op = row.operator('wm.context_set_float', text="1.0", icon='FULLSCREEN_ENTER')
 			op.data_path, op.value = data_path, 1.0
+	
+	box.operator('texture.sync_tex_color_ramps', icon='LINKED')
 	
 	description = ""
 	if base_name == '_MainTex':
@@ -332,8 +333,8 @@ class replace_cm3d2_tex(bpy.types.Operator):
 
 class sync_tex_color_ramps(bpy.types.Operator):
 	bl_idname = 'texture.sync_tex_color_ramps'
-	bl_label = "設定をテクスチャの色に同期"
-	bl_description = "この設定値をテクスチャの色に適用してわかりやすくします"
+	bl_label = "設定をプレビューに同期"
+	bl_description = "設定値をテクスチャのプレビューに適用してわかりやすくします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	@classmethod

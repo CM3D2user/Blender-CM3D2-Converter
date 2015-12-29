@@ -248,7 +248,6 @@ CM3D2内のアイコン画像に使用できそうな画像をレンダリング
 設定値タイプ:	Value Type:
 テクスチャ	Texture
 値	Value
-色同期	Color Sync
 設定値名	Value Name
 テクスチャ名	Texture Name
 テクスチャパス	Texture Path
@@ -297,8 +296,8 @@ _ShadowRateToon 設定	_ShadowRateToon Settings
 指定された画像が見つかりません	Not Found Image
 画像を表示できるエリアが見つかりませんでした	Area that can display the image could not be found
 見つかりませんでした	Not Found
-設定をテクスチャの色に同期	Sync Texture Color
-この設定値をテクスチャの色に適用してわかりやすくします	Apply settings to color of texture
+設定をプレビューに同期	Sync Setting to Preview
+設定値をテクスチャのプレビューに適用してわかりやすくします	You clearly by applying the set value to the texture of the preview
 トゥーンを選択	Select Toons
 CM3D2にデフォルトで入っているトゥーンテクスチャを選択できます	You can select a toon textures that comes by default CM3D2
 パス	Path
