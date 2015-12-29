@@ -30,6 +30,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 	background_color = bpy.props.FloatVectorProperty(name="背景色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
 	is_round_background = bpy.props.BoolProperty(name="隅を丸める", default=True)
 	
+	layer_image = bpy.props.StringProperty(name="重ねる画像", default="")
+	
 	@classmethod
 	def poll(cls, context):
 		obs = context.selected_objects
@@ -78,6 +80,9 @@ class render_cm3d2_icon(bpy.types.Operator):
 		row.prop(self, 'use_background_color', icon='WORLD')
 		row.prop(self, 'background_color', icon='COLOR', text="")
 		row.prop(self, 'is_round_background', icon='MATCAP_24')
+		
+		self.layout.separator()
+		self.layout.prop_search(self, 'layer_image', context.blend_data, "images", icon='MOD_UVPROJECT')
 	
 	def execute(self, context):
 		import math, mathutils
@@ -180,43 +185,68 @@ class render_cm3d2_icon(bpy.types.Operator):
 			temp_lineset.linestyle.color = self.line_color
 		
 		# コンポジットノード #
+		pre_use_nodes = context.scene.use_nodes
+		context.scene.use_nodes = True
+		node_tree = context.scene.node_tree
+		for node in node_tree.nodes:
+			node_tree.nodes.remove(node)
+		
+		in_node = node_tree.nodes.new('CompositorNodeRLayers')
+		in_node.location = (0, 0)
+		
+		img_node = node_tree.nodes.new('CompositorNodeImage')
+		img_node.location = (0, -300)
+		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
+		if "Icon Alpha" in context.blend_data.images.keys():
+			icon_alpha_img = context.blend_data.images["Icon Alpha"]
+		else:
+			with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
+				data_to.images = ["Icon Alpha"]
+			icon_alpha_img = data_to.images[0]
+		img_node.image = icon_alpha_img
+		
+		scale_node = node_tree.nodes.new('CompositorNodeScale')
+		scale_node.location = (250, -300)
+		scale_node.space = 'RENDER_SIZE'
+		
+		mix_node = node_tree.nodes.new('CompositorNodeMixRGB')
+		mix_node.location = (500, -100)
+		mix_node.blend_type = 'MULTIPLY'
+		
+		alpha_node = node_tree.nodes.new('CompositorNodeSetAlpha')
+		alpha_node.location = (750, 0)
+		
+		out_node = node_tree.nodes.new('CompositorNodeComposite')
+		out_node.location = (1500, 0)
+		
+		layer_img = None
+		if self.layer_image in context.blend_data.images.keys():
+			layer_img = context.blend_data.images[self.layer_image]
+		if layer_img:
+			layer_img_node = node_tree.nodes.new('CompositorNodeImage')
+			layer_img_node.location = (750, -200)
+			layer_img_node.image = layer_img
+			
+			layer_scale_node = node_tree.nodes.new('CompositorNodeScale')
+			layer_scale_node.location = (1000, -200)
+			layer_scale_node.space = 'RENDER_SIZE'
+			
+			layer_add_node = node_tree.nodes.new('CompositorNodeAlphaOver')
+			layer_add_node.location = (1250, 0)
+			
+			node_tree.links.new(layer_add_node.inputs[1], alpha_node.outputs[0])
+			node_tree.links.new(layer_scale_node.inputs[0], layer_img_node.outputs[0])
+			node_tree.links.new(layer_add_node.inputs[2], layer_scale_node.outputs[0])
+			node_tree.links.new(out_node.inputs[0], layer_add_node.outputs[0])
+		else:
+			node_tree.links.new(out_node.inputs[0], alpha_node.outputs[0])
+		
+		node_tree.links.new(alpha_node.inputs[0], in_node.outputs[0])
+		node_tree.links.new(mix_node.inputs[1], in_node.outputs[1])
+		node_tree.links.new(scale_node.inputs[0], img_node.outputs[0])
+		node_tree.links.new(mix_node.inputs[2], scale_node.outputs[0])
 		if self.is_round_background:
-			pre_use_nodes = context.scene.use_nodes
-			context.scene.use_nodes = True
-			node_tree = context.scene.node_tree
-			for node in node_tree.nodes:
-				node_tree.nodes.remove(node)
-			
-			in_node = node_tree.nodes.new('CompositorNodeRLayers')
-			in_node.location = (0, 0)
-			
-			out_node = node_tree.nodes.new('CompositorNodeComposite')
-			out_node.location = (500, 0)
-			
-			img_node = node_tree.nodes.new('CompositorNodeImage')
-			img_node.location = (0, -300)
-			blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
-			if "Icon Alpha" in context.blend_data.images.keys():
-				icon_alpha_img = context.blend_data.images["Icon Alpha"]
-			else:
-				with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
-					data_to.images = ["Icon Alpha"]
-				icon_alpha_img = data_to.images[0]
-			img_node.image = icon_alpha_img
-			
-			scale_node = node_tree.nodes.new('CompositorNodeScale')
-			scale_node.location = (250, -300)
-			scale_node.space = 'RENDER_SIZE'
-			
-			mix_node = node_tree.nodes.new('CompositorNodeMixRGB')
-			mix_node.location = (250, -100)
-			mix_node.blend_type = 'MULTIPLY'
-			
-			node_tree.links.new(out_node.inputs[0], in_node.outputs[0])
-			node_tree.links.new(mix_node.inputs[1], in_node.outputs[1])
-			node_tree.links.new(scale_node.inputs[0], img_node.outputs[0])
-			node_tree.links.new(mix_node.inputs[2], scale_node.outputs[0])
-			node_tree.links.new(out_node.inputs[1], mix_node.outputs[0])
+			node_tree.links.new(alpha_node.inputs[1], mix_node.outputs[0])
 		# コンポジットノード #
 		
 		bpy.ops.render.render()

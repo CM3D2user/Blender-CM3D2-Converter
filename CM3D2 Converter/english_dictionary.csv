@@ -243,6 +243,7 @@ CM3D2内のアイコン画像に使用できそうな画像をレンダリング
 背景を使用	Use Background
 背景色	Background Color
 隅を丸める	Round Corners
+重ねる画像	Layer Image
 テクスチャ参照方法	Texture Reference Method
 輪郭線	Freestyle
 設定値タイプ:	Value Type:
