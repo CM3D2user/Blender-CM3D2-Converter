@@ -193,15 +193,17 @@ class render_cm3d2_icon(bpy.types.Operator):
 		img_node = node_tree.nodes.new('CompositorNodeImage')
 		img_node.location = (0, -300)
 		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
-		
 		if "Icon Alpha" in context.blend_data.images.keys():
 			icon_alpha_img = context.blend_data.images["Icon Alpha"]
 		else:
 			with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
 				data_to.images = ["Icon Alpha"]
 			icon_alpha_img = data_to.images[0]
-		
 		img_node.image = icon_alpha_img
+		
+		scale_node = node_tree.nodes.new('CompositorNodeScale')
+		scale_node.location = (250, -300)
+		scale_node.space = 'RENDER_SIZE'
 		
 		mix_node = node_tree.nodes.new('CompositorNodeMixRGB')
 		mix_node.location = (250, -100)
@@ -209,7 +211,8 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		node_tree.links.new(out_node.inputs[0], in_node.outputs[0])
 		node_tree.links.new(mix_node.inputs[1], in_node.outputs[1])
-		node_tree.links.new(mix_node.inputs[2], img_node.outputs[0])
+		node_tree.links.new(scale_node.inputs[0], img_node.outputs[0])
+		node_tree.links.new(mix_node.inputs[2], scale_node.outputs[0])
 		node_tree.links.new(out_node.inputs[1], mix_node.outputs[0])
 		# コンポジットノード #
 		
