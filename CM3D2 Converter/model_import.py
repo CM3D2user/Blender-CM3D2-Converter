@@ -476,8 +476,17 @@ class import_cm3d2_model(bpy.types.Operator):
 				for i in range(face_seek, face_seek + len(face_data[index])):
 					me.polygons[i].material_index = index
 				face_seek += len(face_data[index])
+				
 				# テクスチャ追加
-				for tex_index, tex_data in enumerate(data['data']):
+				already_texs = []
+				tex_index = 0
+				for tex_data in data['data']:
+					
+					if common.preferences().mate_unread_same_value:
+						if tex_data['name'] in already_texs:
+							continue
+						already_texs.append(tex_data['name'])
+					
 					if tex_data['type'] == 'tex':
 						slot = mate.texture_slots.create(tex_index)
 						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
@@ -504,15 +513,17 @@ class import_cm3d2_model(bpy.types.Operator):
 						slot.color = tex_data['color'][:3]
 						slot.diffuse_color_factor = tex_data['color'][3]
 						slot.use_rgb_to_intensity = True
-						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
+						tex = context.blend_data.textures.new(tex_data['name'], 'BLEND')
 						slot.texture = tex
 					
 					elif tex_data['type'] == 'f':
 						slot = mate.texture_slots.create(tex_index)
 						mate.use_textures[tex_index] = False
 						slot.diffuse_color_factor = tex_data['float']
-						tex = context.blend_data.textures.new(tex_data['name'], 'IMAGE')
+						tex = context.blend_data.textures.new(tex_data['name'], 'BLEND')
 						slot.texture = tex
+					
+					tex_index += 1
 					
 					progress_count += progress_plus_value
 					context.window_manager.progress_update(progress_count)

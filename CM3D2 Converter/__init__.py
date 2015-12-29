@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 300),
+	"version" : (0, 301),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -107,6 +107,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	tex_export_path = bpy.props.StringProperty(name="texエクスポート時のデフォルトパス", subtype='FILE_PATH', description="texエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
 	mate_default_path = bpy.props.StringProperty(name="mateファイル置き場", subtype='DIR_PATH', description="設定すれば、mateを扱う時は必ずここからファイル選択を始めます")
+	mate_unread_same_value = bpy.props.BoolProperty(name="同じ設定値が2つ以上ある場合削除", default=True, description="_ShadowColor など")
 	mate_import_path = bpy.props.StringProperty(name="mateインポート時のデフォルトパス", subtype='FILE_PATH', description="mateインポート時に最初はここが表示されます、インポート毎に保存されます")
 	mate_export_path = bpy.props.StringProperty(name="mateエクスポート時のデフォルトパス", subtype='FILE_PATH', description="mateエクスポート時に最初はここが表示されます、エクスポート毎に保存されます")
 	
@@ -159,6 +160,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		
 		box = self.layout.box()
 		box.label(text="mateファイル", icon='MATERIAL')
+		box.prop(self, 'mate_unread_same_value', icon='DISCLOSURE_TRI_DOWN')
 		box.prop(self, 'mate_default_path', icon='FILESEL', text="ファイル選択時の初期フォルダ")
 		
 		box = self.layout.box()

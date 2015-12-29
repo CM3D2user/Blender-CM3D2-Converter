@@ -242,6 +242,7 @@ CM3D2内のアイコン画像に使用できそうな画像をレンダリング
 ズーム倍率	Zoom Multi
 背景を使用	Use Background
 背景色	Background Color
+隅を丸める	Round Corners
 テクスチャ参照方法	Texture Reference Method
 輪郭線	Freestyle
 設定値タイプ:	Value Type:
@@ -441,6 +442,8 @@ texエクスポート時のデフォルトパス	Default Path of tex Export
 texエクスポート時に最初はここが表示されます、エクスポート毎に保存されます	First at the time of tex export will be displayed here. It is saved for each export
 mateファイル置き場	Strage of mate File
 設定すれば、mateを扱う時は必ずここからファイル選択を始めます	If you set, you can start file selection always from here when you use mate
+同じ設定値が2つ以上ある場合削除	Remove If there same setting value is more than
+_ShadowColor など	Such as _ShadowColor
 mateインポート時のデフォルトパス	Default Path of mate Export
 mateインポート時に最初はここが表示されます、インポート毎に保存されます	First at the time of import mate will appear here. It is saved for each import
 mateエクスポート時のデフォルトパス	Default path at the time of mate export

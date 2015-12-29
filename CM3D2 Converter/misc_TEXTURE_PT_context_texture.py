@@ -22,7 +22,7 @@ def menu_func(self, context):
 	
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
-	split = box.split(percentage=0.33)
+	split = box.split(percentage=0.333333333333333333)
 	split.label(text="設定値タイプ:")
 	row = split.row()
 	

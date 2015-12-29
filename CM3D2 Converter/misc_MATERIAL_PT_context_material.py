@@ -67,7 +67,7 @@ def menu_func(self, context):
 				type_name = "法線"
 				icon = 'MATCAP_23'
 			
-			row = box.split(percentage=0.31)
+			row = box.split(percentage=0.333333333333333333333)
 			row.label(text="種類:")
 			row.label(text=type_name, icon=icon)
 			box.prop(mate, 'name', icon='SORTALPHA', text="マテリアル名")
@@ -362,7 +362,7 @@ class new_cm3d2(bpy.types.Operator):
 			slot.color = data[1][:3]
 			slot.diffuse_color_factor = data[1][3]
 			slot.use_rgb_to_intensity = True
-			tex = context.blend_data.textures.new(data[0], 'IMAGE')
+			tex = context.blend_data.textures.new(data[0], 'BLEND')
 			slot.texture = tex
 			slot_count += 1
 		
@@ -370,7 +370,7 @@ class new_cm3d2(bpy.types.Operator):
 			slot = mate.texture_slots.create(slot_count)
 			mate.use_textures[slot_count] = False
 			slot.diffuse_color_factor = data[1]
-			tex = context.blend_data.textures.new(data[0], 'IMAGE')
+			tex = context.blend_data.textures.new(data[0], 'BLEND')
 			slot.texture = tex
 			slot_count += 1
 		

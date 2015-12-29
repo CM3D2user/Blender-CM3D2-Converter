@@ -62,6 +62,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 		mate['shader2'] = common.read_str(file)
 		
 		slot_index = 0
+		already_texs = []
 		for i in range(99999):
 			type = common.read_str(file)
 			if type == 'tex':
@@ -89,7 +90,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 			elif type == 'col':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.read_str(file)
-				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
+				tex = context.blend_data.textures.new(tex_name, 'BLEND')
 				mate.use_textures[slot_index] = False
 				slot.use_rgb_to_intensity = True
 				slot.color = struct.unpack('<3f', file.read(4*3))
@@ -99,7 +100,7 @@ class import_cm3d2_mate(bpy.types.Operator):
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.read_str(file)
-				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
+				tex = context.blend_data.textures.new(tex_name, 'BLEND')
 				mate.use_textures[slot_index] = False
 				slot.diffuse_color_factor = struct.unpack('<f', file.read(4))[0]
 				slot.texture = tex
@@ -109,6 +110,13 @@ class import_cm3d2_mate(bpy.types.Operator):
 			else:
 				self.report(type={'ERROR'}, message="未知の設定値タイプが見つかりました、中止します")
 				return {'CANCELLED'}
+			
+			if common.preferences().mate_unread_same_value:
+				if tex_name in already_texs:
+					mate.texture_slots.clear(slot_index)
+					slot_index -= 1
+				already_texs.append(tex_name)
+			
 			slot_index += 1
 		
 		file.close()
