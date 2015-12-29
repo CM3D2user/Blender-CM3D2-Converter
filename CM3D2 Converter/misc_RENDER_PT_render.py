@@ -28,6 +28,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	use_background_color = bpy.props.BoolProperty(name="背景を使用", default=True)
 	background_color = bpy.props.FloatVectorProperty(name="背景色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=3)
+	is_round_background = bpy.props.BoolProperty(name="隅を丸める", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -73,9 +74,10 @@ class render_cm3d2_icon(bpy.types.Operator):
 		self.layout.prop(self, 'zoom_multi', icon='VIEWZOOM', slider=True)
 		self.layout.separator()
 		
-		row = self.layout.split(percentage=0.5, align=True)
+		row = self.layout.split(percentage=0.333333333, align=True)
 		row.prop(self, 'use_background_color', icon='WORLD')
 		row.prop(self, 'background_color', icon='COLOR', text="")
+		row.prop(self, 'is_round_background', icon='MATCAP_24')
 	
 	def execute(self, context):
 		import math, mathutils
@@ -178,47 +180,52 @@ class render_cm3d2_icon(bpy.types.Operator):
 			temp_lineset.linestyle.color = self.line_color
 		
 		# コンポジットノード #
-		pre_use_nodes = context.scene.use_nodes
-		context.scene.use_nodes = True
-		node_tree = context.scene.node_tree
-		for node in node_tree.nodes:
-			node_tree.nodes.remove(node)
-		
-		in_node = node_tree.nodes.new('CompositorNodeRLayers')
-		in_node.location = (0, 0)
-		
-		out_node = node_tree.nodes.new('CompositorNodeComposite')
-		out_node.location = (500, 0)
-		
-		img_node = node_tree.nodes.new('CompositorNodeImage')
-		img_node.location = (0, -300)
-		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
-		if "Icon Alpha" in context.blend_data.images.keys():
-			icon_alpha_img = context.blend_data.images["Icon Alpha"]
-		else:
-			with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
-				data_to.images = ["Icon Alpha"]
-			icon_alpha_img = data_to.images[0]
-		img_node.image = icon_alpha_img
-		
-		scale_node = node_tree.nodes.new('CompositorNodeScale')
-		scale_node.location = (250, -300)
-		scale_node.space = 'RENDER_SIZE'
-		
-		mix_node = node_tree.nodes.new('CompositorNodeMixRGB')
-		mix_node.location = (250, -100)
-		mix_node.blend_type = 'MULTIPLY'
-		
-		node_tree.links.new(out_node.inputs[0], in_node.outputs[0])
-		node_tree.links.new(mix_node.inputs[1], in_node.outputs[1])
-		node_tree.links.new(scale_node.inputs[0], img_node.outputs[0])
-		node_tree.links.new(mix_node.inputs[2], scale_node.outputs[0])
-		node_tree.links.new(out_node.inputs[1], mix_node.outputs[0])
+		if self.is_round_background:
+			pre_use_nodes = context.scene.use_nodes
+			context.scene.use_nodes = True
+			node_tree = context.scene.node_tree
+			for node in node_tree.nodes:
+				node_tree.nodes.remove(node)
+			
+			in_node = node_tree.nodes.new('CompositorNodeRLayers')
+			in_node.location = (0, 0)
+			
+			out_node = node_tree.nodes.new('CompositorNodeComposite')
+			out_node.location = (500, 0)
+			
+			img_node = node_tree.nodes.new('CompositorNodeImage')
+			img_node.location = (0, -300)
+			blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
+			if "Icon Alpha" in context.blend_data.images.keys():
+				icon_alpha_img = context.blend_data.images["Icon Alpha"]
+			else:
+				with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
+					data_to.images = ["Icon Alpha"]
+				icon_alpha_img = data_to.images[0]
+			img_node.image = icon_alpha_img
+			
+			scale_node = node_tree.nodes.new('CompositorNodeScale')
+			scale_node.location = (250, -300)
+			scale_node.space = 'RENDER_SIZE'
+			
+			mix_node = node_tree.nodes.new('CompositorNodeMixRGB')
+			mix_node.location = (250, -100)
+			mix_node.blend_type = 'MULTIPLY'
+			
+			node_tree.links.new(out_node.inputs[0], in_node.outputs[0])
+			node_tree.links.new(mix_node.inputs[1], in_node.outputs[1])
+			node_tree.links.new(scale_node.inputs[0], img_node.outputs[0])
+			node_tree.links.new(mix_node.inputs[2], scale_node.outputs[0])
+			node_tree.links.new(out_node.inputs[1], mix_node.outputs[0])
 		# コンポジットノード #
 		
 		bpy.ops.render.render()
 		
-		context.scene.use_nodes = pre_use_nodes
+		if self.is_round_background:
+			for node in node_tree.nodes:
+				node_tree.nodes.remove(node)
+			context.scene.use_nodes = False
+			common.remove_data([icon_alpha_img])
 		
 		if self.use_freestyle:
 			context.scene.render.use_freestyle = pre_use_freestyle
