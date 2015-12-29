@@ -235,6 +235,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		
 		img = context.blend_data.images["Render Result"]
 		img['tex Name'] = common.remove_serial_number( context.active_object.name.split('.')[0] ) + "_i_.tex"
+		img['cm3d2_path'] = "assets/texture/texture/" + context.active_object.name.split('.')[0] + "_i_.png"
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
