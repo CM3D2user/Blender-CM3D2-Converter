@@ -459,7 +459,7 @@ class paste_material(bpy.types.Operator):
 			elif type == 'col':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.line_trim(lines[line_seek+1])
-				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
+				tex = context.blend_data.textures.new(tex_name, 'BLEND')
 				mate.use_textures[slot_index] = False
 				slot.use_rgb_to_intensity = True
 				fs = common.line_trim(lines[line_seek+2]).split(' ')
@@ -473,7 +473,7 @@ class paste_material(bpy.types.Operator):
 			elif type == 'f':
 				slot = mate.texture_slots.create(slot_index)
 				tex_name = common.line_trim(lines[line_seek+1])
-				tex = context.blend_data.textures.new(tex_name, 'IMAGE')
+				tex = context.blend_data.textures.new(tex_name, 'BLEND')
 				mate.use_textures[slot_index] = False
 				slot.diffuse_color_factor = float(common.line_trim(lines[line_seek+2]))
 				slot.texture = tex
