@@ -20,7 +20,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def poll(cls, context):
 		img = context.edit_image
 		if img:
-			if len(img.pixels):
+			if bpy.ops.image.save_as.poll():
 				return True
 		return False
 	
@@ -54,16 +54,20 @@ class export_cm3d2_tex(bpy.types.Operator):
 		# バックアップ
 		common.file_backup(self.filepath, self.is_backup)
 		
-		temp_path = self.filepath + ".temp.png"
-		
 		# とりあえずpngで保存
 		img = context.edit_image
+		if img.source != 'VIEWER':
+			temp_path = self.filepath + ".temp.png"
+		else:
+			temp_path = os.path.splitext(self.filepath)[0] + ".png"
 		pre_filepath = bpy.path.abspath(img.filepath)
 		pre_source = img.source
 		override = context.copy()
 		override['edit_image'] = img
 		try:
-			bpy.ops.image.save_as(override, save_as_render=False, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
+			save_as_render = True if pre_source == 'VIEWER' else False
+			copy = True if pre_source == 'VIEWER' else False
+			bpy.ops.image.save_as(override, save_as_render=save_as_render, copy=copy, filepath=temp_path, relative_path=True, show_multiview=False, use_multiview=False)
 			is_remove = True
 		except:
 			if os.path.exists( bpy.path.abspath(img.filepath) ):
@@ -81,7 +85,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 		temp_data = temp_file.read()
 		temp_file.close()
 		# 一時ファイルを削除
-		if is_remove and pre_source != 'VIEWER':
+		if is_remove:
 			os.remove(temp_path)
 		
 		# 本命ファイルに書き込み
