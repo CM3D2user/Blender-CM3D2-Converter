@@ -22,13 +22,13 @@ def menu_func(self, context):
 	
 	box = self.layout.box()
 	box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
-	split = box.split(percentage=0.3)
+	split = box.split(percentage=0.33)
 	split.label(text="設定値タイプ:")
 	row = split.row()
 	
-	if type == 'tex': row.label(text='テクスチャ')
-	elif type == 'col': row.label(text='色')
-	elif type == 'f': row.label(text='値')
+	if type == 'tex': row.label(text='テクスチャ', icon='TEXTURE')
+	elif type == 'col': row.label(text='色', icon='COLOR')
+	elif type == 'f': row.label(text='値', icon='ARROW_LEFTRIGHT')
 	
 	check_row = row.row(align=True)
 	check_row.prop(tex_slot, 'use', text="")
