@@ -298,7 +298,7 @@ def set_texture_color(slot):
 	tex = slot.texture
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
-	tex.use_flip_axis = 'VERTICAL'
+	tex.progression = 'DIAGONAL'
 	tex.use_color_ramp = True
 	tex.use_preview_alpha = True
 	elements = tex.color_ramp.elements
@@ -311,7 +311,7 @@ def set_texture_color(slot):
 		for i in range(element_count - len(elements)):
 			elements.new(1.0)
 	
-	elements[0].position, elements[1].position, elements[2].position, elements[3].position = 0.2, 0.21, 0.3, 0.31
+	elements[0].position, elements[1].position, elements[2].position, elements[3].position = 0.2, 0.21, 0.25, 0.26
 	
 	if type == 'col':
 		elements[0].color = [0.5, 1, 0.5, 1]
