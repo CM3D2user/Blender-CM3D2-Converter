@@ -331,6 +331,7 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
 		
+		tex_storage_files = common.get_tex_storage_files()
 		slot_count = 0
 		for data in tex_list:
 			slot = mate.texture_slots.create(slot_count)
@@ -350,7 +351,7 @@ class new_cm3d2(bpy.types.Operator):
 			
 			# tex探し
 			if self.is_replace_cm3d2_tex:
-				if common.replace_cm3d2_tex(img) and data[0]=='_MainTex':
+				if common.replace_cm3d2_tex(img, tex_storage_files) and data[0]=='_MainTex':
 					for face in me.polygons:
 						if face.material_index == ob.active_material_index:
 							me.uv_textures.active.data[face.index].image = img

@@ -298,6 +298,8 @@ def set_texture_color(slot):
 	tex = slot.texture
 	base_name = remove_serial_number(tex.name)
 	tex.type = 'BLEND'
+	if 'progression' in tex.keys():
+		tex.progression = 'DIAGONAL'
 	tex.use_color_ramp = True
 	tex.use_preview_alpha = True
 	elements = tex.color_ramp.elements
