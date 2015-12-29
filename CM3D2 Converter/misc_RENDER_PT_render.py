@@ -234,6 +234,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 			context.scene.render.layers.active.freestyle_settings.linesets.remove(temp_lineset)
 		
 		img = context.blend_data.images["Render Result"]
+		img['tex Name'] = common.remove_serial_number( context.active_object.name.split('.')[0] ) + "_i_.tex"
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		

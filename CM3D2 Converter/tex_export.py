@@ -37,6 +37,8 @@ class export_cm3d2_tex(bpy.types.Operator):
 			self.path = img['cm3d2_path']
 		else:
 			self.path = "assets/texture/texture/" + os.path.basename(self.filepath)
+		if 'tex Name' in img.keys():
+			self.filepath = os.path.join(os.path.dirname(self.filepath), img['tex Name'])
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
