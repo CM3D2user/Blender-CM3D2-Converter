@@ -314,7 +314,7 @@ def set_texture_color(slot):
 	elements[0].position, elements[1].position, elements[2].position, elements[3].position = 0.2, 0.21, 0.25, 0.26
 	
 	if type == 'col':
-		elements[0].color = [0.5, 1, 0.5, 1]
+		elements[0].color = [0.2, 1, 0.2, 1]
 		elements[-1].color = slot.color[:] + (slot.diffuse_color_factor, )
 		if 0.3 < mathutils.Color(slot.color[:3]).v:
 			elements[1].color, elements[2].color = [0, 0, 0, 1], [0, 0, 0, 1]
@@ -322,7 +322,7 @@ def set_texture_color(slot):
 			elements[1].color, elements[2].color = [1, 1, 1, 1], [1, 1, 1, 1]
 	
 	elif type == 'f':
-		elements[0].color = [0.5, 0.5, 1, 1]
+		elements[0].color = [0.2, 0.2, 1, 1]
 		multi = 1.0
 		if base_name == '_OutlineWidth':
 			multi = 200
