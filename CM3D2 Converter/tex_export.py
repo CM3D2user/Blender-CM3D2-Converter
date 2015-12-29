@@ -20,7 +20,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def poll(cls, context):
 		img = context.edit_image
 		if img:
-			if bpy.ops.image.save_as.poll():
+			if len(img.pixels) or img.source == 'VIEWER':
 				return True
 		return False
 	
