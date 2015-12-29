@@ -69,10 +69,18 @@ def menu_func(self, context):
 		col = box.column(align=True)
 		col.label(text="ポーズ", icon='POSE_HLT')
 		row = col.row(align=True)
-		op = row.operator('wm.context_set_int', icon='ARMATURE_DATA', text="オリジナル")
+		
+		sub_row = row.row(align=True)
+		op = sub_row.operator('wm.context_set_int', icon='ARMATURE_DATA', text="オリジナル")
 		op.data_path, op.value = 'scene.frame_current', 1
-		op = row.operator('wm.context_set_int', icon='POSE_DATA', text="ポージング")
+		if context.scene.frame_current % 2:
+			sub_row.enabled = False
+		
+		sub_row = row.row(align=True)
+		op = sub_row.operator('wm.context_set_int', icon='POSE_DATA', text="ポージング")
 		op.data_path, op.value = 'scene.frame_current', 0
+		if not context.scene.frame_current % 2:
+			sub_row.enabled = False
 
 class decode_cm3d2_bone_names(bpy.types.Operator):
 	bl_idname = 'armature.decode_cm3d2_bone_names'
