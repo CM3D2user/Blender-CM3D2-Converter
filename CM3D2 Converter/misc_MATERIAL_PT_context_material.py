@@ -92,7 +92,7 @@ def menu_func(self, context):
 					if not slot: continue
 					if not slot.texture: continue
 					tex = slot.texture
-					name = common.remove_serial_number(tex.name).replace("_", "")
+					name = common.remove_serial_number(tex.name).replace("_", "") + " "
 					
 					if slot.use: type = 'tex'
 					else: type = 'col' if slot.use_rgb_to_intensity else 'f'
