@@ -116,6 +116,9 @@ mateから	From mate
 マテリアル名	Material Name
 シェーダー1	Shader1
 シェーダー2	Shader2
+簡易テクスチャ情報	Simple Texture Info
+透明度	Alpha
+値	Value
 CM3D2用に変更	Change for CM3D2
 CM3D2用マテリアルを新規作成	Create Material for CM3D2
 Blender-CM3D2-Converterで使用できるマテリアルを新規で作成します	Create a material that can be used in Blender-CM3D2-Converter with new
@@ -129,6 +132,8 @@ Blender-CM3D2-Converterで使用できるマテリアルを新規で作成しま
 マテリアルテキストをクリップボードにコピーしました	Copied the material text to the clipboard
 マテリアルを装飾	Decorate Materials
 スロット内のマテリアルを全て設定に合わせて装飾します	Decorate all to match material setting in slots
+このテクスチャを見る	Show This Texture
+テクスチャ名	Texture Name
 クイック・シェイプキー転送	Quick Transfer Shape Key
 アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します	The active mesh it will transfer the shape keys of other selected mesh at high speed
 最初に全シェイプキーを削除	Remove All First
@@ -258,9 +263,7 @@ CM3D2内のアイコン画像に使用できそうな画像をレンダリング
 輪郭線	Freestyle
 設定値タイプ:	Value Type:
 テクスチャ	Texture
-値	Value
 設定値名	Value Name
-テクスチャ名	Texture Name
 テクスチャパス	Texture Path
 画像を表示	Show Image
 texで保存	Save as tex

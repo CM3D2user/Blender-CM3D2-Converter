@@ -75,6 +75,49 @@ def menu_func(self, context):
 			box.prop(mate, '["shader2"]', icon='SMOOTH', text="シェーダー2")
 			
 			box.operator('material.decorate_material', icon='TEXTURE_SHADED')
+			
+			
+			if 'CM3D2 Texture Expand' not in mate.keys():
+				mate['CM3D2 Texture Expand'] = True
+			box = self.layout.box()
+			if mate['CM3D2 Texture Expand']:
+				
+				row = box.row()
+				row.alignment = 'LEFT'
+				op = row.operator('wm.context_set_int', icon='DOWNARROW_HLT', text="", emboss=False)
+				op.data_path, op.value, op.relative = 'material["CM3D2 Texture Expand"]', 0, False
+				row.label(text="簡易テクスチャ情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
+				
+				for slot in mate.texture_slots:
+					if not slot: continue
+					if not slot.texture: continue
+					tex = slot.texture
+					name = common.remove_serial_number(tex.name).replace("_", "")
+					
+					if slot.use: type = 'tex'
+					else: type = 'col' if slot.use_rgb_to_intensity else 'f'
+					
+					if type == 'tex':
+						row = box.split(percentage=0.333333333333333333333, align=True)
+						row.operator('material.quick_texture_show', text=name, icon='TEXTURE', emboss=False).texture_name = tex.name
+						if 'image' in dir(tex):
+							row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
+					elif type == 'col':
+						row = box.split(percentage=0.333333333333333333333, align=True)
+						row.operator('material.quick_texture_show', text=name, icon='COLOR', emboss=False).texture_name = tex.name
+						row.prop(slot, 'color', text="")
+						row.prop(slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="透明度", slider=True)
+					elif type == 'f':
+						row = box.split(percentage=0.333333333333333333333, align=True)
+						row.operator('material.quick_texture_show', text=name, icon='ARROW_LEFTRIGHT', emboss=False).texture_name = tex.name
+						row.prop(slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+			
+			else:
+				row = box.row()
+				row.alignment = 'LEFT'
+				op = row.operator('wm.context_set_int', icon='DOWNARROW_HLT', text="", emboss=False)
+				op.data_path, op.value, op.relative = 'material["CM3D2 Texture Expand"]', 1, False
+				row.label(text="簡易テクスチャ情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
 		
 		else:
 			self.layout.operator('material.new_cm3d2', text="CM3D2用に変更", icon_value=common.preview_collections['main']['KISS'].icon_id)
@@ -587,4 +630,31 @@ class decorate_material(bpy.types.Operator):
 				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 					common.decorate_material(mate, True, me, slot_index)
 		
+		return {'FINISHED'}
+
+class quick_texture_show(bpy.types.Operator):
+	bl_idname = 'material.quick_texture_show'
+	bl_label = "このテクスチャを見る"
+	bl_description = ""
+	bl_options = {'REGISTER'}
+	
+	texture_name = bpy.props.StringProperty(name="テクスチャ名")
+	
+	@classmethod
+	def poll(cls, context):
+		mate = context.material
+		if mate:
+			if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+				return True
+		return False
+	
+	def execute(self, context):
+		mate = context.material
+		for index, slot in enumerate(mate.texture_slots):
+			if not slot: continue
+			if not slot.texture: continue
+			if slot.texture.name == self.texture_name:
+				mate.active_texture_index = index
+				context.space_data.context = 'TEXTURE'
+				break
 		return {'FINISHED'}
