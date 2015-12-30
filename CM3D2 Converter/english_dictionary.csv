@@ -235,6 +235,7 @@ AOの精度	AO Samples
 縁・ベイク	Bake Border
 アクティブオブジェクトに素早く縁を黒くベイクします	Bake quick black edge in the active object
 ぼかし強度	Blur Strength
+正規化	Normalize
 余白を透過	Transparent Margin
 縁設定	Border Settings
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
