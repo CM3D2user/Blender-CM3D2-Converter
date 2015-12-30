@@ -923,10 +923,13 @@ class quick_border_bake_image(bpy.types.Operator):
 		temp_mate.diffuse_color = (1, 1, 1)
 		
 		pre_use_bake_clear = context.scene.render.use_bake_clear
+		pre_bake_margin = context.scene.render.bake_margin
 		context.scene.render.use_bake_clear = False
+		context.scene.render.bake_margin = 0
 		context.scene.render.bake_type = 'TEXTURE'
 		bpy.ops.object.bake_image()
 		context.scene.render.use_bake_clear = pre_use_bake_clear
+		context.scene.render.bake_margin = pre_bake_margin
 		
 		if self.blur_mode == 'SCALE':
 			pre_size = img.size[:]
