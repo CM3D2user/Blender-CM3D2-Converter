@@ -15,6 +15,8 @@ def menu_func(self, context):
 	row.operator('object.quick_side_shadow_bake_image', icon='ARROW_LEFTRIGHT', text="側面陰")
 	row = col.row(align=True)
 	row.operator('object.quick_gradation_bake_image', icon='MESH_PLANE', text="グラデーション")
+	row.operator('object.quick_border_bake_image', icon='MATCAP_24', text="縁")
+	row = col.row(align=True)
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE', text="髪")
 
@@ -568,7 +570,7 @@ class quick_gradation_bake_image(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
-		self.image_name = context.active_object.name + " SideShadow Bake"
+		self.image_name = context.active_object.name + " Gradation Bake"
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -842,5 +844,98 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		material_restore.restore()
 		if self.ao_hide_other: hide_render_restore.restore()
+		
+		return {'FINISHED'}
+
+class quick_border_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_border_bake_image'
+	bl_label = "縁・ベイク"
+	bl_description = "アクティブオブジェクトに素早く縁を黒くベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
+	
+	items = [
+		('NONE', "他ソフトで後でぼかす", "", 'EXTERNAL_DATA', 1),
+		('SCALE', "Blenderで雑にぼかす", "", 'BLENDER', 2),
+		]
+	blur_mode = bpy.props.EnumProperty(items=items, name="ぼかしモード", default='SCALE')
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Border Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.prop(self, 'blur_mode', icon='NONE', expand=True)
+	
+	def execute(self, context):
+		import numpy
+		
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		
+		img.generated_color = (0, 0, 0, 1)
+		
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		material_restore = common.material_restore(ob)
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = context.blend_data.materials.new("quick_gradation_bake_image_temp")
+		ob.material_slots[0].material = temp_mate
+		temp_mate.diffuse_color = (1, 1, 1)
+		
+		pre_use_bake_clear = context.scene.render.use_bake_clear
+		context.scene.render.use_bake_clear = False
+		context.scene.render.bake_type = 'TEXTURE'
+		bpy.ops.object.bake_image()
+		context.scene.render.use_bake_clear = pre_use_bake_clear
+		
+		if self.blur_mode == 'SCALE':
+			pre_size = img.size[:]
+			for i in [16, 8, 4, 2]:
+				img.scale(pre_size[0]/i, pre_size[1]/i)
+				img.scale(pre_size[0], pre_size[1])
+		
+		common.remove_data([temp_mate])
+		
+		material_restore.restore()
 		
 		return {'FINISHED'}
