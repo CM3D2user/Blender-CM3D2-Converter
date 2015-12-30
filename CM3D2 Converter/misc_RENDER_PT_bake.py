@@ -870,11 +870,7 @@ class quick_border_bake_image(bpy.types.Operator):
 	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
-	items = [
-		('NONE', "他ソフトで後でぼかす", "", 'EXTERNAL_DATA', 1),
-		('SCALE', "Blenderで雑にぼかす", "", 'BLENDER', 2),
-		]
-	blur_mode = bpy.props.EnumProperty(items=items, name="ぼかしモード", default='SCALE')
+	blur_strength = bpy.props.IntProperty(name="ぼかし強度", default=100, min=0, max=1000, soft_min=0, soft_max=1000)
 	
 	@classmethod
 	def poll(cls, context):
@@ -899,11 +895,9 @@ class quick_border_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
-		self.layout.prop(self, 'blur_mode', icon='NONE', expand=True)
+		self.layout.prop(self, 'blur_strength', icon='BRUSH_BLUR')
 	
 	def execute(self, context):
-		import numpy
-		
 		ob = context.active_object
 		me = ob.data
 		
@@ -913,7 +907,6 @@ class quick_border_bake_image(bpy.types.Operator):
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
-		common.set_area_space_attr(area, 'image', img)
 		
 		img.generated_color = (0, 0, 0, 1)
 		
@@ -932,18 +925,66 @@ class quick_border_bake_image(bpy.types.Operator):
 		context.scene.render.use_bake_clear = False
 		context.scene.render.bake_margin = 0
 		context.scene.render.bake_type = 'TEXTURE'
+		
 		bpy.ops.object.bake_image()
+		
 		context.scene.render.use_bake_clear = pre_use_bake_clear
 		context.scene.render.bake_margin = pre_bake_margin
 		
-		if self.blur_mode == 'SCALE':
-			pre_size = img.size[:]
-			for i in [16, 8, 4, 2]:
-				img.scale(pre_size[0]/i, pre_size[1]/i)
-				img.scale(pre_size[0], pre_size[1])
+		# 無駄に壮大なぼかし処理
+		pre_resolution_x = context.scene.render.resolution_x
+		pre_resolution_y = context.scene.render.resolution_y
+		pre_resolution_percentage = context.scene.render.resolution_percentage
+		context.scene.render.resolution_x = img.size[0]
+		context.scene.render.resolution_y = img.size[1]
+		context.scene.render.resolution_percentage = 100
 		
+		context.scene.use_nodes = True
+		node_tree = context.scene.node_tree
+		for node in node_tree.nodes:
+			node_tree.nodes.remove(node)
+		
+		img_node = node_tree.nodes.new('CompositorNodeImage')
+		img_node.location = (0, 0)
+		img_node.image = img
+		
+		blur_node = node_tree.nodes.new('CompositorNodeBlur')
+		blur_node.location = (250, 0)
+		blur_node.size_x, blur_node.size_y = 1, 1
+		blur_node.inputs[1].default_value = self.blur_strength
+		
+		out_node = node_tree.nodes.new('CompositorNodeComposite')
+		out_node.location = (500, 0)
+		
+		node_tree.links.new(blur_node.inputs[0], img_node.outputs[0])
+		node_tree.links.new(out_node.inputs[0], blur_node.outputs[0])
+		
+		bpy.ops.render.render()
+		render_img = context.blend_data.images["Render Result"]
+		
+		temp_png_path = os.path.join(bpy.app.tempdir, "temp.png")
+		img_override = context.copy()
+		img_override['object'] = render_img
+		img_override['edit_image'] = render_img
+		img_override['area'] = area
+		common.set_area_space_attr(area, 'image', render_img)
+		bpy.ops.image.save_as(img_override, save_as_render=True, copy=True, filepath=temp_png_path, relative_path=False, show_multiview=False, use_multiview=False)
+		img.source = 'FILE'
+		img.filepath = temp_png_path
+		img.pack(as_png=True)
+		os.remove(temp_png_path)
+		
+		for node in node_tree.nodes:
+			node_tree.nodes.remove(node)
+		context.scene.use_nodes = False
+		context.scene.render.resolution_x = pre_resolution_x
+		context.scene.render.resolution_y = pre_resolution_y
+		context.scene.render.resolution_percentage = pre_resolution_percentage
+		
+		# 無駄に壮大なぼかし処理 完
+		
+		common.set_area_space_attr(area, 'image', img)
 		common.remove_data([temp_mate])
-		
 		material_restore.restore()
 		
 		return {'FINISHED'}
