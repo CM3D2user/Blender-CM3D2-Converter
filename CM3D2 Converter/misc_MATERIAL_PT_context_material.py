@@ -122,7 +122,7 @@ def menu_func(self, context):
 			else:
 				row = box.row()
 				row.alignment = 'LEFT'
-				op = row.operator('wm.context_set_int', icon='DOWNARROW_HLT', text="", emboss=False)
+				op = row.operator('wm.context_set_int', icon='RIGHTARROW', text="", emboss=False)
 				op.data_path, op.value, op.relative = 'material["CM3D2 Texture Expand"]', 1, False
 				row.label(text="簡易テクスチャ情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
 		
