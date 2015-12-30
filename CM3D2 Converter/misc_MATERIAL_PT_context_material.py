@@ -101,7 +101,8 @@ def menu_func(self, context):
 						row = box.split(percentage=0.333333333333333333333, align=True)
 						row.operator('material.quick_texture_show', text=name, icon='TEXTURE', emboss=False).texture_name = tex.name
 						if 'image' in dir(tex):
-							row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
+							if tex.image:
+								row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
 					elif type == 'col':
 						row = box.split(percentage=0.333333333333333333333, align=True)
 						row.operator('material.quick_texture_show', text=name, icon='COLOR', emboss=False).texture_name = tex.name
