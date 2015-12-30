@@ -218,9 +218,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
-		
-		override = context.copy()
-		override['object'] = ob
+		ob.select = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -229,10 +227,16 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		pre_vertex_color_active_index = me.vertex_colors.active_index
+		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
 		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
-		me.vertex_colors.active = vertex_color
+		temp_ob = context.blend_data.objects.new("quick_dirty_bake_image_temp", temp_me)
+		context.scene.objects.link(temp_ob)
+		temp_me.vertex_colors.new(name="quick_dirty_bake_image_temp")
+		context.scene.objects.active = temp_ob
+		temp_ob.select = True
 		
+		override = context.copy()
+		override['object'] = temp_ob
 		bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=self.blur_iterations, clean_angle=self.clean_angle, dirt_angle=self.dirt_angle, dirt_only=self.dirt_only)
 		
 		context.scene.render.bake_type = 'VERTEX_COLORS'
@@ -240,8 +244,9 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		
 		bpy.ops.object.bake_image()
 		
-		me.vertex_colors.remove(vertex_color)
-		me.vertex_colors.active_index = pre_vertex_color_active_index
+		common.remove_data([temp_me, temp_ob])
+		context.scene.objects.active = ob
+		ob.select = True
 		
 		return {'FINISHED'}
 
@@ -594,7 +599,7 @@ class quick_gradation_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='RENDER')
+		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
 		zs = [(ob.matrix_world * v.co).z for v in temp_me.vertices]
 		zs.sort()
 		me_conter = (zs[0] + zs[-1]) / 2
