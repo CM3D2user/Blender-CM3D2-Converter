@@ -98,20 +98,26 @@ def menu_func(self, context):
 					else: type = 'col' if slot.use_rgb_to_intensity else 'f'
 					
 					if type == 'tex':
-						row = box.split(percentage=0.333333333333333333333, align=True)
-						row.operator('material.quick_texture_show', text=name, icon='TEXTURE', emboss=False).texture_name = tex.name
+						row = box.row(align=True)
+						sub_row = row.split(percentage=0.333333333333333333333, align=True)
+						sub_row.label(text=name, icon='TEXTURE')
 						if 'image' in dir(tex):
 							if tex.image:
-								row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
+								sub_row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
+						row.operator('material.quick_texture_show', text="", icon='RIGHTARROW').texture_name = tex.name
 					elif type == 'col':
-						row = box.split(percentage=0.333333333333333333333, align=True)
-						row.operator('material.quick_texture_show', text=name, icon='COLOR', emboss=False).texture_name = tex.name
-						row.prop(slot, 'color', text="")
-						row.prop(slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="透明度", slider=True)
+						row = box.row(align=True)
+						sub_row = row.split(percentage=0.333333333333333333333, align=True)
+						sub_row.label(text=name, icon='COLOR')
+						sub_row.prop(slot, 'color', text="")
+						sub_row.prop(slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="透明度", slider=True)
+						row.operator('material.quick_texture_show', text="", icon='RIGHTARROW').texture_name = tex.name
 					elif type == 'f':
-						row = box.split(percentage=0.333333333333333333333, align=True)
-						row.operator('material.quick_texture_show', text=name, icon='ARROW_LEFTRIGHT', emboss=False).texture_name = tex.name
-						row.prop(slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+						row = box.row(align=True)
+						sub_row = row.split(percentage=0.333333333333333333333, align=True)
+						sub_row.label(text=name, icon='ARROW_LEFTRIGHT')
+						sub_row.prop(slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
+						row.operator('material.quick_texture_show', text="", icon='RIGHTARROW').texture_name = tex.name
 			
 			else:
 				row = box.row()
@@ -636,7 +642,7 @@ class decorate_material(bpy.types.Operator):
 class quick_texture_show(bpy.types.Operator):
 	bl_idname = 'material.quick_texture_show'
 	bl_label = "このテクスチャを見る"
-	bl_description = ""
+	bl_description = "このテクスチャを見る"
 	bl_options = {'REGISTER'}
 	
 	texture_name = bpy.props.StringProperty(name="テクスチャ名")
