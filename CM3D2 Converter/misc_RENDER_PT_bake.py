@@ -14,6 +14,7 @@ def menu_func(self, context):
 	row.operator('object.quick_shadow_bake_image', icon='IMAGE_ALPHA', text="影")
 	row.operator('object.quick_side_shadow_bake_image', icon='ARROW_LEFTRIGHT', text="側面陰")
 	row = col.row(align=True)
+	row.operator('object.quick_gradation_bake_image', icon='MESH_PLANE', text="グラデーション")
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE', text="髪")
 
@@ -531,6 +532,93 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		
 		common.remove_data([temp_mate, temp_lamp_ob, temp_lamp, temp_camera_ob, temp_camera])
 		context.scene.camera = pre_scene_camera
+		
+		material_restore.restore()
+		
+		return {'FINISHED'}
+
+class quick_gradation_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_gradation_bake_image'
+	bl_label = "グラデーション・ベイク"
+	bl_description = "アクティブオブジェクトに素早くグラデーションをベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		self.image_name = context.active_object.name + " SideShadow Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='RENDER')
+		zs = [(ob.matrix_world * v.co).z for v in temp_me.vertices]
+		zs.sort()
+		me_conter = (zs[0] + zs[-1]) / 2
+		me_height = zs[-1] - zs[0]
+		
+		material_restore = common.material_restore(ob)
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = context.blend_data.materials.new("quick_gradation_bake_image_temp")
+		ob.material_slots[0].material = temp_mate
+		temp_slot = temp_mate.texture_slots.create(0)
+		temp_tex = context.blend_data.textures.new("quick_gradation_bake_image_temp", 'BLEND')
+		temp_slot.texture = temp_tex
+		temp_tex.use_color_ramp = True
+		temp_slot.mapping_y = 'Z'
+		temp_slot.mapping_z = 'Y'
+		temp_slot.texture_coords = 'GLOBAL'
+		temp_tex.color_ramp.elements[0].color = (0, 0, 0, 1)
+		temp_tex.use_flip_axis = 'VERTICAL'
+		temp_slot.offset[1] = -me_conter
+		temp_slot.scale[1] = 1 / (me_height / 2)
+		
+		context.scene.render.bake_type = 'TEXTURE'
+		bpy.ops.object.bake_image()
+		
+		common.remove_data([temp_me, temp_mate, temp_tex])
 		
 		material_restore.restore()
 		

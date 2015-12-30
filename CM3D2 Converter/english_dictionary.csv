@@ -180,6 +180,7 @@ CM3D2用ベイク	Bakes for CM3D2
 ヘミライト	Hemi Lamp
 影	Shadow
 側面陰	Side Shadow
+グラデーション	Gradation
 金属	Metal
 髪	Hair
 ベイク用の画像を作成	Create Image for Bake
@@ -219,6 +220,8 @@ AOの精度	AO Samples
 光源設定	Lamp Settings
 側面陰・ベイク	Bake Side Shadow
 アクティブオブジェクトに素早く側面陰をベイクします	Bake quickly side shade to the active object
+グラデーション・ベイク	Bake Gradation
+アクティブオブジェクトに素早くグラデーションをベイクします	Bake quickly gradient in active object
 金属・ベイク	Bake Matal
 アクティブオブジェクトに素早く金属風にベイクします	Bake quickly metal to the active object
 映り込み強さ	Reflection Strength
