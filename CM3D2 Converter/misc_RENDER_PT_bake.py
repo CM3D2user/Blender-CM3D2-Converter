@@ -1,4 +1,4 @@
-import os, re, sys, bpy, time, bmesh, mathutils
+import os, re, sys, bpy, time, numpy, bmesh, mathutils
 from . import common
 
 # メニュー等に項目追加
@@ -871,6 +871,7 @@ class quick_border_bake_image(bpy.types.Operator):
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	blur_strength = bpy.props.IntProperty(name="ぼかし強度", default=100, min=0, max=1000, soft_min=0, soft_max=1000)
+	keep_alpha = bpy.props.BoolProperty(name="余白を透過", default=False)
 	
 	@classmethod
 	def poll(cls, context):
@@ -895,7 +896,10 @@ class quick_border_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
-		self.layout.prop(self, 'blur_strength', icon='BRUSH_BLUR')
+		self.layout.label(text="縁設定", icon='MATCAP_24')
+		row = self.layout.row(align=True)
+		row.prop(self, 'blur_strength', icon='BRUSH_BLUR')
+		row.prop(self, 'keep_alpha', icon='IMAGE_RGB_ALPHA')
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -930,6 +934,11 @@ class quick_border_bake_image(bpy.types.Operator):
 		
 		context.scene.render.use_bake_clear = pre_use_bake_clear
 		context.scene.render.bake_margin = pre_bake_margin
+		
+		if self.keep_alpha:
+			img_w, img_h, img_c = img.size[0], img.size[1], img.channels
+			pixels = numpy.array(img.pixels).reshape(img_h, img_w, img_c)
+			img_alphas = pixels[:,:,0]
 		
 		# 無駄に壮大なぼかし処理
 		pre_resolution_x = context.scene.render.resolution_x
@@ -971,6 +980,11 @@ class quick_border_bake_image(bpy.types.Operator):
 		bpy.ops.image.save_as(img_override, save_as_render=True, copy=True, filepath=temp_png_path, relative_path=False, show_multiview=False, use_multiview=False)
 		img.source = 'FILE'
 		img.filepath = temp_png_path
+		img.reload()
+		if self.keep_alpha:
+			pixels = numpy.array(img.pixels).reshape(img_h, img_w, img_c)
+			pixels[:,:,3] = img_alphas
+			img.pixels = pixels.flatten()
 		img.pack(as_png=True)
 		os.remove(temp_png_path)
 		
@@ -980,7 +994,6 @@ class quick_border_bake_image(bpy.types.Operator):
 		context.scene.render.resolution_x = pre_resolution_x
 		context.scene.render.resolution_y = pre_resolution_y
 		context.scene.render.resolution_percentage = pre_resolution_percentage
-		
 		# 無駄に壮大なぼかし処理 完
 		
 		common.set_area_space_attr(area, 'image', img)
