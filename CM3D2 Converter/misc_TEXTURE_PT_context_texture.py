@@ -68,16 +68,17 @@ def menu_func(self, context):
 	elif type == "col":
 		sub_box = box.box()
 		
-		row = sub_box.split(percentage=0.7, align=True)
+		#row = sub_box.split(percentage=0.7, align=True)
+		row = sub_box.row(align=True)
 		row.prop(tex_slot, 'color', text="")
 		row.operator('texture.auto_set_color_value', icon='RECOVER_AUTO', text="自動設定")
+		row.operator('texture.set_color_value', text="", icon='MATCAP_10').color = [0, 0, 0] + [tex_slot.diffuse_color_factor]
+		row.operator('texture.set_color_value', text="", icon='MATCAP_24').color = [1, 1, 1] + [tex_slot.diffuse_color_factor]
 		
 		row = sub_box.row(align=True)
-		op = row.operator('wm.context_set_float', text="", icon='TRIA_LEFT')
-		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 0
+		row.operator('texture.set_color_value', text="", icon='TRIA_LEFT').color = list(tex_slot.color) + [0]
 		row.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
-		op = row.operator('wm.context_set_float', text="", icon='TRIA_RIGHT')
-		op.data_path, op.value = 'texture_slot.diffuse_color_factor', 1
+		row.operator('texture.set_color_value', text="", icon='TRIA_RIGHT').color = list(tex_slot.color) + [1]
 	
 	elif type == "f":
 		sub_box = box.box()
@@ -89,27 +90,19 @@ def menu_func(self, context):
 			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
 			
 			row = sub_box.row(align=True)
-			op = row.operator('wm.context_set_float', text="0.0", icon='MATCAP_10')
-			op.data_path, op.value = data_path, 0.0
-			op = row.operator('wm.context_set_float', text="0.25")
-			op.data_path, op.value = data_path, 0.25
-			op = row.operator('wm.context_set_float', text="0.5")
-			op.data_path, op.value = data_path, 0.5
-			op = row.operator('wm.context_set_float', text="0.75")
-			op.data_path, op.value = data_path, 0.75
-			op = row.operator('wm.context_set_float', text="1.0", icon='MATCAP_09')
-			op.data_path, op.value = data_path, 1.0
+			row.operator('texture.set_color_value', text="0.0", icon='MATCAP_10').color = list(tex_slot.color) + [0.0]
+			row.operator('texture.set_color_value', text="0.25").color = list(tex_slot.color) + [0.25]
+			row.operator('texture.set_color_value', text="0.5").color = list(tex_slot.color) + [0.5]
+			row.operator('texture.set_color_value', text="0.75").color = list(tex_slot.color) + [0.75]
+			row.operator('texture.set_color_value', text="1.0", icon='MATCAP_09').color = list(tex_slot.color) + [1.0]
 		
 		elif base_name == '_OutlineWidth':
 			row.menu('TEXTURE_PT_context_texture_values_OutlineWidth', icon='DOWNARROW_HLT', text="")
 			
 			row = sub_box.row(align=True)
-			op = row.operator('wm.context_set_float', text="0.001", icon='MATSPHERE')
-			op.data_path, op.value = data_path, 0.001
-			op = row.operator('wm.context_set_float', text="0.0015")
-			op.data_path, op.value = data_path, 0.0015
-			op = row.operator('wm.context_set_float', text="0.002", icon='ANTIALIASED')
-			op.data_path, op.value = data_path, 0.002
+			row.operator('texture.set_color_value', text="0.001", icon='MATSPHERE').color = list(tex_slot.color) + [0.001]
+			row.operator('texture.set_color_value', text="0.0015").color = list(tex_slot.color) + [0.0015]
+			row.operator('texture.set_color_value', text="0.002", icon='ANTIALIASED').color = list(tex_slot.color) + [0.002]
 			
 			split = sub_box.split(percentage=0.3)
 			split.label(text="正確な値: ")
@@ -119,29 +112,20 @@ def menu_func(self, context):
 			row.menu('TEXTURE_PT_context_texture_values_RimPower', icon='DOWNARROW_HLT', text="")
 			
 			row = sub_box.row(align=True)
-			op = row.operator('wm.context_set_float', text="1", icon='BRUSH_TEXFILL')
-			op.data_path, op.value = data_path, 1
-			op = row.operator('wm.context_set_float', text="10")
-			op.data_path, op.value = data_path, 10
-			op = row.operator('wm.context_set_float', text="20")
-			op.data_path, op.value = data_path, 20
-			op = row.operator('wm.context_set_float', text="30", icon='MATCAP_07')
-			op.data_path, op.value = data_path, 30
+			row.operator('texture.set_color_value', text="1", icon='BRUSH_TEXFILL').color = list(tex_slot.color) + [1]
+			row.operator('texture.set_color_value', text="10").color = list(tex_slot.color) + [10]
+			row.operator('texture.set_color_value', text="20").color = list(tex_slot.color) + [20]
+			row.operator('texture.set_color_value', text="30", icon='MATCAP_07').color = list(tex_slot.color) + [30]
 		
 		elif base_name == '_RimShift':
 			row.menu('TEXTURE_PT_context_texture_values_normal', icon='DOWNARROW_HLT', text="")
 			
 			row = sub_box.row(align=True)
-			op = row.operator('wm.context_set_float', text="0.0", icon='FULLSCREEN_EXIT')
-			op.data_path, op.value = data_path, 0.0
-			op = row.operator('wm.context_set_float', text="0.25")
-			op.data_path, op.value = data_path, 0.25
-			op = row.operator('wm.context_set_float', text="0.5")
-			op.data_path, op.value = data_path, 0.5
-			op = row.operator('wm.context_set_float', text="0.75")
-			op.data_path, op.value = data_path, 0.75
-			op = row.operator('wm.context_set_float', text="1.0", icon='FULLSCREEN_ENTER')
-			op.data_path, op.value = data_path, 1.0
+			row.operator('texture.set_color_value', text="0.0", icon='FULLSCREEN_EXIT').color = list(tex_slot.color) + [0.0]
+			row.operator('texture.set_color_value', text="0.25").color = list(tex_slot.color) + [0.25]
+			row.operator('texture.set_color_value', text="0.5").color = list(tex_slot.color) + [0.5]
+			row.operator('texture.set_color_value', text="0.75").color = list(tex_slot.color) + [0.75]
+			row.operator('texture.set_color_value', text="1.0", icon='FULLSCREEN_ENTER').color = list(tex_slot.color) + [1.0]
 	
 	box.operator('texture.sync_tex_color_ramps', icon='LINKED')
 	
@@ -254,11 +238,11 @@ class TEXTURE_PT_context_texture_values_normal(bpy.types.Menu):
 	bl_label = "値リスト"
 	
 	def draw(self, context):
+		tex_slot = context.texture_slot
 		for i in range(11):
 			value = round(i * 0.1, 1)
 			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
-			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
-			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
+			self.layout.operator('texture.set_color_value', text=str(value), icon=icon).color = list(tex_slot.color) + [value]
 
 # _OutlineWidth用の値設定メニュー
 class TEXTURE_PT_context_texture_values_OutlineWidth(bpy.types.Menu):
@@ -266,11 +250,11 @@ class TEXTURE_PT_context_texture_values_OutlineWidth(bpy.types.Menu):
 	bl_label = "値リスト"
 	
 	def draw(self, context):
+		tex_slot = context.texture_slot
 		for i in range(16):
 			value = round(i * 0.0002, 4)
 			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
-			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
-			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
+			self.layout.operator('texture.set_color_value', text=str(value), icon=icon).color = list(tex_slot.color) + [value]
 
 # _RimPower用の値設定メニュー
 class TEXTURE_PT_context_texture_values_RimPower(bpy.types.Menu):
@@ -278,13 +262,13 @@ class TEXTURE_PT_context_texture_values_RimPower(bpy.types.Menu):
 	bl_label = "値リスト"
 	
 	def draw(self, context):
+		tex_slot = context.texture_slot
 		for i in range(16):
 			value = round(i * 2, 0)
 			icon = 'LAYER_USED' if i % 2 else 'LAYER_ACTIVE'
 			if value == 0:
 				icon = 'ERROR'
-			op = self.layout.operator('wm.context_set_float', text=str(value), icon=icon)
-			op.data_path, op.value = 'texture_slot.diffuse_color_factor', value
+			self.layout.operator('texture.set_color_value', text=str(value), icon=icon).color = list(tex_slot.color) + [value]
 
 class show_image(bpy.types.Operator):
 	bl_idname = 'image.show_image'
@@ -540,4 +524,26 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path)
 		
 		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました")
+		return {'FINISHED'}
+
+class set_color_value(bpy.types.Operator):
+	bl_idname = 'texture.set_color_value'
+	bl_label = "色設定値を設定"
+	bl_description = "色タイプの設定値を設定します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	color = bpy.props.FloatVectorProperty(name="色", default=(0, 0, 0, 0), subtype='COLOR', size=4)
+	
+	@classmethod
+	def poll(cls, context):
+		if 'texture_slot' in dir(context) and 'texture' in dir(context):
+			if context.texture_slot and context.texture:
+				return True
+		return False
+	
+	def execute(self, context):
+		slot = context.texture_slot
+		slot.color = self.color[:3]
+		slot.diffuse_color_factor = self.color[3]
+		common.set_texture_color(slot)
 		return {'FINISHED'}

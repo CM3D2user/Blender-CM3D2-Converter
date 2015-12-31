@@ -323,6 +323,8 @@ CM3D2にデフォルトで入っているトゥーンテクスチャを選択で
 テクスチャの画像を同フォルダにtexとして保存します	Save image of texture as tex in same folder
 失敗しました	failed
 同フォルダにtexとして保存しました	Saved as tex in same folder
+色設定値を設定	Set Color Value
+色タイプの設定値を設定します	Set Color Value
 CM3D2用:	CM3D2:
 テキストを表示	Show Text
 指定したテキストをこの領域に表示します	Displays the specified text in this area
