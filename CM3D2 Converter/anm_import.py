@@ -1,4 +1,4 @@
-import os, re, bpy, struct, os.path
+import os, re, bpy, math, struct, os.path, mathutils
 from . import common
 
 # メインオペレーター
@@ -61,7 +61,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 			
 			for channel_index in range(9**9):
 				channel_id = struct.unpack('<B', file.read(1))[0]
-				channel_id_str = str(channel_id)
+				channel_id_str = channel_id
 				if channel_id <= 1:
 					break
 				anm_data[base_bone_name]['channels'][channel_id_str] = []
@@ -86,7 +86,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 			edit_bone.use_connect = False
 		for edit_bone in arm.edit_bones:
 			head_co = edit_bone.head.copy()
-			head_co.z += -0.5
+			head_co.z += 0.5
 			edit_bone.tail = head_co
 			edit_bone.roll = 0.0
 		
@@ -98,34 +98,43 @@ class import_cm3d2_anm(bpy.types.Operator):
 					continue
 			pose_bone = pose.bones[bone_name]
 			
+			quats = {}
 			for channel_id, channel_data in bone_data['channels'].items():
 				
-				data_path = 'rotation_quaternion'
-				data_index = -1
-				if channel_id == '100':
-					data_index = 1
-				elif channel_id == '101':
-					data_index = 3
-				elif channel_id == '102':
-					data_index = 2
-				elif channel_id == '103':
-					data_index = 0
-				else:
+				if channel_id not in [100, 101, 102, 103]:
 					continue
 				
 				for data in channel_data:
+					
 					frame = data['frame']
+					if frame not in quats.keys():
+						quats[frame] = [None, None, None, None]
 					
-					if channel_id == '100':
-						pose_bone.rotation_quaternion[data_index] = -data['f0']
-					elif channel_id == '101':
-						pose_bone.rotation_quaternion[data_index] = -data['f0']
-					elif channel_id == '102':
-						pose_bone.rotation_quaternion[data_index] = data['f0']
-					elif channel_id == '103':
-						pose_bone.rotation_quaternion[data_index] = data['f0']
-					
-					pose_bone.keyframe_insert(data_path, index=data_index, frame=frame * fps)
+					if channel_id == 103:
+						quats[frame][0] = data['f0']
+					elif channel_id == 100:
+						quats[frame][1] = -data['f0']
+					elif channel_id == 102:
+						quats[frame][2] = -data['f0']
+					elif channel_id == 101:
+						quats[frame][3] = data['f0']
+			
+			for frame, quat in quats.items():
+				quat = mathutils.Quaternion(quat)
+				#eul = mathutils.Euler((math.radians(-90), 0, 0), 'XYZ')
+				#quat.rotate(eul)
+				
+				#bone_quat = arm.bones[bone_name].matrix.to_quaternion()
+				#quat = quat * bone_quat
+				
+				print(bone_name)
+				print(quat)
+				eul = quat.to_euler()
+				print( int(math.degrees(eul[0])), int(math.degrees(eul[1])), int(math.degrees(eul[2])) )
+				
+				pose_bone.rotation_quaternion = quat.copy()
+				
+				pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
 		
 		return {'FINISHED'}
 
