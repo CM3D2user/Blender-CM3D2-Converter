@@ -14,10 +14,11 @@ def menu_func(self, context):
 		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
 			box = self.layout.box()
 			#row = box.split(percentage=0.3)
-			row = box.row()
+			row = box.split(percentage=0.5)
 			row.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
-			row.operator('material.export_cm3d2_mate', icon='FILE_FOLDER', text="")
-			row.operator('material.copy_material', icon='COPYDOWN', text="")
+			sub_row = row.row(align=True)
+			sub_row.operator('material.export_cm3d2_mate', icon='FILE_FOLDER', text="mateへ")
+			sub_row.operator('material.copy_material', icon='COPYDOWN', text="コピー")
 			
 			type_name = "不明"
 			icon = 'ERROR'
