@@ -1101,6 +1101,7 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 					me.vertex_colors.active.data[loop.index].color = color
 			return paint_vertices
 		
+		context.tool_settings.mesh_select_mode = (True, False, False)
 		already_vert_indices = []
 		for index in range(self.range):
 			bpy.ops.object.mode_set(mode='EDIT')
