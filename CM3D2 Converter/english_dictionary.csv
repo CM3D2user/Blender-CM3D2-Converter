@@ -186,7 +186,8 @@ CM3D2用ベイク	Bakes for CM3D2
 影	Shadow
 側面陰	Side Shadow
 グラデーション	Gradation
-縁	Border
+UV縁	UV Border
+メッシュ縁	Mesh Border
 金属	Metal
 髪	Hair
 ベイク用の画像を作成	Create Image for Bake
@@ -237,8 +238,8 @@ AOの精度	AO Samples
 髪色	Hair Color
 天使の輪の強さ	Angel Ring Factor
 ヘアー設定	Hair Settings
-縁・ベイク	Bake Border
-アクティブオブジェクトに素早く縁を黒くベイクします	Bake quick black edge in the active object
+UV縁・ベイク	Bake UV Border
+アクティブオブジェクトに素早くUVの縁を黒くベイクします	Bake quickly UV edge in the active object
 フラット	Flat
 テント	Tent
 二次式	Quadratic
@@ -250,6 +251,9 @@ AOの精度	AO Samples
 正規化	Normalize
 余白を透過	Transparent Margin
 縁設定	Border Settings
+メッシュ縁・ベイク	Bake Mesh Border
+アクティブオブジェクトに素早くメッシュの縁を黒くベイクします	Bake quickly mesh edge in the active object
+範囲	Range
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
 CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
 面のテクスチャで	By Face Textures

@@ -132,7 +132,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 				eul = quat.to_euler()
 				print( int(math.degrees(eul[0])), int(math.degrees(eul[1])), int(math.degrees(eul[2])) )
 				
-				pose_bone.rotation_quaternion = quat.copy()
+				pose_bone.rotation_quaternion = eul.to_quaternion().copy()
 				
 				pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
 		

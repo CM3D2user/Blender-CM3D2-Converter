@@ -15,7 +15,8 @@ def menu_func(self, context):
 	row.operator('object.quick_side_shadow_bake_image', icon='ARROW_LEFTRIGHT', text="側面陰")
 	row = col.row(align=True)
 	row.operator('object.quick_gradation_bake_image', icon='MESH_PLANE', text="グラデーション")
-	row.operator('object.quick_border_bake_image', icon='MATCAP_24', text="縁")
+	row.operator('object.quick_uv_border_bake_image', icon='MATCAP_24', text="UV縁")
+	row.operator('object.quick_mesh_border_bake_image', icon='EDIT_VEC', text="メッシュ縁")
 	row = col.row(align=True)
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE', text="髪")
@@ -859,10 +860,10 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		return {'FINISHED'}
 
-class quick_border_bake_image(bpy.types.Operator):
-	bl_idname = 'object.quick_border_bake_image'
-	bl_label = "縁・ベイク"
-	bl_description = "アクティブオブジェクトに素早く縁を黒くベイクします"
+class quick_uv_border_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_uv_border_bake_image'
+	bl_label = "UV縁・ベイク"
+	bl_description = "アクティブオブジェクトに素早くUVの縁を黒くベイクします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	image_name = bpy.props.StringProperty(name="画像名")
@@ -1027,5 +1028,102 @@ class quick_border_bake_image(bpy.types.Operator):
 		common.set_area_space_attr(area, 'image', img)
 		common.remove_data([temp_mate])
 		material_restore.restore()
+		
+		return {'FINISHED'}
+
+class quick_mesh_border_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_mesh_border_bake_image'
+	bl_label = "メッシュ縁・ベイク"
+	bl_description = "アクティブオブジェクトに素早くメッシュの縁を黒くベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
+	
+	range = bpy.props.IntProperty(name="範囲", default=5, min=1, max=50, soft_min=1, soft_max=50)
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Border2 Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		
+		self.layout.prop(self, 'range', icon='PROP_ON')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		pre_vertex_color_index = me.vertex_colors.active_index
+		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
+		
+		def paint_selected_vertices(me, color, except_indices=[]):
+			paint_vertices = []
+			for vert in me.vertices:
+				if vert.select and vert.index not in except_indices:
+					paint_vertices.append(vert.index)
+			for loop in me.loops:
+				if loop.vertex_index in paint_vertices:
+					me.vertex_colors.active.data[loop.index].color = color
+			return paint_vertices
+		
+		already_vert_indices = []
+		for index in range(self.range):
+			bpy.ops.object.mode_set(mode='EDIT')
+			if index == 0:
+				bpy.ops.mesh.reveal()
+				bpy.ops.mesh.select_all(action='DESELECT')
+				bpy.ops.mesh.select_non_manifold()
+			else:
+				bpy.ops.mesh.select_more()
+			bpy.ops.object.mode_set(mode='OBJECT')
+			
+			value = (1.0 / self.range) * index
+			already_vert_indices += paint_selected_vertices(me, [value, value, value], already_vert_indices)
+		
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_all(action='DESELECT')
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		context.scene.render.bake_type = 'VERTEX_COLORS'
+		context.scene.render.use_bake_selected_to_active = False
+		bpy.ops.object.bake_image()
+		
+		me.vertex_colors.remove(vertex_color)
+		me.vertex_colors.active_index = pre_vertex_color_index
 		
 		return {'FINISHED'}
