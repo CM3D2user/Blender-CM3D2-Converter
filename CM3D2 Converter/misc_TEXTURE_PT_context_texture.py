@@ -458,7 +458,8 @@ class auto_set_color_value(bpy.types.Operator):
 			if name == '_MainTex':
 				img = slot.texture.image
 				if img:
-					break
+					if len(img.pixels):
+						break
 		else:
 			img = me.uv_textures.active.data[0].image
 		
