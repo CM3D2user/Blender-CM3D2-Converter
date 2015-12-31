@@ -239,6 +239,13 @@ AOの精度	AO Samples
 ヘアー設定	Hair Settings
 縁・ベイク	Bake Border
 アクティブオブジェクトに素早く縁を黒くベイクします	Bake quick black edge in the active object
+フラット	Flat
+テント	Tent
+二次式	Quadratic
+三次式	Cubic
+ガウシアン	Gaussian
+高速ガウシアン	Fast Gaussian
+ぼかしタイプ	Blur Type
 ぼかし強度	Blur Strength
 正規化	Normalize
 余白を透過	Transparent Margin

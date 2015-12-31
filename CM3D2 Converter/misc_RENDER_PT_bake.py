@@ -870,6 +870,17 @@ class quick_border_bake_image(bpy.types.Operator):
 	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
+	items = [
+		('FLAT', "フラット", "", 1),
+		('TENT', "テント", "", 2),
+		('QUAD', "二次式", "", 3),
+		('CUBIC', "三次式", "", 4),
+		('GAUSS', "ガウシアン", "", 5),
+		('FAST_GAUSS', "高速ガウシアン", "", 6),
+		('CATROM', "Catrom", "", 7),
+		('MITCH', "Mitch", "", 8),
+		]
+	blur_type = bpy.props.EnumProperty(items=items, name="ぼかしタイプ", default='GAUSS')
 	blur_strength = bpy.props.IntProperty(name="ぼかし強度", default=100, min=0, max=1000, soft_min=0, soft_max=1000)
 	normalize = bpy.props.BoolProperty(name="正規化", default=True)
 	keep_alpha = bpy.props.BoolProperty(name="余白を透過", default=True)
@@ -898,7 +909,8 @@ class quick_border_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="縁設定", icon='MATCAP_24')
-		self.layout.prop(self, 'blur_strength', icon='BRUSH_BLUR')
+		self.layout.prop(self, 'blur_type', icon='BRUSH_BLUR')
+		self.layout.prop(self, 'blur_strength', icon='ARROW_LEFTRIGHT')
 		row = self.layout.row(align=True)
 		row.prop(self, 'normalize', icon='IMAGE_ALPHA')
 		row.prop(self, 'keep_alpha', icon='IMAGE_RGB_ALPHA')
@@ -963,6 +975,7 @@ class quick_border_bake_image(bpy.types.Operator):
 		blur_node = node_tree.nodes.new('CompositorNodeBlur')
 		blur_node.location = (250, 0)
 		blur_node.size_x, blur_node.size_y = 1, 1
+		blur_node.filter_type = self.blur_type
 		blur_node.inputs[1].default_value = self.blur_strength
 		
 		out_node = node_tree.nodes.new('CompositorNodeComposite')
@@ -972,6 +985,7 @@ class quick_border_bake_image(bpy.types.Operator):
 		node_tree.links.new(out_node.inputs[0], blur_node.outputs[0])
 		
 		bpy.ops.render.render()
+		
 		render_img = context.blend_data.images["Render Result"]
 		
 		temp_png_path = os.path.join(bpy.app.tempdir, "temp.png")
