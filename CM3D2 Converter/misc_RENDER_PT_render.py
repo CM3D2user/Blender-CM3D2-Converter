@@ -55,11 +55,13 @@ class render_cm3d2_icon(bpy.types.Operator):
 			self.mode = 'NOW_MATERIAL'
 		
 		if 'render_cm3d2_icon_background_color' in context.scene.keys():
-			color = str( context.scene['render_cm3d2_icon_background_color'] ).split(",")
-			if len(color) == 3:
-				self.background_color[0] = float(color[0])
-				self.background_color[1] = float(color[1])
-				self.background_color[2] = float(color[2])
+			try:
+				color = str( context.scene['render_cm3d2_icon_background_color'] ).split(",")
+				if len(color) == 3:
+					self.background_color[0] = float(color[0])
+					self.background_color[1] = float(color[1])
+					self.background_color[2] = float(color[2])
+			except: pass
 		if 'render_cm3d2_icon_background_color_layer_image' in context.scene.keys(): self.layer_image = context.scene['render_cm3d2_icon_background_color_layer_image']
 		
 		return context.window_manager.invoke_props_dialog(self)
