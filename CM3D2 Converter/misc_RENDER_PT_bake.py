@@ -871,14 +871,14 @@ class quick_border_bake_image(bpy.types.Operator):
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
 	items = [
-		('FLAT', "フラット", "", 1),
-		('TENT', "テント", "", 2),
-		('QUAD', "二次式", "", 3),
-		('CUBIC', "三次式", "", 4),
-		('GAUSS', "ガウシアン", "", 5),
-		('FAST_GAUSS', "高速ガウシアン", "", 6),
-		('CATROM', "Catrom", "", 7),
-		('MITCH', "Mitch", "", 8),
+		('FLAT', "フラット", "", 'IPO_CONSTANT', 1),
+		('TENT', "テント", "", 'IPO_LINEAR', 2),
+		('QUAD', "二次式", "", 'IPO_QUAD', 3),
+		('CUBIC', "三次式", "", 'IPO_CUBIC', 4),
+		('GAUSS', "ガウシアン", "", 'HAND', 5),
+		('FAST_GAUSS', "高速ガウシアン", "", 'ALIASED', 6),
+		('CATROM', "Catrom", "", 'FILE_TICK', 7),
+		('MITCH', "Mitch", "", 'FILE_TICK', 8),
 		]
 	blur_type = bpy.props.EnumProperty(items=items, name="ぼかしタイプ", default='GAUSS')
 	blur_strength = bpy.props.IntProperty(name="ぼかし強度", default=100, min=0, max=1000, soft_min=0, soft_max=1000)
