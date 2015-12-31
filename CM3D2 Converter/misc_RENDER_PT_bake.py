@@ -148,11 +148,12 @@ class quick_ao_bake_image(bpy.types.Operator):
 		
 		context.scene.world.light_settings.gather_method = self.ao_gather_method
 		context.scene.world.light_settings.samples = self.ao_samples
-		context.scene.render.bake_type = 'AO'
-		context.scene.render.use_bake_normalize = True
 		
 		if self.ao_hide_other: hide_render_restore = common.hide_render_restore()
 		
+		context.scene.render.bake_type = 'AO'
+		context.scene.render.use_bake_normalize = True
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		if self.ao_hide_other: hide_render_restore.restore()
@@ -241,7 +242,6 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		
 		context.scene.render.bake_type = 'VERTEX_COLORS'
 		context.scene.render.use_bake_selected_to_active = False
-		
 		bpy.ops.object.bake_image()
 		
 		common.remove_data([temp_me, temp_ob])
@@ -339,6 +339,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 			context.scene.world.light_settings.ao_blend_type = 'MULTIPLY'
 		
 		context.scene.render.bake_type = 'FULL'
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		common.remove_data([temp_lamp, temp_ob, temp_mate])
@@ -446,6 +447,7 @@ class quick_shadow_bake_image(bpy.types.Operator):
 				new_lamps.append(temp_lamp_ob)
 		
 		context.scene.render.bake_type = 'SHADOW'
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		common.remove_data([temp_mate] + new_lamps)
@@ -535,6 +537,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		context.scene.world.light_settings.use_ambient_occlusion = False
 		
 		context.scene.render.bake_type = 'FULL'
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		common.remove_data([temp_mate, temp_lamp_ob, temp_lamp, temp_camera_ob, temp_camera])
@@ -623,6 +626,7 @@ class quick_gradation_bake_image(bpy.types.Operator):
 		temp_slot.scale[1] = 1 / (me_height / 2)
 		
 		context.scene.render.bake_type = 'TEXTURE'
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		common.remove_data([temp_me, temp_mate, temp_tex])
@@ -720,6 +724,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 		context.scene.world.light_settings.use_ambient_occlusion = False
 		
 		context.scene.render.bake_type = 'FULL'
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		common.remove_data([temp_mate, temp_lamp_ob, temp_lamp, temp_camera_ob, temp_camera])
@@ -823,11 +828,6 @@ class quick_hair_bake_image(bpy.types.Operator):
 		temp_camera_ob.rotation_euler[0] = 1.5708
 		context.scene.camera = temp_camera_ob
 		
-		context.scene.world.light_settings.use_ambient_occlusion = self.use_ao
-		if self.use_ao:
-			context.scene.world.light_settings.samples = self.ao_samples
-			context.scene.world.light_settings.ao_blend_type = 'MULTIPLY'
-		context.scene.render.bake_type = 'FULL'
 		
 		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
 		with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
@@ -840,6 +840,13 @@ class quick_hair_bake_image(bpy.types.Operator):
 		temp_mate.diffuse_color = self.mate_diffuse_color
 		temp_mate.node_tree.nodes["mate_angel_ring_factor"].inputs[0].default_value = self.mate_angel_ring_factor
 		
+		context.scene.world.light_settings.use_ambient_occlusion = self.use_ao
+		if self.use_ao:
+			context.scene.world.light_settings.samples = self.ao_samples
+			context.scene.world.light_settings.ao_blend_type = 'MULTIPLY'
+		
+		context.scene.render.bake_type = 'FULL'
+		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
 		temp_tex = temp_mate.texture_slots[0].texture
@@ -942,6 +949,7 @@ class quick_border_bake_image(bpy.types.Operator):
 		pre_bake_margin = context.scene.render.bake_margin
 		context.scene.render.use_bake_clear = False
 		context.scene.render.bake_type = 'TEXTURE'
+		context.scene.render.use_bake_selected_to_active = False
 		
 		bpy.ops.object.bake_image()
 		img_w, img_h, img_c = img.size[0], img.size[1], img.channels
