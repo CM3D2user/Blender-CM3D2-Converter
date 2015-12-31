@@ -53,6 +53,12 @@ class render_cm3d2_icon(bpy.types.Operator):
 				break
 		else:
 			self.mode = 'NOW_MATERIAL'
+		
+		if 'render_cm3d2_icon_background_color_r' in context.scene.keys(): self.background_color[0] = context.scene['render_cm3d2_icon_background_color_r']
+		if 'render_cm3d2_icon_background_color_g' in context.scene.keys(): self.background_color[1] = context.scene['render_cm3d2_icon_background_color_g']
+		if 'render_cm3d2_icon_background_color_b' in context.scene.keys(): self.background_color[2] = context.scene['render_cm3d2_icon_background_color_b']
+		if 'render_cm3d2_icon_background_color_layer_image' in context.scene.keys(): self.layer_image = context.scene['render_cm3d2_icon_background_color_layer_image']
+		
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -86,6 +92,11 @@ class render_cm3d2_icon(bpy.types.Operator):
 	
 	def execute(self, context):
 		import math, mathutils
+		
+		context.scene['render_cm3d2_icon_background_color_r'] = self.background_color[0]
+		context.scene['render_cm3d2_icon_background_color_g'] = self.background_color[1]
+		context.scene['render_cm3d2_icon_background_color_b'] = self.background_color[2]
+		context.scene['render_cm3d2_icon_background_color_layer_image'] = self.layer_image
 		
 		override = context.copy()
 		
