@@ -323,6 +323,9 @@ class sync_tex_color_ramps(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
+		if 'material' in dir(context):
+			if context.material:
+				return True
 		if 'texture_slot' in dir(context) and 'texture' in dir(context):
 			return context.texture_slot and context.texture
 		return False

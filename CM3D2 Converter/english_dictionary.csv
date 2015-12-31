@@ -124,7 +124,6 @@ CM3D2用に変更	Change for CM3D2
 CM3D2用マテリアルを新規作成	Create Material for CM3D2
 Blender-CM3D2-Converterで使用できるマテリアルを新規で作成します	Create a material that can be used in Blender-CM3D2-Converter with new
 種類	Type
-オブジェクト名を設定してからの作成を推奨	Recommended creation of a from to set the object name
 クリップボードからマテリアルを貼り付け	Paste Material by Clipboard
 クリップボード内のマテリアル情報から新規マテリアルを作成します	Create new material from material information in the clipboard
 クリップボードからマテリアルを貼り付けました	Pasted the material from the clipboard

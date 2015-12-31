@@ -101,7 +101,7 @@ def menu_func(self, context):
 					if type == 'tex':
 						row = box.row(align=True)
 						sub_row = row.split(percentage=0.333333333333333333333, align=True)
-						sub_row.label(text=name, icon='TEXTURE')
+						sub_row.label(text=name, icon_value=sub_row.icon(tex))
 						if 'image' in dir(tex):
 							if tex.image:
 								sub_row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
@@ -109,16 +109,18 @@ def menu_func(self, context):
 					elif type == 'col':
 						row = box.row(align=True)
 						sub_row = row.split(percentage=0.333333333333333333333, align=True)
-						sub_row.label(text=name, icon='COLOR')
+						sub_row.label(text=name, icon_value=sub_row.icon(tex))
 						sub_row.prop(slot, 'color', text="")
 						sub_row.prop(slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="透明度", slider=True)
 						row.operator('material.quick_texture_show', text="", icon='RIGHTARROW').texture_name = tex.name
 					elif type == 'f':
 						row = box.row(align=True)
 						sub_row = row.split(percentage=0.333333333333333333333, align=True)
-						sub_row.label(text=name, icon='ARROW_LEFTRIGHT')
+						sub_row.label(text=name, icon_value=sub_row.icon(tex))
 						sub_row.prop(slot, 'diffuse_color_factor', icon='ARROW_LEFTRIGHT', text="値")
 						row.operator('material.quick_texture_show', text="", icon='RIGHTARROW').texture_name = tex.name
+				
+				box.operator('texture.sync_tex_color_ramps', icon='LINKED')
 			
 			else:
 				row = box.row()
