@@ -1148,6 +1148,12 @@ class quick_density_bake_image(bpy.types.Operator):
 	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
+	items = [
+		('ALL', "全て", "", 'MOD_SUBSURF', 1),
+		('PARTS', "パーツごと", "", 'GROUP_VCOL', 2),
+		]
+	mode = bpy.props.EnumProperty(items=items, name="比較対象", default='PARTS')
+	
 	@classmethod
 	def poll(cls, context):
 		if len(context.selected_objects) != 1:
@@ -1171,6 +1177,8 @@ class quick_density_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.label(text="比較対象", icon='ZOOM_PREVIOUS')
+		self.layout.prop(self, 'mode', icon='ZOOM_PREVIOUS', expand=True)
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -1183,25 +1191,66 @@ class quick_density_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		pre_vertex_color_index = me.vertex_colors.active_index
-		vertex_color = me.vertex_colors.new(name="quick_density_bake_image")
-		
 		bm = bmesh.new()
 		bm.from_mesh(me)
 		bm.verts.ensure_lookup_table()
 		
-		edge_lens = [e.calc_length() for e in bm.edges]
-		edge_lens.sort()
+		vert_islands = []
+		if self.mode == 'ALL':
+			vert_islands.append([v.index for v in bm.verts])
+		elif self.mode == 'PARTS':
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.mesh.reveal()
+			bpy.ops.mesh.select_all(action='DESELECT')
+			bpy.ops.object.mode_set(mode='OBJECT')
+			
+			alread_vert_indices = []
+			for i in range(9**9):
+				for vert in me.vertices:
+					if vert.index not in alread_vert_indices:
+						vert.select = True
+						break
+				bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.mesh.select_linked()
+				bpy.ops.object.mode_set(mode='OBJECT')
+				vert_islands.append([])
+				for vert in me.vertices:
+					if vert.select:
+						vert_islands[-1].append(vert.index)
+						alread_vert_indices.append(vert.index)
+				if len(me.vertices) <= len(alread_vert_indices):
+					break
+				bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.mesh.select_all(action='DESELECT')
+				bpy.ops.object.mode_set(mode='OBJECT')
 		
-		edge_min, edge_max = edge_lens[0], edge_lens[-1]
+		pre_vertex_color_index = me.vertex_colors.active_index
+		vertex_color = me.vertex_colors.new(name="quick_density_bake_image")
 		
-		for loop in me.loops:
-			lens = []
-			for edge in bm.verts[loop.vertex_index].link_edges:
-				lens.append(edge.calc_length())
-			l = sum(lens) / len(lens)
-			value = (l - edge_min) * (1.0 / (edge_max - edge_min))
-			vertex_color.data[loop.index].color = (value, value, value)
+		for island in vert_islands:
+			edge_lens = []
+			for index in island:
+				lens = []
+				for edge in bm.verts[index].link_edges:
+					lens.append(edge.calc_length())
+				edge_lens.append( sum(lens) / len(lens) )
+			edge_lens.sort()
+			
+			edge_min, edge_max = edge_lens[0], edge_lens[-1]
+			try:
+				multi = 1.0 / (edge_max - edge_min)
+			except:
+				multi = 1.0
+			
+			for loop in me.loops:
+				if loop.vertex_index not in island:
+					continue
+				lens = []
+				for edge in bm.verts[loop.vertex_index].link_edges:
+					lens.append(edge.calc_length())
+				l = sum(lens) / len(lens)
+				value = (l - edge_min) * multi
+				vertex_color.data[loop.index].color = (value, value, value)
 		
 		context.scene.render.bake_type = 'VERTEX_COLORS'
 		context.scene.render.use_bake_selected_to_active = False

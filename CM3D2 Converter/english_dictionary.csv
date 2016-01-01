@@ -257,6 +257,8 @@ UV縁・ベイク	Bake UV Border
 範囲	Range
 密度・ベイク	Bake Density
 アクティブオブジェクトに素早く密度をベイクします	Bake quickly density in the active object
+パーツごと	Each Part
+比較対象	Comparison
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
 CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
 面のテクスチャで	By Face Textures
