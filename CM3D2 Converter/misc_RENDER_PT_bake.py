@@ -1205,6 +1205,7 @@ class quick_density_bake_image(bpy.types.Operator):
 			bpy.ops.object.mode_set(mode='OBJECT')
 			
 			alread_vert_indices = []
+			alread_vert_indices_append = alread_vert_indices.append
 			for i in range(9**9):
 				for vert in me.vertices:
 					if vert.index not in alread_vert_indices:
@@ -1214,10 +1215,11 @@ class quick_density_bake_image(bpy.types.Operator):
 				bpy.ops.mesh.select_linked()
 				bpy.ops.object.mode_set(mode='OBJECT')
 				vert_islands.append([])
+				vert_islands_append = vert_islands[-1].append
 				for vert in me.vertices:
 					if vert.select:
-						vert_islands[-1].append(vert.index)
-						alread_vert_indices.append(vert.index)
+						vert_islands_append(vert.index)
+						alread_vert_indices_append(vert.index)
 				if len(me.vertices) <= len(alread_vert_indices):
 					break
 				bpy.ops.object.mode_set(mode='EDIT')
@@ -1230,9 +1232,7 @@ class quick_density_bake_image(bpy.types.Operator):
 		for island in vert_islands:
 			edge_lens = []
 			for index in island:
-				lens = []
-				for edge in bm.verts[index].link_edges:
-					lens.append(edge.calc_length())
+				lens = [e.calc_length() for e in bm.verts[index].link_edges]
 				edge_lens.append( sum(lens) / len(lens) )
 			edge_lens.sort()
 			
@@ -1240,14 +1240,15 @@ class quick_density_bake_image(bpy.types.Operator):
 			try:
 				multi = 1.0 / (edge_max - edge_min)
 			except:
-				multi = 1.0
+				multi = None
 			
 			for loop in me.loops:
 				if loop.vertex_index not in island:
 					continue
-				lens = []
-				for edge in bm.verts[loop.vertex_index].link_edges:
-					lens.append(edge.calc_length())
+				if multi == None:
+					vertex_color.data[loop.index].color = (0.5, 0.5, 0.5)
+					continue
+				lens = [e.calc_length() for e in bm.verts[loop.vertex_index].link_edges]
 				l = sum(lens) / len(lens)
 				value = (l - edge_min) * multi
 				vertex_color.data[loop.index].color = (value, value, value)
