@@ -1205,21 +1205,16 @@ class quick_density_bake_image(bpy.types.Operator):
 			bpy.ops.object.mode_set(mode='OBJECT')
 			
 			alread_vert_indices = []
-			alread_vert_indices_append = alread_vert_indices.append
 			for i in range(9**9):
 				for vert in me.vertices:
 					if vert.index not in alread_vert_indices:
 						vert.select = True
 						break
 				bpy.ops.object.mode_set(mode='EDIT')
-				bpy.ops.mesh.select_linked()
+				bpy.ops.mesh.select_linked(delimit={'NORMAL'})
 				bpy.ops.object.mode_set(mode='OBJECT')
-				vert_islands.append([])
-				vert_islands_append = vert_islands[-1].append
-				for vert in me.vertices:
-					if vert.select:
-						vert_islands_append(vert.index)
-						alread_vert_indices_append(vert.index)
+				vert_islands.append([v.index for v in me.vertices if v.select])
+				alread_vert_indices.extend(vert_islands[-1][:])
 				if len(me.vertices) <= len(alread_vert_indices):
 					break
 				bpy.ops.object.mode_set(mode='EDIT')
