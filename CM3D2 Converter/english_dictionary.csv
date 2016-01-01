@@ -188,6 +188,7 @@ CM3D2用ベイク	Bakes for CM3D2
 グラデーション	Gradation
 UV縁	UV Border
 メッシュ縁	Mesh Border
+密度	Density
 金属	Metal
 髪	Hair
 ベイク用の画像を作成	Create Image for Bake
@@ -254,6 +255,8 @@ UV縁・ベイク	Bake UV Border
 メッシュ縁・ベイク	Bake Mesh Border
 アクティブオブジェクトに素早くメッシュの縁を黒くベイクします	Bake quickly mesh edge in the active object
 範囲	Range
+密度・ベイク	Bake Density
+アクティブオブジェクトに素早く密度をベイクします	Bake quickly density in the active object
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
 CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
 面のテクスチャで	By Face Textures
