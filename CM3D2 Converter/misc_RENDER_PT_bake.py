@@ -231,10 +231,12 @@ class quick_dirty_bake_image(bpy.types.Operator):
 			elem.image = img
 		
 		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
-		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
 		temp_ob = context.blend_data.objects.new("quick_dirty_bake_image_temp", temp_me)
 		context.scene.objects.link(temp_ob)
-		temp_me.vertex_colors.new(name="quick_dirty_bake_image_temp")
+		for vc in temp_me.vertex_colors:
+			temp_me.vertex_colors.remove(vc)
+		temp_vertex_color = temp_me.vertex_colors.new(name="quick_dirty_bake_image_temp")
+		temp_me.vertex_colors.active = temp_vertex_color
 		context.scene.objects.active = temp_ob
 		temp_ob.select = True
 		
@@ -242,9 +244,10 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		override['object'] = temp_ob
 		bpy.ops.paint.vertex_color_dirt(override, blur_strength=self.blur_strength, blur_iterations=self.blur_iterations, clean_angle=self.clean_angle, dirt_angle=self.dirt_angle, dirt_only=self.dirt_only)
 		
+		temp_ob.update_tag(refresh={'OBJECT', 'DATA'})
 		context.scene.render.bake_type = 'VERTEX_COLORS'
 		context.scene.render.use_bake_selected_to_active = False
-		bpy.ops.object.bake_image()
+		bpy.ops.object.bake_image(context.copy())
 		
 		common.remove_data([temp_me, temp_ob])
 		context.scene.objects.active = ob
@@ -1089,8 +1092,11 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
+		for vc in me.vertex_colors:
+			me.vertex_colors.remove(vc)
 		pre_vertex_color_index = me.vertex_colors.active_index
 		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
+		me.vertex_colors.active = vertex_color
 		
 		def paint_selected_vertices(me, color, except_indices=[]):
 			paint_vertices = []
@@ -1221,8 +1227,11 @@ class quick_density_bake_image(bpy.types.Operator):
 				bpy.ops.mesh.select_all(action='DESELECT')
 				bpy.ops.object.mode_set(mode='OBJECT')
 		
+		for vc in me.vertex_colors:
+			me.vertex_colors.remove(vc)
 		pre_vertex_color_index = me.vertex_colors.active_index
 		vertex_color = me.vertex_colors.new(name="quick_density_bake_image")
+		me.vertex_colors.active = vertex_color
 		
 		for island in vert_islands:
 			edge_lens = []
