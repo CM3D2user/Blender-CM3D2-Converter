@@ -482,7 +482,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 	
 	is_bipolarization = bpy.props.BoolProperty(name="二極化を有効", default=True)
 	bipolarization_threshold = bpy.props.FloatProperty(name="二極化のしきい値", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=5, precision=2)
-	bipolarization_blur = bpy.props.FloatProperty(name="二極化のぼかし", default=0.02, min=0, max=1, soft_min=0, soft_max=1, step=1, precision=2)
+	bipolarization_blur = bpy.props.FloatProperty(name="二極化のぼかし", default=0.05, min=0, max=1, soft_min=0, soft_max=1, step=1, precision=2)
 	
 	@classmethod
 	def poll(cls, context):
@@ -520,7 +520,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True, float_buffer=True)
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -567,9 +567,10 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 			pixels[:,:,:3][i] = 0.0
 			i = numpy.where(max <= pixels[:,:,:3])
 			pixels[:,:,:3][i] = 1.0
-			i = numpy.where((min < pixels[:,:,:3]) & (pixels[:,:,:3] < max))
-			pixels[:,:,:3][i] -= min
-			pixels[:,:,:3][i] *= 1.0 / (max - min)
+			if 0.0 < max - min:
+				i = numpy.where((min < pixels[:,:,:3]) & (pixels[:,:,:3] < max))
+				pixels[:,:,:3][i] -= min
+				pixels[:,:,:3][i] *= 1.0 / (max - min)
 			img.pixels = pixels.flatten()
 		
 		return {'FINISHED'}

@@ -184,7 +184,7 @@ CM3D2用ベイク	Bakes for CM3D2
 擬似AO	Dirty AO
 ヘミライト	Hemi Lamp
 影	Shadow
-側面陰	Side Shadow
+側面陰	Side Shade
 グラデーション	Gradation
 UV縁	UV Border
 メッシュ縁	Mesh Border
@@ -226,7 +226,7 @@ AOの精度	AO Samples
 光源の数	Lamp Count
 影のみ	Shadow Only
 光源設定	Lamp Settings
-側面陰・ベイク	Bake Side Shadow
+側面陰・ベイク	Bake Side Shade
 アクティブオブジェクトに素早く側面陰をベイクします	Bake quickly side shade to the active object
 二極化を有効	Use Bipolarization
 二極化のしきい値	Bipolarization Threshold
