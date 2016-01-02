@@ -228,6 +228,11 @@ AOの精度	AO Samples
 光源設定	Lamp Settings
 側面陰・ベイク	Bake Side Shadow
 アクティブオブジェクトに素早く側面陰をベイクします	Bake quickly side shade to the active object
+二極化を有効	Use Bipolarization
+二極化のしきい値	Bipolarization Threshold
+二極化のぼかし	Bipolarization Blur
+しきい値	Threshold
+ぼかし	Blur
 グラデーション・ベイク	Bake Gradation
 アクティブオブジェクトに素早くグラデーションをベイクします	Bake quickly gradient in active object
 金属・ベイク	Bake Matal

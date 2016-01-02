@@ -480,6 +480,10 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
+	is_bipolarization = bpy.props.BoolProperty(name="二極化を有効", default=True)
+	bipolarization_threshold = bpy.props.FloatProperty(name="二極化のしきい値", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=5, precision=2)
+	bipolarization_blur = bpy.props.FloatProperty(name="二極化のぼかし", default=0.02, min=0, max=1, soft_min=0, soft_max=1, step=1, precision=2)
+	
 	@classmethod
 	def poll(cls, context):
 		if len(context.selected_objects) != 1:
@@ -502,6 +506,11 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		row = self.layout.row(align=True)
 		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		self.layout.separator()
+		self.layout.prop(self, 'is_bipolarization', icon='IMAGE_ALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'bipolarization_threshold', icon='NONE', text="しきい値")
+		row.prop(self, 'bipolarization_blur', icon='NONE', text="ぼかし")
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -548,6 +557,20 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		context.scene.camera = pre_scene_camera
 		
 		material_restore.restore()
+		
+		if self.is_bipolarization:
+			img_w, img_h, img_c = img.size[0], img.size[1], img.channels
+			pixels = numpy.array(img.pixels).reshape(img_h, img_w, img_c)
+			min = self.bipolarization_threshold - (self.bipolarization_blur / 2.0)
+			max = self.bipolarization_threshold + (self.bipolarization_blur / 2.0)
+			i = numpy.where(pixels[:,:,:3] <= min)
+			pixels[:,:,:3][i] = 0.0
+			i = numpy.where(max <= pixels[:,:,:3])
+			pixels[:,:,:3][i] = 1.0
+			i = numpy.where((min < pixels[:,:,:3]) & (pixels[:,:,:3] < max))
+			pixels[:,:,:3][i] -= min
+			pixels[:,:,:3][i] *= 1.0 / (max - min)
+			img.pixels = pixels.flatten()
 		
 		return {'FINISHED'}
 
