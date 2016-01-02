@@ -189,6 +189,7 @@ CM3D2用ベイク	Bakes for CM3D2
 UV縁	UV Border
 メッシュ縁	Mesh Border
 密度	Density
+メッシュ間距離	Mesh Distance
 金属	Metal
 髪	Hair
 ベイク用の画像を作成	Create Image for Bake
@@ -264,6 +265,8 @@ UV縁・ベイク	Bake UV Border
 アクティブオブジェクトに素早く密度をベイクします	Bake quickly density in the active object
 パーツごと	Each Part
 比較対象	Comparison
+メッシュ間距離・ベイク	Bake Mesh Distance
+アクティブオブジェクトに他オブジェクトとの距離をベイクします	Bake distance between other objects in the active object
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
 CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
 面のテクスチャで	By Face Textures

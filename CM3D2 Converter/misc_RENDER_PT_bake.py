@@ -19,6 +19,8 @@ def menu_func(self, context):
 	row.operator('object.quick_mesh_border_bake_image', icon='EDIT_VEC', text="メッシュ縁")
 	row = col.row(align=True)
 	row.operator('object.quick_density_bake_image', icon='STICKY_UVS_LOC', text="密度")
+	row.operator('object.quick_mesh_distance_bake_image', icon='RETOPO', text="メッシュ間距離")
+	row = col.row(align=True)
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE', text="髪")
 
@@ -1280,21 +1282,14 @@ class quick_density_bake_image(bpy.types.Operator):
 			for index in island:
 				lens = [e.calc_length() for e in bm.verts[index].link_edges]
 				edge_lens.append( sum(lens) / len(lens) )
-			edge_lens.sort()
-			
-			edge_min, edge_max = edge_lens[0], edge_lens[-1]
+			edge_min, edge_max = min(edge_lens), max(edge_lens)
 			try:
 				multi = 1.0 / (edge_max - edge_min)
 			except:
-				multi = None
+				multi = 1.0
 			
 			for index in island:
 				vert = bm.verts[index]
-				
-				if multi == None:
-					for loop in vert.link_loops:
-						vertex_color.data[loop.index].color = (0.5, 0.5, 0.5)
-					continue
 				
 				lens = [e.calc_length() for e in vert.link_edges]
 				l = sum(lens) / len(lens)
@@ -1309,5 +1304,103 @@ class quick_density_bake_image(bpy.types.Operator):
 		common.remove_data([temp_me, temp_ob])
 		context.scene.objects.active = ob
 		ob.select = True
+		
+		return {'FINISHED'}
+
+class quick_mesh_distance_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_mesh_distance_bake_image'
+	bl_label = "メッシュ間距離・ベイク"
+	bl_description = "アクティブオブジェクトに他オブジェクトとの距離をベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
+	
+	@classmethod
+	def poll(cls, context):
+		obs = context.selected_objects
+		if len(obs) != 2: return False
+		for ob in obs:
+			if ob.type != 'MESH':
+				return False
+		me = context.active_object.data
+		if len(me.uv_layers):
+			return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Mesh Distance Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+	
+	def execute(self, context):
+		target_ob = context.active_object
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				source_ob = ob
+			ob.select = False
+		target_me = target_ob.data
+		source_me = source_ob.data
+		
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in target_me.uv_textures.active.data:
+			elem.image = img
+		
+		temp_me = target_ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
+		temp_ob = context.blend_data.objects.new("quick_density_bake_image", temp_me)
+		context.scene.objects.link(temp_ob)
+		for vc in temp_me.vertex_colors:
+			temp_me.vertex_colors.remove(vc)
+		temp_vertex_color = temp_me.vertex_colors.new(name="quick_density_bake_image")
+		context.scene.objects.active = temp_ob
+		temp_ob.select = True
+		
+		bvh = mathutils.bvhtree.BVHTree.FromObject(source_ob, context.scene)
+		
+		print(dir(bvh))
+		
+		vert_dists = []
+		for vert in temp_me.vertices:
+			co = target_ob.matrix_world * vert.co
+			location, normal, index, dist = bvh.find(co)
+			vert_dists.append(dist)
+		
+		dist_min, dist_max = min(vert_dists), max(vert_dists)
+		try:
+			multi = 1.0 / (dist_max - dist_min)
+		except:
+			multi = 1.0
+		
+		for loop in temp_me.loops:
+			value = ( vert_dists[loop.vertex_index] - dist_min ) * multi
+			temp_vertex_color.data[loop.index].color = (value, value, value)
+		
+		context.scene.render.bake_type = 'VERTEX_COLORS'
+		context.scene.render.use_bake_selected_to_active = False
+		bpy.ops.object.bake_image()
+		
+		common.remove_data([temp_me, temp_ob])
+		context.scene.objects.active = target_ob
+		target_ob.select = True
+		source_ob.select = True
 		
 		return {'FINISHED'}
