@@ -236,7 +236,6 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		for vc in temp_me.vertex_colors:
 			temp_me.vertex_colors.remove(vc)
 		temp_vertex_color = temp_me.vertex_colors.new(name="quick_dirty_bake_image_temp")
-		temp_me.vertex_colors.active = temp_vertex_color
 		context.scene.objects.active = temp_ob
 		temp_ob.select = True
 		
@@ -1084,6 +1083,7 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.select = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1092,11 +1092,14 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
-		for vc in me.vertex_colors:
-			me.vertex_colors.remove(vc)
-		pre_vertex_color_index = me.vertex_colors.active_index
-		vertex_color = me.vertex_colors.new(name="quick_dirty_bake_image_temp")
-		me.vertex_colors.active = vertex_color
+		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
+		temp_ob = context.blend_data.objects.new("quick_density_bake_image", temp_me)
+		context.scene.objects.link(temp_ob)
+		for vc in temp_me.vertex_colors:
+			temp_me.vertex_colors.remove(vc)
+		temp_vertex_color = temp_me.vertex_colors.new(name="quick_density_bake_image")
+		context.scene.objects.active = temp_ob
+		temp_ob.select = True
 		
 		def paint_selected_vertices(me, color, except_indices=[]):
 			paint_vertices = []
@@ -1121,7 +1124,7 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 			bpy.ops.object.mode_set(mode='OBJECT')
 			
 			value = (1.0 / self.range) * index
-			already_vert_indices += paint_selected_vertices(me, [value, value, value], already_vert_indices)
+			already_vert_indices += paint_selected_vertices(temp_me, [value, value, value], already_vert_indices)
 		
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.mesh.select_all(action='DESELECT')
@@ -1131,8 +1134,9 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
-		me.vertex_colors.remove(vertex_color)
-		me.vertex_colors.active_index = pre_vertex_color_index
+		common.remove_data([temp_me, temp_ob])
+		context.scene.objects.active = ob
+		ob.select = True
 		
 		return {'FINISHED'}
 
@@ -1189,6 +1193,7 @@ class quick_density_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.select = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1197,41 +1202,54 @@ class quick_density_bake_image(bpy.types.Operator):
 		for elem in me.uv_textures.active.data:
 			elem.image = img
 		
+		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
+		temp_ob = context.blend_data.objects.new("quick_density_bake_image", temp_me)
+		context.scene.objects.link(temp_ob)
+		for vc in temp_me.vertex_colors:
+			temp_me.vertex_colors.remove(vc)
+		temp_vertex_color = temp_me.vertex_colors.new(name="quick_density_bake_image")
+		context.scene.objects.active = temp_ob
+		temp_ob.select = True
+		
 		bm = bmesh.new()
-		bm.from_mesh(me)
+		bm.from_mesh(temp_me)
 		bm.verts.ensure_lookup_table()
 		
 		vert_islands = []
 		if self.mode == 'ALL':
 			vert_islands.append([v.index for v in bm.verts])
 		elif self.mode == 'PARTS':
-			bpy.ops.object.mode_set(mode='EDIT')
-			bpy.ops.mesh.reveal()
-			bpy.ops.mesh.select_all(action='DESELECT')
-			bpy.ops.object.mode_set(mode='OBJECT')
-			
 			alread_vert_indices = []
 			for i in range(9**9):
-				for vert in me.vertices:
+				
+				vert_islands.append([])
+				
+				for vert in bm.verts:
 					if vert.index not in alread_vert_indices:
-						vert.select = True
+						new_verts = [vert]
+						alread_vert_indices.append(vert.index)
+						vert_islands[-1].append(vert.index)
 						break
-				bpy.ops.object.mode_set(mode='EDIT')
-				bpy.ops.mesh.select_linked(delimit={'NORMAL'})
-				bpy.ops.object.mode_set(mode='OBJECT')
-				vert_islands.append([v.index for v in me.vertices if v.select])
-				alread_vert_indices.extend(vert_islands[-1][:])
-				if len(me.vertices) <= len(alread_vert_indices):
+				
+				for j in range(9**9):
+					
+					vs = []
+					for vert in new_verts:
+						for edge in vert.link_edges:
+							for v in edge.verts:
+								if vert.index != v.index and v.index not in alread_vert_indices:
+									vs.append(v)
+									alread_vert_indices.append(v.index)
+									vert_islands[-1].append(v.index)
+									break
+					
+					if not len(vs):
+						break
+					
+					new_verts = vs[:]
+				
+				if len(bm.verts) <= len(alread_vert_indices):
 					break
-				bpy.ops.object.mode_set(mode='EDIT')
-				bpy.ops.mesh.select_all(action='DESELECT')
-				bpy.ops.object.mode_set(mode='OBJECT')
-		
-		for vc in me.vertex_colors:
-			me.vertex_colors.remove(vc)
-		pre_vertex_color_index = me.vertex_colors.active_index
-		vertex_color = me.vertex_colors.new(name="quick_density_bake_image")
-		me.vertex_colors.active = vertex_color
 		
 		for island in vert_islands:
 			edge_lens = []
@@ -1246,22 +1264,26 @@ class quick_density_bake_image(bpy.types.Operator):
 			except:
 				multi = None
 			
-			for loop in me.loops:
-				if loop.vertex_index not in island:
-					continue
+			for index in island:
+				vert = bm.verts[index]
+				
 				if multi == None:
-					vertex_color.data[loop.index].color = (0.5, 0.5, 0.5)
+					for loop in vert.link_loops:
+						vertex_color.data[loop.index].color = (0.5, 0.5, 0.5)
 					continue
-				lens = [e.calc_length() for e in bm.verts[loop.vertex_index].link_edges]
+				
+				lens = [e.calc_length() for e in vert.link_edges]
 				l = sum(lens) / len(lens)
 				value = (l - edge_min) * multi
-				vertex_color.data[loop.index].color = (value, value, value)
+				for loop in vert.link_loops:
+					temp_vertex_color.data[loop.index].color = (value, value, value)
 		
 		context.scene.render.bake_type = 'VERTEX_COLORS'
 		context.scene.render.use_bake_selected_to_active = False
 		bpy.ops.object.bake_image()
 		
-		me.vertex_colors.remove(vertex_color)
-		me.vertex_colors.active_index = pre_vertex_color_index
+		common.remove_data([temp_me, temp_ob])
+		context.scene.objects.active = ob
+		ob.select = True
 		
 		return {'FINISHED'}
