@@ -73,7 +73,12 @@ class add_bake_image(bpy.types.Operator):
 		me = ob.data
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
@@ -143,7 +148,12 @@ class quick_ao_bake_image(bpy.types.Operator):
 		me = ob.data
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
@@ -202,7 +212,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 	
 	def invoke(self, context, event):
 		ob = context.active_object
-		self.image_name = ob.name + " Dirty Bake"
+		self.image_name = ob.name + " Dirty AO Bake"
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -226,7 +236,12 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		ob.select = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -319,7 +334,12 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -414,7 +434,12 @@ class quick_shadow_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -499,7 +524,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		return False
 	
 	def invoke(self, context, event):
-		self.image_name = context.active_object.name + " SideShadow Bake"
+		self.image_name = context.active_object.name + " SideShade Bake"
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -522,7 +547,12 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True, float_buffer=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True, float_buffer=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -626,7 +656,12 @@ class quick_gradation_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -723,7 +758,12 @@ class quick_metal_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -840,7 +880,12 @@ class quick_hair_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		
@@ -964,7 +1009,12 @@ class quick_uv_border_bake_image(bpy.types.Operator):
 		override['object'] = ob
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		
 		img.generated_color = (0, 0, 0, 1)
@@ -1116,7 +1166,12 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 		ob.select = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -1226,7 +1281,12 @@ class quick_density_bake_image(bpy.types.Operator):
 		ob.select = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in me.uv_textures.active.data:
@@ -1363,7 +1423,12 @@ class quick_mesh_distance_bake_image(bpy.types.Operator):
 		source_me = source_ob.data
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
-		img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
 		area = common.get_request_area(context, 'IMAGE_EDITOR')
 		common.set_area_space_attr(area, 'image', img)
 		for elem in target_me.uv_textures.active.data:
