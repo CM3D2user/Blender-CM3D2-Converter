@@ -179,11 +179,12 @@ Blender-CM3D2-Converterで使用できるマテリアルを新規で作成しま
 CM3D2用ボーン情報	CM3D2 Bone Info
 オブジェクトの位置を合わせる	Sync Object Origin
 アクティブオブジェクトの中心位置を、他の選択オブジェクトの中心位置に合わせます	Center position of active object, it will match center position of other selected objects
-CM3D2用ベイク	Bakes for CM3D2
+CM3D2用ベイク	Bake for CM3D2
 新規画像	New Image
+AO (重)	AO (Slow)
 擬似AO	Dirty AO
 ヘミライト	Hemi Lamp
-影	Shadow
+影 (重)	Shadow (Slow)
 側面陰	Side Shade
 グラデーション	Gradation
 UV縁	UV Border
