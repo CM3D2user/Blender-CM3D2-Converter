@@ -683,8 +683,9 @@ class quick_metal_bake_image(bpy.types.Operator):
 	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
 	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
 	
-	mate_color = bpy.props.FloatVectorProperty(name="色", default=(1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR')
+	mate_color = bpy.props.FloatVectorProperty(name="色", default=(0.22, 0.22, 0.22), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR')
 	environment_strength = bpy.props.FloatProperty(name="映り込み強さ", default=1, min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2)
+	highlight_strength = bpy.props.FloatProperty(name="ハイライト強さ", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2)
 	
 	@classmethod
 	def poll(cls, context):
@@ -710,7 +711,9 @@ class quick_metal_bake_image(bpy.types.Operator):
 		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
 		self.layout.label(text="金属設定", icon='MATCAP_19')
 		self.layout.prop(self, 'mate_color', icon='COLOR')
-		self.layout.prop(self, 'environment_strength', icon='MATCAP_19', slider=True)
+		row = self.layout.row(align=True)
+		row.prop(self, 'environment_strength', icon='MATCAP_19', slider=True)
+		row.prop(self, 'highlight_strength', icon='MATCAP_09', slider=True)
 	
 	def execute(self, context):
 		ob = context.active_object
@@ -738,6 +741,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 		ob.material_slots[0].material = temp_mate
 		temp_mate.diffuse_color = self.mate_color[:]
 		temp_mate.texture_slots[0].diffuse_color_factor = self.environment_strength
+		temp_mate.node_tree.nodes["Mix.001"].inputs[0].default_value = 1.0 - self.highlight_strength
 		
 		temp_lamp = context.blend_data.lamps.new("quick_metal_bake_image_lamp_temp", 'HEMI')
 		temp_lamp_ob = context.blend_data.objects.new("quick_metal_bake_image_lamp_temp", temp_lamp)

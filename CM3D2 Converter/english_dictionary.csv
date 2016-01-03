@@ -239,6 +239,7 @@ AOの精度	AO Samples
 金属・ベイク	Bake Matal
 アクティブオブジェクトに素早く金属風にベイクします	Bake quickly metal to the active object
 映り込み強さ	Reflection Strength
+ハイライト強さ	Highlight Strength
 金属設定	Metal Settings
 ヘアー・ベイク	Bake Hair
 アクティブオブジェクトに素早くCM3D2の髪風のテクスチャをベイクします	Bake texture CM3D2 of hair in active object
