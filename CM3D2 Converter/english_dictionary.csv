@@ -190,6 +190,7 @@ AO (重)	AO (Slow)
 UV縁	UV Border
 メッシュ縁	Mesh Border
 密度	Density
+膨らみ	Bulge
 メッシュ間距離	Mesh Distance
 金属	Metal
 髪	Hair
@@ -269,6 +270,8 @@ UV縁・ベイク	Bake UV Border
 比較対象	Comparison
 メッシュ間距離・ベイク	Bake Mesh Distance
 アクティブオブジェクトに他オブジェクトとの距離をベイクします	Bake distance between other objects in the active object
+膨らみ・ベイク	Bake Bulge
+アクティブオブジェクトに膨らんでいる部分を白くベイクします	Bake white part that bulges in the active object
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
 CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
 面のテクスチャで	By Face Textures

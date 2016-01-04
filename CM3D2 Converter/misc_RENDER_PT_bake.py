@@ -19,6 +19,7 @@ def menu_func(self, context):
 	row.operator('object.quick_mesh_border_bake_image', icon='EDIT_VEC', text="メッシュ縁")
 	row = col.row(align=True)
 	row.operator('object.quick_density_bake_image', icon='STICKY_UVS_LOC', text="密度")
+	row.operator('object.quick_bulge_bake_image', icon='BRUSH_INFLATE', text="膨らみ")
 	row.operator('object.quick_mesh_distance_bake_image', icon='RETOPO', text="メッシュ間距離")
 	row = col.row(align=True)
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
@@ -1445,8 +1446,6 @@ class quick_mesh_distance_bake_image(bpy.types.Operator):
 		
 		bvh = mathutils.bvhtree.BVHTree.FromObject(source_ob, context.scene)
 		
-		print(dir(bvh))
-		
 		vert_dists = []
 		for vert in temp_me.vertices:
 			co = target_ob.matrix_world * vert.co
@@ -1471,5 +1470,104 @@ class quick_mesh_distance_bake_image(bpy.types.Operator):
 		context.scene.objects.active = target_ob
 		target_ob.select = True
 		source_ob.select = True
+		
+		return {'FINISHED'}
+
+class quick_bulge_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_bulge_bake_image'
+	bl_label = "膨らみ・ベイク"
+	bl_description = "アクティブオブジェクトに膨らんでいる部分を白くベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Bulge Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		ob.select = False
+		
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		temp_me = ob.to_mesh(scene=context.scene, apply_modifiers=True, settings='PREVIEW')
+		temp_ob = context.blend_data.objects.new("quick_bulge_bake_image", temp_me)
+		context.scene.objects.link(temp_ob)
+		for vc in temp_me.vertex_colors:
+			temp_me.vertex_colors.remove(vc)
+		temp_vertex_color = temp_me.vertex_colors.new(name="quick_bulge_bake_image")
+		context.scene.objects.active = temp_ob
+		temp_ob.select = True
+		
+		bm = bmesh.new()
+		bm.from_mesh(temp_me)
+		
+		angles = []
+		for vert in bm.verts:
+			normal = vert.normal
+			edge_angle_total = 0.0
+			for edge in vert.link_edges:
+				diff_co = edge.other_vert(vert).co - vert.co
+				edge_angle_total += normal.angle(diff_co)
+			edge_angle = edge_angle_total / len(vert.link_edges)
+			angles.append(edge_angle)
+		
+		angle_min, angle_max = 1.5708, max(angles)
+		multi = 1.0 / (angle_max - angle_min)
+		
+		for vert in bm.verts:
+			value = (angles[vert.index] - angle_min) * multi
+			for loop in vert.link_loops:
+				temp_vertex_color.data[loop.index].color = (value, value, value)
+		
+		context.scene.render.bake_type = 'VERTEX_COLORS'
+		context.scene.render.use_bake_selected_to_active = False
+		bpy.ops.object.bake_image()
+		
+		common.remove_data([temp_me, temp_ob])
+		context.scene.objects.active = ob
+		ob.select = True
 		
 		return {'FINISHED'}
