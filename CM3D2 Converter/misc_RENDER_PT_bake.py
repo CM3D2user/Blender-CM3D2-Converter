@@ -1550,8 +1550,12 @@ class quick_bulge_bake_image(bpy.types.Operator):
 			edge_angle_total = 0.0
 			for edge in vert.link_edges:
 				diff_co = edge.other_vert(vert).co - vert.co
-				edge_angle_total += normal.angle(diff_co)
-			edge_angle = edge_angle_total / len(vert.link_edges)
+				if 0 < diff_co.length:
+					edge_angle_total += normal.angle(diff_co)
+			if len(vert.link_edges):
+				edge_angle = edge_angle_total / len(vert.link_edges)
+			else:
+				edge_angle = 0.0
 			angles.append(edge_angle)
 		
 		angle_min, angle_max = 1.5708, max(angles)
