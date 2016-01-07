@@ -131,16 +131,17 @@ class render_cm3d2_icon(bpy.types.Operator):
 		xs, ys, zs = [], [], []
 		for ob in obs:
 			if ob.type == 'MESH':
-				for vert in ob.data.vertices:
+				temp_me = ob.to_mesh(context.scene, apply_modifiers=True, settings='PREVIEW')
+				for vert in temp_me.vertices:
 					co = ob.matrix_world * vert.co
 					xs.append(co.x)
 					ys.append(co.y)
 					zs.append(co.z)
-		xs.sort(), ys.sort(), zs.sort()
+				common.remove_data(temp_me)
 		center_co = mathutils.Vector((0, 0, 0))
-		center_co.x = (xs[0] + xs[-1]) / 2.0
-		center_co.y = (ys[0] + ys[-1]) / 2.0
-		center_co.z = (zs[0] + zs[-1]) / 2.0
+		center_co.x = (min(xs) + max(xs)) / 2.0
+		center_co.y = (min(ys) + max(ys)) / 2.0
+		center_co.z = (min(zs) + max(zs)) / 2.0
 		
 		hide_render_restore = common.hide_render_restore()
 		
