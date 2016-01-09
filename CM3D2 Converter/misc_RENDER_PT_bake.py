@@ -24,6 +24,7 @@ def menu_func(self, context):
 	row = col.row(align=True)
 	row.operator('object.quick_metal_bake_image', icon='MATCAP_19', text="金属")
 	row.operator('object.quick_hair_bake_image', icon='PARTICLEMODE', text="髪")
+	row.operator('object.quick_semen_bake_image', icon='MOD_FLUIDSIM', text="白い液体")
 
 class add_bake_image(bpy.types.Operator):
 	bl_idname = 'object.add_bake_image'
@@ -1573,5 +1574,91 @@ class quick_bulge_bake_image(bpy.types.Operator):
 		common.remove_data([temp_me, temp_ob])
 		context.scene.objects.active = ob
 		ob.select = True
+		
+		return {'FINISHED'}
+
+class quick_semen_bake_image(bpy.types.Operator):
+	bl_idname = 'object.quick_semen_bake_image'
+	bl_label = "白い液体・ベイク"
+	bl_description = "アクティブオブジェクトに白い液体をベイクします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	image_name = bpy.props.StringProperty(name="画像名")
+	items = [
+		('128', "128 px", "", 'LAYER_USED', 1),
+		('256', "256 px", "", 'LAYER_ACTIVE', 2),
+		('512', "512 px", "", 'HAND', 3),
+		('1024', "1024 px", "", 'FILE_TICK', 4),
+		('2048', "2048 px", "", 'ERROR', 5),
+		('4096', "4096 px", "", 'CANCEL', 6),
+		]
+	image_width = bpy.props.EnumProperty(items=items, name="幅", default='1024')
+	image_height = bpy.props.EnumProperty(items=items, name="高", default='1024')
+	
+	texture_scale = bpy.props.FloatProperty(name="テクスチャサイズ", default=1, min=0, max=100, soft_min=0, soft_max=100, step=50, precision=1)
+	
+	@classmethod
+	def poll(cls, context):
+		if len(context.selected_objects) != 1:
+			return False
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				me = ob.data
+				if len(me.uv_layers):
+					return True
+		return False
+	
+	def invoke(self, context, event):
+		ob = context.active_object
+		self.image_name = ob.name + " Semen Bake"
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.label(text="新規画像設定", icon='IMAGE_COL')
+		self.layout.prop(self, 'image_name', icon='SORTALPHA')
+		row = self.layout.row(align=True)
+		row.prop(self, 'image_width', icon='ARROW_LEFTRIGHT')
+		row.prop(self, 'image_height', icon='NLA_PUSHDOWN')
+		
+		self.layout.prop(self, 'texture_scale', icon='TEXTURE')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		override = context.copy()
+		override['object'] = ob
+		
+		image_width, image_height = int(self.image_width), int(self.image_height)
+		
+		if self.image_name in context.blend_data.images.keys():
+			img = context.blend_data.images[self.image_name]
+		else:
+			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
+		
+		area = common.get_request_area(context, 'IMAGE_EDITOR')
+		common.set_area_space_attr(area, 'image', img)
+		for elem in me.uv_textures.active.data:
+			elem.image = img
+		
+		material_restore = common.material_restore(ob)
+		
+		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
+		with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
+			data_to.materials = ["精液"]
+		
+		bpy.ops.object.material_slot_add(override)
+		temp_mate = data_to.materials[0]
+		ob.material_slots[0].material = temp_mate
+		temp_mate.texture_slots[0].scale = (self.texture_scale, self.texture_scale, self.texture_scale)
+		
+		context.scene.render.bake_type = 'TEXTURE'
+		context.scene.render.use_bake_selected_to_active = False
+		bpy.ops.object.bake_image()
+		
+		common.remove_data([temp_mate, temp_mate.texture_slots[0].texture, temp_mate.texture_slots[0].texture.image])
+		
+		material_restore.restore()
 		
 		return {'FINISHED'}

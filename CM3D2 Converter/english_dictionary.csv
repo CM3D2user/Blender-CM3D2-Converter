@@ -194,6 +194,7 @@ UV縁	UV Border
 メッシュ間距離	Mesh Distance
 金属	Metal
 髪	Hair
+白い液体	White Liquid
 ベイク用の画像を作成	Create Image for Bake
 アクティブオブジェクトに素早くベイク用の空の画像を用意します	Provide empty image for quick bake in the active object
 画像名	Image Name
@@ -272,6 +273,10 @@ UV縁・ベイク	Bake UV Border
 アクティブオブジェクトに他オブジェクトとの距離をベイクします	Bake distance between other objects in the active object
 膨らみ・ベイク	Bake Bulge
 アクティブオブジェクトに膨らんでいる部分を白くベイクします	Bake white part that bulges in the active object
+白い液体・ベイク	Bake White Liquid
+アクティブオブジェクトに白い液体をベイクします	Bake a white liquid in the active object
+テクスチャサイズ	Texture Size
+精液	Semen
 CM3D2メニュー用のアイコンをレンダリング	Render Menu Icon for CM3D2
 CM3D2内のアイコン画像に使用できそうな画像をレンダリングします	Render can likely image used for an icon image in CM3D2
 面のテクスチャで	By Face Textures
