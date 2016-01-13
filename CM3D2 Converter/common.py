@@ -77,6 +77,7 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 			mate.offset_z = 9999
 	
 	is_colored = False
+	is_textured = [False, False, False, False]
 	for slot in mate.texture_slots:
 		if not slot: continue
 		if not slot.texture: continue
@@ -106,6 +107,108 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 			mate.specular_intensity = slot.diffuse_color_factor
 		
 		set_texture_color(slot)
+		
+		for index, name in enumerate(['_MainTex', '_ToonRamp', '_ShadowTex', '_ShadowRateToon']):
+			if tex_name == name:
+				if 'image' in dir(tex):
+					if tex.image:
+						if len(tex.image.pixels):
+							is_textured[index] = tex
+	
+	# よりオリジナルに近く描画するノード作成
+	if all(is_textured):
+		mate.use_nodes = True
+		mate.use_shadeless = True
+		
+		node_tree = mate.node_tree
+		for node in node_tree.nodes[:]:
+			node_tree.nodes.remove(node)
+		
+		mate_node = node_tree.nodes.new('ShaderNodeExtendedMaterial')
+		mate_node.location = (0, 0)
+		mate_node.material = mate
+		
+		if "CM3D2 Shade" in bpy.context.blend_data.materials.keys():
+			shade_mate = bpy.context.blend_data.materials["CM3D2 Shade"]
+		else:
+			shade_mate = bpy.context.blend_data.materials.new("CM3D2 Shade")
+		shade_mate.diffuse_color = (1, 1, 1)
+		shade_mate.diffuse_intensity = 1
+		shade_mate.specular_intensity = 1
+		shade_mate_node = node_tree.nodes.new('ShaderNodeExtendedMaterial')
+		shade_mate_node.location = (234.7785, -131.8243)
+		shade_mate_node.material = shade_mate
+		
+		toon_node = node_tree.nodes.new('ShaderNodeValToRGB')
+		toon_node.location = (571.3662, -381.0965)
+		toon_img = is_textured[1].image
+		toon_w, toon_h = toon_img.size[0], toon_img.size[1]
+		for i in range(32 - 2):
+			toon_node.color_ramp.elements.new(0.0)
+		for i in range(32):
+			pos = i / (32 - 1)
+			toon_node.color_ramp.elements[i].position = pos
+			x = int( (toon_w / (32 - 1)) * i )
+			pixel_index = x * toon_img.channels
+			toon_node.color_ramp.elements[i].color = toon_img.pixels[pixel_index:pixel_index+4]
+		toon_node.color_ramp.interpolation = 'EASE'
+		
+		shadow_rate_node = node_tree.nodes.new('ShaderNodeValToRGB')
+		shadow_rate_node.location = (488.2785, 7.8446)
+		shadow_rate_img = is_textured[3].image
+		shadow_rate_w, shadow_rate_h = shadow_rate_img.size[0], shadow_rate_img.size[1]
+		for i in range(32 - 2):
+			shadow_rate_node.color_ramp.elements.new(0.0)
+		for i in range(32):
+			pos = i / (32 - 1)
+			shadow_rate_node.color_ramp.elements[i].position = pos
+			x = int( (shadow_rate_w / (32)) * i )
+			pixel_index = x * shadow_rate_img.channels
+			shadow_rate_node.color_ramp.elements[i].color = shadow_rate_img.pixels[pixel_index:pixel_index+4]
+		shadow_rate_node.color_ramp.interpolation = 'EASE'
+		
+		geometry_node = node_tree.nodes.new('ShaderNodeGeometry')
+		geometry_node.location = (323.4597, -810.8045)
+		
+		shadow_texture_node = node_tree.nodes.new('ShaderNodeTexture')
+		shadow_texture_node.location = (626.0117, -666.0227)
+		shadow_texture_node.texture = is_textured[2]
+		
+		invert_node = node_tree.nodes.new('ShaderNodeInvert')
+		invert_node.location = (805.6814, -132.9144)
+		
+		shadow_mix_node = node_tree.nodes.new('ShaderNodeMixRGB')
+		shadow_mix_node.location = (1031.2714, -201.5598)
+		
+		toon_mix_node = node_tree.nodes.new('ShaderNodeMixRGB')
+		toon_mix_node.location = (1257.5538, -308.8037)
+		toon_mix_node.blend_type = 'MULTIPLY'
+		toon_mix_node.inputs[0].default_value = 1.0
+		
+		specular_mix_node = node_tree.nodes.new('ShaderNodeMixRGB')
+		specular_mix_node.location = (1473.2079, -382.7421)
+		specular_mix_node.blend_type = 'SCREEN'
+		specular_mix_node.inputs[0].default_value = mate.specular_intensity
+		
+		out_node = node_tree.nodes.new('ShaderNodeOutput')
+		out_node.location = (1700.3340, -360.2461)
+		
+		node_tree.links.new(shadow_mix_node.inputs[1], mate_node.outputs[0])
+		node_tree.links.new(shadow_rate_node.inputs[0], shade_mate_node.outputs[3])
+		node_tree.links.new(invert_node.inputs[1], shadow_rate_node.outputs[0])
+		node_tree.links.new(shadow_mix_node.inputs[0], invert_node.outputs[0])
+		node_tree.links.new(toon_node.inputs[0], shade_mate_node.outputs[3])
+		node_tree.links.new(shadow_texture_node.inputs[0], geometry_node.outputs[4])
+		node_tree.links.new(shadow_mix_node.inputs[2], shadow_texture_node.outputs[1])
+		node_tree.links.new(toon_node.inputs[0], shade_mate_node.outputs[3])
+		node_tree.links.new(toon_mix_node.inputs[1], shadow_mix_node.outputs[0])
+		node_tree.links.new(toon_mix_node.inputs[2], toon_node.outputs[0])
+		node_tree.links.new(specular_mix_node.inputs[1], toon_mix_node.outputs[0])
+		node_tree.links.new(specular_mix_node.inputs[2], shade_mate_node.outputs[4])
+		node_tree.links.new(out_node.inputs[0], specular_mix_node.outputs[0])
+		node_tree.links.new(out_node.inputs[1], mate_node.outputs[1])
+		
+		node_tree.nodes.active = mate_node
 
 # 画像のおおよその平均色を取得
 def get_image_average_color(img, sample_count=10):
