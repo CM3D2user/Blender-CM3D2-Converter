@@ -365,7 +365,6 @@ class set_default_toon_textures(bpy.types.Operator):
 		tex_path = os.path.splitext(png_path)[0] + ".tex"
 		if not os.path.exists(png_path):
 			if os.path.exists(tex_path):
-				print(tex_path)
 				tex_file = open(tex_path, 'rb')
 				header_ext = common.read_str(tex_file)
 				if header_ext == 'CM3D2_TEX':

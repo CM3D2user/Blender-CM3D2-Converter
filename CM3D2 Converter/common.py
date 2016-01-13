@@ -304,6 +304,8 @@ def fild_tex_all_files(dir):
 		for file in files:
 			if os.path.splitext(file)[1].lower() == ".tex":
 				yield os.path.join(root, file)
+			elif os.path.splitext(file)[1].lower() == ".png":
+				yield os.path.join(root, file)
 
 # テクスチャ置き場のパスのリストを返す
 def get_default_tex_paths():
@@ -342,21 +344,13 @@ def get_tex_storage_files():
 
 # テクスチャを検索して空の画像へ置換
 def replace_cm3d2_tex(img, files=None):
-	if 'cm3d2_path' not in img.keys():
-		img['cm3d2_path'] = bpy.path.abspath(img.filepath)
-	source_path = img['cm3d2_path']
-	
-	source_png_name = os.path.basename(source_path).lower()
-	if '*' in source_png_name:
-		source_png_name = remove_serial_number(img.name)
-	source_tex_name = os.path.splitext(source_png_name)[0] + ".tex"
+	source_png_name = remove_serial_number(img.name).lower() + ".png"
+	source_tex_name = remove_serial_number(img.name).lower() + ".tex"
 	
 	tex_dirs = [None] if files else get_default_tex_paths()
 	
 	for tex_dir in tex_dirs:
-		
-		if not files:
-			files = fild_tex_all_files(tex_dir)
+		files = fild_tex_all_files(tex_dir)
 		
 		for path in files:
 			path = bpy.path.abspath(path)
