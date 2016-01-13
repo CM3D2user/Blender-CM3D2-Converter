@@ -343,14 +343,18 @@ def get_tex_storage_files():
 	return files
 
 # テクスチャを検索して空の画像へ置換
-def replace_cm3d2_tex(img, files=None):
+def replace_cm3d2_tex(img, pre_files=None):
 	source_png_name = remove_serial_number(img.name).lower() + ".png"
 	source_tex_name = remove_serial_number(img.name).lower() + ".tex"
 	
-	tex_dirs = [None] if files else get_default_tex_paths()
+	tex_dirs = get_default_tex_paths()
 	
 	for tex_dir in tex_dirs:
-		files = fild_tex_all_files(tex_dir)
+		
+		if pre_files:
+			files = pre_files
+		else:
+			files = fild_tex_all_files(tex_dir)
 		
 		for path in files:
 			path = bpy.path.abspath(path)
@@ -383,6 +387,9 @@ def replace_cm3d2_tex(img, files=None):
 				else:
 					file.close()
 					return False
+		
+		if pre_files:
+			return False
 	return False
 
 # col f タイプの設定値を値に合わせて着色
