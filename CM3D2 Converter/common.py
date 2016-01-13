@@ -2,7 +2,6 @@ import bpy, os, re, math, bmesh, struct, shutil, mathutils
 
 addon_name = "CM3D2 Converter"
 preview_collections = {}
-tex_storage_files = []
 
 # このアドオンの設定値群を呼び出す
 def preferences():
@@ -299,11 +298,12 @@ def file_backup(filepath, enable=True):
 		shutil.copyfile(filepath, filepath+"."+backup_ext)
 
 # サブフォルダを再帰的に検索してリスト化
-def fild_all_files(dir):
+def fild_tex_all_files(dir):
 	for root, dirs, files in os.walk(dir):
 		yield root
 		for file in files:
-			yield os.path.join(root, file)
+			if os.path.splitext(file)[1].lower() == ".tex":
+				yield os.path.join(root, file)
 
 # テクスチャ置き場のパスのリストを返す
 def get_default_tex_paths():
@@ -337,15 +337,11 @@ def get_tex_storage_files():
 	tex_dirs = get_default_tex_paths()
 	for tex_dir in tex_dirs:
 		tex_dir = bpy.path.abspath(tex_dir)
-		files.extend(fild_all_files(tex_dir))
+		files.extend(fild_tex_all_files(tex_dir))
 	return files
 
 # テクスチャを検索して空の画像へ置換
 def replace_cm3d2_tex(img, files=None):
-	global tex_storage_files
-	if not files:
-		files = tex_storage_files[:]
-	
 	if 'cm3d2_path' not in img.keys():
 		img['cm3d2_path'] = bpy.path.abspath(img.filepath)
 	source_path = img['cm3d2_path']
@@ -360,7 +356,7 @@ def replace_cm3d2_tex(img, files=None):
 	for tex_dir in tex_dirs:
 		
 		if not files:
-			files = fild_all_files(tex_dir)
+			files = fild_tex_all_files(tex_dir)
 		
 		for path in files:
 			path = bpy.path.abspath(path)
@@ -393,8 +389,6 @@ def replace_cm3d2_tex(img, files=None):
 				else:
 					file.close()
 					return False
-		
-		if files: return False
 	return False
 
 # col f タイプの設定値を値に合わせて着色
