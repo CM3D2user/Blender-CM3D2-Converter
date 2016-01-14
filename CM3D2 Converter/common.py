@@ -375,7 +375,7 @@ def get_tex_storage_files():
 	return files
 
 # テクスチャを検索して空の画像へ置換
-def replace_cm3d2_tex(img, pre_files=None):
+def replace_cm3d2_tex(img, pre_files=[]):
 	source_png_name = remove_serial_number(img.name).lower() + ".png"
 	source_tex_name = remove_serial_number(img.name).lower() + ".tex"
 	
@@ -383,7 +383,7 @@ def replace_cm3d2_tex(img, pre_files=None):
 	
 	for tex_dir in tex_dirs:
 		
-		if pre_files:
+		if len(pre_files):
 			files = pre_files
 		else:
 			files = fild_tex_all_files(tex_dir)
@@ -420,7 +420,7 @@ def replace_cm3d2_tex(img, pre_files=None):
 					file.close()
 					return False
 		
-		if pre_files:
+		if len(pre_files):
 			return False
 	return False
 
