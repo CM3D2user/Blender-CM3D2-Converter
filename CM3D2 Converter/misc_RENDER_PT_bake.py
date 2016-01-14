@@ -73,6 +73,7 @@ class add_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
@@ -148,6 +149,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
@@ -236,6 +238,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		ob.select = False
+		ob.hide_render = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
@@ -331,6 +334,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -431,6 +435,7 @@ class quick_shadow_bake_image(bpy.types.Operator):
 		
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -544,6 +549,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -653,6 +659,7 @@ class quick_gradation_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -755,6 +762,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -877,6 +885,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -1006,6 +1015,7 @@ class quick_uv_border_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
@@ -1166,6 +1176,7 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		ob.select = False
+		ob.hide_render = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
@@ -1281,6 +1292,7 @@ class quick_density_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		ob.select = False
+		ob.hide_render = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
@@ -1417,6 +1429,7 @@ class quick_mesh_distance_bake_image(bpy.types.Operator):
 	
 	def execute(self, context):
 		target_ob = context.active_object
+		target_ob.hide_render = False
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
 				source_ob = ob
@@ -1520,6 +1533,7 @@ class quick_bulge_bake_image(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		ob.select = False
+		ob.hide_render = False
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
@@ -1626,6 +1640,7 @@ class quick_semen_bake_image(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		me = ob.data
+		ob.hide_render = False
 		
 		override = context.copy()
 		override['object'] = ob
