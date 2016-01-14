@@ -77,6 +77,7 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 	
 	is_colored = False
 	is_textured = [False, False, False, False]
+	rimcolor, rimpower, rimshift = mathutils.Color((1, 1, 1)), 0.0, 0.0
 	for slot in mate.texture_slots:
 		if not slot: continue
 		if not slot.texture: continue
@@ -98,6 +99,7 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 					is_colored = True
 		
 		elif tex_name == '_RimColor':
+			rimcolor = slot.color[:]
 			if not is_colored:
 				mate.diffuse_color = slot.color[:]
 				mate.diffuse_color.v += 0.5
@@ -105,7 +107,11 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 		elif tex_name == '_Shininess':
 			mate.specular_intensity = slot.diffuse_color_factor
 		
-		set_texture_color(slot)
+		elif tex_name == '_RimPower':
+			rimpower = slot.diffuse_color_factor
+		
+		elif tex_name == '_RimShift':
+			rimshift = slot.diffuse_color_factor
 		
 		for index, name in enumerate(['_MainTex', '_ToonRamp', '_ShadowTex', '_ShadowRateToon']):
 			if tex_name == name:
@@ -113,6 +119,8 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 					if tex.image:
 						if len(tex.image.pixels):
 							is_textured[index] = tex
+		
+		set_texture_color(slot)
 	
 	# よりオリジナルに近く描画するノード作成
 	if all(is_textured):
@@ -189,8 +197,26 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 		specular_mix_node.blend_type = 'SCREEN'
 		specular_mix_node.inputs[0].default_value = mate.specular_intensity
 		
+		normal_node = node_tree.nodes.new('ShaderNodeNormal')
+		normal_node.location = (912.1372, -590.8748)
+		
+		rim_ramp_node = node_tree.nodes.new('ShaderNodeValToRGB')
+		rim_ramp_node.location = (1119.0664, -570.0284)
+		rim_ramp_node.color_ramp.elements[0].color = list(rimcolor[:]) + [1.0]
+		rim_ramp_node.color_ramp.elements[0].position = rimshift - 0.05
+		rim_ramp_node.color_ramp.elements[1].color = (0, 0, 0, 1)
+		rim_ramp_node.color_ramp.elements[1].position = rimshift + 0.05
+		
+		rim_power_node = node_tree.nodes.new('ShaderNodeHueSaturation')
+		rim_power_node.location = (1426.6332, -575.6142)
+		rim_power_node.inputs[2].default_value = rimpower * 0.1
+		
+		rim_mix_node = node_tree.nodes.new('ShaderNodeMixRGB')
+		rim_mix_node.location = (1724.7024, -451.9624)
+		rim_mix_node.blend_type = 'SCREEN'
+		
 		out_node = node_tree.nodes.new('ShaderNodeOutput')
-		out_node.location = (1700.3340, -360.2461)
+		out_node.location = (1957.4023, -480.5365)
 		
 		node_tree.links.new(shadow_mix_node.inputs[1], mate_node.outputs[0])
 		node_tree.links.new(shadow_rate_node.inputs[0], shade_mate_node.outputs[3])
@@ -204,7 +230,13 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 		node_tree.links.new(toon_mix_node.inputs[2], toon_node.outputs[0])
 		node_tree.links.new(specular_mix_node.inputs[1], toon_mix_node.outputs[0])
 		node_tree.links.new(specular_mix_node.inputs[2], shade_mate_node.outputs[4])
-		node_tree.links.new(out_node.inputs[0], specular_mix_node.outputs[0])
+		node_tree.links.new(normal_node.inputs[0], mate_node.outputs[2])
+		node_tree.links.new(rim_ramp_node.inputs[0], normal_node.outputs[1])
+		node_tree.links.new(rim_power_node.inputs[4], rim_ramp_node.outputs[0])
+		node_tree.links.new(rim_mix_node.inputs[2], rim_power_node.outputs[0])
+		node_tree.links.new(rim_mix_node.inputs[0], shadow_rate_node.outputs[0])
+		node_tree.links.new(rim_mix_node.inputs[1], specular_mix_node.outputs[0])
+		node_tree.links.new(out_node.inputs[0], rim_mix_node.outputs[0])
 		node_tree.links.new(out_node.inputs[1], mate_node.outputs[1])
 		
 		node_tree.nodes.active = mate_node
