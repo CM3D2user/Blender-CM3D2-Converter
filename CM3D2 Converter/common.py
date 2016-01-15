@@ -239,7 +239,10 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 		node_tree.links.new(out_node.inputs[0], rim_mix_node.outputs[0])
 		node_tree.links.new(out_node.inputs[1], mate_node.outputs[1])
 		
+		for node in node_tree.nodes[:]:
+			node.select = False
 		node_tree.nodes.active = mate_node
+		node_tree.nodes.active.select = True
 	
 	else:
 		mate.use_nodes = False
