@@ -203,9 +203,9 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 		rim_ramp_node = node_tree.nodes.new('ShaderNodeValToRGB')
 		rim_ramp_node.location = (1119.0664, -570.0284)
 		rim_ramp_node.color_ramp.elements[0].color = list(rimcolor[:]) + [1.0]
-		rim_ramp_node.color_ramp.elements[0].position = rimshift - 0.05
+		rim_ramp_node.color_ramp.elements[0].position = (rimshift * 2) - 0.05
 		rim_ramp_node.color_ramp.elements[1].color = (0, 0, 0, 1)
-		rim_ramp_node.color_ramp.elements[1].position = rimshift + 0.05
+		rim_ramp_node.color_ramp.elements[1].position = (rimshift * 2) + 0.05
 		
 		rim_power_node = node_tree.nodes.new('ShaderNodeHueSaturation')
 		rim_power_node.location = (1426.6332, -575.6142)
