@@ -298,6 +298,7 @@ CM3D2内のアイコン画像に使用できそうな画像をレンダリング
 設定値タイプ:	Value Type:
 テクスチャ	Texture
 設定値名	Value Name
+テクスチャ名:	Texture Name:
 テクスチャパス	Texture Path
 画像を表示	Show Image
 texで保存	Save as tex
