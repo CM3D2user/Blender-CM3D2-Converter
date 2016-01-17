@@ -46,7 +46,7 @@ def menu_func(self, context):
 					sub_box = box.box()
 					row = sub_box.split(percentage=0.333333333333, align=True)
 					row.label(text="テクスチャ名:")
-					row.template_ID(tex, "image", open="image.open")
+					row.template_ID(tex, 'image', open='image.open')
 					if 'cm3d2_path' not in img.keys():
 						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")

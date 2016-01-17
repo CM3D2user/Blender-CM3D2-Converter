@@ -104,7 +104,7 @@ def menu_func(self, context):
 						sub_row.label(text=name, icon_value=sub_row.icon(tex))
 						if 'image' in dir(tex):
 							if tex.image:
-								sub_row.prop(tex.image, 'name', icon='IMAGE_DATA', text="")
+								sub_row.template_ID(tex, 'image')
 						row.operator('material.quick_texture_show', text="", icon='RIGHTARROW').texture_name = tex.name
 					elif type == 'col':
 						row = box.row(align=True)
