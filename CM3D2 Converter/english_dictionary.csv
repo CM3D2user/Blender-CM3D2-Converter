@@ -137,6 +137,7 @@ Blender-CM3D2-Converterで使用できるマテリアルを新規で作成しま
 クイック・シェイプキー転送	Quick Transfer Shape Key
 アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します	The active mesh it will transfer the shape keys of other selected mesh at high speed
 最初に全シェイプキーを削除	Remove All First
+参照元の分割	Source Subdivide
 変形のないシェイプキーを削除	Remove Non-Shaped Shape Keys
 高精度・シェイプキー転送	Precision Transfer Shape Key
 アクティブなメッシュに他の選択メッシュのシェイプキーを高精度で転送します	Active mesh will transfer shape keys of other selected mesh with high accuracy

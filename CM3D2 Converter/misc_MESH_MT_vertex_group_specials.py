@@ -19,6 +19,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
 	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
 	
 	@classmethod
@@ -39,6 +40,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
+		self.layout.prop(self, 'subdivide_number', icon='LATTICE_DATA')
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
@@ -46,14 +48,24 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		start_time = time.time()
 		
 		target_ob = context.active_object
-		for ob in context.selected_objects:
-			if ob.name != target_ob.name:
-				source_ob = ob
-				break
 		target_me = target_ob.data
-		source_me = source_ob.data
 		
 		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				source_original_ob = ob
+				break
+		source_ob = source_original_ob.copy()
+		source_me = source_original_ob.data.copy()
+		source_ob.data = source_me
+		context.scene.objects.link(source_ob)
+		context.scene.objects.active = source_ob
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.reveal()
+		bpy.ops.mesh.select_all(action='SELECT')
+		bpy.ops.mesh.subdivide(number_cuts=self.subdivide_number, smoothness=0.0, quadtri=False, quadcorner='STRAIGHT_CUT', fractal=0.0, fractal_along_normal=0.0, seed=0)
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_first_remove_all:
@@ -107,6 +119,9 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		context.window_manager.progress_end()
 		
 		target_ob.vertex_groups.active_index = 0
+		
+		common.remove_data([source_ob, source_me])
+		context.scene.objects.active = target_ob
 		bpy.ops.object.mode_set(mode=pre_mode)
 		
 		diff_time = time.time() - start_time
@@ -120,6 +135,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
 	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=2, min=1.1, max=5, soft_min=1.1, soft_max=5, step=10, precision=2)
 	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
 	
@@ -141,6 +157,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
+		self.layout.prop(self, 'subdivide_number', icon='LATTICE_DATA')
 		self.layout.prop(self, 'extend_range', icon='META_EMPTY')
 		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
@@ -149,14 +166,24 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		start_time = time.time()
 		
 		target_ob = context.active_object
-		for ob in context.selected_objects:
-			if ob.name != target_ob.name:
-				source_ob = ob
-				break
 		target_me = target_ob.data
-		source_me = source_ob.data
 		
 		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				source_original_ob = ob
+				break
+		source_ob = source_original_ob.copy()
+		source_me = source_original_ob.data.copy()
+		source_ob.data = source_me
+		context.scene.objects.link(source_ob)
+		context.scene.objects.active = source_ob
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.reveal()
+		bpy.ops.mesh.select_all(action='SELECT')
+		bpy.ops.mesh.subdivide(number_cuts=self.subdivide_number, smoothness=0.0, quadtri=False, quadcorner='STRAIGHT_CUT', fractal=0.0, fractal_along_normal=0.0, seed=0)
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_first_remove_all:
@@ -243,6 +270,9 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		context.window_manager.progress_end()
 		
 		target_ob.vertex_groups.active_index = 0
+		
+		common.remove_data([source_ob, source_me])
+		context.scene.objects.active = target_ob
 		bpy.ops.object.mode_set(mode=pre_mode)
 		
 		diff_time = time.time() - start_time
