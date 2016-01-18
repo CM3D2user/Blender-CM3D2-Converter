@@ -56,14 +56,12 @@ def menu_func(self, context):
 					elif base_name == "_ShadowRateToon":
 						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon', icon='NLA')
 					
+					row = sub_box.row()
+					row.operator('image.show_image', text="画像を表示", icon='ZOOM_IN').image_name = img.name
 					if len(img.pixels):
-						row = sub_box.row()
-						row.operator('image.show_image', text="画像を表示", icon='ZOOM_IN').image_name = img.name
-						
 						row.operator('image.quick_export_cm3d2_tex', text="texで保存", icon='FILESEL')
-						
 					else:
-						sub_box.operator('image.replace_cm3d2_tex', icon='BORDERMOVE')
+						row.operator('image.replace_cm3d2_tex', icon='BORDERMOVE')
 				#box.prop(tex_slot, 'color', text="")
 				#box.prop(tex_slot, 'diffuse_color_factor', icon='IMAGE_RGB_ALPHA', text="色の透明度", slider=True)
 	
