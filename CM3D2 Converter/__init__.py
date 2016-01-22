@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 375),
+	"version" : (0, 376),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -219,6 +219,12 @@ def get_english_dictionary():
 
 # プラグインをインストールしたときの処理
 def register():
+	try:
+		import locale
+		if locale.getdefaultlocale()[0] != 'ja_JP':
+			return
+	except: pass
+	
 	bpy.utils.register_module(__name__)
 	
 	bpy.types.INFO_MT_file_import.append(model_import.menu_func)
