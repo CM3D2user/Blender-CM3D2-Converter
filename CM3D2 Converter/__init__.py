@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 376),
+	"version" : (0, 377),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -213,7 +213,7 @@ def get_english_dictionary():
 			for line in lines:
 				jp, en = line.split('\t')[0], line.split('\t')[1]
 				for context in bpy.app.translations.contexts:
-					dict[locale][(context, jp)] = en
+					dict[locale][(context, jp)] = "?"
 	except: return {}
 	return dict
 
