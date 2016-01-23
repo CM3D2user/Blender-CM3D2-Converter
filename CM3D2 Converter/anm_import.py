@@ -81,21 +81,14 @@ class import_cm3d2_anm(bpy.types.Operator):
 		arm = ob.data
 		pose = ob.pose
 		
-		bpy.ops.object.mode_set(mode='EDIT')
-		for edit_bone in arm.edit_bones:
-			edit_bone.use_connect = False
-		for edit_bone in arm.edit_bones:
-			head_co = edit_bone.head.copy()
-			head_co.z += 0.5
-			edit_bone.tail = head_co
-			edit_bone.roll = 0.0
-		
+		max_frame = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
 		for bone_name, bone_data in anm_data.items():
 			if bone_name not in pose.bones.keys():
 				bone_name = common.decode_bone_name(bone_name)
 				if bone_name not in pose.bones.keys():
 					continue
+			bone = arm.bones[bone_name]
 			pose_bone = pose.bones[bone_name]
 			
 			quats = {}
@@ -111,7 +104,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 						quats[frame] = [None, None, None, None]
 					
 					if channel_id == 103:
-						quats[frame][0] = data['f0']
+						quats[frame][0] = -data['f0']
 					elif channel_id == 100:
 						quats[frame][1] = -data['f0']
 					elif channel_id == 102:
@@ -121,20 +114,24 @@ class import_cm3d2_anm(bpy.types.Operator):
 			
 			for frame, quat in quats.items():
 				quat = mathutils.Quaternion(quat)
-				#eul = mathutils.Euler((math.radians(-90), 0, 0), 'XYZ')
-				#quat.rotate(eul)
 				
-				#bone_quat = arm.bones[bone_name].matrix.to_quaternion()
-				#quat = quat * bone_quat
+				q = mathutils.Quaternion((0, 0, 1), math.radians(90))
+				bone_quat = bone.matrix_local.to_quaternion()
+				bone_quat = bone_quat * q
+				if bone.parent:
+					parent_quat = bone.parent.matrix_local.to_quaternion()
+					parent_quat = parent_quat * q
+					bone_quat = parent_quat.rotation_difference(bone_quat)
 				
-				print(bone_name)
-				print(quat)
-				eul = quat.to_euler()
-				print( int(math.degrees(eul[0])), int(math.degrees(eul[1])), int(math.degrees(eul[2])) )
-				
-				pose_bone.rotation_quaternion = eul.to_quaternion().copy()
+				pose_quat = bone_quat.rotation_difference(quat)
+				pose_quat.w, pose_quat.x, pose_quat.y, pose_quat.z = pose_quat.w, -pose_quat.y, pose_quat.x, pose_quat.z
+				pose_bone.rotation_quaternion = pose_quat
 				
 				pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
+				if max_frame < frame * fps:
+					max_frame = frame * fps
+		
+		context.scene.frame_end = max_frame
 		
 		return {'FINISHED'}
 

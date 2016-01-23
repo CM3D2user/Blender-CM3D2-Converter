@@ -246,17 +246,25 @@ class import_cm3d2_model(bpy.types.Operator):
 				if not data['parent_name']:
 					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
 					bone.head = (0, 0, 0)
-					bone.tail = (0, 0.1, 0)
+					bone.tail = (0, 0.5, 0)
 					
 					co = data['co'].copy()
 					co.x, co.y, co.z = -co.x, -co.z, co.y
 					co *= self.scale
 					
-					rot = data['rot'].copy()
+					rot = mathutils.Euler((0, math.radians(0), 0)).to_quaternion()
+					rot = rot * data['rot'].copy()
+					rot.x, rot.y, rot.z, rot.w = -rot.x, -rot.z, rot.y, -rot.w
+					q = mathutils.Quaternion((0, 0, 1), math.radians(-90))
+					rot = rot * q
 					
 					co_mat = mathutils.Matrix.Translation(co)
 					rot_mat = rot.to_matrix().to_4x4()
 					bone.matrix = co_mat * rot_mat
+					
+					co = bone.tail - bone.head
+					#co.x, co.y, co.z = -co.y, co.x, co.z
+					#bone.tail = bone.head + co
 					
 					if data['unknown']:
 						bone.layers[16] = True
@@ -276,11 +284,12 @@ class import_cm3d2_model(bpy.types.Operator):
 					if data['unknown']:
 						bone.bbone_segments = 2
 					bone.head = (0, 0, 0)
-					bone.tail = (0, 0.05, 0)
+					bone.tail = (0, 0.5, 0)
 					
+					rots = []
 					temp_parent = bone
 					co = mathutils.Vector()
-					rot = mathutils.Quaternion()
+					rot = mathutils.Euler((0, math.radians(0), 0)).to_quaternion()
 					for j in range(9**9):
 						for b in bone_data:
 							if common.decode_bone_name(b['name'], self.is_convert_bone_weight_names) == temp_parent.name:
@@ -291,13 +300,21 @@ class import_cm3d2_model(bpy.types.Operator):
 						co = r * co
 						co += c
 						
-						rot.rotate(r)
+						r.x, r.y, r.z, r.w = -r.x, -r.z, r.y, -r.w
+						rots.append(r.copy())
 						
 						if temp_parent.parent == None:
 							break
 						temp_parent = temp_parent.parent
 					co.x, co.y, co.z = -co.x, -co.z, co.y
 					co *= self.scale
+					
+					rots.reverse()
+					rot = mathutils.Euler((0, math.radians(0), 0)).to_quaternion()
+					for r in rots:
+						rot = rot * r
+					q = mathutils.Quaternion((0, 0, 1), math.radians(-90))
+					rot = rot * q
 					
 					co_mat = mathutils.Matrix.Translation(co)
 					rot_mat = rot.to_matrix().to_4x4()
@@ -311,6 +328,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					child_data.append(data)
 			context.window_manager.progress_update(1.3)
 			
+			"""
 			# ボーン整頓
 			if self.is_armature_arrange:
 				has_child = []
@@ -351,6 +369,7 @@ class import_cm3d2_model(bpy.types.Operator):
 							v = bone.parent.tail - bone.parent.head
 							bone.tail = bone.head + (v * 0.75)
 			context.window_manager.progress_update(1.8)
+			"""
 			
 			arm.layers[16] = True
 			arm.draw_type = 'STICK'
