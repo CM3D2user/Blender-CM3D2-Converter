@@ -328,16 +328,14 @@ class import_cm3d2_model(bpy.types.Operator):
 					child_data.append(data)
 			context.window_manager.progress_update(1.3)
 			
-			"""
-			# ボーン整頓
+			# ボーン整頓1
 			if self.is_armature_arrange:
 				has_child = []
-				# 整頓
 				for bone in arm.edit_bones:
-					if 1 == len(bone.children):
-						bone.tail = bone.children[0].head
+					if len(bone.children) == 1:
+						co = bone.children[0].head - bone.head
+						bone.length = co.length
 						has_child.append(bone.name)
-			context.window_manager.progress_update(1.4)
 			
 			# 一部ボーン削除
 			if self.is_armature_clean:
@@ -348,28 +346,25 @@ class import_cm3d2_model(bpy.types.Operator):
 							break
 					else:
 						arm.edit_bones.remove(bone)
-			context.window_manager.progress_update(1.6)
 			
-			# ボーン整頓
+			# ボーン整頓2
 			if self.is_armature_arrange:
-				# 整頓
 				for bone in arm.edit_bones:
 					if len(bone.children) == 0 and bone.name in has_child:
 						pass
 					elif 1 == len(bone.children):
-						bone.tail = bone.children[0].head
-						bone.children[0].use_connect = True
+						co = bone.children[0].head - bone.head
+						bone.length = co.length
 					elif 2 <= len(bone.children):
 						total = mathutils.Vector()
 						for child in bone.children:
-							total += child.head
-						bone.tail = total / len(bone.children)
+							total += child.head - bone.head
+						co = total / len(bone.children)
+						bone.length = co.length
 					else:
 						if bone.parent:
-							v = bone.parent.tail - bone.parent.head
-							bone.tail = bone.head + (v * 0.75)
-			context.window_manager.progress_update(1.8)
-			"""
+							co = bone.parent.tail - bone.parent.head
+							bone.length = co.length
 			
 			arm.layers[16] = True
 			arm.draw_type = 'STICK'

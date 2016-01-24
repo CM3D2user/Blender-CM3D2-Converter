@@ -91,26 +91,37 @@ class import_cm3d2_anm(bpy.types.Operator):
 			bone = arm.bones[bone_name]
 			pose_bone = pose.bones[bone_name]
 			
+			locs = {}
 			quats = {}
 			for channel_id, channel_data in bone_data['channels'].items():
 				
-				if channel_id not in [100, 101, 102, 103]:
-					continue
+				if channel_id in [100, 101, 102, 103]:
+					for data in channel_data:
+						frame = data['frame']
+						if frame not in quats.keys():
+							quats[frame] = [None, None, None, None]
+						
+						if channel_id == 103:
+							quats[frame][0] = -data['f0']
+						elif channel_id == 100:
+							quats[frame][1] = -data['f0']
+						elif channel_id == 102:
+							quats[frame][2] = -data['f0']
+						elif channel_id == 101:
+							quats[frame][3] = data['f0']
 				
-				for data in channel_data:
-					
-					frame = data['frame']
-					if frame not in quats.keys():
-						quats[frame] = [None, None, None, None]
-					
-					if channel_id == 103:
-						quats[frame][0] = -data['f0']
-					elif channel_id == 100:
-						quats[frame][1] = -data['f0']
-					elif channel_id == 102:
-						quats[frame][2] = -data['f0']
-					elif channel_id == 101:
-						quats[frame][3] = data['f0']
+				elif channel_id in [104, 105, 106]:
+					for data in channel_data:
+						frame = data['frame']
+						if frame not in locs.keys():
+							locs[frame] = [None, None, None]
+						
+						if channel_id == 104:
+							locs[frame][0] = -data['f0']
+						elif channel_id == 106:
+							locs[frame][1] = -data['f0']
+						elif channel_id == 105:
+							locs[frame][2] = data['f0']
 			
 			for frame, quat in quats.items():
 				quat = mathutils.Quaternion(quat)
@@ -128,6 +139,31 @@ class import_cm3d2_anm(bpy.types.Operator):
 				pose_bone.rotation_quaternion = pose_quat
 				
 				pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
+				if max_frame < frame * fps:
+					max_frame = frame * fps
+			
+			a = True
+			for frame, loc in locs.items():
+				loc = mathutils.Vector(loc) * common.preferences().scale
+				
+				bone_loc = bone.head_local
+				if bone.parent:
+					parent_loc = bone.parent.head_local
+					bone_loc = bone_loc - parent_loc
+					quat = bone.parent.matrix_local.to_quaternion()
+					bone_loc = quat * bone_loc
+				
+				if a:
+					print(bone_name, loc, bone_loc)
+					a = False
+				
+				pose_loc = loc - bone_loc
+				
+				pose_loc.x, pose_loc.y, pose_loc.z = pose_loc.x, pose_loc.y, pose_loc.z
+				
+				#pose_bone.location = pose_loc
+				
+				pose_bone.keyframe_insert('location', frame=frame * fps)
 				if max_frame < frame * fps:
 					max_frame = frame * fps
 		
