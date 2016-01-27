@@ -146,23 +146,21 @@ class import_cm3d2_anm(bpy.types.Operator):
 			for frame, loc in locs.items():
 				loc = mathutils.Vector(loc) * common.preferences().scale
 				
-				bone_loc = bone.head_local
+				bone_loc = bone.head_local.copy()
 				if bone.parent:
-					parent_loc = bone.parent.head_local
+					parent_loc = bone.parent.head_local.copy()
 					bone_loc = bone_loc - parent_loc
+					
 					quat = bone.parent.matrix_local.to_quaternion()
-					bone_loc = quat * bone_loc
-				
-				if a:
-					print(bone_name, loc, bone_loc)
-					a = False
+					quat.invert()
+					bone_loc.rotate(quat)
+					bone_loc.x, bone_loc.y, bone_loc.z = bone_loc.y, -bone_loc.x, bone_loc.z
 				
 				pose_loc = loc - bone_loc
+				bone_quat = bone.matrix_local.to_quaternion()
+				pose_loc.rotate(bone_quat)
 				
-				pose_loc.x, pose_loc.y, pose_loc.z = pose_loc.x, pose_loc.y, pose_loc.z
-				
-				#pose_bone.location = pose_loc
-				
+				pose_bone.location = pose_loc
 				pose_bone.keyframe_insert('location', frame=frame * fps)
 				if max_frame < frame * fps:
 					max_frame = frame * fps
