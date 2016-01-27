@@ -246,7 +246,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				if not data['parent_name']:
 					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
 					bone.head = (0, 0, 0)
-					bone.tail = (0, 0.5, 0)
+					bone.tail = (0, 1, 0)
 					
 					co = data['co'].copy()
 					co.x, co.y, co.z = -co.x, -co.z, co.y
@@ -284,7 +284,7 @@ class import_cm3d2_model(bpy.types.Operator):
 					if data['unknown']:
 						bone.bbone_segments = 2
 					bone.head = (0, 0, 0)
-					bone.tail = (0, 0.5, 0)
+					bone.tail = (0, 1, 0)
 					
 					rots = []
 					temp_parent = bone
@@ -363,8 +363,9 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.length = co.length
 					else:
 						if bone.parent:
-							co = bone.parent.tail - bone.parent.head
-							bone.length = co.length
+							bone.length = 0.1
+						else:
+							bone.length = 1.0
 			
 			arm.layers[16] = True
 			arm.draw_type = 'STICK'

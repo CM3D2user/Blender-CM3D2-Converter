@@ -81,6 +81,8 @@ class import_cm3d2_anm(bpy.types.Operator):
 		arm = ob.data
 		pose = ob.pose
 		
+		bpy.context.object.animation_data_clear()
+		
 		max_frame = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
 		for bone_name, bone_data in anm_data.items():
