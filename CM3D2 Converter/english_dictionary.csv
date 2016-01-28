@@ -1,5 +1,12 @@
 (開発中) CM3D2 Motion (.anm)	(WIP) CM3D2 Motion (.anm)
 カスタムメイド3D2のanmファイルを読み込みます	Read the anm file of CM3D2
+倍率	Scale
+インポート時のメッシュ等の拡大率です	Scale of Meshes
+既にあるアニメーションを削除	Already there to remove animation
+位置	Location
+回転	Rotation
+拡大/縮小	Scale
+読み込むアニメーション情報	Read Animation Info
 ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません	Failed to open the file, does not exist or inaccessible file
 これはカスタムメイド3D2のモーションファイルではありません	This is not a motion file of CM3D2
 Software\KISS\カスタムメイド3D2	Software\KISS\カスタムメイド3D2
@@ -144,7 +151,6 @@ Blender-CM3D2-Converterで使用できるマテリアルを新規で作成しま
 範囲倍率	Range Multiple
 シェイプキーの変形に乗算	Multiply Shape Key
 シェイプキーの変形に数値を乗算し、変形の強度を増減させます	multiplied by number in deformation of the shape key, and increase or intensity of deformation
-倍率	Scale
 シェイプキーの拡大率です	Scale of Shape Key
 アクティブのみ	Active Only
 アクティブより上	Above Active
@@ -424,7 +430,6 @@ UVがありません	Not Found UV
 ウェイトの合計が1.0未満の頂点が見つかりました	Sum of the weights found the vertex of less than 1.0
 modelのエクスポートが完了しました	model export is now complete
 カスタムメイド3D2のmodelファイルを読み込みます	Import model file of CM3D2
-インポート時のメッシュ等の拡大率です	Scale of Meshes
 メッシュ生成	Create Mesh
 ポリゴンを読み込みます、大抵の場合オンでOKです	Read the polygons. And in most cases is good ON
 重複頂点を結合	Remove Doubles

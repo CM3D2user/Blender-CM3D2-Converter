@@ -12,6 +12,14 @@ class import_cm3d2_anm(bpy.types.Operator):
 	filename_ext = ".anm"
 	filter_glob = bpy.props.StringProperty(default="*.anm", options={'HIDDEN'})
 	
+	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1, description="インポート時のメッシュ等の拡大率です")
+	
+	remove_pre_animation = bpy.props.BoolProperty(name="既にあるアニメーションを削除", default=True)
+	
+	is_location = bpy.props.BoolProperty(name="位置", default=True)
+	is_rotation = bpy.props.BoolProperty(name="回転", default=True)
+	is_scale = bpy.props.BoolProperty(name="拡大/縮小", default=False)
+	
 	@classmethod
 	def poll(cls, context):
 		ob = context.active_object
@@ -25,11 +33,20 @@ class import_cm3d2_anm(bpy.types.Operator):
 			self.filepath = common.default_cm3d2_dir(common.preferences().anm_default_path, "", "anm")
 		else:
 			self.filepath = common.default_cm3d2_dir(common.preferences().anm_import_path, "", "anm")
+		self.scale = common.preferences().scale
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
 	def draw(self, context):
-		pass
+		self.layout.prop(self, 'scale')
+		self.layout.prop(self, 'remove_pre_animation', icon='DISCLOSURE_TRI_DOWN')
+		box = self.layout.box()
+		box.label("読み込むアニメーション情報")
+		box.prop(self, 'is_location', icon='MAN_TRANS')
+		box.prop(self, 'is_rotation', icon='MAN_ROT')
+		row = box.row()
+		row.prop(self, 'is_scale', icon='MAN_SCALE')
+		row.enabled = False
 	
 	def execute(self, context):
 		common.preferences().anm_import_path = self.filepath
@@ -81,7 +98,11 @@ class import_cm3d2_anm(bpy.types.Operator):
 		arm = ob.data
 		pose = ob.pose
 		
-		bpy.context.object.animation_data_clear()
+		if self.remove_pre_animation:
+			anim = ob.animation_data
+			if anim:
+				for fcurve in anim.action.fcurves:
+					anim.action.fcurves.remove(fcurve)
 		
 		max_frame = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
@@ -125,47 +146,48 @@ class import_cm3d2_anm(bpy.types.Operator):
 						elif channel_id == 105:
 							locs[frame][2] = data['f0']
 			
-			for frame, quat in quats.items():
-				quat = mathutils.Quaternion(quat)
-				
-				q = mathutils.Quaternion((0, 0, 1), math.radians(90))
-				bone_quat = bone.matrix_local.to_quaternion()
-				bone_quat = bone_quat * q
-				if bone.parent:
-					parent_quat = bone.parent.matrix_local.to_quaternion()
-					parent_quat = parent_quat * q
-					bone_quat = parent_quat.rotation_difference(bone_quat)
-				
-				pose_quat = bone_quat.rotation_difference(quat)
-				pose_quat.w, pose_quat.x, pose_quat.y, pose_quat.z = pose_quat.w, -pose_quat.y, pose_quat.x, pose_quat.z
-				pose_bone.rotation_quaternion = pose_quat
-				
-				pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
-				if max_frame < frame * fps:
-					max_frame = frame * fps
-			
-			a = True
-			for frame, loc in locs.items():
-				loc = mathutils.Vector(loc) * common.preferences().scale
-				
-				bone_loc = bone.head_local.copy()
-				if bone.parent:
-					parent_loc = bone.parent.head_local.copy()
-					bone_loc = bone_loc - parent_loc
+			if self.is_rotation:
+				for frame, quat in quats.items():
+					quat = mathutils.Quaternion(quat)
 					
-					quat = bone.parent.matrix_local.to_quaternion()
-					quat.invert()
-					bone_loc.rotate(quat)
-					bone_loc.x, bone_loc.y, bone_loc.z = bone_loc.y, -bone_loc.x, bone_loc.z
-				
-				pose_loc = loc - bone_loc
-				bone_quat = bone.matrix_local.to_quaternion()
-				pose_loc.rotate(bone_quat)
-				
-				pose_bone.location = pose_loc
-				pose_bone.keyframe_insert('location', frame=frame * fps)
-				if max_frame < frame * fps:
-					max_frame = frame * fps
+					q = mathutils.Quaternion((0, 0, 1), math.radians(90))
+					bone_quat = bone.matrix_local.to_quaternion()
+					bone_quat = bone_quat * q
+					if bone.parent:
+						parent_quat = bone.parent.matrix_local.to_quaternion()
+						parent_quat = parent_quat * q
+						bone_quat = parent_quat.rotation_difference(bone_quat)
+					
+					pose_quat = bone_quat.rotation_difference(quat)
+					pose_quat.w, pose_quat.x, pose_quat.y, pose_quat.z = pose_quat.w, -pose_quat.y, pose_quat.x, pose_quat.z
+					pose_bone.rotation_quaternion = pose_quat
+					
+					pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
+					if max_frame < frame * fps:
+						max_frame = frame * fps
+			
+			if self.is_location:
+				for frame, loc in locs.items():
+					loc = mathutils.Vector(loc) * self.scale
+					
+					bone_loc = bone.head_local.copy()
+					if bone.parent:
+						parent_loc = bone.parent.head_local.copy()
+						bone_loc = bone_loc - parent_loc
+						
+						quat = bone.parent.matrix_local.to_quaternion()
+						quat.invert()
+						bone_loc.rotate(quat)
+						bone_loc.x, bone_loc.y, bone_loc.z = bone_loc.y, -bone_loc.x, bone_loc.z
+					
+					pose_loc = loc - bone_loc
+					bone_quat = bone.matrix_local.to_quaternion()
+					pose_loc.rotate(bone_quat)
+					
+					pose_bone.location = pose_loc
+					pose_bone.keyframe_insert('location', frame=frame * fps)
+					if max_frame < frame * fps:
+						max_frame = frame * fps
 		
 		context.scene.frame_end = max_frame
 		
