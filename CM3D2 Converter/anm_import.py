@@ -4,7 +4,7 @@ from . import common
 # メインオペレーター
 class import_cm3d2_anm(bpy.types.Operator):
 	bl_idname = 'import_mesh.import_cm3d2_anm'
-	bl_label = "(開発中) CM3D2 Motion (.anm)"
+	bl_label = "CM3D2 Motion (.anm)"
 	bl_description = "カスタムメイド3D2のanmファイルを読み込みます"
 	bl_options = {'REGISTER'}
 	
@@ -19,6 +19,8 @@ class import_cm3d2_anm(bpy.types.Operator):
 	is_location = bpy.props.BoolProperty(name="位置", default=True)
 	is_rotation = bpy.props.BoolProperty(name="回転", default=True)
 	is_scale = bpy.props.BoolProperty(name="拡大/縮小", default=False)
+	
+	set_frame = bpy.props.BoolProperty(name="Blenderのフレーム設定を調整", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -47,6 +49,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 		row = box.row()
 		row.prop(self, 'is_scale', icon='MAN_SCALE')
 		row.enabled = False
+		self.layout.prop(self, 'set_frame', icon='NEXT_KEYFRAME')
 	
 	def execute(self, context):
 		common.preferences().anm_import_path = self.filepath
@@ -189,7 +192,9 @@ class import_cm3d2_anm(bpy.types.Operator):
 					if max_frame < frame * fps:
 						max_frame = frame * fps
 		
-		context.scene.frame_end = max_frame
+		if self.set_frame:
+			context.scene.frame_end = max_frame
+			context.scene.frame_current = 0
 		
 		return {'FINISHED'}
 
