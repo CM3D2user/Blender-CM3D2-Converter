@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 386),
+	"version" : (0, 387),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -197,34 +197,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
 		row.operator('script.update_cm3d2_converter', icon='FILE_REFRESH')
 		row.menu('INFO_MT_help_CM3D2_Converter_RSS', icon='INFO')
 
-# 英訳辞書を作成
-def get_english_dictionary():
-	try:
-		import re, codecs
-		
-		file_path = os.path.join(os.path.dirname(__file__), "english_dictionary.csv")
-		file = codecs.open(file_path, 'r', 'utf-8')
-		lines = [re.sub(r'\r?\n$', "", line) for line in file if 2 <= len(line.split('\t'))]
-		
-		dict = {}
-		for locale in bpy.app.translations.locales:
-			if locale == 'ja_JP': continue
-			dict[locale] = {}
-			for line in lines:
-				jp, en = line.split('\t')[0], line.split('\t')[1]
-				for context in bpy.app.translations.contexts:
-					dict[locale][(context, jp)] = "?"
-	except: return {}
-	return dict
-
 # プラグインをインストールしたときの処理
 def register():
-	try:
-		import locale
-		if locale.getdefaultlocale()[0] != 'ja_JP':
-			return
-	except: pass
-	
 	bpy.utils.register_module(__name__)
 	
 	bpy.types.INFO_MT_file_import.append(model_import.menu_func)
@@ -273,7 +247,11 @@ def register():
 			system.language = 'en_US'
 	except: pass
 	
-	bpy.app.translations.register(__name__, get_english_dictionary())
+	try:
+		import locale
+		if locale.getdefaultlocale()[0] != 'ja_JP':
+			unregister()
+	except: pass
 
 # プラグインをアンインストールしたときの処理
 def unregister():
