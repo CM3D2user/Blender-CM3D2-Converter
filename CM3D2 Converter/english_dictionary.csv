@@ -1,3 +1,4 @@
+CM3D2モーション (.anm)	CM3D2 Motion (.anm)
 カスタムメイド3D2のanmファイルを読み込みます	Read the anm file of CM3D2
 倍率	Scale
 インポート時のメッシュ等の拡大率です	Scale of Meshes
@@ -382,6 +383,7 @@ CM3D2で使用できるマテリアルテキストを全て削除します	Delet
 現在のポーズで衣装をモデリングしやすくする素体を作成します	Create figure to facilitate modeling the costume in the current pose
 関係するメッシュのアーマチュアを適用	Apply Armatures that relate meshes
 アーマチュア適用は体積を維持	Preserve Volume when Apply Armatures
+CM3D2モデル (.model)	CM3D2 Model (.model)
 カスタムメイド3D2のmodelファイルを書き出します	Export model file of CM3D2
 エクスポート時のメッシュ等の拡大率です	This is the scale of mesh at time of export
 model名	Model Name

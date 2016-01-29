@@ -4,7 +4,7 @@ from . import common
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
 	bl_idname = 'export_mesh.export_cm3d2_model'
-	bl_label = "CM3D2 Model (.model)"
+	bl_label = "CM3D2モデル (.model)"
 	bl_description = "カスタムメイド3D2のmodelファイルを書き出します"
 	bl_options = {'REGISTER'}
 	

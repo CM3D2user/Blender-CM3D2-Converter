@@ -5,7 +5,7 @@ from . import common
 # メインオペレーター
 class import_cm3d2_model(bpy.types.Operator):
 	bl_idname = 'import_mesh.import_cm3d2_model'
-	bl_label = "CM3D2 Model (.model)"
+	bl_label = "CM3D2モデル (.model)"
 	bl_description = "カスタムメイド3D2のmodelファイルを読み込みます"
 	bl_options = {'REGISTER'}
 	
