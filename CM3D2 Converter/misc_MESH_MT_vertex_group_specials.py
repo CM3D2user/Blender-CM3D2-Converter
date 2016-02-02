@@ -83,7 +83,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
 		for source_vertex_group in source_ob.vertex_groups:
 			
-			if source_vertex_group.name in target_ob.vertex_groups.keys():
+			if source_vertex_group.name in target_ob.vertex_groups:
 				target_vertex_group = target_ob.vertex_groups[source_vertex_group.name]
 			else:
 				target_vertex_group = target_ob.vertex_groups.new(source_vertex_group.name)
@@ -228,7 +228,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
 		for source_vertex_group in source_ob.vertex_groups:
 			
-			if source_vertex_group.name in target_ob.vertex_groups.keys():
+			if source_vertex_group.name in target_ob.vertex_groups:
 				target_vertex_group = target_ob.vertex_groups[source_vertex_group.name]
 			else:
 				target_vertex_group = target_ob.vertex_groups.new(source_vertex_group.name)

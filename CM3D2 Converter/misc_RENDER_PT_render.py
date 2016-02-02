@@ -54,7 +54,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		else:
 			self.mode = 'NOW_MATERIAL'
 		
-		if 'render_cm3d2_icon_background_color' in context.scene.keys():
+		if 'render_cm3d2_icon_background_color' in context.scene:
 			try:
 				color = str( context.scene['render_cm3d2_icon_background_color'] ).split(",")
 				if len(color) == 3:
@@ -62,7 +62,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 					self.background_color[1] = float(color[1])
 					self.background_color[2] = float(color[2])
 			except: pass
-		if 'render_cm3d2_icon_background_color_layer_image' in context.scene.keys(): self.layer_image = context.scene['render_cm3d2_icon_background_color_layer_image']
+		if 'render_cm3d2_icon_background_color_layer_image' in context.scene: self.layer_image = context.scene['render_cm3d2_icon_background_color_layer_image']
 		
 		return context.window_manager.invoke_props_dialog(self)
 	
@@ -213,7 +213,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		img_node = node_tree.nodes.new('CompositorNodeImage')
 		img_node.location = (0, -300)
 		blend_path = os.path.join(os.path.dirname(__file__), "append_data.blend")
-		if "Icon Alpha" in context.blend_data.images.keys():
+		if "Icon Alpha" in context.blend_data.images:
 			icon_alpha_img = context.blend_data.images["Icon Alpha"]
 		else:
 			with context.blend_data.libraries.load(blend_path) as (data_from, data_to):
@@ -236,7 +236,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 		out_node.location = (1500, 0)
 		
 		layer_img = None
-		if self.layer_image in context.blend_data.images.keys():
+		if self.layer_image in context.blend_data.images:
 			layer_img = context.blend_data.images[self.layer_image]
 		if layer_img:
 			layer_img_node = node_tree.nodes.new('CompositorNodeImage')

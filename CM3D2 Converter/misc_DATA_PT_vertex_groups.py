@@ -50,7 +50,7 @@ class decode_cm3d2_vertex_group_names(bpy.types.Operator):
 			context.window_manager.progress_update(vg_index)
 			vg_name = common.decode_bone_name(vg.name)
 			if vg_name != vg.name:
-				if vg_name in ob.vertex_groups.keys():
+				if vg_name in ob.vertex_groups:
 					target_vg = ob.vertex_groups[vg_name]
 					for vert in me.vertices:
 						try:
@@ -101,7 +101,7 @@ class encode_cm3d2_vertex_group_names(bpy.types.Operator):
 			context.window_manager.progress_update(vg_index)
 			vg_name = common.encode_bone_name(vg.name)
 			if vg_name != vg.name:
-				if vg_name in ob.vertex_groups.keys():
+				if vg_name in ob.vertex_groups:
 					target_vg = ob.vertex_groups[vg_name]
 					for vert in me.vertices:
 						try:

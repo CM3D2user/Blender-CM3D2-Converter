@@ -77,7 +77,7 @@ class add_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -153,7 +153,7 @@ class quick_ao_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -242,7 +242,7 @@ class quick_dirty_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -341,7 +341,7 @@ class quick_hemi_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -442,7 +442,7 @@ class quick_shadow_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -556,7 +556,7 @@ class quick_side_shadow_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True, float_buffer=True)
@@ -666,7 +666,7 @@ class quick_gradation_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -769,7 +769,7 @@ class quick_metal_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -892,7 +892,7 @@ class quick_hair_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1022,7 +1022,7 @@ class quick_uv_border_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1180,7 +1180,7 @@ class quick_mesh_border_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1296,7 +1296,7 @@ class quick_density_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1439,7 +1439,7 @@ class quick_mesh_distance_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1537,7 +1537,7 @@ class quick_bulge_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)
@@ -1647,7 +1647,7 @@ class quick_semen_bake_image(bpy.types.Operator):
 		
 		image_width, image_height = int(self.image_width), int(self.image_height)
 		
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			img = context.blend_data.images.new(self.image_name, image_width, image_height, alpha=True)

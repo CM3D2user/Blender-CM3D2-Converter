@@ -75,7 +75,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 			path = common.read_str(file)
 			
 			base_bone_name = path.split('/')[-1]
-			if base_bone_name not in anm_data.keys():
+			if base_bone_name not in anm_data:
 				anm_data[base_bone_name] = {'path':path}
 				anm_data[base_bone_name]['channels'] = {}
 			
@@ -110,9 +110,9 @@ class import_cm3d2_anm(bpy.types.Operator):
 		max_frame = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
 		for bone_name, bone_data in anm_data.items():
-			if bone_name not in pose.bones.keys():
+			if bone_name not in pose.bones:
 				bone_name = common.decode_bone_name(bone_name)
-				if bone_name not in pose.bones.keys():
+				if bone_name not in pose.bones:
 					continue
 			bone = arm.bones[bone_name]
 			pose_bone = pose.bones[bone_name]
@@ -124,7 +124,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 				if channel_id in [100, 101, 102, 103]:
 					for data in channel_data:
 						frame = data['frame']
-						if frame not in quats.keys():
+						if frame not in quats:
 							quats[frame] = [None, None, None, None]
 						
 						if channel_id == 103:
@@ -139,7 +139,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 				elif channel_id in [104, 105, 106]:
 					for data in channel_data:
 						frame = data['frame']
-						if frame not in locs.keys():
+						if frame not in locs:
 							locs[frame] = [None, None, None]
 						
 						if channel_id == 104:

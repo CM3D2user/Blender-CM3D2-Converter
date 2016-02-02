@@ -22,7 +22,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 		if 'material' in dir(context):
 			mate = context.material
 			if mate:
-				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+				if 'shader1' in mate and 'shader2' in mate:
 					return True
 		return False
 	
@@ -90,7 +90,7 @@ class export_cm3d2_mate(bpy.types.Operator):
 				if img:
 					common.write_str(file, 'tex2d')
 					common.write_str(file, common.remove_serial_number(img.name))
-					if 'cm3d2_path' in img.keys():
+					if 'cm3d2_path' in img:
 						path = img['cm3d2_path']
 					else:
 						path = bpy.path.abspath(img.filepath)

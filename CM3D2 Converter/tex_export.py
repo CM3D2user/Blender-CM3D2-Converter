@@ -33,11 +33,11 @@ class export_cm3d2_tex(bpy.types.Operator):
 		else:
 			self.filepath = common.default_cm3d2_dir(common.preferences().tex_export_path, common.remove_serial_number(img.name), "tex")
 		self.is_backup = bool(common.preferences().backup_ext)
-		if 'cm3d2_path' in img.keys():
+		if 'cm3d2_path' in img:
 			self.path = img['cm3d2_path']
 		else:
 			self.path = "assets/texture/texture/" + os.path.basename(self.filepath)
-		if 'tex Name' in img.keys():
+		if 'tex Name' in img:
 			self.filepath = os.path.join(os.path.dirname(self.filepath), img['tex Name'])
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}

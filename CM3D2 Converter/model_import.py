@@ -277,7 +277,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				if len(child_data) <= 0:
 					break
 				data = child_data.pop(0)
-				if common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names) in arm.edit_bones.keys():
+				if common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names) in arm.edit_bones:
 					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
 					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names)]
 					bone.parent = parent
@@ -580,7 +580,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		if self.is_mate_data_text:
 			for index, data in enumerate(material_data):
 				txt_name = "Material:" + str(index)
-				if txt_name in context.blend_data.texts.keys():
+				if txt_name in context.blend_data.texts:
 					txt = context.blend_data.texts[txt_name]
 					txt.clear()
 				else:
@@ -613,7 +613,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		# ボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
-			if "BoneData" in context.blend_data.texts.keys():
+			if "BoneData" in context.blend_data.texts:
 				txt = context.blend_data.texts["BoneData"]
 				txt.clear()
 			else:
@@ -641,7 +641,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		# ローカルボーン情報のテキスト埋め込み
 		if self.is_bone_data_text:
-			if "LocalBoneData" in context.blend_data.texts.keys():
+			if "LocalBoneData" in context.blend_data.texts:
 				txt = context.blend_data.texts["LocalBoneData"]
 				txt.clear()
 			else:

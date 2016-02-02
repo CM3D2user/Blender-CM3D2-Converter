@@ -47,7 +47,7 @@ def menu_func(self, context):
 					row = sub_box.split(percentage=0.333333333333, align=True)
 					row.label(text="テクスチャ名:")
 					row.template_ID(tex, 'image', open='image.open')
-					if 'cm3d2_path' not in img.keys():
+					if 'cm3d2_path' not in img:
 						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
@@ -279,7 +279,7 @@ class show_image(bpy.types.Operator):
 	image_name = bpy.props.StringProperty(name="画像名")
 	
 	def execute(self, context):
-		if self.image_name in context.blend_data.images.keys():
+		if self.image_name in context.blend_data.images:
 			img = context.blend_data.images[self.image_name]
 		else:
 			self.report(type={'ERROR'}, message="指定された画像が見つかりません")
@@ -332,7 +332,7 @@ class sync_tex_color_ramps(bpy.types.Operator):
 	
 	def execute(self, context):
 		for mate in context.blend_data.materials:
-			if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+			if 'shader1' in mate and 'shader2' in mate:
 				for slot in mate.texture_slots:
 					if not slot:
 						continue
@@ -515,7 +515,7 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		override['edit_image'] = img
 		filepath = os.path.splitext( bpy.path.abspath(img.filepath) )[0] + ".tex"
 		path = "assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
-		if 'cm3d2_path' in img.keys():
+		if 'cm3d2_path' in img:
 			path = img['cm3d2_path']
 		if os.path.exists(filepath):
 			file = open(filepath, 'rb')
