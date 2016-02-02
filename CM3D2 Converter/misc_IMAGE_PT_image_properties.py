@@ -5,7 +5,7 @@ from . import common
 def menu_func(self, context):
 	if 'edit_image' in dir(context):
 		img = context.edit_image
-		if 'cm3d2_path' in img.keys():
+		if 'cm3d2_path' in img:
 			box = self.layout.box()
 			box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
 			box.prop(img, '["cm3d2_path"]', icon='ANIM_DATA', text="内部パス")

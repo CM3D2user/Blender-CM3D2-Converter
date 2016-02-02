@@ -9,7 +9,7 @@ def menu_func(self, context):
 	if ob.type != 'MESH': return
 	
 	bone_data_count = 0
-	if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+	if 'BoneData:0' in ob and 'LocalBoneData:0' in ob:
 		for key in ob.keys():
 			if re.search(r'^(Local)?BoneData:\d+$', key):
 				bone_data_count += 1
@@ -24,7 +24,7 @@ def menu_func(self, context):
 		row.label(text="CM3D2用ボーン情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
 		sub_row = row.row()
 		sub_row.alignment = 'RIGHT'
-		if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+		if 'BoneData:0' in ob and 'LocalBoneData:0' in ob:
 			bone_data_count = 0
 			for key in ob.keys():
 				if re.search(r'^(Local)?BoneData:\d+$', key):
@@ -47,7 +47,7 @@ class copy_object_bone_data_property(bpy.types.Operator):
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
-			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+			if 'BoneData:0' in ob and 'LocalBoneData:0' in ob:
 				return True
 		return False
 	
@@ -55,11 +55,11 @@ class copy_object_bone_data_property(bpy.types.Operator):
 		output_text = ""
 		ob = context.active_object
 		pass_count = 0
-		if 'BaseBone' in ob.keys():
+		if 'BaseBone' in ob:
 			output_text += "BaseBone:" + ob['BaseBone'] + "\n"
 		for i in range(99999):
 			name = "BoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				output_text += "BoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
@@ -68,7 +68,7 @@ class copy_object_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				output_text += "LocalBoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
@@ -99,7 +99,7 @@ class paste_object_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "BoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1
@@ -108,7 +108,7 @@ class paste_object_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1
@@ -147,7 +147,7 @@ class remove_object_bone_data_property(bpy.types.Operator):
 	def poll(cls, context):
 		ob = context.active_object
 		if ob:
-			if 'BoneData:0' in ob.keys() and 'LocalBoneData:0' in ob.keys():
+			if 'BoneData:0' in ob and 'LocalBoneData:0' in ob:
 				return True
 		return False
 	
@@ -160,11 +160,11 @@ class remove_object_bone_data_property(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object
 		pass_count = 0
-		if 'BaseBone' in ob.keys():
+		if 'BaseBone' in ob:
 			del ob['BaseBone']
 		for i in range(99999):
 			name = "BoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1
@@ -173,7 +173,7 @@ class remove_object_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1

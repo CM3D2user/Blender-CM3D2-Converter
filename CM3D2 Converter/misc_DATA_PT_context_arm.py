@@ -12,7 +12,7 @@ def menu_func(self, context):
 	is_boxed = False
 	
 	bone_data_count = 0
-	if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+	if 'BoneData:0' in arm and 'LocalBoneData:0' in arm:
 		for key in arm.keys():
 			if re.search(r'^(Local)?BoneData:\d+$', key):
 				bone_data_count += 1
@@ -60,7 +60,7 @@ def menu_func(self, context):
 			row.operator('armature.encode_cm3d2_bone_names', text="Blender → CM3D2", icon_value=common.preview_collections['main']['KISS'].icon_id)
 			break
 	
-	if 'is T Stance' in arm.keys():
+	if 'is T Stance' in arm:
 		if not is_boxed:
 			box = self.layout.box()
 			box.label(text="CM3D2用", icon_value=common.preview_collections['main']['KISS'].icon_id)
@@ -160,7 +160,7 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		if ob:
 			if ob.type == 'ARMATURE':
 				arm = ob.data
-				if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+				if 'BoneData:0' in arm and 'LocalBoneData:0' in arm:
 					return True
 		return False
 	
@@ -168,11 +168,11 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		output_text = ""
 		ob = context.active_object.data
 		pass_count = 0
-		if 'BaseBone' in ob.keys():
+		if 'BaseBone' in ob:
 			output_text += "BaseBone:" + ob['BaseBone'] + "\n"
 		for i in range(99999):
 			name = "BoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				output_text += "BoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
@@ -181,7 +181,7 @@ class copy_armature_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				output_text += "LocalBoneData:" + ob[name] + "\n"
 			else:
 				pass_count += 1
@@ -213,7 +213,7 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "BoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1
@@ -222,7 +222,7 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1
@@ -263,7 +263,7 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 		if ob:
 			if ob.type == 'ARMATURE':
 				arm = ob.data
-				if 'BoneData:0' in arm.keys() and 'LocalBoneData:0' in arm.keys():
+				if 'BoneData:0' in arm and 'LocalBoneData:0' in arm:
 					return True
 		return False
 	
@@ -276,11 +276,11 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 	def execute(self, context):
 		ob = context.active_object.data
 		pass_count = 0
-		if 'BaseBone' in ob.keys():
+		if 'BaseBone' in ob:
 			del ob['BaseBone']
 		for i in range(99999):
 			name = "BoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1
@@ -289,7 +289,7 @@ class remove_armature_bone_data_property(bpy.types.Operator):
 		pass_count = 0
 		for i in range(99999):
 			name = "LocalBoneData:" + str(i)
-			if name in ob.keys():
+			if name in ob:
 				del ob[name]
 			else:
 				pass_count += 1

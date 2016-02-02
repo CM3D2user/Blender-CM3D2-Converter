@@ -11,7 +11,7 @@ def menu_func(self, context):
 		row.operator('material.import_cm3d2_mate', icon='FILE_FOLDER', text="mateから")
 		row.operator('material.paste_material', icon='PASTEDOWN', text="クリップボードから")
 	else:
-		if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+		if 'shader1' in mate and 'shader2' in mate:
 			box = self.layout.box()
 			#row = box.split(percentage=0.3)
 			row = box.split(percentage=0.5)
@@ -78,7 +78,7 @@ def menu_func(self, context):
 			box.operator('material.decorate_material', icon='TEXTURE_SHADED')
 			
 			
-			if 'CM3D2 Texture Expand' not in mate.keys():
+			if 'CM3D2 Texture Expand' not in mate:
 				mate['CM3D2 Texture Expand'] = True
 			box = self.layout.box()
 			if mate['CM3D2 Texture Expand']:
@@ -549,7 +549,7 @@ class copy_material(bpy.types.Operator):
 		if 'material' in dir(context):
 			mate = context.material
 			if mate:
-				return 'shader1' in mate.keys() and 'shader2' in mate.keys()
+				return 'shader1' in mate and 'shader2' in mate
 		return False
 	
 	def execute(self, context):
@@ -586,7 +586,7 @@ class copy_material(bpy.types.Operator):
 				if img:
 					output_text += '\ttex2d' + "\n"
 					output_text += "\t" + common.remove_serial_number(img.name) + "\n"
-					if 'cm3d2_path' in img.keys():
+					if 'cm3d2_path' in img:
 						path = img['cm3d2_path']
 					else:
 						path = bpy.path.abspath( bpy.path.abspath(img.filepath) )
@@ -623,7 +623,7 @@ class decorate_material(bpy.types.Operator):
 		for slot in ob.material_slots:
 			mate = slot.material
 			if mate:
-				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+				if 'shader1' in mate and 'shader2' in mate:
 					return True
 		return False
 	
@@ -634,7 +634,7 @@ class decorate_material(bpy.types.Operator):
 		for slot_index, slot in enumerate(ob.material_slots):
 			mate = slot.material
 			if mate:
-				if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+				if 'shader1' in mate and 'shader2' in mate:
 					common.decorate_material(mate, True, me, slot_index)
 		
 		return {'FINISHED'}
@@ -651,7 +651,7 @@ class quick_texture_show(bpy.types.Operator):
 	def poll(cls, context):
 		mate = context.material
 		if mate:
-			if 'shader1' in mate.keys() and 'shader2' in mate.keys():
+			if 'shader1' in mate and 'shader2' in mate:
 				return True
 		return False
 	

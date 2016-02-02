@@ -46,7 +46,7 @@ def decode_bone_name(name, enable=True):
 # CM3D2用マテリアルを設定に合わせて装飾
 def decorate_material(mate, enable=True, me=None, mate_index=-1):
 	if not enable: return
-	if 'shader1' not in mate.keys(): return
+	if 'shader1' not in mate: return
 	
 	shader = mate['shader1']
 	if 'CM3D2/Man' == shader:
@@ -135,7 +135,7 @@ def decorate_material(mate, enable=True, me=None, mate_index=-1):
 		mate_node.location = (0, 0)
 		mate_node.material = mate
 		
-		if "CM3D2 Shade" in bpy.context.blend_data.materials.keys():
+		if "CM3D2 Shade" in bpy.context.blend_data.materials:
 			shade_mate = bpy.context.blend_data.materials["CM3D2 Shade"]
 		else:
 			shade_mate = bpy.context.blend_data.materials.new("CM3D2 Shade")
@@ -499,7 +499,7 @@ def remove_data(target_data):
 	
 	for data in target_data:
 		if data.__class__.__name__ == 'Object':
-			if data.name in bpy.context.scene.objects.keys():
+			if data.name in bpy.context.scene.objects:
 				bpy.context.scene.objects.unlink(data)
 	
 	for data in target_data:

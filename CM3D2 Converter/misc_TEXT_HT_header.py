@@ -22,8 +22,8 @@ def menu_func(self, context):
 				line_count += 1
 		row.operator('text.show_text', icon='BONE_DATA', text="LocalBoneData (%d)" % line_count).name = 'LocalBoneData'
 	if 'BoneData' in text_keys and 'LocalBoneData' in text_keys:
-		if 'BoneData' in texts.keys():
-			if 'BaseBone' not in texts['BoneData'].keys():
+		if 'BoneData' in texts:
+			if 'BaseBone' not in texts['BoneData']:
 				texts['BoneData']['BaseBone'] = ""
 			row.prop(texts['BoneData'], '["BaseBone"]', text="")
 		row.operator('text.copy_text_bone_data', icon='COPYDOWN', text="")
@@ -72,11 +72,11 @@ class copy_text_bone_data(bpy.types.Operator):
 	@classmethod
 	def poll(cls, context):
 		texts = context.blend_data.texts
-		return 'BoneData' in texts.keys() and 'LocalBoneData' in texts.keys()
+		return 'BoneData' in texts and 'LocalBoneData' in texts
 	
 	def execute(self, context):
 		output_text = ""
-		if 'BaseBone' in context.blend_data.texts['BoneData'].keys():
+		if 'BaseBone' in context.blend_data.texts['BoneData']:
 			output_text += "BaseBone:" + context.blend_data.texts['BoneData']['BaseBone'] + "\n"
 		for line in context.blend_data.texts['BoneData'].as_string().split('\n'):
 			if not line:
@@ -104,12 +104,12 @@ class paste_text_bone_data(bpy.types.Operator):
 	def execute(self, context):
 		import re
 		clipboard = context.window_manager.clipboard
-		if "BoneData" in context.blend_data.texts.keys():
+		if "BoneData" in context.blend_data.texts:
 			bone_data_text = context.blend_data.texts["BoneData"]
 			bone_data_text.clear()
 		else:
 			bone_data_text = context.blend_data.texts.new("BoneData")
-		if "LocalBoneData" in context.blend_data.texts.keys():
+		if "LocalBoneData" in context.blend_data.texts:
 			local_bone_data_text = context.blend_data.texts["LocalBoneData"]
 			local_bone_data_text.clear()
 		else:
@@ -145,7 +145,7 @@ class remove_all_material_texts(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		return 'Material:0' in context.blend_data.texts.keys()
+		return 'Material:0' in context.blend_data.texts
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
@@ -158,7 +158,7 @@ class remove_all_material_texts(bpy.types.Operator):
 		pass_count = 0
 		for i in range(9999):
 			name = 'Material:' + str(i)
-			if name in context.blend_data.texts.keys():
+			if name in context.blend_data.texts:
 				remove_texts.append(context.blend_data.texts[name])
 			else:
 				pass_count += 1

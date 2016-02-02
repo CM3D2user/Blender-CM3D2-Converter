@@ -84,9 +84,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# ボーン情報元のデフォルトオプションを取得
 		if self.bone_info_mode == 'OBJECT':
-			if "BoneData:0" not in ob.keys():
-				if "BoneData" in context.blend_data.texts.keys():
-					if "LocalBoneData" in context.blend_data.texts.keys():
+			if "BoneData:0" not in ob:
+				if "BoneData" in context.blend_data.texts:
+					if "LocalBoneData" in context.blend_data.texts:
 						self.bone_info_mode = 'TEXT'
 				arm_ob = ob.parent
 				if arm_ob:
@@ -161,14 +161,14 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
-			if "BoneData" not in context.blend_data.texts.keys():
+			if "BoneData" not in context.blend_data.texts:
 				return self.report_cancel("テキスト「BoneData」が見つかりません、中止します")
-			if "LocalBoneData" not in context.blend_data.texts.keys():
+			if "LocalBoneData" not in context.blend_data.texts:
 				return self.report_cancel("テキスト「LocalBoneData」が見つかりません、中止します")
 		elif self.bone_info_mode == 'OBJECT':
-			if "BoneData:0" not in ob.keys():
+			if "BoneData:0" not in ob:
 				return self.report_cancel("オブジェクトのカスタムプロパティにボーン情報がありません")
-			if "LocalBoneData:0" not in ob.keys():
+			if "LocalBoneData:0" not in ob:
 				return self.report_cancel("オブジェクトのカスタムプロパティにボーン情報がありません")
 		elif self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
@@ -180,16 +180,16 @@ class export_cm3d2_model(bpy.types.Operator):
 				except StopIteration:
 					return self.report_cancel("アーマチュアが見つかりません、親にするかモディファイアにして下さい")
 				arm_ob = arm_ob.object
-			if "BoneData:0" not in arm_ob.data.keys():
+			if "BoneData:0" not in arm_ob.data:
 				return self.report_cancel("アーマチュアのカスタムプロパティにボーン情報がありません")
-			if "LocalBoneData:0" not in arm_ob.data.keys():
+			if "LocalBoneData:0" not in arm_ob.data:
 				return self.report_cancel("アーマチュアのカスタムプロパティにボーン情報がありません")
 		else:
 			return self.report_cancel("ボーン情報元のモードがおかしいです")
 		
 		if self.mate_info_mode == 'TEXT':
 			for index, slot in enumerate(ob.material_slots):
-				if "Material:" + str(index) not in context.blend_data.texts.keys():
+				if "Material:" + str(index) not in context.blend_data.texts:
 					return self.report_cancel("マテリアル情報元のテキストが足りません")
 		context.window_manager.progress_update(1)
 		
@@ -204,7 +204,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		base_bone_candidate = None
 		bone_data = []
 		if self.bone_info_mode == 'TEXT':
-			if 'BaseBone' in context.blend_data.texts["BoneData"].keys():
+			if 'BaseBone' in context.blend_data.texts["BoneData"]:
 				base_bone_candidate = context.blend_data.texts["BoneData"]['BaseBone']
 			for line in context.blend_data.texts["BoneData"].lines:
 				data = line.body.split(',')
@@ -234,12 +234,12 @@ class export_cm3d2_model(bpy.types.Operator):
 				target = ob
 			elif self.bone_info_mode == 'ARMATURE':
 				target = arm_ob.data
-			if 'BaseBone' in target.keys():
+			if 'BaseBone' in target:
 				base_bone_candidate = target['BaseBone']
 			pass_count = 0
 			for i in range(9**9):
 				name = "BoneData:" + str(i)
-				if name not in target.keys():
+				if name not in target:
 					pass_count += 1
 					if 50 < pass_count:
 						break
@@ -301,7 +301,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					target = ob
 				elif self.bone_info_mode == 'ARMATURE':
 					target = arm_ob.data
-				if name not in target.keys():
+				if name not in target:
 					pass_count += 1
 					if 50 < pass_count:
 						break
@@ -590,7 +590,7 @@ class export_cm3d2_model(bpy.types.Operator):
 							img = tex.image
 							common.write_str(file, 'tex2d')
 							common.write_str(file, common.remove_serial_number(img.name, self.is_arrange_name))
-							if 'cm3d2_path' in img.keys():
+							if 'cm3d2_path' in img:
 								path = img['cm3d2_path']
 							else:
 								path = bpy.path.abspath(img.filepath)
