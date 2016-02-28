@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 388),
+	"version" : (0, 389),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -24,6 +24,7 @@ if "bpy" in locals():
 	imp.reload(model_export)
 	
 	imp.reload(anm_import)
+	imp.reload(anm_export)
 	
 	imp.reload(tex_import)
 	imp.reload(tex_export)
@@ -57,6 +58,7 @@ else:
 	from . import model_export
 	
 	from . import anm_import
+	from . import anm_export
 	
 	from . import tex_import
 	from . import tex_export
@@ -205,6 +207,7 @@ def register():
 	bpy.types.INFO_MT_file_export.append(model_export.menu_func)
 	
 	bpy.types.INFO_MT_file_import.append(anm_import.menu_func)
+	bpy.types.INFO_MT_file_export.append(anm_export.menu_func)
 	
 	bpy.types.IMAGE_MT_image.append(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.append(tex_export.menu_func)
@@ -261,6 +264,7 @@ def unregister():
 	bpy.types.INFO_MT_file_export.remove(model_export.menu_func)
 	
 	bpy.types.INFO_MT_file_import.remove(anm_import.menu_func)
+	bpy.types.INFO_MT_file_export.remove(anm_export.menu_func)
 	
 	bpy.types.IMAGE_MT_image.remove(tex_import.menu_func)
 	bpy.types.IMAGE_MT_image.remove(tex_export.menu_func)

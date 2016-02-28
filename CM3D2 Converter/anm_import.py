@@ -3,7 +3,7 @@ from . import common
 
 # メインオペレーター
 class import_cm3d2_anm(bpy.types.Operator):
-	bl_idname = 'import_mesh.import_cm3d2_anm'
+	bl_idname = 'import_anim.import_cm3d2_anm'
 	bl_label = "CM3D2モーション (.anm)"
 	bl_description = "カスタムメイド3D2のanmファイルを読み込みます"
 	bl_options = {'REGISTER'}
