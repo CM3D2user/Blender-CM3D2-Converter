@@ -630,7 +630,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
-			if self.is_bone_data_obj_property:
+			if self.is_mesh and self.is_bone_data_obj_property:
 				ob["BoneData:" + str(i)] = s
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["BoneData:" + str(i)] = s
@@ -659,7 +659,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
-			if self.is_bone_data_obj_property:
+			if self.is_mesh and self.is_bone_data_obj_property:
 				ob["LocalBoneData:" + str(i)] = s
 			if self.is_armature and self.is_bone_data_arm_property:
 				arm["LocalBoneData:" + str(i)] = s
@@ -667,7 +667,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			txt['BaseBone'] = model_name2
 			txt.current_line_index = 0
 		
-		if self.is_bone_data_obj_property:
+		if self.is_mesh and self.is_bone_data_obj_property:
 			ob['BaseBone'] = model_name2
 		if self.is_armature and self.is_bone_data_arm_property:
 			arm['BaseBone'] = model_name2
