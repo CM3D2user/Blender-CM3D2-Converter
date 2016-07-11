@@ -91,8 +91,8 @@ class forced_modifier_apply(bpy.types.Operator):
 			
 			new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
 			
-			common.remove_data(temp_me)
 			common.remove_data(temp_ob)
+			common.remove_data(temp_me)
 		
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index]:

@@ -94,7 +94,7 @@ class quick_shape_key_transfer(bpy.types.Operator):
 			
 			if target_me.shape_keys:
 				if source_shape_key.name in target_me.shape_keys.key_blocks:
-					target_shape_key = target_ob.shape_keys.key_blocks[source_shape_key.name]
+					target_shape_key = target_me.shape_keys.key_blocks[source_shape_key.name]
 				else:
 					target_shape_key = target_ob.shape_key_add(name=source_shape_key.name, from_mix=False)
 			else:
@@ -249,7 +249,7 @@ class precision_shape_key_transfer(bpy.types.Operator):
 			
 			if target_me.shape_keys:
 				if source_shape_key.name in target_me.shape_keys.key_blocks:
-					target_shape_key = target_ob.shape_keys.key_blocks[source_shape_key.name]
+					target_shape_key = target_me.shape_keys.key_blocks[source_shape_key.name]
 				else:
 					target_shape_key = target_ob.shape_key_add(name=source_shape_key.name, from_mix=False)
 			else:
