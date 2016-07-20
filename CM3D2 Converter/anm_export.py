@@ -44,17 +44,23 @@ class export_cm3d2_anm(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().anm_export_path = self.filepath
 		
+		try:
+			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
+			return {'CANCELLED'}
+		
+		with file:
+			res = self.write_animation(context, file)
+			if res:
+				file.abort()
+				return res
+		
+		return {'FINISHED'}
+		
+	def write_animation(self, context, file):
 		ob = context.active_object
 		arm = ob.data
-		
-		# バックアップ
-		common.file_backup(self.filepath, self.is_backup)
-		
-		try:
-			file = open(self.filepath, 'wb')
-		except:
-			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
-			return {'CANCELLED'}
 		
 		common.write_str(file, 'CM3D2_ANIM')
 		file.write(struct.pack('<i', self.version))
@@ -89,9 +95,6 @@ class export_cm3d2_anm(bpy.types.Operator):
 			common.write_str(file, "/".join(bone_names))
 		
 		file.write(struct.pack('<?', False))
-		file.close()
-		
-		return {'FINISHED'}
 
 # メニューに登録する関数
 def menu_func(self, context):
