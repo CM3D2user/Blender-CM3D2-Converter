@@ -1,4 +1,4 @@
-import bpy, re, os, os.path, struct, shutil, mathutils, bmesh, time
+import bpy, re, os, os.path, struct, bmesh, time
 from . import common
 
 # メインオペレーター
@@ -157,7 +157,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		if res: return res
 
 		ob = context.active_object
-		me = ob.data
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
@@ -319,16 +318,29 @@ class export_cm3d2_model(bpy.types.Operator):
 			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
 		context.window_manager.progress_update(3)
 		
-		# バックアップ
-		common.file_backup(self.filepath, self.is_backup)
-		
-		# ファイル先頭
 		try:
-			file = open(self.filepath, 'wb')
+			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
 		except:
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
+		with file:
+			res = self.write_model(context, file, bone_data, local_bone_data, local_bone_names)
+			if res:
+				file.abort()
+				return res
+		
+		context.window_manager.progress_update(10)
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
+		self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
+		return {'FINISHED'}
+
+	def write_model(self, context, file, bone_data, local_bone_data, local_bone_names):
+		ob = context.active_object
+		me = ob.data
+		
+		# ファイル先頭
 		common.write_str(file, 'CM3D2_MESH')
 		file.write(struct.pack('<i', self.version))
 		
@@ -496,7 +508,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_update(7)
 		
 		# 面情報を書き出し
-		error_face_count = 0
 		progress_plus_value = 1.0 / (len(ob.material_slots) * len(bm.faces))
 		progress_count = 7.0
 		progress_reduce = (len(ob.material_slots) * len(bm.faces)) // 200 + 1
@@ -692,13 +703,6 @@ class export_cm3d2_model(bpy.types.Operator):
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
-		
-		file.close()
-		context.window_manager.progress_update(10)
-		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
-		self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
-		return {'FINISHED'}
 
 # メニューを登録する関数
 def menu_func(self, context):

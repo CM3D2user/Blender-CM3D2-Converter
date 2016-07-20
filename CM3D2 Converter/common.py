@@ -1,4 +1,5 @@
 import bpy, os, re, math, bmesh, struct, shutil, mathutils
+from . import fileutil
 
 addon_name = "CM3D2 Converter"
 preview_collections = {}
@@ -331,6 +332,15 @@ def default_cm3d2_dir(base_dir, file_name, new_ext):
 		base_dir = os.path.join(os.path.split(base_dir)[0], file_name)
 	base_dir = os.path.splitext(base_dir)[0] + "." + new_ext
 	return base_dir
+
+# 一時ファイル書き込みと自動バックアップを行うファイルオブジェクトを返す
+def open_temporary(filepath, mode, is_backup=False):
+	backup_ext = preferences().backup_ext
+	if is_backup and backup_ext:
+		backup_filepath = filepath + '.' + backup_ext
+	else:
+		backup_filepath = None
+	return fileutil.TemporaryFileWriter(filepath, mode, backup_filepath=backup_filepath)
 
 # ファイルを上書きするならバックアップ処理
 def file_backup(filepath, enable=True):
