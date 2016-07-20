@@ -1,4 +1,4 @@
-import os, re, bpy, struct, os.path, shutil
+import os, re, bpy, struct, os.path
 from . import common
 
 class export_cm3d2_mate(bpy.types.Operator):
@@ -50,16 +50,23 @@ class export_cm3d2_mate(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().mate_export_path = self.filepath
 		
-		# バックアップ
-		common.file_backup(self.filepath, self.is_backup)
-		
-		mate = context.material
-		
 		try:
-			file = open(self.filepath, 'wb')
+			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
 		except:
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
+		
+		with file:
+			res = self.write_material(context, file)
+			if res:
+				file.abort()
+				return res
+		
+		return {'FINISHED'}
+
+	def write_material(self, context, file):
+		mate = context.material
+		
 		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
 		
@@ -112,8 +119,6 @@ class export_cm3d2_mate(bpy.types.Operator):
 				file.write(struct.pack('<f', tex_slot.diffuse_color_factor))
 		
 		common.write_str(file, 'end')
-		file.close()
-		return {'FINISHED'}
 
 class export_cm3d2_mate_text(bpy.types.Operator):
 	bl_idname = 'text.export_cm3d2_mate_text'
@@ -178,17 +183,23 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().mate_export_path = self.filepath
 		
-		# バックアップ
-		common.file_backup(self.filepath, self.is_backup)
-		
-		txt = context.edit_text
-		lines = txt.as_string().split('\n')
-		
 		try:
-			file = open(self.filepath, 'wb')
+			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
 		except:
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
+		
+		with file:
+			res = self.write_material(context, file)
+			if res:
+				file.abort()
+				return res
+		
+		return {'FINISHED'}
+
+	def write_material(self, context, file):
+		txt = context.edit_text
+		lines = txt.as_string().split('\n')
 		
 		common.write_str(file, 'CM3D2_MATERIAL')
 		file.write(struct.pack('<i', self.version))
@@ -238,9 +249,6 @@ class export_cm3d2_mate_text(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="mateファイルの出力に失敗、中止します。 構文を見直して下さい")
 			return {'CANCELLED'}
 		common.write_str(file, 'end')
-		
-		file.close()
-		return {'FINISHED'}
 
 # テキストメニューに項目を登録
 def TEXT_MT_text(self, context):
