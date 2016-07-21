@@ -1,4 +1,6 @@
-import os, bpy, struct, os.path
+import bpy
+import os
+import struct
 from . import common
 
 class export_cm3d2_tex(bpy.types.Operator):
@@ -59,11 +61,12 @@ class export_cm3d2_tex(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
-		with file:
-			res = self.write_texture(context, file)
-			if res:
-				file.abort()
-				return res
+		try:
+			with file:
+				self.write_texture(context, file)
+		except common.CM3D2ExportException as e:
+			self.report(type={'ERROR'}, message=str(e))
+			return {'CANCELLED'}
 		
 		return {'FINISHED'}
 
@@ -88,8 +91,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 				temp_path = bpy.path.abspath(img.filepath)
 				is_remove = False
 			else:
-				self.report(type={'ERROR'}, message="PNGファイルの取得に失敗しました")
-				return {'CANCELLED'}
+				raise common.CM3D2ExportException("PNGファイルの取得に失敗しました")
 		if pre_source != 'VIEWER':
 			img.filepath = pre_filepath
 			img.source = pre_source

@@ -612,3 +612,7 @@ def in_out_quad_blend(f):
 # スムーズなグラフを返す2
 def bezier_blend(f):
 	return math.sqrt(f) * (3.0 - 2.0 * f)
+
+# エクスポート例外クラス
+class CM3D2ExportException(Exception):
+	pass

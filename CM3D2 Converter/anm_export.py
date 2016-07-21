@@ -1,4 +1,5 @@
-import os, re, bpy, math, struct, os.path, mathutils
+import bpy
+import struct
 from . import common
 
 # メインオペレーター
@@ -50,11 +51,12 @@ class export_cm3d2_anm(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
-		with file:
-			res = self.write_animation(context, file)
-			if res:
-				file.abort()
-				return res
+		try:
+			with file:
+				self.write_animation(context, file)
+		except common.CM3D2ExportException as e:
+			self.report(type={'ERROR'}, message=str(e))
+			return {'CANCELLED'}
 		
 		return {'FINISHED'}
 		

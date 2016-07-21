@@ -1,4 +1,9 @@
-import bpy, re, os, os.path, struct, bmesh, time
+import bmesh
+import bpy
+import os
+import re
+import struct
+import time
 from . import common
 
 # メインオペレーター
@@ -324,11 +329,12 @@ class export_cm3d2_model(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
-		with file:
-			res = self.write_model(context, file, bone_data, local_bone_data, local_bone_names)
-			if res:
-				file.abort()
-				return res
+		try:
+			with file:
+				self.write_model(context, file, bone_data, local_bone_data, local_bone_names)
+		except common.CM3D2ExportException as e:
+			self.report(type={'ERROR'}, message=str(e))
+			return {'CANCELLED'}
 		
 		context.window_manager.progress_update(10)
 		diff_time = time.time() - start_time
@@ -384,7 +390,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vert_indices[vert.index] = vert_count
 					vert_count += 1
 		if 65535 < vert_count:
-			return self.report_cancel("頂点数がまだ多いです (現在%d頂点)。あと%d頂点以上減らしてください、中止します" % (vert_count, vert_count - 65535))
+			raise common.CM3D2ExportException("頂点数がまだ多いです (現在%d頂点)。あと%d頂点以上減らしてください、中止します" % (vert_count, vert_count - 65535))
 		context.window_manager.progress_update(5)
 		
 		file.write(struct.pack('<2i', vert_count, len(ob.material_slots)))
@@ -447,7 +453,7 @@ class export_cm3d2_model(bpy.types.Operator):
 						else:
 							vert.select = True
 					bpy.ops.object.mode_set(mode='EDIT')
-				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
+				raise common.CM3D2ExportException("ウェイトが割り当てられていない頂点が見つかりました、中止します")
 			vgs.sort(key=lambda vg: vg[1])
 			vgs.reverse()
 			for i in range(4):
