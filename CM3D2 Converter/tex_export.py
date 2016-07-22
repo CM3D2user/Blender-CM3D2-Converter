@@ -1,4 +1,6 @@
-import os, re, bpy, struct, os.path, shutil
+import bpy
+import os
+import struct
 from . import common
 
 class export_cm3d2_tex(bpy.types.Operator):
@@ -53,9 +55,22 @@ class export_cm3d2_tex(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().tex_export_path = self.filepath
 		
-		# バックアップ
-		common.file_backup(self.filepath, self.is_backup)
+		try:
+			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
+			return {'CANCELLED'}
 		
+		try:
+			with file:
+				self.write_texture(context, file)
+		except common.CM3D2ExportException as e:
+			self.report(type={'ERROR'}, message=str(e))
+			return {'CANCELLED'}
+		
+		return {'FINISHED'}
+
+	def write_texture(self, context, file):
 		# とりあえずpngで保存
 		img = context.edit_image
 		if img.source != 'VIEWER':
@@ -76,34 +91,24 @@ class export_cm3d2_tex(bpy.types.Operator):
 				temp_path = bpy.path.abspath(img.filepath)
 				is_remove = False
 			else:
-				self.report(type={'ERROR'}, message="PNGファイルの取得に失敗しました")
-				return {'CANCELLED'}
+				raise common.CM3D2ExportException("PNGファイルの取得に失敗しました")
 		if pre_source != 'VIEWER':
 			img.filepath = pre_filepath
 			img.source = pre_source
 		
 		# pngバイナリを全て読み込み
-		temp_file = open(temp_path, 'rb')
-		temp_data = temp_file.read()
-		temp_file.close()
+		with open(temp_path, 'rb') as temp_file:
+			temp_data = temp_file.read()
 		# 一時ファイルを削除
 		if is_remove:
 			os.remove(temp_path)
 		
 		# 本命ファイルに書き込み
-		try:
-			file = open(self.filepath, 'wb')
-		except:
-			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
-			return {'CANCELLED'}
 		common.write_str(file, 'CM3D2_TEX')
 		file.write(struct.pack('<i', self.version))
 		common.write_str(file, self.path)
 		file.write(struct.pack('<i', len(temp_data)))
 		file.write(temp_data)
-		file.close()
-		
-		return {'FINISHED'}
 
 # メニューを登録する関数
 def menu_func(self, context):
