@@ -218,75 +218,19 @@ class export_cm3d2_model(bpy.types.Operator):
 		base_bone_candidate = None
 		bone_data = []
 		if self.bone_info_mode == 'TEXT':
-			if 'BaseBone' in context.blend_data.texts["BoneData"]:
-				base_bone_candidate = context.blend_data.texts["BoneData"]['BaseBone']
-			for line in context.blend_data.texts["BoneData"].lines:
-				data = line.body.split(',')
-				if len(data) == 5:
-					bone_data.append({})
-					bone_data[-1]['name'] = data[0]
-					bone_data[-1]['unknown'] = int(data[1])
-					if re.search(data[2], r'^\d+$'):
-						bone_data[-1]['parent_index'] = int(data[2])
-					else:
-						for i, b in enumerate(bone_data):
-							if b['name'] == data[2]:
-								bone_data[-1]['parent_index'] = i
-								break
-						else:
-							bone_data[-1]['parent_index'] = -1
-					bone_data[-1]['co'] = []
-					floats = data[3].split(' ')
-					for f in floats:
-						bone_data[-1]['co'].append(float(f))
-					bone_data[-1]['rot'] = []
-					floats = data[4].split(' ')
-					for f in floats:
-						bone_data[-1]['rot'].append(float(f))
+			bone_data_text = context.blend_data.texts["BoneData"]
+			if 'BaseBone' in bone_data_text:
+				base_bone_candidate = bone_data_text['BaseBone']
+			bone_data = self.bone_data_parser(l.body for l in bone_data_text.lines)
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
-			if self.bone_info_mode == 'OBJECT':
-				target = ob
-			elif self.bone_info_mode == 'ARMATURE':
-				target = arm_ob.data
+			target = ob if self.bone_info_mode == 'OBJECT' else arm_ob.data
 			if 'BaseBone' in target:
 				base_bone_candidate = target['BaseBone']
-			pass_count = 0
-			for i in range(9**9):
-				name = "BoneData:" + str(i)
-				if name not in target:
-					pass_count += 1
-					if 50 < pass_count:
-						break
-					continue
-				data = target[name].split(',')
-				if len(data) == 5:
-					bone_data.append({})
-					bone_data[-1]['name'] = data[0]
-					bone_data[-1]['unknown'] = int(data[1])
-					if re.search(data[2], r'^\d+$'):
-						bone_data[-1]['parent_index'] = int(data[2])
-					else:
-						for i, b in enumerate(bone_data):
-							if b['name'] == data[2]:
-								bone_data[-1]['parent_index'] = i
-								break
-						else:
-							bone_data[-1]['parent_index'] = -1
-					bone_data[-1]['co'] = []
-					floats = data[3].split(' ')
-					for f in floats:
-						bone_data[-1]['co'].append(float(f))
-					bone_data[-1]['rot'] = []
-					floats = data[4].split(' ')
-					for f in floats:
-						bone_data[-1]['rot'].append(float(f))
+			bone_data = self.bone_data_parser(self.indexed_data_generator(target, prefix='BoneData:'))
 		if len(bone_data) <= 0:
 			return self.report_cancel("テキスト「BoneData」に有効なデータがありません")
 		
-		for bone in bone_data:
-			if bone['name'] == self.base_bone_name:
-				break
-		else:
+		if self.base_bone_name not in (b['name'] for b in bone_data):
 			if base_bone_candidate and self.base_bone_name == 'Auto':
 				self.base_bone_name = base_bone_candidate
 			else:
@@ -295,40 +239,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# LocalBoneData情報読み込み
 		local_bone_data = []
-		local_bone_names = []
 		if self.bone_info_mode == 'TEXT':
-			for line in context.blend_data.texts["LocalBoneData"].lines:
-				data = line.body.split(',')
-				if len(data) == 2:
-					local_bone_data.append({})
-					local_bone_data[-1]['name'] = data[0]
-					local_bone_data[-1]['matrix'] = []
-					floats = data[1].split(' ')
-					for f in floats:
-						local_bone_data[-1]['matrix'].append(float(f))
-					local_bone_names.append(data[0])
+			local_bone_data_text = context.blend_data.texts["LocalBoneData"]
+			local_bone_data = self.local_bone_data_parser(l.body for l in local_bone_data_text.lines)
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
-			pass_count = 0
-			for i in range(9**9):
-				name = "LocalBoneData:" + str(i)
-				if self.bone_info_mode == 'OBJECT':
-					target = ob
-				elif self.bone_info_mode == 'ARMATURE':
-					target = arm_ob.data
-				if name not in target:
-					pass_count += 1
-					if 50 < pass_count:
-						break
-					continue
-				data = target[name].split(',')
-				if len(data) == 2:
-					local_bone_data.append({})
-					local_bone_data[-1]['name'] = data[0]
-					local_bone_data[-1]['matrix'] = []
-					floats = data[1].split(' ')
-					for f in floats:
-						local_bone_data[-1]['matrix'].append(float(f))
-					local_bone_names.append(data[0])
+			target = ob if self.bone_info_mode == 'OBJECT' else arm_ob.data
+			local_bone_data = self.local_bone_data_parser(self.indexed_data_generator(target, prefix='LocalBoneData:'))
 		if len(local_bone_data) <= 0:
 			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
 		context.window_manager.progress_update(3)
@@ -341,7 +257,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		try:
 			with file:
-				self.write_model(context, file, bone_data, local_bone_data, local_bone_names)
+				self.write_model(context, file, bone_data, local_bone_data)
 		except common.CM3D2ExportException as e:
 			self.report(type={'ERROR'}, message=str(e))
 			return {'CANCELLED'}
@@ -353,10 +269,11 @@ class export_cm3d2_model(bpy.types.Operator):
 		return {'FINISHED'}
 
 
-	def write_model(self, context, file, bone_data, local_bone_data, local_bone_names):
+	def write_model(self, context, file, bone_data, local_bone_data):
 		"""モデルデータをファイルオブジェクトに書き込む"""
 		ob = context.active_object
 		me = ob.data
+		local_bone_names = [b['name'] for b in local_bone_data]
 		
 		# ファイル先頭
 		common.write_str(file, 'CM3D2_MESH')
@@ -729,6 +646,58 @@ class export_cm3d2_model(bpy.types.Operator):
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
+
+
+	@staticmethod
+	def bone_data_parser(container):
+		"""BoneData テキストをパースして辞書を要素とするリストを返す"""
+		bone_data = []
+		for line in container:
+			data = line.split(',')
+			if len(data) != 5:
+				continue
+			parent_name = data[2]
+			if data[2].isdigit():
+				parent_index = int(parent_name)
+			else:
+				parent_index = next((i for i, b in enumerate(bone_data) if b['name'] == parent_name), -1)
+			bone_data.append({
+				'name': data[0],
+				'unknown': int(data[1]),
+				'parent_index': parent_index,
+				'co': list(map(float, data[3].split())),
+				'rot': list(map(float, data[4].split())),
+				})
+		return bone_data
+
+
+	@staticmethod
+	def local_bone_data_parser(container):
+		"""LocalBoneData テキストをパースして辞書を要素とするリストを返す"""
+		local_bone_data = []
+		for line in container:
+			data = line.split(',')
+			if len(data) != 2:
+				continue
+			local_bone_data.append({
+				'name': data[0],
+				'matrix': list(map(float, data[1].split())),
+				})
+		return local_bone_data
+
+
+	@staticmethod
+	def indexed_data_generator(container, prefix='', max_index=9**9, max_pass=50):
+		"""コンテナ内の数値インデックスをキーに持つ要素を昇順に返すジェネレーター"""
+		pass_count = 0
+		for i in range(max_index):
+			name = prefix + str(i)
+			if name not in container:
+				pass_count += 1
+				if max_pass < pass_count:
+					return
+				continue
+			yield container[name]
 
 
 
