@@ -5,6 +5,7 @@ import re
 import struct
 import time
 import mathutils
+from operator import itemgetter
 from . import common
 
 
@@ -355,102 +356,60 @@ class export_cm3d2_model(bpy.types.Operator):
 				
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		context.window_manager.progress_update(6)
+
+		# 不明な情報を書き出し
+		unknown_count = 0
+		file.write(struct.pack('<i', unknown_count))
+
 		# ウェイト情報を書き出し
+		vertices = []
 		is_over_one = 0
 		is_under_one = 0
-		file.write(struct.pack('<i', 0))
-		progress_plus_value = 1.0 / len(me.vertices)
 		progress_count = 6.0
 		progress_reduce = len(me.vertices) // 200 + 1
-		for vert in me.vertices:
-			progress_count += progress_plus_value
-			if vert.index % progress_reduce == 0:
+		progress_plus_value = 1.0 / len(me.vertices) * progress_reduce
+		for i, vert in enumerate(me.vertices):
+			if i % progress_reduce == 0:
+				progress_count += progress_plus_value
 				context.window_manager.progress_update(progress_count)
 			
 			vgs = []
-			face_indexs = []
-			weights = []
 			for vg in vert.groups:
 				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-				if name not in local_bone_names:
-					continue
-				weight = vg.weight
-				if 0.0 < weight:
-					vgs.append([name, weight])
+				if name in local_bone_names and 0.0 < vg.weight:
+					index = local_bone_names.index(name)
+					vgs.append([index, vg.weight])
 			if len(vgs) == 0:
 				if not self.is_batch:
-					bpy.ops.object.mode_set(mode='EDIT')
-					bpy.ops.mesh.select_all(action='DESELECT')
-					bpy.ops.object.mode_set(mode='OBJECT')
-					context.tool_settings.mesh_select_mode = (True, False, False)
-					for vert in me.vertices:
-						for vg in vert.groups:
-							name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-							if name not in local_bone_names:
-								continue
-							if 0.0 < vg.weight:
-								break
-						else:
-							vert.select = True
-					bpy.ops.object.mode_set(mode='EDIT')
+					self.select_no_weight_vertices(context, local_bone_names)
 				raise common.CM3D2ExportException("ウェイトが割り当てられていない頂点が見つかりました、中止します")
-			vgs.sort(key=lambda vg: vg[1])
 			vgs.reverse()
-			for i in range(4):
-				try:
-					name = vgs[i][0]
-				except IndexError:
-					index = 0
-				else:
-					index = 0
-					for i, bone in enumerate(local_bone_data):
-						if bone['name'] == name:
-							break
-						index += 1
-					else:
-						index = 0
-				face_indexs.append(index)
-			total = 0.0
-			for i in range(4):
-				try:
-					weight = vgs[i][1]
-				except IndexError:
-					weight = 0.0
-				total += weight
+			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
+			total = sum(vg[1] for vg in vgs)
 			if self.is_normalize_weight:
-				for i in range(4):
-					try:
-						weight = vgs[i][1]
-					except IndexError:
-						pass
-					else:
-						weight /= total
-						vgs[i][1] = weight
+				for vg in vgs:
+					vg[1] /= total
 			else:
 				if 1.01 < total:
 					is_over_one += 1
-				if total < 0.99:
+				elif total < 0.99:
 					is_under_one += 1
-			for i in range(4):
-				try:
-					weight = vgs[i][1]
-				except IndexError:
-					if total <= 0.0:
-						if i == 0:
-							weight = 1.0
-					else:
-						weight = 0.0
-				weights.append(weight)
-			
-			for uv in vert_uvs[vert.index]:
-				for index in face_indexs:
-					file.write(struct.pack('<H', index))
-				for weight in weights:
-					file.write(struct.pack('<f', weight))
+			if len(vgs) < 4:
+				vgs += [(0, 0.0)] * (4 - len(vgs))
+			vertices.append({
+				'index': vert.index,
+				'face_indexs': list(map(itemgetter(0), vgs)),
+				'weights': list(map(itemgetter(1), vgs)),
+				})
 		if 1 <= is_over_one:
 			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が見つかりました" % is_over_one)
 		if 1 <= is_under_one:
 			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が見つかりました" % is_under_one)
+			
+		for vert in vertices:
+			for uv in vert_uvs[vert['index']]:
+				file.write(struct.pack('<4H', *vert['face_indexs']))
+				file.write(struct.pack('<4f', *vert['weights']))
 		context.window_manager.progress_update(7)
 		
 		# 面情報を書き出し
@@ -646,6 +605,24 @@ class export_cm3d2_model(bpy.types.Operator):
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
+ 
+ 
+	def select_no_weight_vertices(self, context, local_bone_names):
+		"""ウェイトが割り当てられていない頂点を選択する"""
+		ob = context.active_object
+		me = ob.data
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_all(action='DESELECT')
+		bpy.ops.object.mode_set(mode='OBJECT')
+		context.tool_settings.mesh_select_mode = (True, False, False)
+		for vert in me.vertices:
+			for vg in vert.groups:
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
+				if name in local_bone_names and 0.0 < vg.weight:
+					break
+			else:
+				vert.select = True
+		bpy.ops.object.mode_set(mode='EDIT')
 
 
 	@staticmethod
