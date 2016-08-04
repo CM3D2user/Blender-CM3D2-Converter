@@ -269,7 +269,6 @@ class export_cm3d2_model(bpy.types.Operator):
 				if not self.is_batch:
 					self.select_no_weight_vertices(context, local_bone_name_indices)
 				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
-			vgs.reverse()
 			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
 			total = sum(vg[1] for vg in vgs)
 			if self.is_normalize_weight:
