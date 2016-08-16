@@ -19,6 +19,7 @@ def menu_func(self, context):
 			sub_row = row.row(align=True)
 			sub_row.operator('material.export_cm3d2_mate', icon='FILE_FOLDER', text="mateへ")
 			sub_row.operator('material.copy_material', icon='COPYDOWN', text="コピー")
+			sub_row.operator('material.paste_material2', icon='PASTEDOWN', text="貼り付け")
 			
 			type_name = "不明"
 			icon = 'ERROR'
@@ -535,6 +536,148 @@ class paste_material(bpy.types.Operator):
 			slot_index += 1
 		
 		common.decorate_material(mate, self.is_decorate, me, ob.active_material_index)
+		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
+		return {'FINISHED'}
+
+class paste_material2(bpy.types.Operator):
+	bl_idname = 'material.paste_material2'
+	bl_label = "クリップボードからマテリアルを貼り付け"
+	bl_description = "クリップボード内のテキストからマテリアル情報を上書きします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	@classmethod
+	def poll(cls, context):
+		data = context.window_manager.clipboard
+		lines = data.split('\n')
+		if len(lines) < 10:
+			return False
+		match_strs = ['\ntex\n', '\ncol\n', '\nf\n', '\n\t_MainTex\n', '\n\t_Color\n', '\n\t_Shininess\n']
+		for s in match_strs:
+			if s in data:
+				return True
+		return False
+	
+	def execute(self, context):
+		data = context.window_manager.clipboard
+		lines = data.split('\n')
+		
+		ob = context.active_object
+		me = ob.data
+		
+		mate = context.material
+		# シリアル番号が異なる場合は変更しない
+		if common.remove_serial_number(lines[2]) != common.remove_serial_number(mate.name):
+			mate.name = lines[2]
+		mate['shader1'] = lines[3]
+		mate['shader2'] = lines[4]
+		
+		slot_index = 0
+		line_seek = 5
+		olds_slots = {}
+		
+		def search_or_create_slot(slot_index, prop_name, tex_type):
+			tex = None
+			slot_item = mate.texture_slots[slot_index]
+			name = slot_item.name if slot_item else ''
+			
+			slot_item_name = common.remove_serial_number(name)
+			if prop_name == slot_item_name:
+				slot = slot_item
+				tex = slot_item.texture
+			else:
+				if slot_item: olds_slots[slot_item_name] = slot_item
+				slot = mate.texture_slots.create(slot_index)
+				
+				if prop_name in olds_slots:
+					tex = olds_slots.pop(prop_name).texture
+				else:
+					for item_index in range(slot_index+1, len(mate.texture_slots)):
+						slot_item = mate.texture_slots[item_index]
+						if slot_item is None: break
+						if prop_name == common.remove_serial_number(slot_item.name):
+							tex = slot_item.texture
+							break
+				if tex is None:
+					tex = context.blend_data.textures.new(prop_name, tex_type)
+				slot.texture = tex
+			return slot
+			
+		for i in range(99999):
+			if len(lines) <= line_seek:
+				break
+			type = common.line_trim(lines[line_seek])
+			if not type:
+				line_seek += 1
+				continue
+			if type == 'tex':
+				prop_name = common.line_trim(lines[line_seek+1])
+				sub_type  = common.line_trim(lines[line_seek+2])
+				
+				slot = search_or_create_slot(slot_index, prop_name, 'IMAGE')
+				slot.use_rgb_to_intensity = False
+				mate.use_textures[slot_index] = True
+				
+				line_seek += 3
+				if sub_type == 'tex2d':
+					tex = slot.texture
+					tex_name = common.line_trim(lines[line_seek])
+					tex_path = common.line_trim(lines[line_seek+1])
+					if tex.image is None:
+						img = context.blend_data.images.new(tex_name, 128, 128)
+						img.source = 'FILE'
+						tex.image = img
+					
+					# シリアル番号を残す
+					if tex_name != common.remove_serial_number(tex.image.name):
+						tex.image.name = tex_name
+					tex.image['cm3d2_path'] = tex_path
+					tex.image.filepath = tex.image['cm3d2_path']
+
+					fs = common.line_trim(lines[line_seek+2]).split(' ')
+					for fi in range(len(fs)):
+						fs[fi] = float(fs[fi])
+					slot.color = fs[:3]
+					slot.diffuse_color_factor = fs[3]
+					line_seek += 3
+			
+			elif type == 'col':
+				prop_name = common.line_trim(lines[line_seek+1])
+				
+				slot = search_or_create_slot(slot_index, prop_name, 'BLEND')
+				
+				slot.use_rgb_to_intensity = True
+				mate.use_textures[slot_index] = False
+				
+				fs = common.line_trim(lines[line_seek+2]).split(' ')
+				for fi in range(len(fs)):
+					fs[fi] = float(fs[fi])
+				slot.color = fs[:3]
+				slot.diffuse_color_factor = fs[3]
+				line_seek += 3
+			
+			elif type == 'f':
+				prop_name = common.line_trim(lines[line_seek+1])
+				
+				slot = search_or_create_slot(slot_index, prop_name, 'BLEND')
+				
+				slot.use_rgb_to_intensity = False
+				mate.use_textures[slot_index] = False
+				slot.diffuse_color_factor = float(common.line_trim(lines[line_seek+2]))
+				line_seek += 3
+			
+			else:
+				self.report(type={'ERROR'}, message="未知の設定値タイプが見つかりました、中止します")
+				return {'CANCELLED'}
+			slot_index += 1
+		
+		# 存在しないスロットをクリア
+		for item_index in range(slot_index, len(mate.texture_slots)):
+			mate.texture_slots.clear(item_index)
+		
+		# プレビューへの反映
+		for slot in mate.texture_slots:
+			if slot:	common.set_texture_color(slot)
+		
 		self.report(type={'INFO'}, message="クリップボードからマテリアルを貼り付けました")
 		return {'FINISHED'}
 
