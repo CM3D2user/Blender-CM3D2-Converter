@@ -48,7 +48,7 @@ class apply_prime_field(bpy.types.Operator):
 					is_applies = [False] * 32
 					for i, mod in enumerate(o.modifiers):
 						if mod.type == 'ARMATURE':
-							if mod.object.name == ob.name:
+							if mod.object and mod.object.name == ob.name:
 								is_applies[i] = True
 								if self.is_deform_preserve_volume:
 									mod.use_deform_preserve_volume = True
