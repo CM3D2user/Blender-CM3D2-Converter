@@ -17,7 +17,7 @@
 　次回起動時からも有効にしておきたい場合は「ユーザー設定の保存」をクリックして下さい。  
 　![有効化](http://i.imgur.com/6jmFWxQ.jpg)  
 　一度インストールしてしまえば、アドオン設定画面かヘルプメニューからアップデート可能です。  
-　![更新](http://i.imgur.com/3c0avlw.jpg)  
+　![更新](http://i.imgur.com/KFvMeH0.jpg)  
 
 ## 使い方 (How to Use)
 　各種ファイルは.arcファイルから[CM3D2 Tool](http://www.hongfire.com/forum/showthread.php/445616)等で取り出しておいて下さい。  
@@ -53,6 +53,7 @@
 　1つのblendファイルに複数のボーン情報を保持できるというメリットがあります。  
 　これらを編集すればボーン設定を変更することも可能ですが、慣れない内は変えない事をおすすめします。  
 　エクスポート時にどれを参照するかを選ぶ事が可能です。  
+　なお、[有志のアドオン](https://github.com/trzr/Blender-CM3D2-BoneUtil)によってボーン情報を編集可能になったようです。  
 
 ### オブジェクト
 　オブジェクト名は必ず「name.bone」のように、「.(ピリオド)」で区切った形式にして下さい。  
@@ -167,7 +168,7 @@
 　　![ボーン/頂点グループ名をCM3D2用←→Blender用に変換](http://i.imgur.com/6O5K5gm.jpg)
 
 ## 規約 (Agreement)
-[公式のMOD規約](http://kissdiary.blog11.fc2.com/blog-entry-577.html)を厳守して下さい。  
+[公式のMOD規約](http://kisskiss.tv/kiss/diary.php?no=558)を厳守して下さい。  
 
 ## .modelのフォーマット (.model Format)
 * (String) 「CM3D2_MESH」固定
@@ -239,6 +240,6 @@
 		* break
 
 ## 課題 (Assignment)
+* ボーン情報を人力で編集可能な形にする([有志のアドオンにより実現](https://github.com/trzr/Blender-CM3D2-BoneUtil))
 * 一部のmodelに含まれる「頂点数xFloatx4」分のデータを解析、入出力可能に
-* ボーン情報を人力で編集可能な形にする
-* モーションファイル(.anm)の読み込み対応
+* モーションファイル(.anm)関係の完全対応
