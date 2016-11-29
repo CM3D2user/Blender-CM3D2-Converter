@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (0, 389),
+	"version" : (0, 392),
 	"blender" : (2, 7),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -50,6 +50,7 @@ if "bpy" in locals():
 	imp.reload(misc_TEXTURE_PT_context_texture)
 	imp.reload(misc_TEXT_HT_header)
 	imp.reload(misc_VIEW3D_MT_pose_apply)
+	imp.reload(misc_INFO_HT_header)
 
 else:
 	from . import common
@@ -84,6 +85,7 @@ else:
 	from . import misc_TEXTURE_PT_context_texture
 	from . import misc_TEXT_HT_header
 	from . import misc_VIEW3D_MT_pose_apply
+	from . import misc_INFO_HT_header
 
 import bpy, os.path, bpy.utils.previews
 
@@ -233,6 +235,7 @@ def register():
 	bpy.types.TEXTURE_PT_context_texture.append(misc_TEXTURE_PT_context_texture.menu_func)
 	bpy.types.TEXT_HT_header.append(misc_TEXT_HT_header.menu_func)
 	bpy.types.VIEW3D_MT_pose_apply.append(misc_VIEW3D_MT_pose_apply.menu_func)
+	bpy.types.INFO_HT_header.append(misc_INFO_HT_header.menu_func)
 	
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
@@ -290,6 +293,7 @@ def unregister():
 	bpy.types.TEXTURE_PT_context_texture.remove(misc_TEXTURE_PT_context_texture.menu_func)
 	bpy.types.TEXT_HT_header.remove(misc_TEXT_HT_header.menu_func)
 	bpy.types.VIEW3D_MT_pose_apply.remove(misc_VIEW3D_MT_pose_apply.menu_func)
+	bpy.types.INFO_HT_header.remove(misc_INFO_HT_header.menu_func)
 	
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
