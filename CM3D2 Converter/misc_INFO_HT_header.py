@@ -40,8 +40,8 @@ class vertices_count_checker(bpy.types.Operator):
 		inner_count = len(alreadys)
 		real_count = len(me.vertices)
 		if inner_count <= 65535:
-			self.report(type={'ERROR'}, message="出力可能な頂点数です、あと約%d頂点ほど余裕があります (頂点数:%d(+%d) 増加率:+%d％)" % (65535 - inner_count, real_count, inner_count - real_count, int(inner_count / real_count * 100)))
+			self.report(type={'ERROR'}, message="○ 出力可能な頂点数です、あと約%d頂点ほど余裕があります (頂点数:%d(+%d) UV分割で増加:+%d％)" % (65535 - inner_count, real_count, inner_count - real_count, int(inner_count / real_count * 100)))
 		else:
-			self.report(type={'ERROR'}, message="出力できない頂点数です、あと約%d頂点減らしてください (頂点数:%d(+%d) 増加率:+%d％)" % (inner_count - 65535, real_count, inner_count - real_count, int(inner_count / real_count * 100)))
+			self.report(type={'ERROR'}, message="× 出力できない頂点数です、あと約%d頂点減らしてください (頂点数:%d(+%d) UV分割で増加:+%d％)" % (inner_count - 65535, real_count, inner_count - real_count, int(inner_count / real_count * 100)))
 		
 		return {'FINISHED'}
