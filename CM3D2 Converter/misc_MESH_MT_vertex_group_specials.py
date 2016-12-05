@@ -8,6 +8,7 @@ def menu_func(self, context):
 	self.layout.operator('object.quick_transfer_vertex_group', icon_value=icon_id)
 	self.layout.operator('object.precision_transfer_vertex_group', icon_value=icon_id)
 	self.layout.separator()
+	self.layout.operator('object.quick_blur_vertex_group', icon_value=icon_id)
 	self.layout.operator('object.blur_vertex_group', icon_value=icon_id)
 	self.layout.separator()
 	self.layout.operator('object.multiply_vertex_group', icon_value=icon_id)
@@ -279,9 +280,59 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
+class quick_blur_vertex_group(bpy.types.Operator):
+	bl_idname = 'object.quick_blur_vertex_group'
+	bl_label = "頂点グループぼかし"
+	bl_description = "アクティブ、もしくは全ての頂点グループをぼかします"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	items = [
+		('ACTIVE', "アクティブのみ", "", 'HAND', 1),
+		('ALL', "全て", "", 'ARROW_LEFTRIGHT', 2),
+		]
+	target = bpy.props.EnumProperty(items=items, name="対象", default='ALL')
+	strength = bpy.props.FloatProperty(name="強さ", default=1.0, min=0.0, max=1.0, soft_min=0.0, soft_max=1.0, step=10, precision=3)
+	count = bpy.props.IntProperty(name="反復", default=1, min=1, max=256, soft_min=1, soft_max=256)
+	size = bpy.props.FloatProperty(name="拡大縮小", default=0.0, min=-1.0, max=1.0, soft_min=-1.0, soft_max=1.0, step=10, precision=3)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				return ob.vertex_groups.active
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'target', icon='VIEWZOOM')
+		self.layout.prop(self, 'strength')
+		self.layout.prop(self, 'count')
+		self.layout.prop(self, 'size')
+	
+	def execute(self, context):
+		target_ob = context.active_object
+		target_me = target_ob.data
+		
+		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
+		
+		pre_use_paint_mask_vertex = target_me.use_paint_mask_vertex
+		target_me.use_paint_mask_vertex = True
+		
+		bpy.ops.paint.vert_select_all(action='SELECT')
+		bpy.ops.object.vertex_group_smooth(group_select_mode=self.target, factor=self.strength, repeat=self.count, expand=self.size, source='ALL')
+		
+		target_me.use_paint_mask_vertex = pre_use_paint_mask_vertex
+		
+		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
 class blur_vertex_group(bpy.types.Operator):
 	bl_idname = 'object.blur_vertex_group'
-	bl_label = "頂点グループぼかし"
+	bl_label = "旧・頂点グループぼかし"
 	bl_description = "アクティブ、もしくは全ての頂点グループをぼかします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
