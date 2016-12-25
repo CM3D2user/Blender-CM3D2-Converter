@@ -117,6 +117,9 @@ class render_cm3d2_icon(bpy.types.Operator):
 				ob.material_slots[0].material = temp_mate
 				temp_mate.use_shadeless = True
 				temp_mate.use_face_texture = True
+				temp_mate.use_transparency = True
+				temp_mate.alpha = 0.0
+				temp_mate.use_face_texture_alpha = True
 				temp_mates.append(temp_mate)
 		elif self.mode == 'NOW_MATERIAL':
 			pre_mate_settings = []
