@@ -26,7 +26,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			for title, update, link in zip(titles, updates, links):
 				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
 				
-				rss_datetime = datetime.datetime.strptime(update[:-6], '%Y-%m-%dT%H:%M:%S')
+				rss_datetime = datetime.datetime.strptime(update, '%Y-%m-%dT%H:%M:%SZ')
 				diff_seconds = datetime.datetime.now() - rss_datetime
 				icon = 'SORTTIME'
 				if 7 < diff_seconds.days:
