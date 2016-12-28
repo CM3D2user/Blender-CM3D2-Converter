@@ -137,7 +137,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 	
 	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
 	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
-	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=1.0, min=0.1, max=5.0, soft_min=0.1, soft_max=5.0, step=10, precision=2)
+	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=1.5, min=1.1, max=5.0, soft_min=1.1, soft_max=5.0, step=10, precision=2)
 	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
 	
 	@classmethod
