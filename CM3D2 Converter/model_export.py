@@ -165,6 +165,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not self.is_batch:
 			common.preferences().model_export_path = self.filepath
 			common.preferences().scale = 1.0 / self.scale
+			bpy.ops.object.mode_set(mode='OBJECT')
+		
 		
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
@@ -173,6 +175,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if res: return res
 
 		ob = context.active_object
+		me = ob.data
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
@@ -248,17 +251,62 @@ class export_cm3d2_model(bpy.types.Operator):
 			local_bone_data = self.local_bone_data_parser(self.indexed_data_generator(target, prefix='LocalBoneData:'))
 		if len(local_bone_data) <= 0:
 			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
+		local_bone_names = [b['name'] for b in local_bone_data]
 		context.window_manager.progress_update(3)
 		
+		# ウェイト情報読み込み
+		vertices = []
+		is_over_one = 0
+		is_under_one = 0
+		for i, vert in enumerate(me.vertices):
+			vgs = []
+			for vg in vert.groups:
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
+				if name in local_bone_names and 0.0 < vg.weight:
+					index = local_bone_names.index(name)
+					vgs.append([index, vg.weight])
+			if len(vgs) == 0:
+				if not self.is_batch:
+					self.select_no_weight_vertices(context, local_bone_names)
+				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
+			vgs.reverse()
+			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
+			total = sum(vg[1] for vg in vgs)
+			if self.is_normalize_weight:
+				for vg in vgs:
+					vg[1] /= total
+			else:
+				if 1.01 < total:
+					is_over_one += 1
+				elif total < 0.99:
+					is_under_one += 1
+			if len(vgs) < 4:
+				vgs += [(0, 0.0)] * (4 - len(vgs))
+			vertices.append({
+				'index': vert.index,
+				'face_indexs': list(map(itemgetter(0), vgs)),
+				'weights': list(map(itemgetter(1), vgs)),
+				})
+		if 1 <= is_over_one:
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が見つかりました" % is_over_one)
+		if 1 <= is_under_one:
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が見つかりました" % is_under_one)
+		context.window_manager.progress_update(4)
+			
 		try:
 			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
 		except:
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
+		model_datas = {
+			'bone_data': bone_data,
+			'local_bone_data': local_bone_data,
+			'vertices': vertices,
+			}
 		try:
 			with file:
-				self.write_model(context, file, bone_data, local_bone_data)
+				self.write_model(context, file, **model_datas)
 		except common.CM3D2ExportException as e:
 			self.report(type={'ERROR'}, message=str(e))
 			return {'CANCELLED'}
@@ -270,11 +318,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		return {'FINISHED'}
 
 
-	def write_model(self, context, file, bone_data, local_bone_data):
+	def write_model(self, context, file, bone_data=[], local_bone_data=[], vertices=[]):
 		"""モデルデータをファイルオブジェクトに書き込む"""
 		ob = context.active_object
 		me = ob.data
-		local_bone_names = [b['name'] for b in local_bone_data]
 		
 		# ファイル先頭
 		common.write_str(file, 'CM3D2_MESH')
@@ -296,9 +343,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
 		context.window_manager.progress_update(4)
-		
-		if not self.is_batch:
-			bpy.ops.object.mode_set(mode='OBJECT')
 		
 		# 正しい頂点数などを取得
 		bm = bmesh.new()
@@ -362,50 +406,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		file.write(struct.pack('<i', unknown_count))
 
 		# ウェイト情報を書き出し
-		vertices = []
-		is_over_one = 0
-		is_under_one = 0
-		progress_count = 6.0
-		progress_reduce = len(me.vertices) // 200 + 1
-		progress_plus_value = 1.0 / len(me.vertices) * progress_reduce
-		for i, vert in enumerate(me.vertices):
-			if i % progress_reduce == 0:
-				progress_count += progress_plus_value
-				context.window_manager.progress_update(progress_count)
-			
-			vgs = []
-			for vg in vert.groups:
-				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-				if name in local_bone_names and 0.0 < vg.weight:
-					index = local_bone_names.index(name)
-					vgs.append([index, vg.weight])
-			if len(vgs) == 0:
-				if not self.is_batch:
-					self.select_no_weight_vertices(context, local_bone_names)
-				raise common.CM3D2ExportException("ウェイトが割り当てられていない頂点が見つかりました、中止します")
-			vgs.reverse()
-			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
-			total = sum(vg[1] for vg in vgs)
-			if self.is_normalize_weight:
-				for vg in vgs:
-					vg[1] /= total
-			else:
-				if 1.01 < total:
-					is_over_one += 1
-				elif total < 0.99:
-					is_under_one += 1
-			if len(vgs) < 4:
-				vgs += [(0, 0.0)] * (4 - len(vgs))
-			vertices.append({
-				'index': vert.index,
-				'face_indexs': list(map(itemgetter(0), vgs)),
-				'weights': list(map(itemgetter(1), vgs)),
-				})
-		if 1 <= is_over_one:
-			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が見つかりました" % is_over_one)
-		if 1 <= is_under_one:
-			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が見つかりました" % is_under_one)
-			
 		for vert in vertices:
 			for uv in vert_uvs[vert['index']]:
 				file.write(struct.pack('<4H', *vert['face_indexs']))
