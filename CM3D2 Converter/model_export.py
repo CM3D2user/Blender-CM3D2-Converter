@@ -251,7 +251,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			local_bone_data = self.local_bone_data_parser(self.indexed_data_generator(target, prefix='LocalBoneData:'))
 		if len(local_bone_data) <= 0:
 			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
-		local_bone_names = [b['name'] for b in local_bone_data]
+		local_bone_name_indices = {bone['name']:index for index, bone in enumerate(local_bone_data)}
 		context.window_manager.progress_update(3)
 		
 		# ウェイト情報読み込み
@@ -262,12 +262,12 @@ class export_cm3d2_model(bpy.types.Operator):
 			vgs = []
 			for vg in vert.groups:
 				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-				if name in local_bone_names and 0.0 < vg.weight:
-					index = local_bone_names.index(name)
+				index = local_bone_name_indices.get(name, -1)
+				if 0 <= index and 0.0 < vg.weight:
 					vgs.append([index, vg.weight])
 			if len(vgs) == 0:
 				if not self.is_batch:
-					self.select_no_weight_vertices(context, local_bone_names)
+					self.select_no_weight_vertices(context, local_bone_name_indices)
 				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
 			vgs.reverse()
 			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
@@ -607,7 +607,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		common.write_str(file, 'end')
  
  
-	def select_no_weight_vertices(self, context, local_bone_names):
+	def select_no_weight_vertices(self, context, local_bone_name_indices):
 		"""ウェイトが割り当てられていない頂点を選択する"""
 		ob = context.active_object
 		me = ob.data
@@ -618,7 +618,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		for vert in me.vertices:
 			for vg in vert.groups:
 				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-				if name in local_bone_names and 0.0 < vg.weight:
+				if name in local_bone_name_indices and 0.0 < vg.weight:
 					break
 			else:
 				vert.select = True
@@ -629,15 +629,16 @@ class export_cm3d2_model(bpy.types.Operator):
 	def bone_data_parser(container):
 		"""BoneData テキストをパースして辞書を要素とするリストを返す"""
 		bone_data = []
+		bone_name_indices = {}
 		for line in container:
 			data = line.split(',')
 			if len(data) != 5:
 				continue
 			parent_name = data[2]
-			if data[2].isdigit():
+			if parent_name.isdigit():
 				parent_index = int(parent_name)
 			else:
-				parent_index = next((i for i, b in enumerate(bone_data) if b['name'] == parent_name), -1)
+				parent_index = bone_name_indices.get(parent_name, -1)
 			bone_data.append({
 				'name': data[0],
 				'unknown': int(data[1]),
@@ -645,6 +646,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				'co': list(map(float, data[3].split())),
 				'rot': list(map(float, data[4].split())),
 				})
+			bone_name_indices[data[0]] = len(bone_name_indices)
 		return bone_data
 
 
