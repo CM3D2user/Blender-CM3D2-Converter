@@ -4,6 +4,7 @@ import os
 import re
 import struct
 import time
+import mathutils
 from . import common
 
 # メインオペレーター
@@ -405,14 +406,25 @@ class export_cm3d2_model(bpy.types.Operator):
 				file.write(struct.pack('<f', f))
 		context.window_manager.progress_update(5.7)
 		
+		# カスタム法線情報を取得
+		if me.has_custom_normals:
+			custom_normals = [mathutils.Vector() for i in range(len(me.vertices))]
+			me.calc_normals_split()
+			for loop in me.loops:
+				custom_normals[loop.vertex_index] = loop.normal.copy()
 		# 頂点情報を書き出し
 		for i, vert in enumerate(bm.verts):
 			for uv in vert_uvs[i]:
 				co = vert.co.copy()
 				co *= self.scale
 				file.write(struct.pack('<3f', -co.x, co.y, co.z))
-				no = vert.normal.copy()
+				
+				if me.has_custom_normals:
+					no = custom_normals[vert.index]
+				else:
+					no = vert.normal.copy()
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
+				
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		context.window_manager.progress_update(6)
 		# ウェイト情報を書き出し
@@ -690,7 +702,10 @@ class export_cm3d2_model(bpy.types.Operator):
 					for i, vert in enumerate(me.vertices):
 						for d in vert_uvs[i]:
 							co_diff = shape_key.data[i].co - vert.co
-							no_diff = temp_me.vertices[i].normal - vert.normal
+							if me.has_custom_normals:
+								no_diff = custom_normals[i] - vert.normal
+							else:
+								no_diff = temp_me.vertices[i].normal - vert.normal
 							if 0.001 < co_diff.length or 0.001 < no_diff.length:
 								co = co_diff
 								co *= self.scale

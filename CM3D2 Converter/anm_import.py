@@ -128,12 +128,12 @@ class import_cm3d2_anm(bpy.types.Operator):
 							quats[frame] = [None, None, None, None]
 						
 						if channel_id == 103:
-							quats[frame][0] = -data['f0']
+							quats[frame][0] = data['f0']
 						elif channel_id == 100:
-							quats[frame][1] = -data['f0']
-						elif channel_id == 102:
-							quats[frame][2] = -data['f0']
+							quats[frame][1] = data['f0']
 						elif channel_id == 101:
+							quats[frame][2] = data['f0']
+						elif channel_id == 102:
 							quats[frame][3] = data['f0']
 				
 				elif channel_id in [104, 105, 106]:
@@ -152,17 +152,17 @@ class import_cm3d2_anm(bpy.types.Operator):
 			if self.is_rotation:
 				for frame, quat in quats.items():
 					quat = mathutils.Quaternion(quat)
+					quat.w, quat.x, quat.y, quat.z = -quat.w, -quat.x, -quat.z, quat.y
 					
 					q = mathutils.Quaternion((0, 0, 1), math.radians(90))
-					bone_quat = bone.matrix_local.to_quaternion()
-					bone_quat = bone_quat * q
-					if bone.parent:
-						parent_quat = bone.parent.matrix_local.to_quaternion()
-						parent_quat = parent_quat * q
-						bone_quat = parent_quat.rotation_difference(bone_quat)
 					
-					pose_quat = bone_quat.rotation_difference(quat)
-					pose_quat.w, pose_quat.x, pose_quat.y, pose_quat.z = pose_quat.w, -pose_quat.y, pose_quat.x, pose_quat.z
+					bone_quat = bone.matrix_local.to_quaternion() * q
+					if bone.parent:
+						parent_quat = bone.parent.matrix_local.to_quaternion() * q
+						#bone_quat = parent_quat.rotation_difference(bone_quat)
+						bone_quat = bone_quat.rotation_difference(parent_quat)
+					
+					pose_quat = bone_quat * quat
 					pose_bone.rotation_quaternion = pose_quat
 					
 					pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
