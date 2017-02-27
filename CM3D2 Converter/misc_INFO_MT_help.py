@@ -27,7 +27,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
 				
 				rss_datetime = datetime.datetime.strptime(update, '%Y-%m-%dT%H:%M:%SZ')
-				diff_seconds = datetime.datetime.now() - rss_datetime
+				diff_seconds = datetime.datetime.now() - rss_datetime - datetime.timedelta(hours=9)
 				icon = 'SORTTIME'
 				if 7 < diff_seconds.days:
 					icon = 'NLA'
