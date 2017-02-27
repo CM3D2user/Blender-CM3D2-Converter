@@ -16,7 +16,7 @@ class forced_modifier_apply(bpy.types.Operator):
 	bl_description = "シェイプキーのあるメッシュのモディファイアでも強制的に適用します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_individual_normal = bpy.props.BoolProperty(name="CM3D2用の法線計算", default=True)
+	custom_normal_blend = bpy.props.FloatProperty(name="CM3D2用法線のブレンド率", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=3, precision=0)
 	is_applies = bpy.props.BoolVectorProperty(name="適用するモディファイア", size=32, options={'SKIP_SAVE'})
 	
 	@classmethod
@@ -31,7 +31,7 @@ class forced_modifier_apply(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'is_individual_normal', icon='SNAP_NORMAL')
+		self.layout.prop(self, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
 		self.layout.label("適用するモディファイア")
 		ob = context.active_object
 		for index, mod in enumerate(ob.modifiers):
@@ -49,43 +49,41 @@ class forced_modifier_apply(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
-		if self.is_individual_normal:
-			arm_ob = None
-			for mod in ob.modifiers:
-				if mod.type == "ARMATURE":
-					arm_ob = mod.object
+		arm_ob = None
+		for mod in ob.modifiers:
+			if mod.type == "ARMATURE":
+				arm_ob = mod.object
+		
+		if arm_ob:
+			ob.active_shape_key_index = 0
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.object.mode_set(mode='OBJECT')
 			
-			if arm_ob != None:
+			arm = arm_ob.data
+			arm_pose = arm_ob.pose
+			
+			pose_rots = {}
+			for bone in arm.bones:
+				base_quat = bone.matrix_local.to_quaternion()
+				pose_quat = arm_pose.bones[bone.name].matrix.to_quaternion()
+				pose_rots[bone.name] = base_quat.rotation_difference(pose_quat)
+			
+			custom_normals = []
+			for loop in me.loops:
+				vert = me.vertices[loop.vertex_index]
+				no = vert.normal.copy()
 				
-				ob.active_shape_key_index = 0
-				bpy.ops.object.mode_set(mode='EDIT')
-				bpy.ops.object.mode_set(mode='OBJECT')
+				total_weight = 0.0
+				for vge in vert.groups:
+					total_weight += vge.weight
 				
-				arm = arm_ob.data
-				arm_pose = arm_ob.pose
+				total_rot = mathutils.Quaternion()
+				for vge in vert.groups:
+					vg = ob.vertex_groups[vge.group]
+					total_rot = total_rot.slerp(pose_rots[vg.name], vge.weight / total_weight)
 				
-				pose_rots = {}
-				for bone in arm.bones:
-					base_quat = bone.matrix_local.to_quaternion()
-					pose_quat = arm_pose.bones[bone.name].matrix.to_quaternion()
-					pose_rots[bone.name] = base_quat.rotation_difference(pose_quat)
-				
-				custom_normals = []
-				for loop in me.loops:
-					vert = me.vertices[loop.vertex_index]
-					no = vert.normal.copy()
-					
-					total_weight = 0.0
-					for vge in vert.groups:
-						total_weight += vge.weight
-					
-					total_rot = mathutils.Quaternion()
-					for vge in vert.groups:
-						vg = ob.vertex_groups[vge.group]
-						total_rot = total_rot.slerp(pose_rots[vg.name], vge.weight / total_weight)
-					
-					no.rotate(total_rot)
-					custom_normals.append(no)
+				no.rotate(total_rot)
+				custom_normals.append(no)
 		
 		pre_relative_keys = [s.relative_key.name for s in me.shape_keys.key_blocks]
 		pre_active_shape_key_index = ob.active_shape_key_index
@@ -150,7 +148,19 @@ class forced_modifier_apply(bpy.types.Operator):
 			o.select = True
 		bpy.ops.object.mode_set(mode=pre_mode)
 		
-		if self.is_individual_normal:
+		if arm_ob:
+			for i, loop in enumerate(me.loops):
+				vert = me.vertices[loop.vertex_index]
+				no = vert.normal.copy()
+				
+				custom_rot = mathutils.Vector((0.0, 0.0, 1.0)).rotation_difference(custom_normals[i])
+				original_rot = mathutils.Vector((0.0, 0.0, 1.0)).rotation_difference(no)
+				output_rot = original_rot.slerp(custom_rot, self.custom_normal_blend)
+				
+				output_no = mathutils.Vector((0.0, 0.0, 1.0))
+				output_no.rotate(output_rot)
+				
+				custom_normals[i] = output_no
 			me.use_auto_smooth = True
 			me.normals_split_custom_set(custom_normals)
 		
