@@ -529,9 +529,20 @@ class export_cm3d2_model(bpy.types.Operator):
 		progress_plus_value = 1.0 / (len(ob.material_slots) * len(bm.faces))
 		progress_count = 7.0
 		progress_reduce = (len(ob.material_slots) * len(bm.faces)) // 200 + 1
+		
+		def vert_index_from_loops(loops):
+			"""vert_index generator"""
+			for loop in loops:
+				uv = loop[uv_lay].uv
+				index = loop.vert.index
+				iuv_hash = hash(repr([index, uv.x, uv.y]))
+				vert_index = vert_iuv.get(iuv_hash)
+				if vert_index is None:
+					vert_index = vert_indices.get(index, 0)
+				yield vert_index
+		
 		for mate_index, slot in enumerate(ob.material_slots):
 			tris_faces = []
-			tris_faces_append = tris_faces.append
 			for face in bm.faces:
 				progress_count += progress_plus_value
 				if face.index % progress_reduce == 0:
@@ -539,14 +550,7 @@ class export_cm3d2_model(bpy.types.Operator):
 				if face.material_index != mate_index:
 					continue
 				if len(face.verts) == 3:
-					for loop in reversed(face.loops):
-						uv = loop[uv_lay].uv
-						index = loop.vert.index
-						iuv_hash = hash(repr([index, uv.x, uv.y]))
-						vert_index = vert_iuv.get(iuv_hash)
-						if vert_index is None:
-							vert_index = vert_indices.get(index, 0)
-						tris_faces_append(vert_index)
+					tris_faces.extend(vert_index_from_loops(reversed(face.loops)))
 				elif len(face.verts) == 4 and self.is_convert_tris:
 					v1 = face.loops[0].vert.co - face.loops[2].vert.co
 					v2 = face.loops[1].vert.co - face.loops[3].vert.co
@@ -557,18 +561,13 @@ class export_cm3d2_model(bpy.types.Operator):
 						f1 = [0, 1, 3]
 						f2 = [1, 2, 3]
 					faces, faces2 = [], []
-					for i, loop in enumerate(reversed(face.loops)):
-						uv = loop[uv_lay].uv
-						iuv_hash = hash(repr([loop.vert.index, uv.x, uv.y]))
-						vert_index = vert_iuv.get(iuv_hash)
+					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
 						if i in f1:
 							faces.append(vert_index)
 						if i in f2:
 							faces2.append(vert_index)
-					for i in faces:
-						tris_faces_append(i)
-					for i in faces2:
-						tris_faces_append(i)
+					tris_faces.extend(faces)
+					tris_faces.extend(faces2)
 				elif 5 <= len(face.verts) and self.is_convert_tris:
 					face_count = len(face.verts) - 2
 					
@@ -582,18 +581,13 @@ class export_cm3d2_model(bpy.types.Operator):
 							tris.append([seek_min, seek_max-1, seek_max])
 							seek_max -= 1
 					
-					tris_indexs = [[] for i in tris]
-					for i, loop in enumerate(reversed(face.loops)):
-						
-						uv = loop[uv_lay].uv
-						iuv_hash = hash(repr([loop.vert.index, uv.x, uv.y]))
-						vert_index = vert_iuv.get(iuv_hash)
-						
+					tris_indexs = [[]] * len(tris)
+					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
 						for tris_index, points in enumerate(tris):
 							if i in points:
 								tris_indexs[tris_index].append(vert_index)
 					
-					tris_faces.extend([p for ps in tris_indexs for p in ps])
+					tris_faces.extend(p for ps in tris_indexs for p in ps)
 			
 			file.write(struct.pack('<i', len(tris_faces)))
 			for face_index in tris_faces:
