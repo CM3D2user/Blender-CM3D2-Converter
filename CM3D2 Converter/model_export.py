@@ -387,17 +387,14 @@ class export_cm3d2_model(bpy.types.Operator):
 				custom_normals[loop.vertex_index] = loop.normal.copy()
 		# 頂点情報を書き出し
 		for i, vert in enumerate(bm.verts):
+			co = vert.co * self.scale
+			if me.has_custom_normals:
+				no = custom_normals[vert.index]
+			else:
+				no = vert.normal.copy()
 			for uv in vert_uvs[i]:
-				co = vert.co.copy()
-				co *= self.scale
 				file.write(struct.pack('<3f', -co.x, co.y, co.z))
-				
-				if me.has_custom_normals:
-					no = custom_normals[vert.index]
-				else:
-					no = vert.normal.copy()
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
-				
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		context.window_manager.progress_update(6)
 
@@ -567,11 +564,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		# モーフを書き出し
 		if me.shape_keys:
 			temp_me = context.blend_data.meshes.new(me.name + ".temp")
-			vs, es, fs = [], [], []
-			for vert in me.vertices:
-				vs.append(vert.co)
-			for face in me.polygons:
-				fs.append(face.vertices)
+			vs = [vert.co for vert in me.vertices]
+			es = []
+			fs = [face.vertices for face in me.polygons]
 			temp_me.from_pydata(vs, es, fs)
 			if 2 <= len(me.shape_keys.key_blocks):
 				for shape_key in me.shape_keys.key_blocks[1:]:
@@ -581,27 +576,26 @@ class export_cm3d2_model(bpy.types.Operator):
 						temp_me.vertices[i].co = shape_key.data[i].co.copy()
 					temp_me.update()
 					for i, vert in enumerate(me.vertices):
-						for d in vert_uvs[i]:
-							co_diff = shape_key.data[i].co - vert.co
-							if me.has_custom_normals:
-								no_diff = custom_normals[i] - vert.normal
-							else:
-								no_diff = temp_me.vertices[i].normal - vert.normal
-							if 0.001 < co_diff.length or 0.001 < no_diff.length:
-								co = co_diff
-								co *= self.scale
-								morph.append((vert_index, co, i))
-							vert_index += 1
+						co_diff = shape_key.data[i].co - vert.co
+						if me.has_custom_normals:
+							no_diff = custom_normals[i] - vert.normal
+						else:
+							no_diff = temp_me.vertices[i].normal - vert.normal
+						if 0.001 < co_diff.length or 0.001 < no_diff.length:
+							co = co_diff * self.scale
+							for d in vert_uvs[i]:
+								morph.append((vert_index, co, no_diff))
+								vert_index += 1
+						else:
+							vert_index += len(vert_uvs[i])
 					if not len(morph):
 						continue
 					common.write_str(file, 'morph')
 					common.write_str(file, shape_key.name)
 					file.write(struct.pack('<i', len(morph)))
-					for index, vec, raw_index in morph:
-						vec.x = -vec.x
+					for index, vec, normal in morph:
 						file.write(struct.pack('<H', index))
-						file.write(struct.pack('<3f', vec.x, vec.y, vec.z))
-						normal = temp_me.vertices[raw_index].normal.copy() - me.vertices[raw_index].normal.copy()
+						file.write(struct.pack('<3f', -vec.x, vec.y, vec.z))
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
