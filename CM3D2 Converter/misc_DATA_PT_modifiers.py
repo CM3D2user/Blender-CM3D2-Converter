@@ -48,6 +48,54 @@ class forced_modifier_apply(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		ob = context.active_object
 		me = ob.data
+		is_shaped = bool(me.shape_keys)
+		
+		pre_selected_objects = context.selected_objects[:]
+		pre_mode = ob.mode
+		
+		if is_shaped:
+			pre_relative_keys = [s.relative_key.name for s in me.shape_keys.key_blocks]
+			pre_active_shape_key_index = ob.active_shape_key_index
+			
+			shape_names = [s.name for s in me.shape_keys.key_blocks]
+			shape_deforms = []
+			for shape in me.shape_keys.key_blocks:
+				shape_deforms.append([shape.data[v.index].co.copy() for v in me.vertices])
+			
+			ob.active_shape_key_index = len(me.shape_keys.key_blocks) - 1
+			for i in me.shape_keys.key_blocks[:]:
+				ob.shape_key_remove(ob.active_shape_key)
+			
+			new_shape_deforms = []
+			for shape_index, deforms in enumerate(shape_deforms):
+				
+				temp_ob = ob.copy()
+				temp_me = me.copy()
+				temp_ob.data = temp_me
+				context.scene.objects.link(temp_ob)
+				
+				for vert in temp_me.vertices:
+					vert.co = deforms[vert.index].copy()
+				
+				override = context.copy()
+				override['object'] = temp_ob
+				for index, mod in enumerate(temp_ob.modifiers):
+					if self.is_applies[index]:
+						try:
+							bpy.ops.object.modifier_apply(override, modifier=mod.name)
+						except: pass
+				
+				new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
+				
+				common.remove_data(temp_ob)
+				common.remove_data(temp_me)
+		
+		for index, mod in enumerate(ob.modifiers[:]):
+			if self.is_applies[index] and mod.type != "ARMATURE":
+				try:
+					bpy.ops.object.modifier_apply(modifier=mod.name)
+				except:
+					ob.modifiers.remove(mod)
 		
 		arm_ob = None
 		for mod in ob.modifiers:
@@ -89,48 +137,8 @@ class forced_modifier_apply(bpy.types.Operator):
 				no.rotate(total_quat)
 				custom_normals.append(no)
 		
-		pre_selected_objects = context.selected_objects[:]
-		pre_mode = ob.mode
-		
-		if me.shape_keys:
-			pre_relative_keys = [s.relative_key.name for s in me.shape_keys.key_blocks]
-			pre_active_shape_key_index = ob.active_shape_key_index
-			
-			shape_names = [s.name for s in me.shape_keys.key_blocks]
-			shape_deforms = []
-			for shape in me.shape_keys.key_blocks:
-				shape_deforms.append([shape.data[v.index].co.copy() for v in me.vertices])
-			
-			ob.active_shape_key_index = len(me.shape_keys.key_blocks) - 1
-			for i in me.shape_keys.key_blocks[:]:
-				ob.shape_key_remove(ob.active_shape_key)
-			
-			new_shape_deforms = []
-			for shape_index, deforms in enumerate(shape_deforms):
-				
-				temp_ob = ob.copy()
-				temp_me = me.copy()
-				temp_ob.data = temp_me
-				context.scene.objects.link(temp_ob)
-				
-				for vert in temp_me.vertices:
-					vert.co = deforms[vert.index].copy()
-				
-				override = context.copy()
-				override['object'] = temp_ob
-				for index, mod in enumerate(temp_ob.modifiers):
-					if self.is_applies[index]:
-						try:
-							bpy.ops.object.modifier_apply(override, modifier=mod.name)
-						except: pass
-				
-				new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
-				
-				common.remove_data(temp_ob)
-				common.remove_data(temp_me)
-		
 		for index, mod in enumerate(ob.modifiers[:]):
-			if self.is_applies[index]:
+			if self.is_applies[index] and mod.type == "ARMATURE":
 				try:
 					bpy.ops.object.modifier_apply(modifier=mod.name)
 				except:
@@ -138,7 +146,7 @@ class forced_modifier_apply(bpy.types.Operator):
 		
 		context.scene.objects.active = ob
 		
-		if me.shape_keys:
+		if is_shaped:
 			for shape_index, deforms in enumerate(new_shape_deforms):
 				
 				bpy.ops.object.shape_key_add(from_mix=False)
@@ -162,7 +170,10 @@ class forced_modifier_apply(bpy.types.Operator):
 				vert = me.vertices[loop.vertex_index]
 				no = vert.normal.copy()
 				
-				custom_rot = mathutils.Vector((0.0, 0.0, 1.0)).rotation_difference(custom_normals[i])
+				try:
+					custom_rot = mathutils.Vector((0.0, 0.0, 1.0)).rotation_difference(custom_normals[i])
+				except:
+					continue
 				original_rot = mathutils.Vector((0.0, 0.0, 1.0)).rotation_difference(no)
 				output_rot = original_rot.slerp(custom_rot, self.custom_normal_blend)
 				

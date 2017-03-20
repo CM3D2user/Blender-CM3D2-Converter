@@ -581,7 +581,7 @@ class export_cm3d2_model(bpy.types.Operator):
 							tris.append([seek_min, seek_max-1, seek_max])
 							seek_max -= 1
 					
-					tris_indexs = [[] for _ in range(len(tris))]
+					tris_indexs = [[]] * len(tris)
 					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
 						for tris_index, points in enumerate(tris):
 							if i in points:
