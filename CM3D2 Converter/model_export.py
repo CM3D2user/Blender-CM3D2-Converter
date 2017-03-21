@@ -5,7 +5,10 @@ import re
 import struct
 import time
 import mathutils
+from operator import itemgetter
 from . import common
+
+
 
 # メインオペレーター
 class export_cm3d2_model(bpy.types.Operator):
@@ -47,12 +50,15 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
-	def report_cancel(self, report_message, report_type={'ERROR'}, return_dict={'CANCELLED'}):
+
+	def report_cancel(self, report_message, report_type={'ERROR'}, resobj={'CANCELLED'}):
+		"""エラーメッセージを出力してキャンセルオブジェクトを返す"""
 		self.report(type=report_type, message=report_message)
-		return return_dict
+		return resobj
 	
+
 	def precheck(self, context):
-		# データの成否チェック
+		"""データの成否チェック"""
 		ob = context.active_object
 		if not ob:
 			return self.report_cancel("アクティブオブジェクトがありません")
@@ -77,7 +83,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		if 65535 < len(me.vertices):
 			return self.report_cancel("エクスポート可能な頂点数を大幅に超えています、最低でも65535未満には削減してください")
 		return None
-		
+	
+
 	def invoke(self, context, event):
 		res = self.precheck(context)
 		if res: return res
@@ -117,7 +124,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.scale = 1.0 / common.preferences().scale
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
-	
+
+
 	# 'is_batch' がオンなら非表示
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
@@ -148,13 +156,17 @@ class export_cm3d2_model(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
 		sub_box.prop(self, 'is_convert_bone_weight_names', icon_value=common.preview_collections['main']['KISS'].icon_id)
-	
+
+
 	def execute(self, context):
+		"""モデルファイルを出力"""
 		start_time = time.time()
 		
 		if not self.is_batch:
 			common.preferences().model_export_path = self.filepath
 			common.preferences().scale = 1.0 / self.scale
+			bpy.ops.object.mode_set(mode='OBJECT')
+		
 		
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
@@ -163,6 +175,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if res: return res
 
 		ob = context.active_object
+		me = ob.data
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
@@ -209,75 +222,19 @@ class export_cm3d2_model(bpy.types.Operator):
 		base_bone_candidate = None
 		bone_data = []
 		if self.bone_info_mode == 'TEXT':
-			if 'BaseBone' in context.blend_data.texts["BoneData"]:
-				base_bone_candidate = context.blend_data.texts["BoneData"]['BaseBone']
-			for line in context.blend_data.texts["BoneData"].lines:
-				data = line.body.split(',')
-				if len(data) == 5:
-					bone_data.append({})
-					bone_data[-1]['name'] = data[0]
-					bone_data[-1]['unknown'] = int(data[1])
-					if re.search(data[2], r'^\d+$'):
-						bone_data[-1]['parent_index'] = int(data[2])
-					else:
-						for i, b in enumerate(bone_data):
-							if b['name'] == data[2]:
-								bone_data[-1]['parent_index'] = i
-								break
-						else:
-							bone_data[-1]['parent_index'] = -1
-					bone_data[-1]['co'] = []
-					floats = data[3].split(' ')
-					for f in floats:
-						bone_data[-1]['co'].append(float(f))
-					bone_data[-1]['rot'] = []
-					floats = data[4].split(' ')
-					for f in floats:
-						bone_data[-1]['rot'].append(float(f))
+			bone_data_text = context.blend_data.texts["BoneData"]
+			if 'BaseBone' in bone_data_text:
+				base_bone_candidate = bone_data_text['BaseBone']
+			bone_data = self.bone_data_parser(l.body for l in bone_data_text.lines)
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
-			if self.bone_info_mode == 'OBJECT':
-				target = ob
-			elif self.bone_info_mode == 'ARMATURE':
-				target = arm_ob.data
+			target = ob if self.bone_info_mode == 'OBJECT' else arm_ob.data
 			if 'BaseBone' in target:
 				base_bone_candidate = target['BaseBone']
-			pass_count = 0
-			for i in range(9**9):
-				name = "BoneData:" + str(i)
-				if name not in target:
-					pass_count += 1
-					if 50 < pass_count:
-						break
-					continue
-				data = target[name].split(',')
-				if len(data) == 5:
-					bone_data.append({})
-					bone_data[-1]['name'] = data[0]
-					bone_data[-1]['unknown'] = int(data[1])
-					if re.search(data[2], r'^\d+$'):
-						bone_data[-1]['parent_index'] = int(data[2])
-					else:
-						for i, b in enumerate(bone_data):
-							if b['name'] == data[2]:
-								bone_data[-1]['parent_index'] = i
-								break
-						else:
-							bone_data[-1]['parent_index'] = -1
-					bone_data[-1]['co'] = []
-					floats = data[3].split(' ')
-					for f in floats:
-						bone_data[-1]['co'].append(float(f))
-					bone_data[-1]['rot'] = []
-					floats = data[4].split(' ')
-					for f in floats:
-						bone_data[-1]['rot'].append(float(f))
+			bone_data = self.bone_data_parser(self.indexed_data_generator(target, prefix='BoneData:'))
 		if len(bone_data) <= 0:
 			return self.report_cancel("テキスト「BoneData」に有効なデータがありません")
 		
-		for bone in bone_data:
-			if bone['name'] == self.base_bone_name:
-				break
-		else:
+		if self.base_bone_name not in (b['name'] for b in bone_data):
 			if base_bone_candidate and self.base_bone_name == 'Auto':
 				self.base_bone_name = base_bone_candidate
 			else:
@@ -286,53 +243,69 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# LocalBoneData情報読み込み
 		local_bone_data = []
-		local_bone_names = []
 		if self.bone_info_mode == 'TEXT':
-			for line in context.blend_data.texts["LocalBoneData"].lines:
-				data = line.body.split(',')
-				if len(data) == 2:
-					local_bone_data.append({})
-					local_bone_data[-1]['name'] = data[0]
-					local_bone_data[-1]['matrix'] = []
-					floats = data[1].split(' ')
-					for f in floats:
-						local_bone_data[-1]['matrix'].append(float(f))
-					local_bone_names.append(data[0])
+			local_bone_data_text = context.blend_data.texts["LocalBoneData"]
+			local_bone_data = self.local_bone_data_parser(l.body for l in local_bone_data_text.lines)
 		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
-			pass_count = 0
-			for i in range(9**9):
-				name = "LocalBoneData:" + str(i)
-				if self.bone_info_mode == 'OBJECT':
-					target = ob
-				elif self.bone_info_mode == 'ARMATURE':
-					target = arm_ob.data
-				if name not in target:
-					pass_count += 1
-					if 50 < pass_count:
-						break
-					continue
-				data = target[name].split(',')
-				if len(data) == 2:
-					local_bone_data.append({})
-					local_bone_data[-1]['name'] = data[0]
-					local_bone_data[-1]['matrix'] = []
-					floats = data[1].split(' ')
-					for f in floats:
-						local_bone_data[-1]['matrix'].append(float(f))
-					local_bone_names.append(data[0])
+			target = ob if self.bone_info_mode == 'OBJECT' else arm_ob.data
+			local_bone_data = self.local_bone_data_parser(self.indexed_data_generator(target, prefix='LocalBoneData:'))
 		if len(local_bone_data) <= 0:
 			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
+		local_bone_name_indices = {bone['name']:index for index, bone in enumerate(local_bone_data)}
 		context.window_manager.progress_update(3)
 		
+		# ウェイト情報読み込み
+		vertices = []
+		is_over_one = 0
+		is_under_one = 0
+		for i, vert in enumerate(me.vertices):
+			vgs = []
+			for vg in vert.groups:
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
+				index = local_bone_name_indices.get(name, -1)
+				if 0 <= index and 0.0 < vg.weight:
+					vgs.append([index, vg.weight])
+			if len(vgs) == 0:
+				if not self.is_batch:
+					self.select_no_weight_vertices(context, local_bone_name_indices)
+				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
+			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
+			total = sum(vg[1] for vg in vgs)
+			if self.is_normalize_weight:
+				for vg in vgs:
+					vg[1] /= total
+			else:
+				if 1.01 < total:
+					is_over_one += 1
+				elif total < 0.99:
+					is_under_one += 1
+			if len(vgs) < 4:
+				vgs += [(0, 0.0)] * (4 - len(vgs))
+			vertices.append({
+				'index': vert.index,
+				'face_indexs': list(map(itemgetter(0), vgs)),
+				'weights': list(map(itemgetter(1), vgs)),
+				})
+		if 1 <= is_over_one:
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が見つかりました" % is_over_one)
+		if 1 <= is_under_one:
+			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が見つかりました" % is_under_one)
+		context.window_manager.progress_update(4)
+			
 		try:
 			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
 		except:
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
+		model_datas = {
+			'bone_data': bone_data,
+			'local_bone_data': local_bone_data,
+			'vertices': vertices,
+			}
 		try:
 			with file:
-				self.write_model(context, file, bone_data, local_bone_data, local_bone_names)
+				self.write_model(context, file, **model_datas)
 		except common.CM3D2ExportException as e:
 			self.report(type={'ERROR'}, message=str(e))
 			return {'CANCELLED'}
@@ -343,7 +316,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
 		return {'FINISHED'}
 
-	def write_model(self, context, file, bone_data, local_bone_data, local_bone_names):
+
+	def write_model(self, context, file, bone_data=[], local_bone_data=[], vertices=[]):
+		"""モデルデータをファイルオブジェクトに書き込む"""
 		ob = context.active_object
 		me = ob.data
 		
@@ -367,9 +342,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
 		context.window_manager.progress_update(4)
-		
-		if not self.is_batch:
-			bpy.ops.object.mode_set(mode='OBJECT')
 		
 		# 正しい頂点数などを取得
 		bm = bmesh.new()
@@ -414,115 +386,26 @@ class export_cm3d2_model(bpy.types.Operator):
 				custom_normals[loop.vertex_index] = loop.normal.copy()
 		# 頂点情報を書き出し
 		for i, vert in enumerate(bm.verts):
+			co = vert.co * self.scale
+			if me.has_custom_normals:
+				no = custom_normals[vert.index]
+			else:
+				no = vert.normal.copy()
 			for uv in vert_uvs[i]:
-				co = vert.co.copy()
-				co *= self.scale
 				file.write(struct.pack('<3f', -co.x, co.y, co.z))
-				
-				if me.has_custom_normals:
-					no = custom_normals[vert.index]
-				else:
-					no = vert.normal.copy()
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
-				
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		context.window_manager.progress_update(6)
+
+		# 不明な情報を書き出し
+		unknown_count = 0
+		file.write(struct.pack('<i', unknown_count))
+
 		# ウェイト情報を書き出し
-		is_over_one = 0
-		is_under_one = 0
-		file.write(struct.pack('<i', 0))
-		progress_plus_value = 1.0 / len(me.vertices)
-		progress_count = 6.0
-		progress_reduce = len(me.vertices) // 200 + 1
-		for vert in me.vertices:
-			progress_count += progress_plus_value
-			if vert.index % progress_reduce == 0:
-				context.window_manager.progress_update(progress_count)
-			
-			vgs = []
-			face_indexs = []
-			weights = []
-			for vg in vert.groups:
-				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-				if name not in local_bone_names:
-					continue
-				weight = vg.weight
-				if 0.0 < weight:
-					vgs.append([name, weight])
-			if len(vgs) == 0:
-				if not self.is_batch:
-					bpy.ops.object.mode_set(mode='EDIT')
-					bpy.ops.mesh.select_all(action='DESELECT')
-					bpy.ops.object.mode_set(mode='OBJECT')
-					context.tool_settings.mesh_select_mode = (True, False, False)
-					for vert in me.vertices:
-						for vg in vert.groups:
-							name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-							if name not in local_bone_names:
-								continue
-							if 0.0 < vg.weight:
-								break
-						else:
-							vert.select = True
-					bpy.ops.object.mode_set(mode='EDIT')
-				raise common.CM3D2ExportException("ウェイトが割り当てられていない頂点が見つかりました、中止します")
-			vgs.sort(key=lambda vg: vg[1])
-			vgs.reverse()
-			for i in range(4):
-				try:
-					name = vgs[i][0]
-				except IndexError:
-					index = 0
-				else:
-					index = 0
-					for i, bone in enumerate(local_bone_data):
-						if bone['name'] == name:
-							break
-						index += 1
-					else:
-						index = 0
-				face_indexs.append(index)
-			total = 0.0
-			for i in range(4):
-				try:
-					weight = vgs[i][1]
-				except IndexError:
-					weight = 0.0
-				total += weight
-			if self.is_normalize_weight:
-				for i in range(4):
-					try:
-						weight = vgs[i][1]
-					except IndexError:
-						pass
-					else:
-						weight /= total
-						vgs[i][1] = weight
-			else:
-				if 1.01 < total:
-					is_over_one += 1
-				if total < 0.99:
-					is_under_one += 1
-			for i in range(4):
-				try:
-					weight = vgs[i][1]
-				except IndexError:
-					if total <= 0.0:
-						if i == 0:
-							weight = 1.0
-					else:
-						weight = 0.0
-				weights.append(weight)
-			
-			for uv in vert_uvs[vert.index]:
-				for index in face_indexs:
-					file.write(struct.pack('<H', index))
-				for weight in weights:
-					file.write(struct.pack('<f', weight))
-		if 1 <= is_over_one:
-			self.report(type={'INFO'}, message="ウェイトの合計が1.0を超えている頂点が見つかりました" % is_over_one)
-		if 1 <= is_under_one:
-			self.report(type={'INFO'}, message="ウェイトの合計が1.0未満の頂点が見つかりました" % is_under_one)
+		for vert in vertices:
+			for uv in vert_uvs[vert['index']]:
+				file.write(struct.pack('<4H', *vert['face_indexs']))
+				file.write(struct.pack('<4f', *vert['weights']))
 		context.window_manager.progress_update(7)
 		
 		# 面情報を書き出し
@@ -680,11 +563,9 @@ class export_cm3d2_model(bpy.types.Operator):
 		# モーフを書き出し
 		if me.shape_keys:
 			temp_me = context.blend_data.meshes.new(me.name + ".temp")
-			vs, es, fs = [], [], []
-			for vert in me.vertices:
-				vs.append(vert.co)
-			for face in me.polygons:
-				fs.append(face.vertices)
+			vs = [vert.co for vert in me.vertices]
+			es = []
+			fs = [face.vertices for face in me.polygons]
 			temp_me.from_pydata(vs, es, fs)
 			if 2 <= len(me.shape_keys.key_blocks):
 				for shape_key in me.shape_keys.key_blocks[1:]:
@@ -694,30 +575,103 @@ class export_cm3d2_model(bpy.types.Operator):
 						temp_me.vertices[i].co = shape_key.data[i].co.copy()
 					temp_me.update()
 					for i, vert in enumerate(me.vertices):
-						for d in vert_uvs[i]:
-							co_diff = shape_key.data[i].co - vert.co
-							if me.has_custom_normals:
-								no_diff = custom_normals[i] - vert.normal
-							else:
-								no_diff = temp_me.vertices[i].normal - vert.normal
-							if 0.001 < co_diff.length or 0.001 < no_diff.length:
-								co = co_diff
-								co *= self.scale
-								morph.append((vert_index, co, i))
-							vert_index += 1
+						co_diff = shape_key.data[i].co - vert.co
+						if me.has_custom_normals:
+							no_diff = custom_normals[i] - vert.normal
+						else:
+							no_diff = temp_me.vertices[i].normal - vert.normal
+						if 0.001 < co_diff.length or 0.001 < no_diff.length:
+							co = co_diff * self.scale
+							for d in vert_uvs[i]:
+								morph.append((vert_index, co, no_diff))
+								vert_index += 1
+						else:
+							vert_index += len(vert_uvs[i])
 					if not len(morph):
 						continue
 					common.write_str(file, 'morph')
 					common.write_str(file, shape_key.name)
 					file.write(struct.pack('<i', len(morph)))
-					for index, vec, raw_index in morph:
-						vec.x = -vec.x
+					for index, vec, normal in morph:
 						file.write(struct.pack('<H', index))
-						file.write(struct.pack('<3f', vec.x, vec.y, vec.z))
-						normal = temp_me.vertices[raw_index].normal.copy() - me.vertices[raw_index].normal.copy()
+						file.write(struct.pack('<3f', -vec.x, vec.y, vec.z))
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
+ 
+ 
+	def select_no_weight_vertices(self, context, local_bone_name_indices):
+		"""ウェイトが割り当てられていない頂点を選択する"""
+		ob = context.active_object
+		me = ob.data
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_all(action='DESELECT')
+		bpy.ops.object.mode_set(mode='OBJECT')
+		context.tool_settings.mesh_select_mode = (True, False, False)
+		for vert in me.vertices:
+			for vg in vert.groups:
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
+				if name in local_bone_name_indices and 0.0 < vg.weight:
+					break
+			else:
+				vert.select = True
+		bpy.ops.object.mode_set(mode='EDIT')
+
+
+	@staticmethod
+	def bone_data_parser(container):
+		"""BoneData テキストをパースして辞書を要素とするリストを返す"""
+		bone_data = []
+		bone_name_indices = {}
+		for line in container:
+			data = line.split(',')
+			if len(data) != 5:
+				continue
+			parent_name = data[2]
+			if parent_name.isdigit():
+				parent_index = int(parent_name)
+			else:
+				parent_index = bone_name_indices.get(parent_name, -1)
+			bone_data.append({
+				'name': data[0],
+				'unknown': int(data[1]),
+				'parent_index': parent_index,
+				'co': list(map(float, data[3].split())),
+				'rot': list(map(float, data[4].split())),
+				})
+			bone_name_indices[data[0]] = len(bone_name_indices)
+		return bone_data
+
+
+	@staticmethod
+	def local_bone_data_parser(container):
+		"""LocalBoneData テキストをパースして辞書を要素とするリストを返す"""
+		local_bone_data = []
+		for line in container:
+			data = line.split(',')
+			if len(data) != 2:
+				continue
+			local_bone_data.append({
+				'name': data[0],
+				'matrix': list(map(float, data[1].split())),
+				})
+		return local_bone_data
+
+
+	@staticmethod
+	def indexed_data_generator(container, prefix='', max_index=9**9, max_pass=50):
+		"""コンテナ内の数値インデックスをキーに持つ要素を昇順に返すジェネレーター"""
+		pass_count = 0
+		for i in range(max_index):
+			name = prefix + str(i)
+			if name not in container:
+				pass_count += 1
+				if max_pass < pass_count:
+					return
+				continue
+			yield container[name]
+
+
 
 # メニューを登録する関数
 def menu_func(self, context):

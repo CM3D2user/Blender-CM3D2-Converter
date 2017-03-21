@@ -1,4 +1,9 @@
-import bpy, os, re, math, struct, mathutils, bmesh, time
+import bmesh
+import bpy
+import math
+import mathutils
+import struct
+import time
 from collections import Counter
 from . import common
 
@@ -157,8 +162,8 @@ class import_cm3d2_model(bpy.types.Operator):
 		for i in range(unknown_count):
 			struct.unpack('<4f', file.read(4*4))
 		for i in range(vertex_count):
-			indexes = list(struct.unpack('<H', file.read(2))[0] for j in range(4))
-			values  = list(struct.unpack('<f', file.read(4))[0] for j in range(4))
+			indexes = struct.unpack('<4H', file.read(4*2))
+			values  = struct.unpack('<4f', file.read(4*4))
 			vertex_data[i]['weights'] = list({
 					'index': index,
 					'value': value,
@@ -169,10 +174,8 @@ class import_cm3d2_model(bpy.types.Operator):
 		# 面情報読み込み
 		face_data = []
 		for i in range(mesh_count):
-			face_data.append([])
-			face_count = int( struct.unpack('<i', file.read(4))[0] / 3 )
-			for j in range(face_count):
-				face_data[i].append(struct.unpack('<3H', file.read(3*2)))
+			face_count = int(struct.unpack('<i', file.read(4))[0] / 3)
+			face_data.append([struct.unpack('<3H', file.read(3*2)) for j in range(face_count)])
 		context.window_manager.progress_update(0.6)
 		
 		# マテリアル情報読み込み
