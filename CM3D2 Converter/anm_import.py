@@ -143,52 +143,48 @@ class import_cm3d2_anm(bpy.types.Operator):
 							locs[frame] = [None, None, None]
 						
 						if channel_id == 104:
-							locs[frame][0] = -data['f0']
-						elif channel_id == 106:
-							locs[frame][1] = -data['f0']
+							locs[frame][0] = data['f0']
 						elif channel_id == 105:
+							locs[frame][1] = data['f0']
+						elif channel_id == 106:
 							locs[frame][2] = data['f0']
-			
-			if self.is_rotation:
-				for frame, quat in quats.items():
-					quat = mathutils.Quaternion(quat)
-					quat.w, quat.x, quat.y, quat.z = -quat.w, -quat.x, -quat.z, quat.y
-					
-					q = mathutils.Quaternion((0, 0, 1), math.radians(90))
-					
-					bone_quat = bone.matrix_local.to_quaternion() * q
-					if bone.parent:
-						parent_quat = bone.parent.matrix_local.to_quaternion() * q
-						#bone_quat = parent_quat.rotation_difference(bone_quat)
-						bone_quat = bone_quat.rotation_difference(parent_quat)
-					
-					pose_quat = bone_quat * quat
-					pose_bone.rotation_quaternion = pose_quat
-					
-					pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
-					if max_frame < frame * fps:
-						max_frame = frame * fps
 			
 			if self.is_location:
 				for frame, loc in locs.items():
 					loc = mathutils.Vector(loc) * self.scale
+					loc.x, loc.y, loc.z = loc.z, -loc.x, loc.y
 					
 					bone_loc = bone.head_local.copy()
+					
 					if bone.parent:
-						parent_loc = bone.parent.head_local.copy()
-						bone_loc = bone_loc - parent_loc
-						
-						quat = bone.parent.matrix_local.to_quaternion()
-						quat.invert()
-						bone_loc.rotate(quat)
-						bone_loc.x, bone_loc.y, bone_loc.z = bone_loc.y, -bone_loc.x, bone_loc.z
+						bone_loc = bone_loc - bone.parent.head_local
+						bone_loc.rotate(bone.parent.matrix_local.to_quaternion().inverted())
+					else:
+						bone_loc.rotate(bone.matrix_local.to_quaternion().inverted())
+						loc.x, loc.y, loc.z = loc.z, loc.x, loc.y
 					
-					pose_loc = loc - bone_loc
-					bone_quat = bone.matrix_local.to_quaternion()
-					pose_loc.rotate(bone_quat)
+					result_loc = loc - bone_loc
+					pose_bone.location = result_loc.copy()
 					
-					pose_bone.location = pose_loc
 					pose_bone.keyframe_insert('location', frame=frame * fps)
+					if max_frame < frame * fps:
+						max_frame = frame * fps
+			
+			if self.is_rotation:
+				for frame, quat in quats.items():
+					quat = mathutils.Quaternion(quat)
+					quat.w, quat.x, quat.y, quat.z = quat.w, -quat.z, quat.x, -quat.y
+					
+					bone_quat = bone.matrix.to_quaternion()
+					result_quat = bone_quat.inverted() * quat
+					
+					fix_quat = mathutils.Euler((math.radians(-90), 0.0, 0.0), 'XYZ').to_quaternion()
+					if not bone.parent:
+						result_quat = fix_quat * result_quat
+					
+					pose_bone.rotation_quaternion = result_quat.copy()
+					
+					pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)
 					if max_frame < frame * fps:
 						max_frame = frame * fps
 		
