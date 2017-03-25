@@ -1,11 +1,11 @@
-import bpy
-import struct
+import bpy, mathutils
+import struct, re, math
 from . import common
 
 # メインオペレーター
 class export_cm3d2_anm(bpy.types.Operator):
 	bl_idname = 'export_anim.export_cm3d2_anm'
-	bl_label = "CM3D2モーション (.anm) (開発中)"
+	bl_label = "CM3D2モーション (.anm)"
 	bl_description = "カスタムメイド3D2のanmファイルを保存します"
 	bl_options = {'REGISTER'}
 	
@@ -63,6 +63,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 	def write_animation(self, context, file):
 		ob = context.active_object
 		arm = ob.data
+		anim_data = ob.animation_data
+		fps = context.scene.render.fps
 		
 		common.write_str(file, 'CM3D2_ANIM')
 		file.write(struct.pack('<i', self.version))
@@ -84,6 +86,82 @@ class export_cm3d2_anm(bpy.types.Operator):
 			
 			bones_que.append(bone)
 		
+		raw_keyframe_data = {}
+		if anim_data:
+			for fcurve in anim_data.action.fcurves:
+				if re.match(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path):
+					bone_name = re.search(r'pose\.bones\["([^"\[\]]+)"\]', fcurve.data_path).group(1)
+					key_type = re.search(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path).group(1)
+					if bone_name not in raw_keyframe_data:
+						raw_keyframe_data[bone_name] = {'location':{}, 'rotation_quaternion':{}}
+					for keyframe in fcurve.keyframe_points:
+						frame = keyframe.co.x / fps
+						if frame not in raw_keyframe_data[bone_name][key_type]:
+							if key_type == 'location':
+								raw_keyframe_data[bone_name][key_type][frame] = mathutils.Vector()
+							elif key_type == 'rotation_quaternion':
+								raw_keyframe_data[bone_name][key_type][frame] = mathutils.Euler().to_quaternion()
+						raw_keyframe_data[bone_name][key_type][frame][fcurve.array_index] = keyframe.co.y
+		
+		keyframe_data = {}
+		for bone in bones:
+			keyframe_data[bone.name] = {}
+			if bone.name in raw_keyframe_data:
+				for frame, loc in raw_keyframe_data[bone.name]['location'].items():
+					
+					bone_loc = bone.head_local.copy()
+					if bone.parent:
+						bone_loc = bone_loc - bone.parent.head_local
+						bone_loc.rotate(bone.parent.matrix_local.to_quaternion().inverted())
+					else:
+						bone_loc.rotate(bone.matrix_local.to_quaternion().inverted())
+					
+					result_loc = bone_loc + loc
+					result_loc.z, result_loc.x, result_loc.y = result_loc.x, -result_loc.y, result_loc.z
+					result_loc = result_loc * self.scale
+					
+					if not bone.parent:
+						result_loc.z, result_loc.x, result_loc.y = result_loc.x, result_loc.y, result_loc.z
+					
+					if 104 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][104] = {}
+					keyframe_data[bone.name][104][frame] = result_loc.x
+					
+					if 105 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][105] = {}
+					keyframe_data[bone.name][105][frame] = result_loc.y
+					
+					if 106 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][106] = {}
+					keyframe_data[bone.name][106][frame] = result_loc.z
+				
+				for frame, quat in raw_keyframe_data[bone.name]['rotation_quaternion'].items():
+					
+					fix_quat = mathutils.Euler((math.radians(90), 0.0, 0.0), 'XYZ').to_quaternion()
+					if not bone.parent:
+						quat = fix_quat * quat
+					
+					bone_quat = bone.matrix.to_quaternion()
+					result_quat = bone_quat * quat
+					
+					result_quat.w, result_quat.z, result_quat.x, result_quat.y = result_quat.w, -result_quat.x, result_quat.y, -result_quat.z
+					
+					if 100 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][100] = {}
+					keyframe_data[bone.name][100][frame] = result_quat.x
+					
+					if 101 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][101] = {}
+					keyframe_data[bone.name][101][frame] = result_quat.y
+					
+					if 102 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][102] = {}
+					keyframe_data[bone.name][102][frame] = result_quat.z
+					
+					if 103 not in keyframe_data[bone.name]:
+						keyframe_data[bone.name][103] = {}
+					keyframe_data[bone.name][103][frame] = result_quat.w
+		
 		for bone in bones:
 			file.write(struct.pack('<?', True))
 			
@@ -95,6 +173,14 @@ class export_cm3d2_anm(bpy.types.Operator):
 			
 			bone_names.reverse()
 			common.write_str(file, "/".join(bone_names))
+			
+			for channel_id, keyframes in keyframe_data[bone.name].items():
+				file.write(struct.pack('<B', channel_id))
+				file.write(struct.pack('<i', len(keyframe_data[bone.name][channel_id])))
+				for frame, value in keyframe_data[bone.name][channel_id].items():
+					file.write(struct.pack('<f', frame))
+					file.write(struct.pack('<f', value))
+					file.write(struct.pack('<2f', 0.0, 0.0))
 		
 		file.write(struct.pack('<?', False))
 
