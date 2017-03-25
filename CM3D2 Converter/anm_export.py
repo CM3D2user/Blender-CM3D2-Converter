@@ -63,6 +63,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 	def write_animation(self, context, file):
 		ob = context.active_object
 		arm = ob.data
+		pose = ob.pose
 		anim_data = ob.animation_data
 		fps = context.scene.render.fps
 		
@@ -88,20 +89,29 @@ class export_cm3d2_anm(bpy.types.Operator):
 		
 		raw_keyframe_data = {}
 		if anim_data:
-			for fcurve in anim_data.action.fcurves:
-				if re.match(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path):
-					bone_name = re.search(r'pose\.bones\["([^"\[\]]+)"\]', fcurve.data_path).group(1)
-					key_type = re.search(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path).group(1)
-					if bone_name not in raw_keyframe_data:
-						raw_keyframe_data[bone_name] = {'location':{}, 'rotation_quaternion':{}}
-					for keyframe in fcurve.keyframe_points:
-						frame = keyframe.co.x / fps
-						if frame not in raw_keyframe_data[bone_name][key_type]:
-							if key_type == 'location':
-								raw_keyframe_data[bone_name][key_type][frame] = mathutils.Vector()
-							elif key_type == 'rotation_quaternion':
-								raw_keyframe_data[bone_name][key_type][frame] = mathutils.Euler().to_quaternion()
-						raw_keyframe_data[bone_name][key_type][frame][fcurve.array_index] = keyframe.co.y
+			if anim_data.action:
+				for fcurve in anim_data.action.fcurves:
+					if re.match(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path):
+						bone_name = re.search(r'pose\.bones\["([^"\[\]]+)"\]', fcurve.data_path).group(1)
+						key_type = re.search(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path).group(1)
+						if bone_name not in raw_keyframe_data:
+							raw_keyframe_data[bone_name] = {'location':{}, 'rotation_quaternion':{}}
+						for keyframe in fcurve.keyframe_points:
+							frame = keyframe.co.x / fps
+							if frame not in raw_keyframe_data[bone_name][key_type]:
+								if key_type == 'location':
+									raw_keyframe_data[bone_name][key_type][frame] = mathutils.Vector()
+								elif key_type == 'rotation_quaternion':
+									raw_keyframe_data[bone_name][key_type][frame] = mathutils.Euler().to_quaternion()
+							raw_keyframe_data[bone_name][key_type][frame][fcurve.array_index] = keyframe.co.y
+		
+		for bone in bones:
+			if bone.name not in raw_keyframe_data:
+				raw_keyframe_data[bone.name] = {'location':{}, 'rotation_quaternion':{}}
+			if not len(raw_keyframe_data[bone.name]['location']):
+				raw_keyframe_data[bone.name]['location'][0.0] = pose.bones[bone.name].location.copy()
+			if not len(raw_keyframe_data[bone.name]['rotation_quaternion']):
+				raw_keyframe_data[bone.name]['rotation_quaternion'][0.0] = pose.bones[bone.name].rotation_quaternion.copy()
 		
 		keyframe_data = {}
 		for bone in bones:

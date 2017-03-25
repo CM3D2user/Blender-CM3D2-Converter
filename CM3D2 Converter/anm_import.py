@@ -104,8 +104,9 @@ class import_cm3d2_anm(bpy.types.Operator):
 		if self.remove_pre_animation:
 			anim = ob.animation_data
 			if anim:
-				for fcurve in anim.action.fcurves:
-					anim.action.fcurves.remove(fcurve)
+				if anim.action:
+					for fcurve in anim.action.fcurves:
+						anim.action.fcurves.remove(fcurve)
 		
 		max_frame = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
