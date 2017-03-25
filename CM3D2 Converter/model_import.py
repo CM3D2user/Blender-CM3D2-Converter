@@ -33,8 +33,7 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_mate_data_text = bpy.props.BoolProperty(name="テキストにマテリアル情報埋め込み", default=True, description="シェーダー情報をテキストに埋め込みます")
 	
 	is_armature = bpy.props.BoolProperty(name="アーマチュア生成", default=True, description="ウェイトを編集する時に役立つアーマチュアを読み込みます")
-	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=True, description="ウェイトが無いボーンを削除します")
-	is_armature_arrange = bpy.props.BoolProperty(name="アーマチュア整頓", default=True, description="ボーンを分かりやすい向きに変更します")
+	is_armature_clean = bpy.props.BoolProperty(name="不要なボーンを削除", default=False, description="ウェイトが無いボーンを削除します")
 	
 	is_bone_data_text = bpy.props.BoolProperty(name="テキスト", default=True, description="ボーン情報をテキストとして読み込みます")
 	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトのカスタムプロパティ", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
@@ -74,7 +73,6 @@ class import_cm3d2_model(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.label("アーマチュア")
 		sub_box.prop(self, 'is_armature_clean', icon='X')
-		sub_box.prop(self, 'is_armature_arrange', icon='HAIR')
 		sub_box.prop(self, 'is_convert_bone_weight_names', icon='BLENDER', text="ボーン名をBlender用に変換")
 		box = self.layout.box()
 		box.label("ボーン情報埋め込み場所")
@@ -331,14 +329,26 @@ class import_cm3d2_model(bpy.types.Operator):
 					child_data.append(data)
 			context.window_manager.progress_update(1.3)
 			
-			# ボーン整頓1
-			if self.is_armature_arrange:
-				has_child = []
-				for bone in arm.edit_bones:
-					if len(bone.children) == 1:
-						co = bone.children[0].head - bone.head
-						bone.length = co.length
-						has_child.append(bone.name)
+			# ボーン整頓
+			for bone in arm.edit_bones:
+				if len(bone.children) == 0:
+					if bone.parent:
+						pass
+					else:
+						bone.length = 1.0
+				elif len(bone.children) == 1:
+					co = bone.children[0].head - bone.head
+					bone.length = co.length
+				elif len(bone.children) >= 2:
+					total = mathutils.Vector()
+					for child in bone.children:
+						total += child.head - bone.head
+					co = total / len(bone.children)
+					bone.length = co.length
+			for bone in arm.edit_bones:
+				if len(bone.children) == 0:
+					if bone.parent:
+						bone.length = bone.parent.length * 0.5
 			
 			# 一部ボーン削除
 			if self.is_armature_clean:
@@ -349,26 +359,6 @@ class import_cm3d2_model(bpy.types.Operator):
 							break
 					else:
 						arm.edit_bones.remove(bone)
-			
-			# ボーン整頓2
-			if self.is_armature_arrange:
-				for bone in arm.edit_bones:
-					if len(bone.children) == 0 and bone.name in has_child:
-						pass
-					elif 1 == len(bone.children):
-						co = bone.children[0].head - bone.head
-						bone.length = co.length
-					elif 2 <= len(bone.children):
-						total = mathutils.Vector()
-						for child in bone.children:
-							total += child.head - bone.head
-						co = total / len(bone.children)
-						bone.length = co.length
-					else:
-						if bone.parent:
-							bone.length = 0.1
-						else:
-							bone.length = 1.0
 			
 			arm.layers[16] = True
 			arm.draw_type = 'STICK'
