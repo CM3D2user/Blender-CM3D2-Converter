@@ -127,12 +127,20 @@ class forced_modifier_apply(bpy.types.Operator):
 				
 				total_weight = 0.0
 				for vge in vert.groups:
+					vg = ob.vertex_groups[vge.group]
+					try:
+						pose_quats[vg.name]
+					except KeyError:
+						continue
 					total_weight += vge.weight
 				
 				total_quat = mathutils.Quaternion()
 				for vge in vert.groups:
 					vg = ob.vertex_groups[vge.group]
-					total_quat = total_quat.slerp(pose_quats[vg.name], vge.weight / total_weight)
+					try:
+						total_quat = total_quat.slerp(pose_quats[vg.name], vge.weight / total_weight)
+					except KeyError:
+						pass
 				
 				no.rotate(total_quat)
 				custom_normals.append(no)
