@@ -340,11 +340,14 @@ class import_cm3d2_model(bpy.types.Operator):
 					co = bone.children[0].head - bone.head
 					bone.length = co.length
 				elif len(bone.children) >= 2:
-					total = mathutils.Vector()
-					for child in bone.children:
-						total += child.head - bone.head
-					co = total / len(bone.children)
-					bone.length = co.length
+					max_len = 0.0
+					for child_bone in bone.children:
+						co = child_bone.head - bone.head
+						if max_len < co.length:
+							max_len = co.length
+					bone.length = max_len
+					if bone.name == "Bip01":
+						bone.length = 1.0
 			for bone in arm.edit_bones:
 				if len(bone.children) == 0:
 					if bone.parent:
