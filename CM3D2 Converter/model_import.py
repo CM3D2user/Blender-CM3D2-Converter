@@ -173,7 +173,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		face_data = []
 		for i in range(mesh_count):
 			face_count = int(struct.unpack('<i', file.read(4))[0] / 3)
-			face_data.append([struct.unpack('<3H', file.read(3*2)) for j in range(face_count)])
+			face_data.append([tuple(reversed(struct.unpack('<3H', file.read(3*2)))) for j in range(face_count)])
 		context.window_manager.progress_update(0.6)
 		
 		# マテリアル情報読み込み
@@ -543,11 +543,6 @@ class import_cm3d2_model(bpy.types.Operator):
 			context.window_manager.progress_update(7)
 			
 			# メッシュ整頓
-			bpy.ops.object.mode_set(mode='EDIT')
-			bpy.ops.mesh.select_all(action='SELECT')
-			bpy.ops.mesh.flip_normals()
-			bpy.ops.mesh.select_all(action='DESELECT')
-			bpy.ops.object.mode_set(mode='OBJECT')
 			if self.is_remove_doubles:
 				for is_comparison, vert in zip(comparison_data, me.vertices):
 					if is_comparison:
