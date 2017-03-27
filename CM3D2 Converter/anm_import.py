@@ -111,6 +111,11 @@ class import_cm3d2_anm(bpy.types.Operator):
 		max_frame = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
 		for bone_name, bone_data in anm_data.items():
+			
+			if re.match(r"Kata_[RL]", bone_name): continue
+			if re.match(r"Uppertwist1_[RL]", bone_name): continue
+			if re.match(r"momoniku_[RL]", bone_name): continue
+			
 			if bone_name not in pose.bones:
 				bone_name = common.decode_bone_name(bone_name)
 				if bone_name not in pose.bones:
