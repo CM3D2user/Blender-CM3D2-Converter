@@ -1,9 +1,5 @@
-import bmesh
-import bpy
-import math
-import mathutils
-import struct
-import time
+import bpy, bmesh, mathutils
+import math, struct, time, os
 from collections import Counter
 from . import common
 
@@ -272,7 +268,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.layers[0] = False
 				else:
 					child_data.append(data)
-			context.window_manager.progress_update(1.2)
+			context.window_manager.progress_update(1.333)
 			
 			for i in range(9**9):
 				if len(child_data) <= 0:
@@ -327,7 +323,7 @@ class import_cm3d2_model(bpy.types.Operator):
 						bone.layers[0] = False
 				else:
 					child_data.append(data)
-			context.window_manager.progress_update(1.3)
+			context.window_manager.progress_update(1.666)
 			
 			# ボーン整頓
 			for bone in arm.edit_bones:
@@ -382,7 +378,7 @@ class import_cm3d2_model(bpy.types.Operator):
 				co[1] *= self.scale
 				co[2] *= self.scale
 				verts.append(co)
-			context.window_manager.progress_update(2.2)
+			context.window_manager.progress_update(2.25)
 			for data in face_data:
 				faces.extend(data)
 			context.window_manager.progress_update(2.5)
@@ -393,7 +389,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob.select = True
 			context.scene.objects.active = ob
 			bpy.ops.object.shade_smooth()
-			context.window_manager.progress_update(2.7)
+			context.window_manager.progress_update(2.75)
 			# オブジェクト変形
 			for bone in bone_data:
 				if bone['name'] == model_name2:
@@ -414,13 +410,13 @@ class import_cm3d2_model(bpy.types.Operator):
 			# 頂点グループ作成
 			for data in local_bone_data:
 				ob.vertex_groups.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
-			context.window_manager.progress_update(3.3)
+			context.window_manager.progress_update(3.333)
 			for vert_index, data in enumerate(vertex_data):
 				for weight in data['weights']:
 					if 0.0 < weight['value']:
 						vertex_group = ob.vertex_groups[common.decode_bone_name(weight['name'], self.is_convert_bone_weight_names)]
 						vertex_group.add([vert_index], weight['value'], 'REPLACE')
-			context.window_manager.progress_update(3.7)
+			context.window_manager.progress_update(3.666)
 			if self.is_vertex_group_sort:
 				bpy.ops.object.vertex_group_sort(sort_type='NAME')
 			if self.is_remove_empty_vertex_group:
@@ -663,11 +659,17 @@ class import_cm3d2_model(bpy.types.Operator):
 			ob['BaseBone'] = model_name2
 		if self.is_armature and self.is_bone_data_arm_property:
 			arm['BaseBone'] = model_name2
-		
 		context.window_manager.progress_end()
-		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
-		self.report(type={'INFO'}, message="modelのインポートが完了しました")
+		
+		require_time_str = str(round(time.time() - start_time, 1))
+		filesize = os.path.getsize(self.filepath)
+		filesize_str = str(filesize) + " バイト"
+		if 1024 * 1024 < filesize:
+			filesize_str = str(round(filesize / (1024 * 1024.0), 1)) + " MB"
+		elif 1024 < filesize:
+			filesize_str = str(round(filesize / 1024.0, 1)) + " KB"
+		self.report(type={'INFO'}, message="modelのインポートが完了しました (" + filesize_str + " / " + require_time_str + " 秒)")
+		
 		return {'FINISHED'}
 
 # メニューを登録する関数
