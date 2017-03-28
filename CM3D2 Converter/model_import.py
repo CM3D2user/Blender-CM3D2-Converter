@@ -335,19 +335,20 @@ class import_cm3d2_model(bpy.types.Operator):
 					if bone.parent:
 						pass
 					else:
-						bone.length = 1.0
+						bone.length = 0.2 * self.scale
 				elif len(bone.children) == 1:
 					co = bone.children[0].head - bone.head
 					bone.length = co.length
 				elif len(bone.children) >= 2:
-					max_len = 0.0
-					for child_bone in bone.children:
-						co = child_bone.head - bone.head
-						if max_len < co.length:
-							max_len = co.length
-					bone.length = max_len
-					if bone.name == "Bip01":
-						bone.length = 1.0
+					if bone.parent:
+						max_len = 0.0
+						for child_bone in bone.children:
+							co = child_bone.head - bone.head
+							if max_len < co.length:
+								max_len = co.length
+						bone.length = max_len
+					else:
+						bone.length = 0.2 * self.scale
 			for bone in arm.edit_bones:
 				if len(bone.children) == 0:
 					if bone.parent:
