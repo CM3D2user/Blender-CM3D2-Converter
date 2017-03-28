@@ -131,7 +131,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 					result_loc = result_loc * self.scale
 					
 					if not bone.parent:
-						result_loc.z, result_loc.x, result_loc.y = result_loc.x, result_loc.y, result_loc.z
+						result_loc.z, result_loc.x, result_loc.y = -result_loc.x, -result_loc.y, result_loc.z
 					
 					if 104 not in keyframe_data[bone.name]:
 						keyframe_data[bone.name][104] = {}
