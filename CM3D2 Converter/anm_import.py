@@ -195,8 +195,9 @@ class import_cm3d2_anm(bpy.types.Operator):
 						max_frame = frame * fps
 		
 		if self.set_frame:
+			context.scene.frame_start = 0
 			context.scene.frame_end = max_frame
-			context.scene.frame_current = 0
+			context.scene.frame_set(0)
 		
 		return {'FINISHED'}
 
