@@ -14,10 +14,11 @@ class export_cm3d2_anm(bpy.types.Operator):
 	filter_glob = bpy.props.StringProperty(default="*.anm", options={'HIDDEN'})
 	
 	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1, description="エクスポート時のメッシュ等の拡大率です")
-	
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
-	
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
+	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
+	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -34,13 +35,22 @@ class export_cm3d2_anm(bpy.types.Operator):
 			self.filepath = common.default_cm3d2_dir(common.preferences().anm_export_path, "", "anm")
 		self.scale = 1.0 / common.preferences().scale
 		self.is_backup = bool(common.preferences().backup_ext)
+		self.key_frame_count = (context.scene.frame_end - context.scene.frame_start) + 1
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
-		self.layout.prop(self, 'is_backup')
-		self.layout.prop(self, 'version')
+		
+		box = self.layout.box()
+		box.prop(self, 'is_backup', icon='FILE_BACKUP')
+		box.prop(self, 'version')
+		
+		box = self.layout.box()
+		box.prop(self, 'key_frame_count')
+		sub_box = box.box()
+		sub_box.prop(self, 'is_remove_alone_bone', icon='X')
+		sub_box.prop(self, 'is_remove_ik_bone', icon='CONSTRAINT_BONE')
 	
 	def execute(self, context):
 		common.preferences().anm_export_path = self.filepath
@@ -64,7 +74,6 @@ class export_cm3d2_anm(bpy.types.Operator):
 		ob = context.active_object
 		arm = ob.data
 		pose = ob.pose
-		anim_data = ob.animation_data
 		fps = context.scene.render.fps
 		
 		common.write_str(file, 'CM3D2_ANIM')
@@ -72,105 +81,94 @@ class export_cm3d2_anm(bpy.types.Operator):
 		
 		bones = []
 		already_bone_names = []
-		bones_que = arm.bones[:]
-		while len(bones_que):
-			bone = bones_que.pop(0)
+		bones_queue = arm.bones[:]
+		while len(bones_queue):
+			bone = bones_queue.pop(0)
 			
 			if not bone.parent:
+				if self.is_remove_alone_bone and len(bone.children) == 0:
+					continue
 				bones.append(bone)
 				already_bone_names.append(bone.name)
 				continue
 			elif bone.parent.name in already_bone_names:
+				if self.is_remove_ik_bone:
+					if "_ik_" in bone.name.lower(): continue
+					if re.search(r"_nub$", bone.name.lower()): continue
+					if re.search(r"Nub$", bone.name): continue
 				bones.append(bone)
 				already_bone_names.append(bone.name)
 				continue
 			
-			bones_que.append(bone)
+			bones_queue.append(bone)
 		
-		raw_keyframe_data = {}
-		if anim_data:
-			if anim_data.action:
-				for fcurve in anim_data.action.fcurves:
-					if re.match(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path):
-						bone_name = re.search(r'pose\.bones\["([^"\[\]]+)"\]', fcurve.data_path).group(1)
-						key_type = re.search(r'pose\.bones\["[^"\[\]]+"\]\.(location|rotation_quaternion)', fcurve.data_path).group(1)
-						if bone_name not in raw_keyframe_data:
-							raw_keyframe_data[bone_name] = {'location':{}, 'rotation_quaternion':{}}
-						for keyframe in fcurve.keyframe_points:
-							frame = keyframe.co.x / fps
-							if frame not in raw_keyframe_data[bone_name][key_type]:
-								if key_type == 'location':
-									raw_keyframe_data[bone_name][key_type][frame] = mathutils.Vector()
-								elif key_type == 'rotation_quaternion':
-									raw_keyframe_data[bone_name][key_type][frame] = mathutils.Euler().to_quaternion()
-							raw_keyframe_data[bone_name][key_type][frame][fcurve.array_index] = keyframe.co.y
-		
-		for bone in bones:
-			if bone.name not in raw_keyframe_data:
-				raw_keyframe_data[bone.name] = {'location':{}, 'rotation_quaternion':{}}
-			if not len(raw_keyframe_data[bone.name]['location']):
-				raw_keyframe_data[bone.name]['location'][0.0] = pose.bones[bone.name].location.copy()
-			if not len(raw_keyframe_data[bone.name]['rotation_quaternion']):
-				raw_keyframe_data[bone.name]['rotation_quaternion'][0.0] = pose.bones[bone.name].rotation_quaternion.copy()
-		
-		keyframe_data = {}
-		for bone in bones:
-			keyframe_data[bone.name] = {}
-			if bone.name in raw_keyframe_data:
-				for frame, loc in raw_keyframe_data[bone.name]['location'].items():
-					
-					bone_loc = bone.head_local.copy()
-					if bone.parent:
-						bone_loc = bone_loc - bone.parent.head_local
-						bone_loc.rotate(bone.parent.matrix_local.to_quaternion().inverted())
-					else:
-						bone_loc.rotate(bone.matrix_local.to_quaternion().inverted())
-					
-					result_loc = bone_loc + loc
-					result_loc.z, result_loc.x, result_loc.y = result_loc.x, -result_loc.y, result_loc.z
-					result_loc = result_loc * self.scale
-					
-					if not bone.parent:
-						result_loc.z, result_loc.x, result_loc.y = -result_loc.x, -result_loc.y, result_loc.z
-					
-					if 104 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][104] = {}
-					keyframe_data[bone.name][104][frame] = result_loc.x
-					
-					if 105 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][105] = {}
-					keyframe_data[bone.name][105][frame] = result_loc.y
-					
-					if 106 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][106] = {}
-					keyframe_data[bone.name][106][frame] = result_loc.z
+		anm_data_raw = {}
+		last_loc = {}
+		last_rot = {}
+		for key_frame_index in range(self.key_frame_count):
+			if self.key_frame_count == 1:
+				frame = 0.0
+			else:
+				frame = (context.scene.frame_end - context.scene.frame_start) / (self.key_frame_count - 1) * key_frame_index + context.scene.frame_start
+			context.scene.frame_set(int(frame), frame - int(frame))
+			
+			time = frame / fps
+			
+			for bone in bones:
+				if bone.name not in anm_data_raw:
+					anm_data_raw[bone.name] = {"LOC":{}, "ROT":{}}
+					last_loc[bone.name] = None
+					last_rot[bone.name] = None
 				
-				for frame, quat in raw_keyframe_data[bone.name]['rotation_quaternion'].items():
+				pose_bone = pose.bones[bone.name]
+				
+				pose_mat = pose_bone.matrix.copy()
+				if bone.parent:
+					pose_mat = pose_bone.parent.matrix.inverted() * pose_mat
+				
+				loc = pose_mat.to_translation() * self.scale
+				rot = pose_mat.to_quaternion()
+				
+				if bone.parent:
+					loc.x, loc.y, loc.z = -loc.y, -loc.x, loc.z
+					rot.w, rot.x, rot.y, rot.z = rot.w, rot.y, rot.x, -rot.z
+				else:
+					loc.x, loc.y, loc.z = -loc.x, loc.z, -loc.y
 					
-					fix_quat = mathutils.Euler((math.radians(90), 0.0, 0.0), 'XYZ').to_quaternion()
-					if not bone.parent:
-						quat = fix_quat * quat
+					fix_mat_before = mathutils.Euler((math.radians(90), 0, 0), 'XYZ').to_quaternion()
+					fix_mat_after = mathutils.Euler((0, 0, math.radians(90)), 'XYZ').to_quaternion()
+					rot = rot * fix_mat_after.inverted() * fix_mat_before.inverted()
+					rot.w, rot.x, rot.y, rot.z = rot.w, -rot.z, -rot.x, -rot.y
+				
+				if int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
+					anm_data_raw[bone.name]["LOC"][time] = loc.copy()
+					anm_data_raw[bone.name]["ROT"][time] = rot.copy()
 					
-					bone_quat = bone.matrix.to_quaternion()
-					result_quat = bone_quat * quat
+					last_loc[bone.name] = loc.copy()
+					last_rot[bone.name] = rot.copy()
+				else:
+					diff_length = (loc - last_loc[bone.name]).length
+					if 0.0001 < diff_length:
+						anm_data_raw[bone.name]["LOC"][time] = loc.copy()
+						last_loc[bone.name] = loc.copy()
 					
-					result_quat.w, result_quat.z, result_quat.x, result_quat.y = result_quat.w, -result_quat.x, result_quat.y, -result_quat.z
-					
-					if 100 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][100] = {}
-					keyframe_data[bone.name][100][frame] = result_quat.x
-					
-					if 101 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][101] = {}
-					keyframe_data[bone.name][101][frame] = result_quat.y
-					
-					if 102 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][102] = {}
-					keyframe_data[bone.name][102][frame] = result_quat.z
-					
-					if 103 not in keyframe_data[bone.name]:
-						keyframe_data[bone.name][103] = {}
-					keyframe_data[bone.name][103][frame] = result_quat.w
+					diff_angle = rot.rotation_difference(last_rot[bone.name]).angle
+					if 0.0001 < diff_angle:
+						anm_data_raw[bone.name]["ROT"][time] = rot.copy()
+						last_rot[bone.name] = rot.copy()
+		
+		anm_data = {}
+		for bone_name, channels in anm_data_raw.items():
+			anm_data[bone_name] = {100:{}, 101:{}, 102:{}, 103:{}, 104:{}, 105:{}, 106:{}}
+			for time, loc in channels["LOC"].items():
+				anm_data[bone_name][104][time] = loc.x
+				anm_data[bone_name][105][time] = loc.y
+				anm_data[bone_name][106][time] = loc.z
+			for time, rot in channels["ROT"].items():
+				anm_data[bone_name][100][time] = rot.x
+				anm_data[bone_name][101][time] = rot.y
+				anm_data[bone_name][102][time] = rot.z
+				anm_data[bone_name][103][time] = rot.w
 		
 		for bone in bones:
 			file.write(struct.pack('<?', True))
@@ -184,10 +182,11 @@ class export_cm3d2_anm(bpy.types.Operator):
 			bone_names.reverse()
 			common.write_str(file, "/".join(bone_names))
 			
-			for channel_id, keyframes in keyframe_data[bone.name].items():
+			for channel_id, keyframes in sorted(anm_data[bone.name].items(), key=lambda x: x[0]):
 				file.write(struct.pack('<B', channel_id))
-				file.write(struct.pack('<i', len(keyframe_data[bone.name][channel_id])))
-				for frame, value in keyframe_data[bone.name][channel_id].items():
+				file.write(struct.pack('<i', len(keyframes)))
+				
+				for frame, value in sorted(keyframes.items(), key=lambda x: x[0]):
 					file.write(struct.pack('<f', frame))
 					file.write(struct.pack('<f', value))
 					file.write(struct.pack('<2f', 0.0, 0.0))

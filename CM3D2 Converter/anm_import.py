@@ -158,16 +158,15 @@ class import_cm3d2_anm(bpy.types.Operator):
 			if self.is_location:
 				for frame, loc in locs.items():
 					loc = mathutils.Vector(loc) * self.scale
-					loc.x, loc.y, loc.z = loc.z, -loc.x, loc.y
-					
 					bone_loc = bone.head_local.copy()
 					
 					if bone.parent:
+						loc.x, loc.y, loc.z = -loc.y, -loc.x, loc.z
+						
 						bone_loc = bone_loc - bone.parent.head_local
 						bone_loc.rotate(bone.parent.matrix_local.to_quaternion().inverted())
 					else:
-						bone_loc.rotate(bone.matrix_local.to_quaternion().inverted())
-						loc.x, loc.y, loc.z = loc.z, loc.x, loc.y
+						loc.x, loc.y, loc.z = loc.x, loc.z, loc.y
 					
 					result_loc = loc - bone_loc
 					pose_bone.location = result_loc.copy()
@@ -179,15 +178,18 @@ class import_cm3d2_anm(bpy.types.Operator):
 			if self.is_rotation:
 				for frame, quat in quats.items():
 					quat = mathutils.Quaternion(quat)
-					quat.w, quat.x, quat.y, quat.z = quat.w, -quat.z, quat.x, -quat.y
-					
 					bone_quat = bone.matrix.to_quaternion()
+					
+					if bone.parent:
+						quat.w, quat.x, quat.y, quat.z = quat.w, quat.y, quat.x, -quat.z
+					else:
+						quat.w, quat.x, quat.y, quat.z = quat.w, quat.y, quat.x, -quat.z
+						
+						fix_quat = mathutils.Euler((math.radians(90), math.radians(90), 0.0), 'XYZ').to_quaternion()
+						fix_quat2 = mathutils.Euler((0.0, math.radians(-90), 0.0), 'XYZ').to_quaternion()
+						quat = fix_quat * quat
+					
 					result_quat = bone_quat.inverted() * quat
-					
-					fix_quat = mathutils.Euler((math.radians(-90), 0.0, 0.0), 'XYZ').to_quaternion()
-					if not bone.parent:
-						result_quat = fix_quat * result_quat
-					
 					pose_bone.rotation_quaternion = result_quat.copy()
 					
 					pose_bone.keyframe_insert('rotation_quaternion', frame=frame * fps)

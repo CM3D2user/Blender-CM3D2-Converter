@@ -238,89 +238,70 @@ class import_cm3d2_model(bpy.types.Operator):
 			bpy.context.scene.objects.active = arm_ob
 			bpy.ops.object.mode_set(mode='EDIT')
 			
+			# 基幹ボーンのみ作成
 			child_data = []
 			for data in bone_data:
 				if not data['parent_name']:
 					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
-					bone.head = (0, 0, 0)
-					bone.tail = (0, 1, 0)
+					bone.head, bone.tail = (0, 0, 0), (0, 1, 0)
 					
-					co = data['co'].copy()
-					co.x, co.y, co.z = -co.x, -co.z, co.y
-					co *= self.scale
-					
-					rot = mathutils.Euler((0, math.radians(0), 0)).to_quaternion()
-					rot = rot * data['rot'].copy()
-					rot.x, rot.y, rot.z, rot.w = -rot.x, -rot.z, rot.y, -rot.w
-					q = mathutils.Quaternion((0, 0, 1), math.radians(-90))
-					rot = rot * q
+					co = data['co'].copy() * self.scale
+					rot = data['rot']
 					
 					co_mat = mathutils.Matrix.Translation(co)
 					rot_mat = rot.to_matrix().to_4x4()
-					bone.matrix = co_mat * rot_mat
+					mat = co_mat * rot_mat
 					
-					co = bone.tail - bone.head
-					#co.x, co.y, co.z = -co.y, co.x, co.z
-					#bone.tail = bone.head + co
+					fix_mat_scale = mathutils.Matrix.Scale(-1, 4, (1, 0, 0))
+					fix_mat_before = mathutils.Euler((math.radians(90), 0, 0), 'XYZ').to_matrix().to_4x4()
+					fix_mat_after = mathutils.Euler((0, 0, math.radians(90)), 'XYZ').to_matrix().to_4x4()
+					
+					bone.matrix = fix_mat_scale * fix_mat_before * mat * fix_mat_after
 					
 					if data['unknown']:
-						bone.layers[16] = True
-						bone.layers[0] = False
+						bone.layers[16], bone.layers[0] = True, False
 				else:
 					child_data.append(data)
 			context.window_manager.progress_update(1.333)
 			
-			for i in range(9**9):
-				if len(child_data) <= 0:
-					break
+			# 子ボーンを追加していく
+			while len(child_data):
 				data = child_data.pop(0)
 				if common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names) in arm.edit_bones:
 					bone = arm.edit_bones.new(common.decode_bone_name(data['name'], self.is_convert_bone_weight_names))
 					parent = arm.edit_bones[common.decode_bone_name(data['parent_name'], self.is_convert_bone_weight_names)]
 					bone.parent = parent
-					if data['unknown']:
-						bone.bbone_segments = 2
-					bone.head = (0, 0, 0)
-					bone.tail = (0, 1, 0)
+					bone.head, bone.tail = (0, 0, 0), (0, 1, 0)
 					
-					rots = []
-					temp_parent = bone
-					co = mathutils.Vector()
-					rot = mathutils.Euler((0, math.radians(0), 0)).to_quaternion()
-					for j in range(9**9):
+					parent_mats = []
+					current_bone = bone
+					while current_bone:
 						for b in bone_data:
-							if common.decode_bone_name(b['name'], self.is_convert_bone_weight_names) == temp_parent.name:
-								c = b['co'].copy()
-								r = b['rot'].copy()
+							if common.decode_bone_name(b['name'], self.is_convert_bone_weight_names) == current_bone.name:
+								local_co = b['co'].copy()
+								local_rot = b['rot'].copy()
 								break
 						
-						co = r * co
-						co += c
+						local_co_mat = mathutils.Matrix.Translation(local_co)
+						local_rot_mat = local_rot.to_matrix().to_4x4()
+						parent_mats.append(local_co_mat * local_rot_mat)
 						
-						r.x, r.y, r.z, r.w = -r.x, -r.z, r.y, -r.w
-						rots.append(r.copy())
-						
-						if temp_parent.parent == None:
-							break
-						temp_parent = temp_parent.parent
-					co.x, co.y, co.z = -co.x, -co.z, co.y
-					co *= self.scale
+						current_bone = current_bone.parent
+					parent_mats.reverse()
 					
-					rots.reverse()
-					rot = mathutils.Euler((0, math.radians(0), 0)).to_quaternion()
-					for r in rots:
-						rot = rot * r
-					q = mathutils.Quaternion((0, 0, 1), math.radians(-90))
-					rot = rot * q
+					mat = mathutils.Matrix()
+					for local_mat in parent_mats:
+						mat *= local_mat
+					mat *= self.scale
 					
-					co_mat = mathutils.Matrix.Translation(co)
-					rot_mat = rot.to_matrix().to_4x4()
+					fix_mat_scale = mathutils.Matrix.Scale(-1, 4, (1, 0, 0))
+					fix_mat_before = mathutils.Euler((math.radians(90), 0, 0), 'XYZ').to_matrix().to_4x4()
+					fix_mat_after = mathutils.Euler((0, 0, math.radians(90)), 'XYZ').to_matrix().to_4x4()
 					
-					bone.matrix = co_mat * rot_mat
+					bone.matrix = fix_mat_scale * fix_mat_before * mat * fix_mat_after
 					
 					if data['unknown']:
-						bone.layers[16] = True
-						bone.layers[0] = False
+						bone.layers[16], bone.layers[0] = True, False
 				else:
 					child_data.append(data)
 			context.window_manager.progress_update(1.666)
