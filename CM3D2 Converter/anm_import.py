@@ -22,6 +22,8 @@ class import_cm3d2_anm(bpy.types.Operator):
 	
 	set_frame = bpy.props.BoolProperty(name="Blenderのフレーム設定を調整", default=True)
 	
+	ignore_automatic_bone = bpy.props.BoolProperty(name="不要なボーンを除外", default=True)
+	
 	@classmethod
 	def poll(cls, context):
 		ob = context.active_object
@@ -50,6 +52,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 		row.prop(self, 'is_scale', icon='MAN_SCALE')
 		row.enabled = False
 		self.layout.prop(self, 'set_frame', icon='NEXT_KEYFRAME')
+		self.layout.prop(self, 'ignore_automatic_bone', icon='X')
 	
 	def execute(self, context):
 		common.preferences().anm_import_path = self.filepath
@@ -112,9 +115,10 @@ class import_cm3d2_anm(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		for bone_name, bone_data in anm_data.items():
 			
-			if re.match(r"Kata_[RL]", bone_name): continue
-			if re.match(r"Uppertwist1_[RL]", bone_name): continue
-			if re.match(r"momoniku_[RL]", bone_name): continue
+			if self.ignore_automatic_bone:
+				if re.match(r"Kata_[RL]", bone_name): continue
+				if re.match(r"Uppertwist1_[RL]", bone_name): continue
+				if re.match(r"momoniku_[RL]", bone_name): continue
 			
 			if bone_name not in pose.bones:
 				bone_name = common.decode_bone_name(bone_name)

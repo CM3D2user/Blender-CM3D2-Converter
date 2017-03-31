@@ -16,7 +16,10 @@ class export_cm3d2_anm(bpy.types.Operator):
 	scale = bpy.props.FloatProperty(name="倍率", default=0.2, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1, description="エクスポート時のメッシュ等の拡大率です")
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
+	is_remove_same_transform = bpy.props.BoolProperty(name="同じ変形のキーフレームを削除", default=True)
+	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
 	
@@ -47,7 +50,10 @@ class export_cm3d2_anm(bpy.types.Operator):
 		box.prop(self, 'version')
 		
 		box = self.layout.box()
-		box.prop(self, 'key_frame_count')
+		sub_box = box.box()
+		sub_box.prop(self, 'key_frame_count')
+		sub_box.prop(self, 'is_remove_same_transform', icon='DISCLOSURE_TRI_DOWN')
+		
 		sub_box = box.box()
 		sub_box.prop(self, 'is_remove_alone_bone', icon='X')
 		sub_box.prop(self, 'is_remove_ik_bone', icon='CONSTRAINT_BONE')
@@ -103,8 +109,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 			bones_queue.append(bone)
 		
 		anm_data_raw = {}
-		last_loc = {}
-		last_rot = {}
+		same_locs = {}
+		same_rots = {}
 		for key_frame_index in range(self.key_frame_count):
 			if self.key_frame_count == 1:
 				frame = 0.0
@@ -117,8 +123,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 			for bone in bones:
 				if bone.name not in anm_data_raw:
 					anm_data_raw[bone.name] = {"LOC":{}, "ROT":{}}
-					last_loc[bone.name] = None
-					last_rot[bone.name] = None
+					same_locs[bone.name] = []
+					same_rots[bone.name] = []
 				
 				pose_bone = pose.bones[bone.name]
 				
@@ -138,24 +144,33 @@ class export_cm3d2_anm(bpy.types.Operator):
 					fix_mat_before = mathutils.Euler((math.radians(90), 0, 0), 'XYZ').to_quaternion()
 					fix_mat_after = mathutils.Euler((0, 0, math.radians(90)), 'XYZ').to_quaternion()
 					rot = rot * fix_mat_after.inverted() * fix_mat_before.inverted()
-					rot.w, rot.x, rot.y, rot.z = rot.w, -rot.z, -rot.x, -rot.y
+					rot.w, rot.x, rot.y, rot.z = -rot.y, -rot.z, -rot.x, rot.w
 				
-				if int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
+				if not self.is_remove_same_transform or int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
 					anm_data_raw[bone.name]["LOC"][time] = loc.copy()
 					anm_data_raw[bone.name]["ROT"][time] = rot.copy()
 					
-					last_loc[bone.name] = loc.copy()
-					last_rot[bone.name] = rot.copy()
+					if self.is_remove_same_transform:
+						same_locs[bone.name].append((time, loc.copy()))
+						same_rots[bone.name].append((time, rot.copy()))
 				else:
-					diff_length = (loc - last_loc[bone.name]).length
+					diff_length = (loc - same_locs[bone.name][-1][1]).length
 					if 0.0001 < diff_length:
+						if 2 <= len(same_locs[bone.name]):
+							anm_data_raw[bone.name]["LOC"][same_locs[bone.name][-1][0]] = same_locs[bone.name][-1][1].copy()
 						anm_data_raw[bone.name]["LOC"][time] = loc.copy()
-						last_loc[bone.name] = loc.copy()
+						same_locs[bone.name] = [(time, loc.copy())]
+					else:
+						same_locs[bone.name].append((time, loc.copy()))
 					
-					diff_angle = rot.rotation_difference(last_rot[bone.name]).angle
+					diff_angle = rot.rotation_difference(same_rots[bone.name][-1][1]).angle
 					if 0.0001 < diff_angle:
+						if 2 <= len(same_rots[bone.name]):
+							anm_data_raw[bone.name]["ROT"][same_rots[bone.name][-1][0]] = same_rots[bone.name][-1][1].copy()
 						anm_data_raw[bone.name]["ROT"][time] = rot.copy()
-						last_rot[bone.name] = rot.copy()
+						same_rots[bone.name] = [(time, rot.copy())]
+					else:
+						same_rots[bone.name].append((time, rot.copy()))
 		
 		anm_data = {}
 		for bone_name, channels in anm_data_raw.items():
