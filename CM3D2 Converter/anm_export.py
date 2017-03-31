@@ -111,12 +111,14 @@ class export_cm3d2_anm(bpy.types.Operator):
 		anm_data_raw = {}
 		same_locs = {}
 		same_rots = {}
+		pre_rots = {}
 		for key_frame_index in range(self.key_frame_count):
 			if self.key_frame_count == 1:
 				frame = 0.0
 			else:
 				frame = (context.scene.frame_end - context.scene.frame_start) / (self.key_frame_count - 1) * key_frame_index + context.scene.frame_start
 			context.scene.frame_set(int(frame), frame - int(frame))
+			context.scene.update()
 			
 			time = frame / fps
 			
@@ -134,6 +136,28 @@ class export_cm3d2_anm(bpy.types.Operator):
 				
 				loc = pose_mat.to_translation() * self.scale
 				rot = pose_mat.to_quaternion()
+				
+				if bone.name in pre_rots:
+					pre_rot = pre_rots[bone.name].copy()
+					
+					def is_mismatch_quat_sign(values):
+						def is_plus(v):
+							return 0.0 <= v
+						score = 0
+						for v, pre_v in values:
+							if is_plus(v) != is_plus(pre_v):
+								score += 2
+							elif abs(v) < 0.2 and abs(pre_v) < 0.2:
+								score += 1
+							else:
+								score -= 99
+						return len(values) < score
+					
+					if is_mismatch_quat_sign([[rot.w, pre_rot.w], [rot.x, pre_rot.x], [rot.y, pre_rot.y], [rot.z, pre_rot.z]]):
+						rot.w, rot.x, rot.y, rot.z = -rot.w, -rot.x, -rot.y, -rot.z
+					elif is_mismatch_quat_sign([[rot.x, pre_rot.x], [rot.y, pre_rot.y], [rot.z, pre_rot.z]]):
+						rot.w, rot.x, rot.y, rot.z = -rot.w, -rot.x, -rot.y, -rot.z
+				pre_rots[bone.name] = rot.copy()
 				
 				if bone.parent:
 					loc.x, loc.y, loc.z = -loc.y, -loc.x, loc.z
@@ -201,9 +225,47 @@ class export_cm3d2_anm(bpy.types.Operator):
 				file.write(struct.pack('<B', channel_id))
 				file.write(struct.pack('<i', len(keyframes)))
 				
-				for frame, value in sorted(keyframes.items(), key=lambda x: x[0]):
-					file.write(struct.pack('<f', frame))
-					file.write(struct.pack('<f', value))
+				keyframes_list = sorted(keyframes.items(), key=lambda x: x[0])
+				for i in range(len(keyframes_list)):
+					x = keyframes_list[i][0]
+					y = keyframes_list[i][1]
+					
+					if len(keyframes_list) <= 1:
+						file.write(struct.pack('<f', x))
+						file.write(struct.pack('<f', y))
+						file.write(struct.pack('<2f', 0.0, 0.0))
+						continue
+					
+					if i == 0:
+						prev_x = x - (keyframes_list[i+1][0] - x)
+						prev_y = y - (keyframes_list[i+1][1] - y)
+						next_x = keyframes_list[i+1][0]
+						next_y = keyframes_list[i+1][1]
+					elif i == len(keyframes_list) - 1:
+						prev_x = keyframes_list[i-1][0]
+						prev_y = keyframes_list[i-1][1]
+						next_x = x + (x - keyframes_list[i-1][0])
+						next_y = y + (y - keyframes_list[i-1][1])
+					else:
+						prev_x = keyframes_list[i-1][0]
+						prev_y = keyframes_list[i-1][1]
+						next_x = keyframes_list[i+1][0]
+						next_y = keyframes_list[i+1][1]
+					
+					prev_rad = math.atan2(prev_y - y, prev_x - x)
+					if math.pi / 2 < prev_rad:
+						prev_rad -= math.pi
+					elif prev_rad < math.pi / -2:
+						prev_rad += math.pi
+					next_rad = math.atan2(next_y - y, next_x - x)
+					
+					join_rad = (prev_rad + next_rad) / 2
+					
+					file.write(struct.pack('<f', x))
+					file.write(struct.pack('<f', y))
+					
+					#file.write(struct.pack('<2f', prev_rad, next_rad))
+					#file.write(struct.pack('<2f', join_rad, join_rad))
 					file.write(struct.pack('<2f', 0.0, 0.0))
 		
 		file.write(struct.pack('<?', False))
