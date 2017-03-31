@@ -143,12 +143,14 @@ class export_cm3d2_anm(bpy.types.Operator):
 					def is_mismatch_quat_sign(values):
 						def is_plus(v):
 							return 0.0 <= v
-						score = 0
+						score = 0.0
 						for v, pre_v in values:
 							if is_plus(v) != is_plus(pre_v):
-								score += 2
+								score += 1.11
+								if 1.0 < abs(v - pre_v):
+									score += 0.91
 							elif abs(v) < 0.2 and abs(pre_v) < 0.2:
-								score += 1
+								score += 0.91
 							else:
 								score -= 99
 						return len(values) < score
