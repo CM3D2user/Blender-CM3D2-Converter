@@ -18,7 +18,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
 	
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
-	is_remove_same_transform = bpy.props.BoolProperty(name="同じ変形のキーフレームを削除", default=True)
+	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
+	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに(？)", default=True)
 	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
@@ -52,7 +53,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 		box = self.layout.box()
 		sub_box = box.box()
 		sub_box.prop(self, 'key_frame_count')
-		sub_box.prop(self, 'is_remove_same_transform', icon='DISCLOSURE_TRI_DOWN')
+		sub_box.prop(self, 'is_keyframe_clean', icon='DISCLOSURE_TRI_DOWN')
+		sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
 		
 		sub_box = box.box()
 		sub_box.prop(self, 'is_remove_alone_bone', icon='X')
@@ -172,11 +174,11 @@ class export_cm3d2_anm(bpy.types.Operator):
 					rot = rot * fix_mat_after.inverted() * fix_mat_before.inverted()
 					rot.w, rot.x, rot.y, rot.z = -rot.y, -rot.z, -rot.x, rot.w
 				
-				if not self.is_remove_same_transform or int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
+				if not self.is_keyframe_clean or int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
 					anm_data_raw[bone.name]["LOC"][time] = loc.copy()
 					anm_data_raw[bone.name]["ROT"][time] = rot.copy()
 					
-					if self.is_remove_same_transform:
+					if self.is_keyframe_clean:
 						same_locs[bone.name].append((time, loc.copy()))
 						same_rots[bone.name].append((time, rot.copy()))
 				else:
@@ -266,9 +268,10 @@ class export_cm3d2_anm(bpy.types.Operator):
 					file.write(struct.pack('<f', x))
 					file.write(struct.pack('<f', y))
 					
-					#file.write(struct.pack('<2f', prev_rad, next_rad))
-					#file.write(struct.pack('<2f', join_rad, join_rad))
-					file.write(struct.pack('<2f', 0.0, 0.0))
+					if self.is_smooth_handle:
+						file.write(struct.pack('<2f', join_rad, join_rad))
+					else:
+						file.write(struct.pack('<2f', 0.0, 0.0))
 		
 		file.write(struct.pack('<?', False))
 
