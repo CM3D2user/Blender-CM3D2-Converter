@@ -200,7 +200,7 @@ class render_cm3d2_icon(bpy.types.Operator):
 			pre_line_thickness = context.scene.render.line_thickness
 			context.scene.render.use_freestyle = True
 			context.scene.render.line_thickness = self.line_thickness
-			context.scene.crease_angle = 1.58825
+			context.scene.render.layers.active.freestyle_settings.crease_angle = 1.58825
 			temp_lineset = context.scene.render.layers.active.freestyle_settings.linesets.new("temp")
 			temp_lineset.linestyle.color = self.line_color
 		
