@@ -19,7 +19,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 	
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
 	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
-	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに(？)", default=True)
+	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=True)
 	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
@@ -256,12 +256,12 @@ class export_cm3d2_anm(bpy.types.Operator):
 						next_x = keyframes_list[i+1][0]
 						next_y = keyframes_list[i+1][1]
 					
-					prev_rad = math.atan2(prev_y - y, prev_x - x)
+					prev_rad = math.atan2((prev_y - y) * (fps / 4.0), prev_x - x)
 					if math.pi / 2 < prev_rad:
 						prev_rad -= math.pi
 					elif prev_rad < math.pi / -2:
 						prev_rad += math.pi
-					next_rad = math.atan2(next_y - y, next_x - x)
+					next_rad = math.atan2((next_y - y) * (fps / 4.0), next_x - x)
 					
 					join_rad = (prev_rad + next_rad) / 2
 					
