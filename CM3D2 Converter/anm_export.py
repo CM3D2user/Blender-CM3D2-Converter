@@ -54,7 +54,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.prop(self, 'key_frame_count')
 		sub_box.prop(self, 'is_keyframe_clean', icon='DISCLOSURE_TRI_DOWN')
-		sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
+		#sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
 		
 		sub_box = box.box()
 		sub_box.prop(self, 'is_remove_alone_bone', icon='X')
@@ -111,6 +111,10 @@ class export_cm3d2_anm(bpy.types.Operator):
 			bones_queue.append(bone)
 		
 		anm_data_raw = {}
+		class KeyFrame:
+			def __init__(self, time, value):
+				self.time = time
+				self.value = value
 		same_locs = {}
 		same_rots = {}
 		pre_rots = {}
@@ -163,26 +167,26 @@ class export_cm3d2_anm(bpy.types.Operator):
 					anm_data_raw[bone.name]["ROT"][time] = rot.copy()
 					
 					if self.is_keyframe_clean:
-						same_locs[bone.name].append((time, loc.copy()))
-						same_rots[bone.name].append((time, rot.copy()))
+						same_locs[bone.name].append(KeyFrame(time, loc.copy()))
+						same_rots[bone.name].append(KeyFrame(time, rot.copy()))
 				else:
-					diff_length = (loc - same_locs[bone.name][-1][1]).length
+					diff_length = (loc - same_locs[bone.name][-1].value).length
 					if 0.0001 < diff_length:
 						if 2 <= len(same_locs[bone.name]):
-							anm_data_raw[bone.name]["LOC"][same_locs[bone.name][-1][0]] = same_locs[bone.name][-1][1].copy()
+							anm_data_raw[bone.name]["LOC"][same_locs[bone.name][-1].time] = same_locs[bone.name][-1].value.copy()
 						anm_data_raw[bone.name]["LOC"][time] = loc.copy()
-						same_locs[bone.name] = [(time, loc.copy())]
+						same_locs[bone.name] = [KeyFrame(time, loc.copy())]
 					else:
-						same_locs[bone.name].append((time, loc.copy()))
+						same_locs[bone.name].append(KeyFrame(time, loc.copy()))
 					
-					diff_angle = rot.rotation_difference(same_rots[bone.name][-1][1]).angle
+					diff_angle = rot.rotation_difference(same_rots[bone.name][-1].value).angle
 					if 0.0001 < diff_angle:
 						if 2 <= len(same_rots[bone.name]):
-							anm_data_raw[bone.name]["ROT"][same_rots[bone.name][-1][0]] = same_rots[bone.name][-1][1].copy()
+							anm_data_raw[bone.name]["ROT"][same_rots[bone.name][-1].time] = same_rots[bone.name][-1].value.copy()
 						anm_data_raw[bone.name]["ROT"][time] = rot.copy()
-						same_rots[bone.name] = [(time, rot.copy())]
+						same_rots[bone.name] = [KeyFrame(time, rot.copy())]
 					else:
-						same_rots[bone.name].append((time, rot.copy()))
+						same_rots[bone.name].append(KeyFrame(time, rot.copy()))
 		
 		anm_data = {}
 		for bone_name, channels in anm_data_raw.items():
