@@ -19,7 +19,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 	
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
 	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
-	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=True)
+	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=False)
 	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
@@ -132,34 +132,17 @@ class export_cm3d2_anm(bpy.types.Operator):
 				
 				pose_bone = pose.bones[bone.name]
 				
-				pose_mat = pose_bone.matrix.copy()
+				pose_mat = ob.convert_space(pose_bone, pose_bone.matrix, 'POSE', 'WORLD')
 				if bone.parent:
-					pose_mat = pose_bone.parent.matrix.inverted() * pose_mat
+					parent_mat = ob.convert_space(pose_bone.parent, pose_bone.parent.matrix, 'POSE', 'WORLD')
+					pose_mat = parent_mat.inverted() * pose_mat
+					#rot = pose_bone.parent.matrix.to_quaternion().rotation_difference(pose_bone.matrix.to_quaternion())
 				
 				loc = pose_mat.to_translation() * self.scale
 				rot = pose_mat.to_quaternion()
 				
 				if bone.name in pre_rots:
-					pre_rot = pre_rots[bone.name].copy()
-					
-					def is_mismatch_quat_sign(values):
-						def is_plus(v):
-							return 0.0 <= v
-						score = 0.0
-						for v, pre_v in values:
-							if is_plus(v) != is_plus(pre_v):
-								score += 1.11
-								if 1.0 < abs(v - pre_v):
-									score += 0.91
-							elif abs(v) < 0.2 and abs(pre_v) < 0.2:
-								score += 0.91
-							else:
-								score -= 99
-						return len(values) < score
-					
-					if is_mismatch_quat_sign([[rot.w, pre_rot.w], [rot.x, pre_rot.x], [rot.y, pre_rot.y], [rot.z, pre_rot.z]]):
-						rot.w, rot.x, rot.y, rot.z = -rot.w, -rot.x, -rot.y, -rot.z
-					elif is_mismatch_quat_sign([[rot.x, pre_rot.x], [rot.y, pre_rot.y], [rot.z, pre_rot.z]]):
+					if 5.0 < pre_rots[bone.name].rotation_difference(rot).angle:
 						rot.w, rot.x, rot.y, rot.z = -rot.w, -rot.x, -rot.y, -rot.z
 				pre_rots[bone.name] = rot.copy()
 				
@@ -169,9 +152,10 @@ class export_cm3d2_anm(bpy.types.Operator):
 				else:
 					loc.x, loc.y, loc.z = -loc.x, loc.z, -loc.y
 					
-					fix_mat_before = mathutils.Euler((math.radians(90), 0, 0), 'XYZ').to_quaternion()
-					fix_mat_after = mathutils.Euler((0, 0, math.radians(90)), 'XYZ').to_quaternion()
-					rot = rot * fix_mat_after.inverted() * fix_mat_before.inverted()
+					fix_quat = mathutils.Euler((0, 0, math.radians(-90)), 'XYZ').to_quaternion()
+					fix_quat2 = mathutils.Euler((math.radians(-90), 0, 0), 'XYZ').to_quaternion()
+					rot = rot * fix_quat * fix_quat2
+					
 					rot.w, rot.x, rot.y, rot.z = -rot.y, -rot.z, -rot.x, rot.w
 				
 				if not self.is_keyframe_clean or int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
