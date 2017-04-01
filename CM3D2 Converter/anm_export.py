@@ -94,18 +94,19 @@ class export_cm3d2_anm(bpy.types.Operator):
 			bone = bones_queue.pop(0)
 			
 			if not bone.parent:
+				already_bone_names.append(bone.name)
 				if self.is_remove_alone_bone and len(bone.children) == 0:
 					continue
 				bones.append(bone)
-				already_bone_names.append(bone.name)
 				continue
 			elif bone.parent.name in already_bone_names:
+				already_bone_names.append(bone.name)
 				if self.is_remove_ik_bone:
 					if "_ik_" in bone.name.lower(): continue
 					if re.search(r"_nub$", bone.name.lower()): continue
 					if re.search(r"Nub$", bone.name): continue
+					if re.search(r"\.\d{3}$", bone.name): continue
 				bones.append(bone)
-				already_bone_names.append(bone.name)
 				continue
 			
 			bones_queue.append(bone)
