@@ -17,15 +17,17 @@ class export_cm3d2_anm(bpy.types.Operator):
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
 	
-	time_scale = bpy.props.FloatProperty(name="再生速度", default=1.0, min=0.1, max=10.0, soft_min=0.1, soft_max=10.0, step=100, precision=1)
+	frame_start = bpy.props.IntProperty(name="開始フレーム", default=0, min=0, max=99999, soft_min=0, soft_max=99999, step=1)
+	frame_end = bpy.props.IntProperty(name="最終フレーム", default=0, min=0, max=99999, soft_min=0, soft_max=99999, step=1)
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
+	time_scale = bpy.props.FloatProperty(name="再生速度", default=1.0, min=0.1, max=10.0, soft_min=0.1, soft_max=10.0, step=10, precision=1)
 	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
 	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=False)
 	
-	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
-	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
-	is_remove_serial_number_bone = bpy.props.BoolProperty(name="連番付きのボーンを除外", default=True)
-	is_remove_japanese_bone = bpy.props.BoolProperty(name="日本語名のボーンを除外", default=True)
+	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子も存在しない", default=True)
+	is_remove_ik_bone = bpy.props.BoolProperty(name="名前がIKっぽい", default=True)
+	is_remove_serial_number_bone = bpy.props.BoolProperty(name="名前が連番付き", default=True)
+	is_remove_japanese_bone = bpy.props.BoolProperty(name="名前に日本語が含まれる", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -40,6 +42,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 			self.filepath = common.default_cm3d2_dir(common.preferences().anm_default_path, "", "anm")
 		else:
 			self.filepath = common.default_cm3d2_dir(common.preferences().anm_export_path, "", "anm")
+		self.frame_start = context.scene.frame_start
+		self.frame_end = context.scene.frame_end
 		self.scale = 1.0 / common.preferences().scale
 		self.is_backup = bool(common.preferences().backup_ext)
 		self.key_frame_count = (context.scene.frame_end - context.scene.frame_start) + 1
@@ -55,16 +59,21 @@ class export_cm3d2_anm(bpy.types.Operator):
 		
 		box = self.layout.box()
 		sub_box = box.box()
-		sub_box.prop(self, 'time_scale')
+		row = sub_box.row()
+		row.prop(self, 'frame_start')
+		row.prop(self, 'frame_end')
 		sub_box.prop(self, 'key_frame_count')
+		sub_box.prop(self, 'time_scale')
 		sub_box.prop(self, 'is_keyframe_clean', icon='DISCLOSURE_TRI_DOWN')
 		#sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
 		
 		sub_box = box.box()
-		sub_box.prop(self, 'is_remove_alone_bone', icon='X')
-		sub_box.prop(self, 'is_remove_ik_bone', icon='CONSTRAINT_BONE')
-		sub_box.prop(self, 'is_remove_serial_number_bone', icon='DOTSDOWN')
-		sub_box.prop(self, 'is_remove_japanese_bone', icon='MATCAP_13')
+		sub_box.label("除外するボーン", icon='X')
+		column = sub_box.column(align=True)
+		column.prop(self, 'is_remove_alone_bone', icon='UNLINKED')
+		column.prop(self, 'is_remove_ik_bone', icon='CONSTRAINT_BONE')
+		column.prop(self, 'is_remove_serial_number_bone', icon='DOTSDOWN')
+		column.prop(self, 'is_remove_japanese_bone', icon='MATCAP_13')
 	
 	def execute(self, context):
 		common.preferences().anm_export_path = self.filepath
@@ -140,7 +149,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 			if self.key_frame_count == 1:
 				frame = 0.0
 			else:
-				frame = (context.scene.frame_end - context.scene.frame_start) / (self.key_frame_count - 1) * key_frame_index + context.scene.frame_start
+				frame = (self.frame_end - self.frame_start) / (self.key_frame_count - 1) * key_frame_index + self.frame_start
 			context.scene.frame_set(int(frame), frame - int(frame))
 			context.scene.update()
 			
@@ -180,7 +189,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 					
 					rot.w, rot.x, rot.y, rot.z = -rot.y, -rot.z, -rot.x, rot.w
 				
-				if not self.is_keyframe_clean or int(frame) == context.scene.frame_start or int(frame) == context.scene.frame_end:
+				if not self.is_keyframe_clean or int(frame) == self.frame_start or int(frame) == self.frame_end:
 					anm_data_raw[bone.name]["LOC"][time] = loc.copy()
 					anm_data_raw[bone.name]["ROT"][time] = rot.copy()
 					
