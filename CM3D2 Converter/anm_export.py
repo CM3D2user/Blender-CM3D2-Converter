@@ -17,6 +17,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
 	
+	time_scale = bpy.props.FloatProperty(name="再生速度", default=1.0, min=0.1, max=10.0, soft_min=0.1, soft_max=10.0, step=100, precision=1)
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
 	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
 	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=False)
@@ -54,6 +55,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 		
 		box = self.layout.box()
 		sub_box = box.box()
+		sub_box.prop(self, 'time_scale')
 		sub_box.prop(self, 'key_frame_count')
 		sub_box.prop(self, 'is_keyframe_clean', icon='DISCLOSURE_TRI_DOWN')
 		#sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
@@ -142,7 +144,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 			context.scene.frame_set(int(frame), frame - int(frame))
 			context.scene.update()
 			
-			time = frame / fps
+			time = frame / fps * (1.0 / self.time_scale)
 			
 			for bone in bones:
 				if bone.name not in anm_data_raw:
