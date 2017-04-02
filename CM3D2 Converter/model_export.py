@@ -44,10 +44,11 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_arrange_name = bpy.props.BoolProperty(name="データ名の連番を削除", default=True, description="「○○.001」のような連番が付属したデータ名からこれらを削除します")
 	
-	is_apply_modifiers = bpy.props.BoolProperty(name="モディファイアを適用", default=False)
 	is_convert_tris = bpy.props.BoolProperty(name="四角面を三角面に", default=True, description="四角ポリゴンを三角ポリゴンに変換してから出力します、元のメッシュには影響ありません")
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
 	is_convert_bone_weight_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
+	is_apply_modifiers = bpy.props.BoolProperty(name="モディファイアを適用", default=False)
+	custom_normal_blend = bpy.props.FloatProperty(name="CM3D2用法線のブレンド率", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=3, precision=0)
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
@@ -160,11 +161,15 @@ class export_cm3d2_model(bpy.types.Operator):
 		col.prop(self, 'mate_info_mode', icon='MATERIAL', expand=True)
 		box = self.layout.box()
 		box.label("メッシュオプション")
-		box.prop(self, 'is_apply_modifiers', icon='MODIFIER')
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
 		sub_box.prop(self, 'is_convert_bone_weight_names', icon_value=common.preview_collections['main']['KISS'].icon_id)
+		sub_box = box.box()
+		sub_box.prop(self, 'is_apply_modifiers', icon='MODIFIER')
+		row = sub_box.row()
+		row.prop(self, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
+		row.enabled = self.is_apply_modifiers
 
 
 	def execute(self, context):
@@ -200,7 +205,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			ob = new_ob
 			me = new_me
 			
-			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=0.5)
+			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=self.custom_normal_blend)
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
