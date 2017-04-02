@@ -51,7 +51,14 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
-
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				return True
+		return False
+	
 	def report_cancel(self, report_message, report_type={'ERROR'}, resobj={'CANCELLED'}):
 		"""エラーメッセージを出力してキャンセルオブジェクトを返す"""
 		self.report(type=report_type, message=report_message)

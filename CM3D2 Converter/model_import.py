@@ -35,6 +35,10 @@ class import_cm3d2_model(bpy.types.Operator):
 	is_bone_data_obj_property = bpy.props.BoolProperty(name="オブジェクトのカスタムプロパティ", default=True, description="メッシュオブジェクトのカスタムプロパティにボーン情報を埋め込みます")
 	is_bone_data_arm_property = bpy.props.BoolProperty(name="アーマチュアのカスタムプロパティ", default=True, description="アーマチュアデータのカスタムプロパティにボーン情報を埋め込みます")
 	
+	@classmethod
+	def poll(cls, context):
+		return True
+	
 	def invoke(self, context, event):
 		if common.preferences().model_default_path:
 			self.filepath = common.default_cm3d2_dir(common.preferences().model_default_path, "", "model")
