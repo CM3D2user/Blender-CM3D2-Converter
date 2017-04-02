@@ -1,5 +1,5 @@
 import bpy, mathutils
-import struct, re, math
+import struct, re, math, unicodedata
 from . import common
 
 # メインオペレーター
@@ -23,6 +23,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子もないボーンを除外", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="IKらしきボーンを除外", default=True)
+	is_remove_serial_number_bone = bpy.props.BoolProperty(name="連番付きのボーンを除外", default=True)
+	is_remove_japanese_bone = bpy.props.BoolProperty(name="日本語名のボーンを除外", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -59,6 +61,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 		sub_box = box.box()
 		sub_box.prop(self, 'is_remove_alone_bone', icon='X')
 		sub_box.prop(self, 'is_remove_ik_bone', icon='CONSTRAINT_BONE')
+		sub_box.prop(self, 'is_remove_serial_number_bone', icon='DOTSDOWN')
+		sub_box.prop(self, 'is_remove_japanese_bone', icon='MATCAP_13')
 	
 	def execute(self, context):
 		common.preferences().anm_export_path = self.filepath
@@ -87,25 +91,36 @@ class export_cm3d2_anm(bpy.types.Operator):
 		common.write_str(file, 'CM3D2_ANIM')
 		file.write(struct.pack('<i', self.version))
 		
+		def is_japanese(string):
+			for ch in string:
+					name = unicodedata.name(ch) 
+					if "CJK UNIFIED" in name \
+					or "HIRAGANA" in name \
+					or "KATAKANA" in name:
+						return True
+			return False
 		bones = []
 		already_bone_names = []
 		bones_queue = arm.bones[:]
 		while len(bones_queue):
 			bone = bones_queue.pop(0)
 			
+			already_bone_names.append(bone.name)
+			if self.is_remove_serial_number_bone:
+				if re.search(r"\.\d{3,}$", bone.name): continue
+			if self.is_remove_japanese_bone:
+				if is_japanese(bone.name): continue
+			
 			if not bone.parent:
-				already_bone_names.append(bone.name)
 				if self.is_remove_alone_bone and len(bone.children) == 0:
 					continue
 				bones.append(bone)
 				continue
 			elif bone.parent.name in already_bone_names:
-				already_bone_names.append(bone.name)
 				if self.is_remove_ik_bone:
 					if "_ik_" in bone.name.lower(): continue
 					if re.search(r"_nub$", bone.name.lower()): continue
 					if re.search(r"Nub$", bone.name): continue
-					if re.search(r"\.\d{3}$", bone.name): continue
 				bones.append(bone)
 				continue
 			
