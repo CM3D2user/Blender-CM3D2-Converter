@@ -92,6 +92,16 @@ class forced_modifier_apply(bpy.types.Operator):
 		
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index] and mod.type != "ARMATURE":
+				
+				if mod.type == "MIRROR":
+					for vg in ob.vertex_groups:
+						
+						replace_list = ((r'\.L', ".R"), (r'\.R', ".L"), (r'\.l', ".r"), (r'\.r', ".l"), (r'_L', "_R"), (r'_R', "_L"), (r'_l', "_r"), (r'_r', "_l"))
+						for before, after in replace_list:
+							mirrored_name = re.sub(before, after, vg.name)
+							if mirrored_name not in ob.vertex_groups:
+								ob.vertex_groups.new(mirrored_name)
+				
 				try:
 					bpy.ops.object.modifier_apply(modifier=mod.name)
 				except:
