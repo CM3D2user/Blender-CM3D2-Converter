@@ -531,7 +531,11 @@ class export_cm3d2_model(bpy.types.Operator):
 						if tex.image:
 							img = tex.image
 							common.write_str(file, 'tex2d')
-							common.write_str(file, common.remove_serial_number(img.name, self.is_arrange_name))
+							
+							tex_name = common.remove_serial_number(img.name, self.is_arrange_name)
+							tex_name = re.sub(r"\.[Pp][Nn][Gg]$", "", tex_name)
+							common.write_str(file, tex_name)
+							
 							if 'cm3d2_path' in img:
 								path = img['cm3d2_path']
 							else:
