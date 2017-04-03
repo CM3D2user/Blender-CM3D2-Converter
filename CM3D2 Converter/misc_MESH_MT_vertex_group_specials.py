@@ -610,16 +610,17 @@ class remove_noassign_vertex_groups(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
-		weight_totals = [0.0 for i in range(len(ob.vertex_groups))]
+		is_keeps = [False for i in range(len(ob.vertex_groups))]
 		
 		for vert in me.vertices:
 			for vge in vert.groups:
-				if self.threshold < vge.weight:
-					weight_totals[vge.group] += vge.weight
+				if not is_keeps[vge.group]:
+					if self.threshold < vge.weight:
+						is_keeps[vge.group] = True
 		
 		copy_vertex_groups = ob.vertex_groups[:]
 		for i in range(len(copy_vertex_groups)):
-			if weight_totals[i] == 0.0:
+			if not is_keeps[i]:
 				ob.vertex_groups.remove(copy_vertex_groups[i])
 		
 		return {'FINISHED'}
