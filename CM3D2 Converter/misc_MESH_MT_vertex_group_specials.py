@@ -108,7 +108,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 				near_vert_index = near_vert_indexs[target_vert.index]
 				near_weight = source_weights[near_vert_index]
 				
-				if 0.01 < near_weight:
+				if 0.000001 < near_weight:
 					target_vertex_group.add([target_vert.index], near_weight, 'REPLACE')
 					is_waighted = True
 				else:
@@ -259,7 +259,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 				else:
 					average_weight = 0.0
 				
-				if 0.01 < average_weight:
+				if 0.000001 < average_weight:
 					target_vertex_group.add([target_vert.index], average_weight, 'REPLACE')
 					is_waighted = True
 				else:
@@ -590,7 +590,7 @@ class remove_noassign_vertex_groups(bpy.types.Operator):
 	bl_description = "どの頂点にも割り当てられていない頂点グループを全て削除します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	threshold = bpy.props.FloatProperty(name="これ以下の影響は切り捨て", default=0.0001, min=0.0, max=1.0, soft_min=0.0, soft_max=1.0, step=1, precision=10)
+	threshold = bpy.props.FloatProperty(name="これ以下の影響は切り捨て", default=0.000001, min=0.0, max=1.0, soft_min=0.0, soft_max=1.0, step=1, precision=10)
 	
 	@classmethod
 	def poll(cls, context):
