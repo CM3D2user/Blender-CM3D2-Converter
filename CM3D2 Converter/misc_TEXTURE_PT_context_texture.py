@@ -43,6 +43,12 @@ def menu_func(self, context):
 			img = tex.image
 			if img:
 				if img.source == 'FILE':
+					
+					if re.search(r"\.[Pp][Nn][Gg]$", img.name):
+						img.name = re.sub(r"\.[Pp][Nn][Gg]$", "", img.name)
+					if re.search(r"\.[Pp][Nn][Gg]\.\d{3}$", img.name):
+						img.name = re.sub(r"\.[Pp][Nn][Gg](\.\d{3})$", r"\1", img.name)
+					
 					sub_box = box.box()
 					row = sub_box.split(percentage=0.333333333333, align=True)
 					row.label(text="テクスチャ名:")
