@@ -22,7 +22,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 	key_frame_count = bpy.props.IntProperty(name="キーフレーム数", default=1, min=1, max=99999, soft_min=1, soft_max=99999, step=1)
 	time_scale = bpy.props.FloatProperty(name="再生速度", default=1.0, min=0.1, max=10.0, soft_min=0.1, soft_max=10.0, step=10, precision=1)
 	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
-	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=False)
+	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=True)
 	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子も存在しない", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="名前がIKっぽい", default=True)
@@ -65,7 +65,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 		sub_box.prop(self, 'key_frame_count')
 		sub_box.prop(self, 'time_scale')
 		sub_box.prop(self, 'is_keyframe_clean', icon='DISCLOSURE_TRI_DOWN')
-		#sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
+		sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
 		
 		sub_box = box.box()
 		sub_box.label("除外するボーン", icon='X')
@@ -167,7 +167,6 @@ class export_cm3d2_anm(bpy.types.Operator):
 				if bone.parent:
 					parent_mat = ob.convert_space(pose_bone.parent, pose_bone.parent.matrix, 'POSE', 'WORLD')
 					pose_mat = parent_mat.inverted() * pose_mat
-					#rot = pose_bone.parent.matrix.to_quaternion().rotation_difference(pose_bone.matrix.to_quaternion())
 				
 				loc = pose_mat.to_translation() * self.scale
 				rot = pose_mat.to_quaternion()
@@ -189,7 +188,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 					
 					rot.w, rot.x, rot.y, rot.z = -rot.y, -rot.z, -rot.x, rot.w
 				
-				if not self.is_keyframe_clean or int(frame) == self.frame_start or int(frame) == self.frame_end:
+				if not self.is_keyframe_clean or key_frame_index == 0 or key_frame_index == self.key_frame_count - 1:
 					anm_data_raw[bone.name]["LOC"][time] = loc.copy()
 					anm_data_raw[bone.name]["ROT"][time] = rot.copy()
 					
@@ -197,8 +196,11 @@ class export_cm3d2_anm(bpy.types.Operator):
 						same_locs[bone.name].append(KeyFrame(time, loc.copy()))
 						same_rots[bone.name].append(KeyFrame(time, rot.copy()))
 				else:
-					diff_length = (loc - same_locs[bone.name][-1].value).length
-					if 0.0001 < diff_length:
+					def is_mismatch(a, b):
+						return 0.000001 < abs(a - b)
+					
+					a, b = loc, same_locs[bone.name][-1].value
+					if is_mismatch(a.x, b.x) or is_mismatch(a.y, b.y) or is_mismatch(a.z, b.z):
 						if 2 <= len(same_locs[bone.name]):
 							anm_data_raw[bone.name]["LOC"][same_locs[bone.name][-1].time] = same_locs[bone.name][-1].value.copy()
 						anm_data_raw[bone.name]["LOC"][time] = loc.copy()
@@ -206,8 +208,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 					else:
 						same_locs[bone.name].append(KeyFrame(time, loc.copy()))
 					
-					diff_angle = rot.rotation_difference(same_rots[bone.name][-1].value).angle
-					if 0.0001 < diff_angle:
+					a, b = rot, same_rots[bone.name][-1].value
+					if is_mismatch(a.w, b.w) or is_mismatch(a.x, b.x) or is_mismatch(a.y, b.y) or is_mismatch(a.z, b.z):
 						if 2 <= len(same_rots[bone.name]):
 							anm_data_raw[bone.name]["ROT"][same_rots[bone.name][-1].time] = same_rots[bone.name][-1].value.copy()
 						anm_data_raw[bone.name]["ROT"][time] = rot.copy()
@@ -271,13 +273,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 						next_x = keyframes_list[i+1][0]
 						next_y = keyframes_list[i+1][1]
 					
-					prev_rad = math.atan2((prev_y - y) * (fps / 4.0), prev_x - x)
-					if math.pi / 2 < prev_rad:
-						prev_rad -= math.pi
-					elif prev_rad < math.pi / -2:
-						prev_rad += math.pi
-					next_rad = math.atan2((next_y - y) * (fps / 4.0), next_x - x)
-					
+					prev_rad = (prev_y - y) / (prev_x - x)
+					next_rad = (next_y - y) / (next_x - x)
 					join_rad = (prev_rad + next_rad) / 2
 					
 					file.write(struct.pack('<f', x))
@@ -285,6 +282,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 					
 					if self.is_smooth_handle:
 						file.write(struct.pack('<2f', join_rad, join_rad))
+						#file.write(struct.pack('<2f', prev_rad, next_rad))
 					else:
 						file.write(struct.pack('<2f', 0.0, 0.0))
 		
