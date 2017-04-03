@@ -12,6 +12,8 @@ def menu_func(self, context):
 	self.layout.operator('object.blur_vertex_group', icon_value=icon_id)
 	self.layout.separator()
 	self.layout.operator('object.multiply_vertex_group', icon_value=icon_id)
+	self.layout.separator()
+	self.layout.operator('object.remove_noassign_vertex_groups', icon_value=icon_id)
 
 class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_idname = 'object.quick_transfer_vertex_group'
@@ -580,4 +582,44 @@ class multiply_vertex_group(bpy.types.Operator):
 							vg.add([vert.index], elem.weight * other_weight_multi, 'REPLACE')
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
+		return {'FINISHED'}
+
+class remove_noassign_vertex_groups(bpy.types.Operator):
+	bl_idname = 'object.remove_noassign_vertex_groups'
+	bl_label = "割り当てのない頂点グループを削除"
+	bl_description = "どの頂点にも割り当てられていない頂点グループを全て削除します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	threshold = bpy.props.FloatProperty(name="これ以下の影響は切り捨て", default=0.0001, min=0.0, max=1.0, soft_min=0.0, soft_max=1.0, step=1, precision=10)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob:
+			if ob.type == 'MESH':
+				return bool(len(ob.vertex_groups))
+		return False
+	
+	def invoke(self, context, event):
+		return context.window_manager.invoke_props_dialog(self)
+	
+	def draw(self, context):
+		self.layout.prop(self, 'threshold')
+	
+	def execute(self, context):
+		ob = context.active_object
+		me = ob.data
+		
+		weight_totals = [0.0 for i in range(len(ob.vertex_groups))]
+		
+		for vert in me.vertices:
+			for vge in vert.groups:
+				if self.threshold < vge.weight:
+					weight_totals[vge.group] += vge.weight
+		
+		copy_vertex_groups = ob.vertex_groups[:]
+		for i in range(len(copy_vertex_groups)):
+			if weight_totals[i] == 0.0:
+				ob.vertex_groups.remove(copy_vertex_groups[i])
+		
 		return {'FINISHED'}
