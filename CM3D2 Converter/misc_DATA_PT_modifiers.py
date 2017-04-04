@@ -164,6 +164,11 @@ class forced_modifier_apply(bpy.types.Operator):
 		context.scene.objects.active = ob
 		
 		if is_shaped:
+			
+			if len(me.vertices) != len(deforms):
+				self.report(type={'ERROR'}, message="ミラー等が原因で頂点数が変わっているためシェイプキーを格納できません、中止するのでCtrl+Z等で元に戻し修正してください。")
+				return {'CANCELLED'}
+			
 			for shape_index, deforms in enumerate(new_shape_deforms):
 				
 				bpy.ops.object.shape_key_add(from_mix=False)
