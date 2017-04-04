@@ -89,6 +89,7 @@ class forced_modifier_apply(bpy.types.Operator):
 				
 				common.remove_data(temp_ob)
 				common.remove_data(temp_me)
+		ob.active_shape_key_index = 0
 		
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index] and mod.type != "ARMATURE":
@@ -112,7 +113,6 @@ class forced_modifier_apply(bpy.types.Operator):
 				arm_ob = mod.object
 		
 		if arm_ob:
-			ob.active_shape_key_index = 0
 			bpy.ops.object.mode_set(mode='EDIT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			
