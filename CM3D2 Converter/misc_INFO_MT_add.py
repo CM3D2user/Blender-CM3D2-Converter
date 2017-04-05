@@ -21,6 +21,7 @@ class misc_INFO_MT_add_cm3d2(bpy.types.Menu):
 		self.layout.operator('wm.append_cm3d2_figure', text="Tスタンス素体 手のみ", icon='OUTLINER_DATA_ARMATURE').object_name = "Tスタンス素体 手のみ"
 		self.layout.separator()
 		self.layout.operator('wm.append_cm3d2_figure', text="anm出力用リグ", icon='OUTLINER_OB_ARMATURE').object_name = "anm出力用リグ・身体メッシュ"
+		self.layout.operator('wm.append_cm3d2_figure', text="anm出力用リグ(男)", icon='MOD_ARMATURE').object_name = "anm出力用リグ(男)・身体メッシュ"
 
 class append_cm3d2_figure(bpy.types.Operator):
 	bl_idname = 'wm.append_cm3d2_figure'
