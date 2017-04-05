@@ -89,7 +89,10 @@ class forced_modifier_apply(bpy.types.Operator):
 				
 				common.remove_data(temp_ob)
 				common.remove_data(temp_me)
-		ob.active_shape_key_index = 0
+		
+		if ob.active_shape_key_index != 0:
+			ob.active_shape_key_index = 0
+			me.update()
 		
 		for index, mod in enumerate(ob.modifiers[:]):
 			if self.is_applies[index] and mod.type != "ARMATURE":

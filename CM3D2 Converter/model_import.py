@@ -262,8 +262,8 @@ class import_cm3d2_model(bpy.types.Operator):
 					
 					bone.matrix = fix_mat_scale * fix_mat_before * mat * fix_mat_after
 					
-					if data['unknown']:
-						bone.layers[16], bone.layers[0] = True, False
+					if data['unknown']: bone["UnknownFlag"] = 1
+					else: bone["UnknownFlag"] = 0
 				else:
 					child_data.append(data)
 			context.window_manager.progress_update(1.333)
@@ -304,8 +304,8 @@ class import_cm3d2_model(bpy.types.Operator):
 					
 					bone.matrix = fix_mat_scale * fix_mat_before * mat * fix_mat_after
 					
-					if data['unknown']:
-						bone.layers[16], bone.layers[0] = True, False
+					if data['unknown']: bone["UnknownFlag"] = 1
+					else: bone["UnknownFlag"] = 0
 				else:
 					child_data.append(data)
 			context.window_manager.progress_update(1.666)

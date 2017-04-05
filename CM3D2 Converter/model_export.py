@@ -191,6 +191,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		ob = context.active_object
 		me = ob.data
 		
+		if ob.active_shape_key_index != 0:
+			ob.active_shape_key_index = 0
+			me.update()
+		
 		# モディファイアを適用する場合
 		if self.is_apply_modifiers:
 			new_ob = ob.copy()
@@ -206,7 +210,6 @@ class export_cm3d2_model(bpy.types.Operator):
 			me = new_me
 			
 			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=self.custom_normal_blend)
-		ob.active_shape_key_index = 0
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
