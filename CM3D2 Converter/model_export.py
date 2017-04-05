@@ -206,6 +206,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			me = new_me
 			
 			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=self.custom_normal_blend)
+		ob.active_shape_key_index = 0
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'TEXT':
