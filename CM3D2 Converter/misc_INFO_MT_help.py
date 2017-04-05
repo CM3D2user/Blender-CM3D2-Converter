@@ -23,11 +23,12 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
 			links = re.findall(r'<link [^\<\>]*href="([^"]+)"/>', html)[2:]
 			count = 0
+			version_datetime = datetime.datetime.strptime(str(common.bl_info["version"][0]) + str(common.bl_info["version"][1]), '%Y%m%d99%H%M')
 			for title, update, link in zip(titles, updates, links):
 				title = xml.sax.saxutils.unescape(title, {'&quot;': '"'})
 				
-				rss_datetime = datetime.datetime.strptime(update, '%Y-%m-%dT%H:%M:%SZ')
-				diff_seconds = datetime.datetime.now() - rss_datetime - datetime.timedelta(hours=9)
+				rss_datetime = datetime.datetime.strptime(update, '%Y-%m-%dT%H:%M:%SZ') + datetime.timedelta(hours=9)
+				diff_seconds = datetime.datetime.now() - rss_datetime
 				icon = 'SORTTIME'
 				if 7 < diff_seconds.days:
 					icon = 'NLA'
@@ -35,24 +36,29 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 					icon = 'COLLAPSEMENU'
 				elif 1 <= diff_seconds.days:
 					icon = 'TIME'
-				elif diff_seconds.days == 0 and 60 * 60 < diff_seconds.seconds:
+				elif diff_seconds.days == 0 and 60 * 60 < diff_seconds.total_seconds():
 					icon = 'RECOVER_LAST'
-				elif diff_seconds.seconds <= 60 * 60:
+				elif diff_seconds.total_seconds() <= 60 * 60:
 					icon = 'PREVIEW_RANGE'
 				
 				if diff_seconds.days:
 					date_str = "%d日前" % diff_seconds.days
-				elif 60 * 60 <= diff_seconds.seconds:
-					date_str = "%d時間前" % int(diff_seconds.seconds / (60 * 60))
-				elif 60 <= diff_seconds.seconds:
-					date_str = "%d分前" % int(diff_seconds.seconds / 60)
+				elif 60 * 60 <= diff_seconds.total_seconds():
+					date_str = "%d時間前" % int(diff_seconds.total_seconds() / (60 * 60))
+				elif 60 <= diff_seconds.total_seconds():
+					date_str = "%d分前" % int(diff_seconds.total_seconds() / 60)
 				else:
-					date_str = "%d秒前" % diff_seconds.seconds
+					date_str = "%d秒前" % diff_seconds.total_seconds()
 				
 				text = "(" + date_str + ") " + title
+				
+				if (version_datetime - rss_datetime).total_seconds() / 60 / 60 < 1:
+					text = "Now! " + text
+					icon = 'QUESTION'
+				
 				self.layout.operator('wm.url_open', text=text, icon=icon).url = link
 				count += 1
-		except TypeError:
+		except:
 			self.layout.label(text="更新の取得に失敗しました", icon='ERROR')
 
 class update_cm3d2_converter(bpy.types.Operator):
