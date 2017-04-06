@@ -15,14 +15,13 @@ class import_cm3d2_anm(bpy.types.Operator):
 	scale = bpy.props.FloatProperty(name="倍率", default=5, min=0.1, max=100, soft_min=0.1, soft_max=100, step=100, precision=1, description="インポート時のメッシュ等の拡大率です")
 	
 	remove_pre_animation = bpy.props.BoolProperty(name="既にあるアニメーションを削除", default=True)
+	set_frame = bpy.props.BoolProperty(name="フレーム開始・終了位置を調整", default=True)
+	ignore_automatic_bone = bpy.props.BoolProperty(name="Twisterボーンを除外", default=True)
 	
 	is_location = bpy.props.BoolProperty(name="位置", default=True)
 	is_rotation = bpy.props.BoolProperty(name="回転", default=True)
-	is_scale = bpy.props.BoolProperty(name="拡大/縮小", default=False)
+	is_scale = bpy.props.BoolProperty(name="拡縮", default=False)
 	
-	set_frame = bpy.props.BoolProperty(name="Blenderのフレーム設定を調整", default=True)
-	
-	ignore_automatic_bone = bpy.props.BoolProperty(name="不要なボーンを除外", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -43,16 +42,18 @@ class import_cm3d2_anm(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'scale')
-		self.layout.prop(self, 'remove_pre_animation', icon='DISCLOSURE_TRI_DOWN')
+		box = self.layout.box()
+		box.prop(self, 'remove_pre_animation', icon='DISCLOSURE_TRI_DOWN')
+		box.prop(self, 'set_frame', icon='NEXT_KEYFRAME')
+		box.prop(self, 'ignore_automatic_bone', icon='X')
 		box = self.layout.box()
 		box.label("読み込むアニメーション情報")
-		box.prop(self, 'is_location', icon='MAN_TRANS')
-		box.prop(self, 'is_rotation', icon='MAN_ROT')
-		row = box.row()
+		column = box.column(align=True)
+		column.prop(self, 'is_location', icon='MAN_TRANS')
+		column.prop(self, 'is_rotation', icon='MAN_ROT')
+		row = column.row()
 		row.prop(self, 'is_scale', icon='MAN_SCALE')
 		row.enabled = False
-		self.layout.prop(self, 'set_frame', icon='NEXT_KEYFRAME')
-		self.layout.prop(self, 'ignore_automatic_bone', icon='X')
 	
 	def execute(self, context):
 		common.preferences().anm_import_path = self.filepath

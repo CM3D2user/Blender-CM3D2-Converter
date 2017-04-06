@@ -5,7 +5,7 @@ from . import fileutil
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (20170406, 992217),
+	"version" : (20170406, 992337),
 	"blender" : (2, 76, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
