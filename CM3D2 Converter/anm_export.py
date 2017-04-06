@@ -116,18 +116,22 @@ class export_cm3d2_anm(bpy.types.Operator):
 		while len(bones_queue):
 			bone = bones_queue.pop(0)
 			
-			already_bone_names.append(bone.name)
-			if self.is_remove_serial_number_bone:
-				if re.search(r"\.\d{3,}$", bone.name): continue
-			if self.is_remove_japanese_bone:
-				if is_japanese(bone.name): continue
-			
 			if not bone.parent:
+				already_bone_names.append(bone.name)
+				if self.is_remove_serial_number_bone:
+					if re.search(r"\.\d{3,}$", bone.name): continue
+				if self.is_remove_japanese_bone:
+					if is_japanese(bone.name): continue
 				if self.is_remove_alone_bone and len(bone.children) == 0:
 					continue
 				bones.append(bone)
 				continue
 			elif bone.parent.name in already_bone_names:
+				already_bone_names.append(bone.name)
+				if self.is_remove_serial_number_bone:
+					if re.search(r"\.\d{3,}$", bone.name): continue
+				if self.is_remove_japanese_bone:
+					if is_japanese(bone.name): continue
 				if self.is_remove_ik_bone:
 					if "_ik_" in bone.name.lower(): continue
 					if re.search(r"_nub$", bone.name.lower()): continue

@@ -1,10 +1,5 @@
-import bmesh
-import bpy
-import os
-import re
-import struct
-import time
-import mathutils
+import bpy, bmesh, mathutils
+import os, re, struct, time, math
 from operator import itemgetter
 from . import common
 
@@ -30,11 +25,12 @@ class export_cm3d2_model(bpy.types.Operator):
 	base_bone_name = bpy.props.StringProperty(name="基点ボーン名", default="*")
 	
 	items = [
-		('TEXT', "テキスト", "", 'FILE_TEXT', 1),
-		('OBJECT', "オブジェクト内プロパティ", "", 'OBJECT_DATAMODE', 2),
-		('ARMATURE', "アーマチュア内プロパティ", "", 'ARMATURE_DATA', 3),
+		('ARMATURE', "アーマチュア", "", 'OUTLINER_OB_ARMATURE', 1),
+		('TEXT', "テキスト", "", 'FILE_TEXT', 2),
+		('OBJECT_PROPERTY', "オブジェクト内プロパティ", "", 'OBJECT_DATAMODE', 3),
+		('ARMATURE_PROPERTY', "アーマチュア内プロパティ", "", 'ARMATURE_DATA', 4),
 		]
-	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT', description="modelファイルに必要なボーン情報をどこから引っ張ってくるか選びます")
+	bone_info_mode = bpy.props.EnumProperty(items=items, name="ボーン情報元", default='OBJECT_PROPERTY', description="modelファイルに必要なボーン情報をどこから引っ張ってくるか選びます")
 	
 	items = [
 		('TEXT', "テキスト", "", 'FILE_TEXT', 1),
@@ -105,21 +101,22 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.base_bone_name = ob_names[1] if 2 <= len(ob_names) else 'Auto'
 		
 		# ボーン情報元のデフォルトオプションを取得
-		if self.bone_info_mode == 'OBJECT':
-			if "BoneData:0" not in ob:
-				if "BoneData" in context.blend_data.texts:
-					if "LocalBoneData" in context.blend_data.texts:
-						self.bone_info_mode = 'TEXT'
-				arm_ob = ob.parent
-				if arm_ob:
-					if arm_ob.type == 'ARMATURE':
-						self.bone_info_mode = 'ARMATURE'
-				else:
-					for mod in ob.modifiers:
-						if mod.type == 'ARMATURE':
-							if mod.object:
-								self.bone_info_mode = 'ARMATURE'
-								break
+		if "BoneData" in context.blend_data.texts:
+			if "LocalBoneData" in context.blend_data.texts:
+				self.bone_info_mode = 'TEXT'
+		if "BoneData:0" in ob:
+			if "LocalBoneData:0" in ob:
+				self.bone_info_mode = 'OBJECT_PROPERTY'
+		arm_ob = ob.parent
+		if arm_ob:
+			if arm_ob.type == 'ARMATURE':
+				self.bone_info_mode = 'ARMATURE_PROPERTY'
+		else:
+			for mod in ob.modifiers:
+				if mod.type == 'ARMATURE':
+					if mod.object:
+						self.bone_info_mode = 'ARMATURE_PROPERTY'
+						break
 		
 		# エクスポート時のデフォルトパスを取得
 		if common.preferences().model_default_path:
@@ -212,17 +209,27 @@ class export_cm3d2_model(bpy.types.Operator):
 			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=self.custom_normal_blend)
 		
 		# データの成否チェック
-		if self.bone_info_mode == 'TEXT':
+		if self.bone_info_mode == 'ARMATURE':
+			arm_ob = ob.parent
+			if arm_ob and arm_ob.type != 'ARMATURE':
+				return self.report_cancel("メッシュオブジェクトの親がアーマチュアではありません")
+			if not arm_ob:
+				try:
+					arm_ob = next(mod for mod in ob.modifiers if mod.type == 'ARMATURE' and mod.object)
+				except StopIteration:
+					return self.report_cancel("アーマチュアが見つかりません、親にするかモディファイアにして下さい")
+				arm_ob = arm_ob.object
+		elif self.bone_info_mode == 'TEXT':
 			if "BoneData" not in context.blend_data.texts:
 				return self.report_cancel("テキスト「BoneData」が見つかりません、中止します")
 			if "LocalBoneData" not in context.blend_data.texts:
 				return self.report_cancel("テキスト「LocalBoneData」が見つかりません、中止します")
-		elif self.bone_info_mode == 'OBJECT':
+		elif self.bone_info_mode == 'OBJECT_PROPERTY':
 			if "BoneData:0" not in ob:
 				return self.report_cancel("オブジェクトのカスタムプロパティにボーン情報がありません")
 			if "LocalBoneData:0" not in ob:
 				return self.report_cancel("オブジェクトのカスタムプロパティにボーン情報がありません")
-		elif self.bone_info_mode == 'ARMATURE':
+		elif self.bone_info_mode == 'ARMATURE_PROPERTY':
 			arm_ob = ob.parent
 			if arm_ob and arm_ob.type != 'ARMATURE':
 				return self.report_cancel("メッシュオブジェクトの親がアーマチュアではありません")
@@ -255,13 +262,16 @@ class export_cm3d2_model(bpy.types.Operator):
 		# BoneData情報読み込み
 		base_bone_candidate = None
 		bone_data = []
-		if self.bone_info_mode == 'TEXT':
+		if self.bone_info_mode == 'ARMATURE':
+			bone_data = self.armature_bone_data_parser(arm_ob)
+			base_bone_candidate = arm_ob.data['BaseBone']
+		elif self.bone_info_mode == 'TEXT':
 			bone_data_text = context.blend_data.texts["BoneData"]
 			if 'BaseBone' in bone_data_text:
 				base_bone_candidate = bone_data_text['BaseBone']
 			bone_data = self.bone_data_parser(l.body for l in bone_data_text.lines)
-		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
-			target = ob if self.bone_info_mode == 'OBJECT' else arm_ob.data
+		elif self.bone_info_mode in ['OBJECT_PROPERTY', 'ARMATURE_PROPERTY']:
+			target = ob if self.bone_info_mode == 'OBJECT_PROPERTY' else arm_ob.data
 			if 'BaseBone' in target:
 				base_bone_candidate = target['BaseBone']
 			bone_data = self.bone_data_parser(self.indexed_data_generator(target, prefix='BoneData:'))
@@ -272,16 +282,18 @@ class export_cm3d2_model(bpy.types.Operator):
 			if base_bone_candidate and self.base_bone_name == 'Auto':
 				self.base_bone_name = base_bone_candidate
 			else:
-				return self.report_cancel("オブジェクト名の後半は存在するボーン名にして下さい")
+				return self.report_cancel("基点ボーンが存在しません")
 		context.window_manager.progress_update(2)
 		
 		# LocalBoneData情報読み込み
 		local_bone_data = []
-		if self.bone_info_mode == 'TEXT':
+		if self.bone_info_mode == 'ARMATURE':
+			local_bone_data = self.armature_local_bone_data_parser(arm_ob)
+		elif self.bone_info_mode == 'TEXT':
 			local_bone_data_text = context.blend_data.texts["LocalBoneData"]
 			local_bone_data = self.local_bone_data_parser(l.body for l in local_bone_data_text.lines)
-		elif self.bone_info_mode in ['OBJECT', 'ARMATURE']:
-			target = ob if self.bone_info_mode == 'OBJECT' else arm_ob.data
+		elif self.bone_info_mode in ['OBJECT_PROPERTY', 'ARMATURE_PROPERTY']:
+			target = ob if self.bone_info_mode == 'OBJECT_PROPERTY' else arm_ob.data
 			local_bone_data = self.local_bone_data_parser(self.indexed_data_generator(target, prefix='LocalBoneData:'))
 		if len(local_bone_data) <= 0:
 			return self.report_cancel("テキスト「LocalBoneData」に有効なデータがありません")
@@ -661,6 +673,66 @@ class export_cm3d2_model(bpy.types.Operator):
 				vert.select = True
 		bpy.ops.object.mode_set(mode='EDIT')
 
+	def armature_bone_data_parser(self, ob):
+		"""アーマチュアを解析してBoneDataを返す"""
+		arm = ob.data
+		
+		bones = []
+		bone_name_indices = {}
+		already_bone_names = []
+		bones_queue = arm.bones[:]
+		while len(bones_queue):
+			bone = bones_queue.pop(0)
+			
+			if not bone.parent:
+				already_bone_names.append(bone.name)
+				bones.append(bone)
+				bone_name_indices[bone.name] = len(bone_name_indices)
+				continue
+			elif bone.parent.name in already_bone_names:
+				already_bone_names.append(bone.name)
+				bones.append(bone)
+				bone_name_indices[bone.name] = len(bone_name_indices)
+				continue
+			
+			bones_queue.append(bone)
+		
+		bone_data = []
+		for bone in bones:
+			
+			if 'UnknownFlag' in bone: unknown_frag = bone['UnknownFlag']
+			else: unknown_frag = 0
+			
+			if bone.parent: parent_index = bone_name_indices[bone.parent.name]
+			else: parent_index = -1
+			
+			mat = bone.matrix_local.copy()
+			if bone.parent:
+				mat = bone.parent.matrix_local.inverted() * mat
+			
+			co = mat.to_translation() * self.scale
+			rot = mat.to_quaternion()
+			
+			if bone.parent:
+				co.x, co.y, co.z = -co.y, -co.x, co.z
+				rot.w, rot.x, rot.y, rot.z = rot.w, rot.y, rot.x, -rot.z
+			else:
+				co.x, co.y, co.z = -co.x, co.z, -co.y
+				
+				fix_quat = mathutils.Euler((0, 0, math.radians(-90)), 'XYZ').to_quaternion()
+				fix_quat2 = mathutils.Euler((math.radians(-90), 0, 0), 'XYZ').to_quaternion()
+				rot = rot * fix_quat * fix_quat2
+				
+				rot.w, rot.x, rot.y, rot.z = -rot.y, -rot.z, -rot.x, rot.w
+			
+			bone_data.append({
+				'name': bone.name,
+				'unknown': unknown_frag,
+				'parent_index': parent_index,
+				'co': co.copy(),
+				'rot': rot.copy(),
+				})
+		return bone_data
 
 	@staticmethod
 	def bone_data_parser(container):
@@ -686,6 +758,64 @@ class export_cm3d2_model(bpy.types.Operator):
 			bone_name_indices[data[0]] = len(bone_name_indices)
 		return bone_data
 
+	def armature_local_bone_data_parser(self, ob):
+		"""アーマチュアを解析してBoneDataを返す"""
+		arm = ob.data
+		
+		bones = []
+		bone_name_indices = {}
+		already_bone_names = []
+		bones_queue = arm.bones[:]
+		while len(bones_queue):
+			bone = bones_queue.pop(0)
+			
+			if not bone.parent:
+				already_bone_names.append(bone.name)
+				bones.append(bone)
+				bone_name_indices[bone.name] = len(bone_name_indices)
+				continue
+			elif bone.parent.name in already_bone_names:
+				already_bone_names.append(bone.name)
+				bones.append(bone)
+				bone_name_indices[bone.name] = len(bone_name_indices)
+				continue
+			
+			bones_queue.append(bone)
+		
+		local_bone_data = []
+		for bone in bones:
+			
+			mat = bone.matrix_local.copy()
+			
+			co = mat.to_translation() * self.scale
+			rot = mat.to_quaternion()
+			
+			co.rotate(rot.inverted())
+			co.x, co.y, co.z = co.y, co.x, -co.z
+			
+			fix_quat = mathutils.Euler((0, 0, math.radians(-90)), 'XYZ').to_quaternion()
+			rot = rot * fix_quat
+			rot.w, rot.x, rot.y, rot.z = -rot.z, -rot.y, -rot.x, rot.w
+			
+			co_mat = mathutils.Matrix.Translation(co)
+			rot_mat = rot.to_matrix().to_4x4()
+			mat = co_mat * rot_mat
+			
+			copy_mat = mat.copy()
+			mat[0][0], mat[0][1], mat[0][2], mat[0][3] = copy_mat[0][0], copy_mat[1][0], copy_mat[2][0], copy_mat[3][0]
+			mat[1][0], mat[1][1], mat[1][2], mat[1][3] = copy_mat[0][1], copy_mat[1][1], copy_mat[2][1], copy_mat[3][1]
+			mat[2][0], mat[2][1], mat[2][2], mat[2][3] = copy_mat[0][2], copy_mat[1][2], copy_mat[2][2], copy_mat[3][2]
+			mat[3][0], mat[3][1], mat[3][2], mat[3][3] = copy_mat[0][3], copy_mat[1][3], copy_mat[2][3], copy_mat[3][3]
+			
+			mat_array = []
+			for vec in mat:
+				mat_array.extend(vec[:])
+			
+			local_bone_data.append({
+				'name': bone.name,
+				'matrix': mat_array,
+				})
+		return local_bone_data
 
 	@staticmethod
 	def local_bone_data_parser(container):
