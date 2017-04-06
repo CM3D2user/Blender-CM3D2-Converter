@@ -171,7 +171,7 @@ class import_cm3d2_anm(bpy.types.Operator):
 						bone_loc = bone_loc - bone.parent.head_local
 						bone_loc.rotate(bone.parent.matrix_local.to_quaternion().inverted())
 					else:
-						loc.x, loc.y, loc.z = loc.x, -loc.z, loc.y
+						loc.x, loc.y, loc.z = loc.x, loc.z, loc.y
 					
 					result_loc = loc - bone_loc
 					pose_bone.location = result_loc.copy()

@@ -184,7 +184,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 					loc.x, loc.y, loc.z = -loc.y, -loc.x, loc.z
 					rot.w, rot.x, rot.y, rot.z = rot.w, rot.y, rot.x, -rot.z
 				else:
-					loc.x, loc.y, loc.z = -loc.x, loc.z, -loc.y
+					loc.x, loc.y, loc.z = -loc.x, loc.z, loc.y
 					
 					fix_quat = mathutils.Euler((0, 0, math.radians(-90)), 'XYZ').to_quaternion()
 					fix_quat2 = mathutils.Euler((math.radians(-90), 0, 0), 'XYZ').to_quaternion()
