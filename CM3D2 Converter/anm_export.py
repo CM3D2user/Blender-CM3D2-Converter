@@ -25,7 +25,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=True)
 	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子も存在しない", default=True)
-	is_remove_ik_bone = bpy.props.BoolProperty(name="名前がIKっぽい", default=True)
+	is_remove_ik_bone = bpy.props.BoolProperty(name="名前がIK/Nubっぽい", default=True)
 	is_remove_serial_number_bone = bpy.props.BoolProperty(name="名前が連番付き", default=True)
 	is_remove_japanese_bone = bpy.props.BoolProperty(name="名前に日本語が含まれる", default=True)
 	
