@@ -24,6 +24,12 @@ class export_cm3d2_anm(bpy.types.Operator):
 	is_keyframe_clean = bpy.props.BoolProperty(name="同じ変形のキーフレームを掃除", default=True)
 	is_smooth_handle = bpy.props.BoolProperty(name="キーフレーム間の変形をスムーズに", default=True)
 	
+	items = [
+		('ARMATURE', "アーマチュア", "", 'OUTLINER_OB_ARMATURE', 1),
+		('ARMATURE_PROPERTY', "アーマチュア内プロパティ", "", 'ARMATURE_DATA', 2),
+		]
+	bone_parent_from = bpy.props.EnumProperty(items=items, name="ボーン親情報の参照先", default='ARMATURE_PROPERTY')
+	
 	is_remove_alone_bone = bpy.props.BoolProperty(name="親も子も存在しない", default=True)
 	is_remove_ik_bone = bpy.props.BoolProperty(name="名前がIK/Nubっぽい", default=True)
 	is_remove_serial_number_bone = bpy.props.BoolProperty(name="名前が連番付き", default=True)
@@ -47,6 +53,14 @@ class export_cm3d2_anm(bpy.types.Operator):
 		self.scale = 1.0 / common.preferences().scale
 		self.is_backup = bool(common.preferences().backup_ext)
 		self.key_frame_count = (context.scene.frame_end - context.scene.frame_start) + 1
+		
+		ob = context.active_object
+		arm = ob.data
+		if "BoneData:0" in arm:
+			self.bone_parent_from = 'ARMATURE_PROPERTY'
+		else:
+			self.bone_parent_from = 'ARMATURE'
+		
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 	
@@ -66,6 +80,10 @@ class export_cm3d2_anm(bpy.types.Operator):
 		sub_box.prop(self, 'time_scale')
 		sub_box.prop(self, 'is_keyframe_clean', icon='DISCLOSURE_TRI_DOWN')
 		sub_box.prop(self, 'is_smooth_handle', icon='SMOOTHCURVE')
+		
+		sub_box = box.box()
+		sub_box.label("ボーン親情報の参照先", icon='FILE_PARENT')
+		sub_box.prop(self, 'bone_parent_from', icon='FILE_PARENT', expand=True)
 		
 		sub_box = box.box()
 		sub_box.label("除外するボーン", icon='X')
@@ -102,6 +120,25 @@ class export_cm3d2_anm(bpy.types.Operator):
 		common.write_str(file, 'CM3D2_ANIM')
 		file.write(struct.pack('<i', self.version))
 		
+		bone_parents = {}
+		if self.bone_parent_from == 'ARMATURE_PROPERTY':
+			for i in range(9999):
+				name = "BoneData:" + str(i)
+				if name not in arm: continue
+				elems = arm[name].split(",")
+				if len(elems) != 5: continue
+				if elems[0] in arm.bones:
+					if elems[2] in arm.bones:
+						bone_parents[elems[0]] = arm.bones[elems[2]]
+					else:
+						bone_parents[elems[0]] = None
+			for bone in arm.bones:
+				if bone.name in bone_parents: continue
+				bone_parents[bone.name] = bone.parent
+		else:
+			for bone in arm.bones:
+				bone_parents[bone.name] = bone.parent
+		
 		def is_japanese(string):
 			for ch in string:
 					name = unicodedata.name(ch) 
@@ -116,7 +153,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 		while len(bones_queue):
 			bone = bones_queue.pop(0)
 			
-			if not bone.parent:
+			if not bone_parents[bone.name]:
 				already_bone_names.append(bone.name)
 				if self.is_remove_serial_number_bone:
 					if re.search(r"\.\d{3,}$", bone.name): continue
@@ -126,7 +163,7 @@ class export_cm3d2_anm(bpy.types.Operator):
 					continue
 				bones.append(bone)
 				continue
-			elif bone.parent.name in already_bone_names:
+			elif bone_parents[bone.name].name in already_bone_names:
 				already_bone_names.append(bone.name)
 				if self.is_remove_serial_number_bone:
 					if re.search(r"\.\d{3,}$", bone.name): continue
@@ -168,8 +205,8 @@ class export_cm3d2_anm(bpy.types.Operator):
 				pose_bone = pose.bones[bone.name]
 				
 				pose_mat = ob.convert_space(pose_bone, pose_bone.matrix, 'POSE', 'WORLD')
-				if bone.parent:
-					parent_mat = ob.convert_space(pose_bone.parent, pose_bone.parent.matrix, 'POSE', 'WORLD')
+				if bone_parents[bone.name]:
+					parent_mat = ob.convert_space(pose.bones[bone_parents[bone.name].name], pose.bones[bone_parents[bone.name].name].matrix, 'POSE', 'WORLD')
 					pose_mat = parent_mat.inverted() * pose_mat
 				
 				loc = pose_mat.to_translation() * self.scale
@@ -180,11 +217,11 @@ class export_cm3d2_anm(bpy.types.Operator):
 						rot.w, rot.x, rot.y, rot.z = -rot.w, -rot.x, -rot.y, -rot.z
 				pre_rots[bone.name] = rot.copy()
 				
-				if bone.parent:
+				if bone_parents[bone.name]:
 					loc.x, loc.y, loc.z = -loc.y, -loc.x, loc.z
 					rot.w, rot.x, rot.y, rot.z = rot.w, rot.y, rot.x, -rot.z
 				else:
-					loc.x, loc.y, loc.z = -loc.x, loc.z, loc.y
+					loc.x, loc.y, loc.z = -loc.x, loc.z, -loc.y
 					
 					fix_quat = mathutils.Euler((0, 0, math.radians(-90)), 'XYZ').to_quaternion()
 					fix_quat2 = mathutils.Euler((math.radians(-90), 0, 0), 'XYZ').to_quaternion()
@@ -239,9 +276,9 @@ class export_cm3d2_anm(bpy.types.Operator):
 			
 			bone_names = [bone.name]
 			current_bone = bone
-			while current_bone.parent:
-				bone_names.append(current_bone.parent.name)
-				current_bone = current_bone.parent
+			while bone_parents[current_bone.name]:
+				bone_names.append(bone_parents[current_bone.name].name)
+				current_bone = bone_parents[current_bone.name]
 			
 			bone_names.reverse()
 			common.write_str(file, "/".join(bone_names))
