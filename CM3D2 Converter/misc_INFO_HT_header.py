@@ -1,3 +1,4 @@
+# 画面右上 (「情報」エリア → ヘッダー)
 import bpy, bmesh
 from . import common
 

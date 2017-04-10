@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「モディファイア」タブ
 import os, re, sys, bpy, time, bmesh, mathutils, math
 from . import common
 

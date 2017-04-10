@@ -1,3 +1,4 @@
+# 「3Dビュー」エリア → メッシュ編集モード → 「W」キー
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

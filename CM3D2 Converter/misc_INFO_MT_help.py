@@ -1,3 +1,4 @@
+# 画面上部 (「情報」エリア → ヘッダー) → ヘルプ
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

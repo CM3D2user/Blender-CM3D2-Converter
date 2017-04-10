@@ -1,3 +1,4 @@
+# 「UV/画像エディター」エリア → プロパティ → 「画像」パネル
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

@@ -1,3 +1,4 @@
+# 「3Dビュー」エリア → ポーズモード → Ctrl+A (ポーズ → 適用)
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

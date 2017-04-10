@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「レンダー」タブ → 「レンダー」パネル
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

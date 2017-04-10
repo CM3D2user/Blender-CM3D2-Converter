@@ -1,3 +1,4 @@
+# 「テキストエディター」エリア → ヘッダー
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

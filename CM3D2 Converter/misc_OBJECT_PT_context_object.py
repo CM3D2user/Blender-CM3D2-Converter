@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「オブジェクト」タブ
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

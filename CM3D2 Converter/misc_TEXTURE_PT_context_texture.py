@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「テクスチャ」タブ
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

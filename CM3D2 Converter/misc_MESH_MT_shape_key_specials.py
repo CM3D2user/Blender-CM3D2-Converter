@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「メッシュデータ」タブ → 「シェイプキー」パネル → ▼ボタン
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

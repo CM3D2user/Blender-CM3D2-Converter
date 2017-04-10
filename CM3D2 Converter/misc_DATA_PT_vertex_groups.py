@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「メッシュデータ」タブ → 「頂点グループ」パネル
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

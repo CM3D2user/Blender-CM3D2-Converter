@@ -1,3 +1,4 @@
+# 「3Dビュー」エリア → 追加(Shift+A) → CM3D2
 import os, re, sys, bpy, time, bmesh, mathutils
 from . import common
 

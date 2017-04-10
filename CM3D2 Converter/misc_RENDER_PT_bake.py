@@ -1,3 +1,4 @@
+# 「プロパティ」エリア → 「レンダー」タブ → 「ベイク」パネル
 import os, re, sys, bpy, time, numpy, bmesh, mathutils
 from . import common
 
