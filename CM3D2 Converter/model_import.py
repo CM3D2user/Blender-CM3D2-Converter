@@ -152,7 +152,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			no = struct.unpack('<3f', file.read(3*4))
 			uv = struct.unpack('<2f', file.read(2*4))
 			vertex_data.append({'co': co, 'normal': no, 'uv': uv})
-		comparison_data = list(hash(repr(v['co']) + " " + repr(v['normal']) + " " + repr(v['uv'])) for v in vertex_data)
+		comparison_data = list(hash(repr(v['co']) + " " + repr(v['normal'])) for v in vertex_data)
 		comparison_counter = Counter(comparison_data)
 		comparison_data = list((comparison_counter[h] > 1) for h in comparison_data)
 		del comparison_counter
@@ -526,12 +526,21 @@ class import_cm3d2_model(bpy.types.Operator):
 			
 			# メッシュ整頓
 			if self.is_remove_doubles:
+				pre_mesh_select_mode = context.tool_settings.mesh_select_mode[:]
+				context.tool_settings.mesh_select_mode = (True, False, False)
+				
+				bpy.ops.object.mode_set(mode='EDIT')
+				bpy.ops.mesh.select_all(action='DESELECT')
+				bpy.ops.object.mode_set(mode='OBJECT')
+				
 				for is_comparison, vert in zip(comparison_data, me.vertices):
 					if is_comparison:
 						vert.select = True
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.remove_doubles(threshold=0.000001)
 				bpy.ops.object.mode_set(mode='OBJECT')
+				
+				context.tool_settings.mesh_select_mode = pre_mesh_select_mode
 			if self.is_seam:
 				bpy.ops.object.mode_set(mode='EDIT')
 				bpy.ops.mesh.select_all(action='SELECT')
