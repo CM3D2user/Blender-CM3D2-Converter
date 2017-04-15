@@ -152,7 +152,7 @@ class import_cm3d2_model(bpy.types.Operator):
 			no = struct.unpack('<3f', file.read(3*4))
 			uv = struct.unpack('<2f', file.read(2*4))
 			vertex_data.append({'co': co, 'normal': no, 'uv': uv})
-		comparison_data = list(hash(repr(v['co'] + v['normal'])) for v in vertex_data)
+		comparison_data = list(hash(repr(v['co']) + " " + repr(v['normal']) + " " + repr(v['uv'])) for v in vertex_data)
 		comparison_counter = Counter(comparison_data)
 		comparison_data = list((comparison_counter[h] > 1) for h in comparison_data)
 		del comparison_counter
