@@ -23,6 +23,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	is_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ", default=False)
 	items = [
 		('NEAREST', "最も近い頂点", "", 'VERTEXSEL', 1),
 		('EDGEINTERP_NEAREST', "最も近い辺", "", 'EDGESEL', 2),
@@ -30,6 +31,8 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		('POLYINTERP_VNORPROJ', "投影先", "", 'MOD_UVPROJECT', 4),
 		]
 	vert_mapping = bpy.props.EnumProperty(items=items, name="参照先", default='POLYINTERP_NEAREST')
+	is_clean = bpy.props.BoolProperty(name="クリーン", default=True)
+	is_remove_noassign = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
 	
 	@classmethod
 	def poll(cls, context):
@@ -49,14 +52,16 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	
 	def draw(self, context):
 		self.layout.prop(self, 'is_remove_old_vertex_groups', icon='ERROR')
+		self.layout.prop(self, 'is_select_vert_only', icon='UV_SYNC_SELECT')
 		self.layout.prop(self, 'vert_mapping')
+		self.layout.prop(self, 'is_clean', icon='DISCLOSURE_TRI_DOWN')
+		self.layout.prop(self, 'is_remove_noassign', icon='X')
 	
 	def execute(self, context):
+		class MyVertexGroupElement: pass
+		
 		target_ob = context.active_object
 		target_me = target_ob.data
-		
-		pre_mode = target_ob.mode
-		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
@@ -64,11 +69,60 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 				break
 		source_me = source_ob.data
 		
+		pre_mode = target_ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		if self.is_select_vert_only:
+			original_source_ob = source_ob
+			original_source_me = source_me
+			source_ob = original_source_ob.copy()
+			source_me = original_source_me.copy()
+			source_ob.data = source_me
+			context.scene.objects.link(source_ob)
+			source_ob.select = True
+			original_source_ob.select = False
+			context.scene.objects.active = source_ob
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.mesh.select_all(action='INVERT')
+			bpy.ops.mesh.delete_by_select_mode()
+			bpy.ops.object.mode_set(mode='OBJECT')
+			context.scene.objects.active = target_ob
+		
 		if self.is_remove_old_vertex_groups:
 			if bpy.ops.object.vertex_group_remove.poll():
 				bpy.ops.object.vertex_group_remove(all=True)
 		
+		if self.is_select_vert_only:
+			old_vertex_groups = []
+			for vert in target_me.vertices:
+				if not vert.select:
+					mvges = []
+					for vge in vert.groups:
+						mvge = MyVertexGroupElement()
+						mvge.vertex_group = target_ob.vertex_groups[vge.group]
+						mvge.weight = vge.weight
+						mvges.append(mvge)
+					old_vertex_groups.append(mvges)
+				else:
+					old_vertex_groups.append(None)
+		
+		if self.vert_mapping == 'POLYINTERP_NEAREST' and len(source_me.polygons) == 0: self.vert_mapping = 'EDGEINTERP_NEAREST'
+		if self.vert_mapping == 'EDGEINTERP_NEAREST' and len(source_me.edges) == 0: self.vert_mapping = 'NEAREST'
 		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='NAME', layers_select_dst='ALL', mix_mode='REPLACE', mix_factor=1)
+		if self.is_clean: bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.00000000001)
+		if self.is_remove_noassign: bpy.ops.object.remove_noassign_vertex_groups(threshold=0.00000000001)
+		
+		if self.is_select_vert_only:
+			for vert in target_me.vertices:
+				if not vert.select:
+					for vg in target_ob.vertex_groups:
+						vg.remove([vert.index])
+					for mvge in old_vertex_groups[vert.index]:
+						mvge.vertex_group.add(vert.index, mvge.weight, 'REPLACE')
+		
+		if self.is_select_vert_only:
+			common.remove_data([source_ob, source_me])
+			original_source_ob.select = True
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
