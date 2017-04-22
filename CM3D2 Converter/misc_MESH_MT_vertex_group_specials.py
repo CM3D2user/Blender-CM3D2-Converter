@@ -88,6 +88,21 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			bpy.ops.object.mode_set(mode='OBJECT')
 			context.scene.objects.active = target_ob
 		
+		if self.vert_mapping == 'POLYINTERP_VNORPROJ' and len(source_me.polygons) == 0:
+			self.vert_mapping = 'EDGEINTERP_NEAREST'
+			self.report(type={'WARNING'}, message="面がひとつも存在しません、辺モードに変更します")
+		if self.vert_mapping == 'POLYINTERP_NEAREST' and len(source_me.polygons) == 0:
+			self.vert_mapping = 'EDGEINTERP_NEAREST'
+			self.report(type={'WARNING'}, message="面がひとつも存在しません、辺モードに変更します")
+		if self.vert_mapping == 'EDGEINTERP_NEAREST' and len(source_me.edges) == 0:
+			self.vert_mapping = 'NEAREST'
+			self.report(type={'WARNING'}, message="辺がひとつも存在しません、頂点モードに変更します")
+		if self.vert_mapping == 'NEAREST' and len(source_me.vertices) == 0:
+			common.remove_data([source_ob, source_me])
+			original_source_ob.select = True
+			self.report(type={'ERROR'}, message="頂点がひとつも存在しません、中止します")
+			return {'CANCELLED'}
+		
 		if self.is_remove_old_vertex_groups:
 			if bpy.ops.object.vertex_group_remove.poll():
 				bpy.ops.object.vertex_group_remove(all=True)
@@ -106,8 +121,6 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 				else:
 					old_vertex_groups.append(None)
 		
-		if self.vert_mapping == 'POLYINTERP_NEAREST' and len(source_me.polygons) == 0: self.vert_mapping = 'EDGEINTERP_NEAREST'
-		if self.vert_mapping == 'EDGEINTERP_NEAREST' and len(source_me.edges) == 0: self.vert_mapping = 'NEAREST'
 		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='NAME', layers_select_dst='ALL', mix_mode='REPLACE', mix_factor=1)
 		if self.is_clean: bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.00000000001)
 		if self.is_remove_noassign: bpy.ops.object.remove_noassign_vertex_groups(threshold=0.00000000001)
