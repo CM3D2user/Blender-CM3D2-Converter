@@ -22,9 +22,14 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
-	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
-	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
+	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	items = [
+		('NEAREST', "最も近い頂点", "", 'VERTEXSEL', 1),
+		('EDGEINTERP_NEAREST', "最も近い辺", "", 'EDGESEL', 2),
+		('POLYINTERP_NEAREST', "最も近い面", "", 'FACESEL', 3),
+		('POLYINTERP_VNORPROJ', "投影先", "", 'MOD_UVPROJECT', 4),
+		]
+	vert_mapping = bpy.props.EnumProperty(items=items, name="参照先", default='POLYINTERP_NEAREST')
 	
 	@classmethod
 	def poll(cls, context):
@@ -43,14 +48,10 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
-		self.layout.prop(self, 'subdivide_number', icon='LATTICE_DATA')
-		self.layout.prop(self, 'is_remove_empty', icon='X')
+		self.layout.prop(self, 'is_remove_old_vertex_groups', icon='ERROR')
+		self.layout.prop(self, 'vert_mapping')
 	
 	def execute(self, context):
-		import mathutils, time
-		start_time = time.time()
-		
 		target_ob = context.active_object
 		target_me = target_ob.data
 		
@@ -59,77 +60,17 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
-				source_original_ob = ob
+				source_ob = ob
 				break
-		source_ob = source_original_ob.copy()
-		source_me = source_original_ob.data.copy()
-		source_ob.data = source_me
-		context.scene.objects.link(source_ob)
-		context.scene.objects.active = source_ob
-		bpy.ops.object.mode_set(mode='EDIT')
-		bpy.ops.mesh.reveal()
-		bpy.ops.mesh.select_all(action='SELECT')
-		bpy.ops.mesh.subdivide(number_cuts=self.subdivide_number, smoothness=0.0, quadtri=False, quadcorner='STRAIGHT_CUT', fractal=0.0, fractal_along_normal=0.0, seed=0)
-		bpy.ops.object.mode_set(mode='OBJECT')
+		source_me = source_ob.data
 		
-		if self.is_first_remove_all:
+		if self.is_remove_old_vertex_groups:
 			if bpy.ops.object.vertex_group_remove.poll():
 				bpy.ops.object.vertex_group_remove(all=True)
 		
-		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
-		for vert in source_me.vertices:
-			co = source_ob.matrix_world * vert.co
-			kd.insert(co, vert.index)
-		kd.balance()
+		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='ACTIVE', layers_select_dst='ACTIVE', mix_mode='REPLACE', mix_factor=1)
 		
-		near_vert_indexs = [kd.find(target_ob.matrix_world * v.co)[1] for v in target_me.vertices]
-		
-		context.window_manager.progress_begin(0, len(source_ob.vertex_groups))
-		for source_vertex_group in source_ob.vertex_groups:
-			
-			if source_vertex_group.name in target_ob.vertex_groups:
-				target_vertex_group = target_ob.vertex_groups[source_vertex_group.name]
-			else:
-				target_vertex_group = target_ob.vertex_groups.new(source_vertex_group.name)
-			
-			is_waighted = False
-			
-			source_weights = []
-			source_weights_append = source_weights.append
-			for source_vert in source_me.vertices:
-				for elem in source_vert.groups:
-					if elem.group == source_vertex_group.index:
-						source_weights_append(elem.weight)
-						break
-				else:
-					source_weights_append(0.0)
-			
-			for target_vert in target_me.vertices:
-				
-				near_vert_index = near_vert_indexs[target_vert.index]
-				near_weight = source_weights[near_vert_index]
-				
-				if 0.000001 < near_weight:
-					target_vertex_group.add([target_vert.index], near_weight, 'REPLACE')
-					is_waighted = True
-				else:
-					if not self.is_first_remove_all:
-						target_vertex_group.remove([target_vert.index])
-			
-			context.window_manager.progress_update(source_vertex_group.index)
-			
-			if not is_waighted and self.is_remove_empty:
-				target_ob.vertex_groups.remove(target_vertex_group)
-		context.window_manager.progress_end()
-		
-		target_ob.vertex_groups.active_index = 0
-		
-		common.remove_data([source_ob, source_me])
-		context.scene.objects.active = target_ob
 		bpy.ops.object.mode_set(mode=pre_mode)
-		
-		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
 class precision_transfer_vertex_group(bpy.types.Operator):

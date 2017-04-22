@@ -5,7 +5,7 @@ from . import fileutil
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (20170416, 990059),
+	"version" : (20170422, 991832),
 	"blender" : (2, 76, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -535,7 +535,7 @@ def remove_data(target_data):
 			if data_str[-1] != "s": continue
 			try:
 				if data.__class__.__name__ == eval('bpy.data.%s[0].__class__.__name__' % data_str):
-					exec('bpy.data.%s.remove(data)' % data_str)
+					exec('bpy.data.%s.remove(data, do_unlink=True)' % data_str)
 					break
 			except: pass
 
