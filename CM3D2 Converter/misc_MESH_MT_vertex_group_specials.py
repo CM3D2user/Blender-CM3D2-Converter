@@ -84,7 +84,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			context.scene.objects.active = source_ob
 			bpy.ops.object.mode_set(mode='EDIT')
 			bpy.ops.mesh.select_all(action='INVERT')
-			bpy.ops.mesh.delete_by_select_mode()
+			bpy.ops.mesh.delete(type='VERT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			context.scene.objects.active = target_ob
 		
