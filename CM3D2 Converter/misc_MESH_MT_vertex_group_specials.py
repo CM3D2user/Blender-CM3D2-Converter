@@ -68,7 +68,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			if bpy.ops.object.vertex_group_remove.poll():
 				bpy.ops.object.vertex_group_remove(all=True)
 		
-		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='ALL', layers_select_dst='NAME', mix_mode='REPLACE', mix_factor=1)
+		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='NAME', layers_select_dst='ALL', mix_mode='REPLACE', mix_factor=1)
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
