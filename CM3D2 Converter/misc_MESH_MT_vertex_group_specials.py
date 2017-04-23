@@ -23,7 +23,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
-	is_source_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(参照元)", default=False)
+	is_source_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(参照)", default=False)
 	is_target_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(対象)", default=False)
 	items = [
 		('NEAREST', "最も近い頂点", "", 'VERTEXSEL', 1),
@@ -31,9 +31,9 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		('POLYINTERP_NEAREST', "最も近い面", "", 'FACESEL', 3),
 		('POLYINTERP_VNORPROJ', "投影先", "", 'MOD_UVPROJECT', 4),
 		]
-	vert_mapping = bpy.props.EnumProperty(items=items, name="参照先", default='POLYINTERP_NEAREST')
-	is_clean = bpy.props.BoolProperty(name="クリーンを実行", default=True)
-	is_remove_noassign = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
+	vert_mapping = bpy.props.EnumProperty(items=items, name="参照要素", default='POLYINTERP_NEAREST')
+	is_clean = bpy.props.BoolProperty(name="転送後にクリーンを実行", default=True)
+	is_remove_noassign = bpy.props.BoolProperty(name="転送後に割り当てのない頂点グループを削除", default=True)
 	
 	@classmethod
 	def poll(cls, context):
