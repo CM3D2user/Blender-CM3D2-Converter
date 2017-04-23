@@ -5,7 +5,7 @@ from . import fileutil
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (20170423, 990144),
+	"version" : (20170423, 990955),
 	"blender" : (2, 76, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -626,6 +626,7 @@ def in_out_quad_blend(f):
 # スムーズなグラフを返す2
 def bezier_blend(f):
 	return math.sqrt(f) * (3.0 - 2.0 * f)
+# sin((x-0.25)*pi*2)*0.5+0.5
 
 # エクスポート例外クラス
 class CM3D2ExportException(Exception):
