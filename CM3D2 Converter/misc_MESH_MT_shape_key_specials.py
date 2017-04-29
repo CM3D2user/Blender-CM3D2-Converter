@@ -144,13 +144,13 @@ class quick_shape_key_transfer(bpy.types.Operator):
 
 class precision_shape_key_transfer(bpy.types.Operator):
 	bl_idname = 'object.precision_shape_key_transfer'
-	bl_label = "高精度・シェイプキー転送"
-	bl_description = "アクティブなメッシュに他の選択メッシュのシェイプキーを高精度で転送します"
+	bl_label = "空間ぼかし・シェイプキー転送"
+	bl_description = "アクティブなメッシュに他の選択メッシュのシェイプキーを遠いほどぼかして転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	is_first_remove_all = bpy.props.BoolProperty(name="最初に全シェイプキーを削除", default=True)
 	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
-	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=1.5, min=1.1, max=5.0, soft_min=1.1, soft_max=5.0, step=10, precision=2)
+	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=1.1, min=1.0001, max=5.0, soft_min=1.0001, soft_max=5.0, step=10, precision=2)
 	is_remove_empty = bpy.props.BoolProperty(name="変形のないシェイプキーを削除", default=True)
 	
 	@classmethod
