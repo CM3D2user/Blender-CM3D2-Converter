@@ -39,7 +39,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	def poll(cls, context):
 		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) != 2: return False
+		if len(obs) < 2: return False
 		for ob in obs:
 			if ob.type != 'MESH':
 				return False
@@ -68,43 +68,47 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		target_ob = context.active_object
 		target_me = target_ob.data
 		
-		for ob in context.selected_objects:
-			if ob.name != target_ob.name:
-				source_ob = ob
-				break
-		source_me = source_ob.data
-		
 		pre_mode = target_ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
+		original_source_obs = []
+		for ob in context.selected_objects:
+			if ob.name != target_ob.name:
+				original_source_obs.append(ob)
+		
+		target_ob.select = False
+		context.scene.objects.active = original_source_obs[0]
+		bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
+		bpy.ops.object.join()
+		join_source_ob = context.selected_objects[0]
+		join_source_me = join_source_ob.data
+		target_ob.select = True
+		context.scene.objects.active = target_ob
+		
+		temp_source_ob = join_source_ob.copy()
+		temp_source_me = join_source_me.copy()
+		temp_source_ob.data = temp_source_me
+		context.scene.objects.link(temp_source_ob)
+		temp_source_ob.select = True
+		join_source_ob.select = False
+		context.scene.objects.active = temp_source_ob
 		if self.is_source_select_vert_only:
-			original_source_ob = source_ob
-			original_source_me = source_me
-			source_ob = original_source_ob.copy()
-			source_me = original_source_me.copy()
-			source_ob.data = source_me
-			context.scene.objects.link(source_ob)
-			source_ob.select = True
-			original_source_ob.select = False
-			context.scene.objects.active = source_ob
 			bpy.ops.object.mode_set(mode='EDIT')
 			bpy.ops.mesh.select_all(action='INVERT')
 			bpy.ops.mesh.delete(type='VERT')
 			bpy.ops.object.mode_set(mode='OBJECT')
 			context.scene.objects.active = target_ob
 		
-		if self.vert_mapping == 'POLYINTERP_VNORPROJ' and len(source_me.polygons) == 0:
+		if self.vert_mapping == 'POLYINTERP_VNORPROJ' and len(temp_source_me.polygons) == 0:
 			self.vert_mapping = 'EDGEINTERP_NEAREST'
 			self.report(type={'WARNING'}, message="面がひとつも存在しません、辺モードに変更します")
-		if self.vert_mapping == 'POLYINTERP_NEAREST' and len(source_me.polygons) == 0:
+		if self.vert_mapping == 'POLYINTERP_NEAREST' and len(temp_source_me.polygons) == 0:
 			self.vert_mapping = 'EDGEINTERP_NEAREST'
 			self.report(type={'WARNING'}, message="面がひとつも存在しません、辺モードに変更します")
-		if self.vert_mapping == 'EDGEINTERP_NEAREST' and len(source_me.edges) == 0:
+		if self.vert_mapping == 'EDGEINTERP_NEAREST' and len(temp_source_me.edges) == 0:
 			self.vert_mapping = 'NEAREST'
 			self.report(type={'WARNING'}, message="辺がひとつも存在しません、頂点モードに変更します")
-		if self.vert_mapping == 'NEAREST' and len(source_me.vertices) == 0:
-			common.remove_data([source_ob, source_me])
-			original_source_ob.select = True
+		if self.vert_mapping == 'NEAREST' and len(temp_source_me.vertices) == 0:
 			self.report(type={'ERROR'}, message="頂点がひとつも存在しません、中止します")
 			return {'CANCELLED'}
 		
@@ -138,10 +142,14 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 					for mvge in old_vertex_groups[vert.index]:
 						mvge.vertex_group.add(vert.index, mvge.weight, 'REPLACE')
 		
-		if self.is_source_select_vert_only:
-			common.remove_data([source_ob, source_me])
-			original_source_ob.select = True
+		common.remove_data([temp_source_ob, temp_source_me])
+		join_source_ob.select = True
 		
+		common.remove_data([join_source_ob, join_source_me])
+		for ob in original_source_obs:
+			ob.select = True
+		
+		context.scene.objects.active = target_ob
 		bpy.ops.object.mode_set(mode=pre_mode)
 		return {'FINISHED'}
 
