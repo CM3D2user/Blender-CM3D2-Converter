@@ -120,10 +120,6 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 			
 			pre_weights = []
 			for vert in me.vertices:
-				if vert_selection_values[vert.index] == None:
-					pre_weights.append([])
-					continue
-				
 				pre_vges = []
 				for vge in vert.groups:
 					pre_vge = EmptyClass()
