@@ -82,13 +82,13 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 	def draw(self, context):
 		box = self.layout.box()
 		box.label(text="選択をぼかす", icon='UV_SYNC_SELECT')
-		box.prop(self, 'selection_blur_range_multi', text="範囲")
-		box.prop(self, 'selection_blur_accuracy', text="精度")
+		box.prop(self, 'selection_blur_range_multi', text="範囲倍率")
+		box.prop(self, 'selection_blur_accuracy', text="精度(分割数)")
 		
 		box = self.layout.box()
 		box.label(text="頂点グループをぼかす", icon='GROUP_VERTEX')
-		box.prop(self, 'blur_range_multi', text="範囲")
-		box.prop(self, 'blur_count', text="回数")
+		box.prop(self, 'blur_range_multi', text="範囲倍率")
+		box.prop(self, 'blur_count', text="実行回数")
 		
 		self.layout.prop(self, 'is_vertex_group_limit_total', icon='IMGDISPLAY')
 	
@@ -131,7 +131,8 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 			co, index, dist = selection_kd.find(vert.co)
 			if dist <= selection_blur_range + 0.00001:
 				if 0 < selection_blur_range:
-					vert_selection_values.append(1.0 - (dist / selection_blur_range))
+					value = common.trigonometric_smooth(1.0 - (dist / selection_blur_range))
+					vert_selection_values.append(value)
 				else:
 					vert_selection_values.append(1.0)
 			else:
@@ -185,7 +186,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 					effect = EmptyClass()
 					effect.index = index
 					if 0 < blur_range:
-						effect.effect = 1.0 - (dist / blur_range)
+						effect.effect = common.trigonometric_smooth(1.0 - (dist / blur_range))
 					else:
 						effect.effect = 1.0
 					total_effect += effect.effect
