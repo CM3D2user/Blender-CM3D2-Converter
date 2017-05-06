@@ -60,6 +60,11 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		pre_mode = ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
+		pre_selected_objects = context.selected_objects[:]
+		for selected_object in pre_selected_objects:
+			selected_object.select = False
+		ob.select = True
+		
 		bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.mesh.select_all(action='INVERT')
@@ -188,4 +193,6 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 			bpy.ops.object.vertex_group_limit_total(group_select_mode='ALL', limit=4)
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
+		for selected_object in pre_selected_objects:
+			selected_object.select = True
 		return {'FINISHED'}
