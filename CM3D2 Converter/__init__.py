@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "",
-	"version" : (20170506, 991904),
+	"version" : (20170506, 992122),
 	"blender" : (2, 76, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -37,6 +37,7 @@ if "bpy" in locals():
 	imp.reload(misc_DATA_PT_vertex_groups)
 	imp.reload(misc_IMAGE_HT_header)
 	imp.reload(misc_IMAGE_PT_image_properties)
+	imp.reload(misc_INFO_HT_header)
 	imp.reload(misc_INFO_MT_add)
 	imp.reload(misc_INFO_MT_curve_add)
 	imp.reload(misc_INFO_MT_help)
@@ -49,9 +50,9 @@ if "bpy" in locals():
 	imp.reload(misc_RENDER_PT_render)
 	imp.reload(misc_TEXTURE_PT_context_texture)
 	imp.reload(misc_TEXT_HT_header)
-	imp.reload(misc_VIEW3D_MT_pose_apply)
-	imp.reload(misc_INFO_HT_header)
 	imp.reload(misc_VIEW3D_MT_edit_mesh_specials)
+	imp.reload(misc_VIEW3D_MT_pose_apply)
+	imp.reload(misc_VIEW3D_PT_tools_weightpaint)
 
 else:
 	from . import common
@@ -73,6 +74,7 @@ else:
 	from . import misc_DATA_PT_vertex_groups
 	from . import misc_IMAGE_HT_header
 	from . import misc_IMAGE_PT_image_properties
+	from . import misc_INFO_HT_header
 	from . import misc_INFO_MT_add
 	from . import misc_INFO_MT_curve_add
 	from . import misc_INFO_MT_help
@@ -85,9 +87,9 @@ else:
 	from . import misc_RENDER_PT_render
 	from . import misc_TEXTURE_PT_context_texture
 	from . import misc_TEXT_HT_header
-	from . import misc_VIEW3D_MT_pose_apply
-	from . import misc_INFO_HT_header
 	from . import misc_VIEW3D_MT_edit_mesh_specials
+	from . import misc_VIEW3D_MT_pose_apply
+	from . import misc_VIEW3D_PT_tools_weightpaint
 
 import bpy, os.path, bpy.utils.previews
 
@@ -224,6 +226,7 @@ def register():
 	bpy.types.DATA_PT_vertex_groups.append(misc_DATA_PT_vertex_groups.menu_func)
 	bpy.types.IMAGE_HT_header.append(misc_IMAGE_HT_header.menu_func)
 	bpy.types.IMAGE_PT_image_properties.append(misc_IMAGE_PT_image_properties.menu_func)
+	bpy.types.INFO_HT_header.append(misc_INFO_HT_header.menu_func)
 	bpy.types.INFO_MT_add.append(misc_INFO_MT_add.menu_func)
 	bpy.types.INFO_MT_curve_add.append(misc_INFO_MT_curve_add.menu_func)
 	bpy.types.INFO_MT_help.append(misc_INFO_MT_help.menu_func)
@@ -236,9 +239,9 @@ def register():
 	bpy.types.RENDER_PT_render.append(misc_RENDER_PT_render.menu_func)
 	bpy.types.TEXTURE_PT_context_texture.append(misc_TEXTURE_PT_context_texture.menu_func)
 	bpy.types.TEXT_HT_header.append(misc_TEXT_HT_header.menu_func)
-	bpy.types.VIEW3D_MT_pose_apply.append(misc_VIEW3D_MT_pose_apply.menu_func)
-	bpy.types.INFO_HT_header.append(misc_INFO_HT_header.menu_func)
 	bpy.types.VIEW3D_MT_edit_mesh_specials.append(misc_VIEW3D_MT_edit_mesh_specials.menu_func)
+	bpy.types.VIEW3D_MT_pose_apply.append(misc_VIEW3D_MT_pose_apply.menu_func)
+	bpy.types.VIEW3D_PT_tools_weightpaint.append(misc_VIEW3D_PT_tools_weightpaint.menu_func)
 	
 	pcoll = bpy.utils.previews.new()
 	dir = os.path.dirname(__file__)
@@ -283,6 +286,7 @@ def unregister():
 	bpy.types.DATA_PT_vertex_groups.remove(misc_DATA_PT_vertex_groups.menu_func)
 	bpy.types.IMAGE_HT_header.remove(misc_IMAGE_HT_header.menu_func)
 	bpy.types.IMAGE_PT_image_properties.remove(misc_IMAGE_PT_image_properties.menu_func)
+	bpy.types.INFO_HT_header.remove(misc_INFO_HT_header.menu_func)
 	bpy.types.INFO_MT_add.remove(misc_INFO_MT_add.menu_func)
 	bpy.types.INFO_MT_curve_add.remove(misc_INFO_MT_curve_add.menu_func)
 	bpy.types.INFO_MT_help.remove(misc_INFO_MT_help.menu_func)
@@ -295,9 +299,9 @@ def unregister():
 	bpy.types.RENDER_PT_render.remove(misc_RENDER_PT_render.menu_func)
 	bpy.types.TEXTURE_PT_context_texture.remove(misc_TEXTURE_PT_context_texture.menu_func)
 	bpy.types.TEXT_HT_header.remove(misc_TEXT_HT_header.menu_func)
-	bpy.types.VIEW3D_MT_pose_apply.remove(misc_VIEW3D_MT_pose_apply.menu_func)
-	bpy.types.INFO_HT_header.remove(misc_INFO_HT_header.menu_func)
 	bpy.types.VIEW3D_MT_edit_mesh_specials.remove(misc_VIEW3D_MT_edit_mesh_specials.menu_func)
+	bpy.types.VIEW3D_MT_pose_apply.remove(misc_VIEW3D_MT_pose_apply.menu_func)
+	bpy.types.VIEW3D_PT_tools_weightpaint.remove(misc_VIEW3D_PT_tools_weightpaint.menu_func)
 	
 	for pcoll in common.preview_collections.values():
 		bpy.utils.previews.remove(pcoll)
