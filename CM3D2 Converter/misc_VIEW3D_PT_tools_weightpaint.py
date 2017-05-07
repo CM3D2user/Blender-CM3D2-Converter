@@ -66,6 +66,23 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		ob.select = True
 		
 		bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
+		
+		selection_ob = context.active_object
+		selection_me = selection_ob.data
+		
+		for vert in selection_me.vertices:
+			if vert.hide:
+				vert.hide = False
+				vert.select = False
+		for edge in selection_me.edges:
+			if edge.hide:
+				edge.hide = False
+				edge.select = False
+		for poly in selection_me.polygons:
+			if poly.hide:
+				poly.hide = False
+				poly.select = False
+		
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.mesh.select_all(action='INVERT')
 		bpy.ops.mesh.delete(type='VERT')
@@ -73,8 +90,6 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		bpy.ops.mesh.subdivide(number_cuts=self.selection_blur_accuracy, smoothness=0, quadtri=False, quadcorner='INNERVERT', fractal=0, fractal_along_normal=0, seed=0)
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		selection_ob = context.active_object
-		selection_me = selection_ob.data
 		selection_kd = mathutils.kdtree.KDTree(len(selection_me.vertices))
 		for vert in selection_me.vertices:
 			selection_kd.insert(vert.co, vert.index)
