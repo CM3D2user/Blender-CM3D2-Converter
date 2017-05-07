@@ -85,7 +85,12 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.mesh.select_all(action='INVERT')
-		bpy.ops.mesh.delete(type='VERT')
+		if context.tool_settings.mesh_select_mode[0]:
+			bpy.ops.mesh.delete(type='VERT')
+		elif context.tool_settings.mesh_select_mode[1]:
+			bpy.ops.mesh.delete(type='EDGE')
+		elif context.tool_settings.mesh_select_mode[2]:
+			bpy.ops.mesh.delete(type='FACE')
 		bpy.ops.mesh.select_all(action='SELECT')
 		bpy.ops.mesh.subdivide(number_cuts=self.selection_blur_accuracy, smoothness=0, quadtri=False, quadcorner='INNERVERT', fractal=0, fractal_along_normal=0, seed=0)
 		bpy.ops.object.mode_set(mode='OBJECT')
