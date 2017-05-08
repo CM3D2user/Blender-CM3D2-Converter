@@ -160,6 +160,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 					pre_vge.vertex_group = ob.vertex_groups[vge.group]
 					pre_vge.weight = vge.weight
 					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
+					if pre_vge.vertex_group.lock_weight: continue
 					pre_vges.append(pre_vge)
 				pre_weights.append(pre_vges)
 			
@@ -189,6 +190,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 					pre_vges = pre_weights[effect.index]
 					for pre_vge in pre_vges:
 						if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
+						if pre_vge.vertex_group.lock_weight: continue
 						weight_effect = pre_vge.weight * (effect.effect / total_effect)
 						if pre_vge.vertex_group.name in temp_weight_dict:
 							temp_weight_dict[pre_vge.vertex_group.name] += weight_effect
@@ -201,18 +203,21 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 					new_vge.vertex_group = ob.vertex_groups[key]
 					new_vge.weight = value
 					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != new_vge.vertex_group.name: continue
+					if new_vge.vertex_group.lock_weight: continue
 					new_vges.append(new_vge)
 				new_weights.append(new_vges)
 			
 			selected_vert_indices = [i for i, v in enumerate(vert_selection_values) if v != None]
 			for vg in ob.vertex_groups:
 				if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != vg.name: continue
+				if vg.lock_weight: continue
 				vg.remove(selected_vert_indices)
 			
 			for index, pre_vges in enumerate(pre_weights):
 				if vert_selection_values[index] == None: continue
 				for pre_vge in pre_vges:
 					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
+					if pre_vge.vertex_group.lock_weight: continue
 					
 					multi = 1.0 - vert_selection_values[index]
 					pre_weight = pre_vge.weight * multi
@@ -221,6 +226,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 				if vert_selection_values[index] == None: continue
 				for new_vge in new_vges:
 					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != new_vge.vertex_group.name: continue
+					if new_vge.vertex_group.lock_weight: continue
 					
 					multi = vert_selection_values[index]
 					new_weight = new_vge.weight * multi
