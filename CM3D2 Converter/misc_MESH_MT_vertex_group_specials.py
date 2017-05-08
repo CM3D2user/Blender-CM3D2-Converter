@@ -22,7 +22,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="最初に非ロックの全頂点グループを削除", default=True)
+	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="すでにある頂点グループを削除", default=True)
 	is_source_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(参照)", default=False)
 	is_target_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(対象)", default=False)
 	items = [
