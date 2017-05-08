@@ -22,7 +22,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="最初に非ロックの全頂点グループを削除", default=True)
 	is_source_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(参照)", default=False)
 	is_target_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(対象)", default=False)
 	items = [
@@ -113,8 +113,9 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			return {'CANCELLED'}
 		
 		if self.is_remove_old_vertex_groups:
-			if bpy.ops.object.vertex_group_remove.poll():
-				bpy.ops.object.vertex_group_remove(all=True)
+			for vg in target_ob.vertex_groups[:]:
+				if not vg.lock_weight:
+					target_ob.vertex_groups.remove(vg)
 		
 		if self.is_target_select_vert_only:
 			old_vertex_groups = []
@@ -140,7 +141,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 					for vg in target_ob.vertex_groups:
 						vg.remove([vert.index])
 					for mvge in old_vertex_groups[vert.index]:
-						mvge.vertex_group.add(vert.index, mvge.weight, 'REPLACE')
+						mvge.vertex_group.add([vert.index], mvge.weight, 'REPLACE')
 		
 		common.remove_data([temp_source_ob, temp_source_me])
 		join_source_ob.select = True
@@ -642,7 +643,7 @@ class remove_noassign_vertex_groups(bpy.types.Operator):
 		
 		copy_vertex_groups = ob.vertex_groups[:]
 		for i in range(len(copy_vertex_groups)):
-			if not is_keeps[i]:
+			if not is_keeps[i] and not copy_vertex_groups[i].lock_weight:
 				ob.vertex_groups.remove(copy_vertex_groups[i])
 		
 		return {'FINISHED'}

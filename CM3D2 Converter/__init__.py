@@ -4,13 +4,13 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "@saidenka_cm3d2",
-	"version" : (2017, 5, 8, 16, 30, 1),
+	"version" : (2017, 5, 8, 20, 26, 52),
 	"blender" : (2, 78, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
 	"warning" : "",
 	"wiki_url" : "https://github.com/CM3Duser/Blender-CM3D2-Converter",
-	"tracker_url" : "http://jbbs.shitaraba.net/bbs/subject.cgi/game/55179/?q=%A1%D6%A5%AB%A5%B9%A5%BF%A5%E0%A5%E1%A5%A4%A5%C93D2%A1%D7%B2%FE%C2%A4%A5%B9%A5%EC%A5%C3%A5%C9",
+	"tracker_url" : "https://twitter.com/saidenka_cm3d2",
 	"category" : "Import-Export"
 }
 
