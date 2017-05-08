@@ -22,7 +22,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="すでにある頂点グループを削除 (ロックで保護)", default=True)
+	is_remove_old_vertex_groups = bpy.props.BoolProperty(name="すでにある頂点グループを削除 (ロックで保護)", default=False)
 	is_source_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(参照)", default=False)
 	is_target_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(対象)", default=False)
 	items = [
@@ -164,7 +164,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを遠いほどぼかして転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_first_remove_all = bpy.props.BoolProperty(name="すでにある頂点グループを削除 (ロックで保護)", default=True)
+	is_first_remove_all = bpy.props.BoolProperty(name="すでにある頂点グループを削除 (ロックで保護)", default=False)
 	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
 	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=1.1, min=1.0001, max=5.0, soft_min=1.0001, soft_max=5.0, step=10, precision=2)
 	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
