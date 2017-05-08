@@ -6,7 +6,7 @@ from . import common
 def menu_func(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id
 	box = self.layout.box()
-	box.operator('mesh.selected_mesh_vertex_group_blur', text="ぼかし", icon_value=icon_id)
+	box.operator('mesh.selected_mesh_vertex_group_blur', text="選択部分をぼかし", icon_value=icon_id)
 
 class selected_mesh_vertex_group_blur(bpy.types.Operator):
 	bl_idname = 'mesh.selected_mesh_vertex_group_blur'
@@ -50,7 +50,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		self.layout.prop(self, 'selection_blur_accuracy', text="精度 (分割数)")
 		
 		self.layout.label(text="頂点グループをぼかす", icon='GROUP_VERTEX')
-		self.layout.prop(self, 'target_vertex_group', text="対象")
+		self.layout.prop(self, 'target_vertex_group', text="対象グループ")
 		self.layout.prop(self, 'blur_range_multi', text="範囲 | 辺の長さの平均×")
 		self.layout.prop(self, 'blur_count', text="実行回数")
 		self.layout.prop(self, 'is_vertex_group_limit_total', icon='IMGDISPLAY')

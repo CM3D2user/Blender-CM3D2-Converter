@@ -23,7 +23,7 @@ class INFO_MT_help_CM3D2_Converter_RSS(bpy.types.Menu):
 			titles = re.findall(r'\<title\>[　\s]*([^　\s][^\<]*[^　\s])[　\s]*\<\/title\>', html)[1:]
 			updates = re.findall(r'\<updated\>([^\<\>]*)\<\/updated\>', html)[1:]
 			links = re.findall(r'<link [^\<\>]*href="([^"]+)"/>', html)[2:]
-			version_datetime = datetime.datetime.strptime(str(common.bl_info["version"][0]) + str(common.bl_info["version"][1]), '%Y%m%d99%H%M')
+			version_datetime = datetime.datetime.strptime(str(common.bl_info["version"][0]) + "," + str(common.bl_info["version"][1]) + "," + str(common.bl_info["version"][2]) + "," + str(common.bl_info["version"][3]) + "," + str(common.bl_info["version"][4]) + "," + str(common.bl_info["version"][5]), '%Y,%m,%d,%H,%M,%S')
 			
 			output_data = []
 			update_diffs = []
