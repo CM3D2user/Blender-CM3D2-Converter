@@ -21,11 +21,15 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 	smooth_method = bpy.props.EnumProperty(items=items, name="減衰タイプ", default='TRIGONOMETRIC')
 	
 	selection_blur_range_multi = bpy.props.FloatProperty(name="選択をぼかす範囲倍率", default=4.0, min=0.0, max=100.0, soft_min=0.0, soft_max=100.0, step=50, precision=1)
-	selection_blur_accuracy = bpy.props.IntProperty(name="選択をぼかす分割精度", default=4, min=1, max=10, soft_min=1, soft_max=10)
+	selection_blur_accuracy = bpy.props.IntProperty(name="選択をぼかす分割精度", default=3, min=0, max=10, soft_min=1, soft_max=10)
 	
+	items = [
+		('ALL', "全て", "", 'COLLAPSEMENU', 1),
+		('ACTIVE', "アクティブのみ", "", 'LAYER_ACTIVE', 2),
+		]
+	target_vertex_group = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ALL')
 	blur_range_multi = bpy.props.FloatProperty(name="ウェイトをぼかす範囲倍率", default=2.0, min=0.0, max=100.0, soft_min=0.0, soft_max=100.0, step=50, precision=1)
 	blur_count = bpy.props.IntProperty(name="ウェイトをぼかす回数", default=1, min=1, max=100, soft_min=1, soft_max=100)
-	
 	is_vertex_group_limit_total = bpy.props.BoolProperty(name="ウェイト数を4つに制限", default=True)
 	
 	@classmethod
@@ -42,13 +46,13 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		self.layout.prop(self, 'smooth_method')
 		
 		self.layout.label(text="選択をぼかす", icon='UV_SYNC_SELECT')
-		self.layout.prop(self, 'selection_blur_range_multi', text="範囲倍率")
-		self.layout.prop(self, 'selection_blur_accuracy', text="精度(分割数)")
+		self.layout.prop(self, 'selection_blur_range_multi', text="範囲 | 辺の長さの平均×")
+		self.layout.prop(self, 'selection_blur_accuracy', text="精度 (分割数)")
 		
 		self.layout.label(text="頂点グループをぼかす", icon='GROUP_VERTEX')
-		self.layout.prop(self, 'blur_range_multi', text="範囲倍率")
+		self.layout.prop(self, 'target_vertex_group', text="対象")
+		self.layout.prop(self, 'blur_range_multi', text="範囲 | 辺の長さの平均×")
 		self.layout.prop(self, 'blur_count', text="実行回数")
-		
 		self.layout.prop(self, 'is_vertex_group_limit_total', icon='IMGDISPLAY')
 	
 	def execute(self, context):
@@ -92,7 +96,8 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		elif context.tool_settings.mesh_select_mode[2]:
 			bpy.ops.mesh.delete(type='FACE')
 		bpy.ops.mesh.select_all(action='SELECT')
-		bpy.ops.mesh.subdivide(number_cuts=self.selection_blur_accuracy, smoothness=0, quadtri=False, quadcorner='INNERVERT', fractal=0, fractal_along_normal=0, seed=0)
+		if 1 <= self.selection_blur_accuracy:
+			bpy.ops.mesh.subdivide(number_cuts=self.selection_blur_accuracy, smoothness=0, quadtri=False, quadcorner='INNERVERT', fractal=0, fractal_along_normal=0, seed=0)
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		selection_kd = mathutils.kdtree.KDTree(len(selection_me.vertices))
@@ -150,6 +155,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 					pre_vge = EmptyClass()
 					pre_vge.vertex_group = ob.vertex_groups[vge.group]
 					pre_vge.weight = vge.weight
+					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
 					pre_vges.append(pre_vge)
 				pre_weights.append(pre_vges)
 			
@@ -178,6 +184,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 				for effect in effects:
 					pre_vges = pre_weights[effect.index]
 					for pre_vge in pre_vges:
+						if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
 						weight_effect = pre_vge.weight * (effect.effect / total_effect)
 						if pre_vge.vertex_group.name in temp_weight_dict:
 							temp_weight_dict[pre_vge.vertex_group.name] += weight_effect
@@ -189,22 +196,28 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 					new_vge = EmptyClass()
 					new_vge.vertex_group = ob.vertex_groups[key]
 					new_vge.weight = value
+					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != new_vge.vertex_group.name: continue
 					new_vges.append(new_vge)
 				new_weights.append(new_vges)
 			
 			selected_vert_indices = [i for i, v in enumerate(vert_selection_values) if v != None]
 			for vg in ob.vertex_groups:
+				if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != vg.name: continue
 				vg.remove(selected_vert_indices)
 			
 			for index, pre_vges in enumerate(pre_weights):
 				if vert_selection_values[index] == None: continue
 				for pre_vge in pre_vges:
+					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
+					
 					multi = 1.0 - vert_selection_values[index]
 					pre_weight = pre_vge.weight * multi
 					pre_vge.vertex_group.add([index], pre_weight, 'ADD')
 			for index, new_vges in enumerate(new_weights):
 				if vert_selection_values[index] == None: continue
 				for new_vge in new_vges:
+					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != new_vge.vertex_group.name: continue
+					
 					multi = vert_selection_values[index]
 					new_weight = new_vge.weight * multi
 					new_vge.vertex_group.add([index], new_weight, 'ADD')
