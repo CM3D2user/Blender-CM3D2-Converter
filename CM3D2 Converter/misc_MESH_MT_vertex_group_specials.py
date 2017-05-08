@@ -117,19 +117,15 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 				if not vg.lock_weight:
 					target_ob.vertex_groups.remove(vg)
 		
-		if self.is_target_select_vert_only:
-			old_vertex_groups = []
-			for vert in target_me.vertices:
-				if not vert.select:
-					mvges = []
-					for vge in vert.groups:
-						mvge = MyVertexGroupElement()
-						mvge.vertex_group = target_ob.vertex_groups[vge.group]
-						mvge.weight = vge.weight
-						mvges.append(mvge)
-					old_vertex_groups.append(mvges)
-				else:
-					old_vertex_groups.append(None)
+		old_vertex_groups = []
+		for vert in target_me.vertices:
+			mvges = []
+			for vge in vert.groups:
+				mvge = MyVertexGroupElement()
+				mvge.vertex_group = target_ob.vertex_groups[vge.group]
+				mvge.weight = vge.weight
+				mvges.append(mvge)
+			old_vertex_groups.append(mvges)
 		
 		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='NAME', layers_select_dst='ALL', mix_mode='REPLACE', mix_factor=1)
 		if self.is_clean: bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.00000000001)
@@ -142,6 +138,14 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 						vg.remove([vert.index])
 					for mvge in old_vertex_groups[vert.index]:
 						mvge.vertex_group.add([vert.index], mvge.weight, 'REPLACE')
+		
+		for vert in target_me.vertices:
+			for vg in target_ob.vertex_groups:
+				if vg.lock_weight:
+					vg.remove([vert.index])
+			for mvge in old_vertex_groups[vert.index]:
+				if mvge.vertex_group.lock_weight:
+					mvge.vertex_group.add([vert.index], mvge.weight, 'REPLACE')
 		
 		common.remove_data([temp_source_ob, temp_source_me])
 		join_source_ob.select = True
