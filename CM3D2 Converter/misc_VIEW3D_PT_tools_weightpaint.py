@@ -36,7 +36,8 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 	def poll(cls, context):
 		ob = context.active_object
 		if ob.type == 'MESH':
-			return bool(len(ob.vertex_groups))
+			if len(ob.vertex_groups):
+				return len(ob.data.vertices) and len(ob.data.edges)
 		return False
 	
 	def invoke(self, context, event):
@@ -113,7 +114,10 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		bm.from_mesh(me)
 		edge_lengths = [e.calc_length() for e in bm.edges]
 		bm.free()
-		selection_blur_range = edge_lengths[int(len(edge_lengths) * 0.5)] * self.selection_blur_range_multi
+		edge_lengths.sort()
+		edge_lengths_center_index = int( (len(edge_lengths) - 1) * 0.5 )
+		average_edge_length = edge_lengths[edge_lengths_center_index]
+		selection_blur_range = average_edge_length * self.selection_blur_range_multi
 		
 		vert_selection_values = []
 		for vert in me.vertices:
@@ -144,7 +148,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 			kd.insert(vert.co, vert.index)
 		kd.balance()
 		
-		blur_range = edge_lengths[int(len(edge_lengths) * 0.5)] * self.blur_range_multi
+		blur_range = average_edge_length * self.blur_range_multi
 		
 		for i in range(self.blur_count):
 			

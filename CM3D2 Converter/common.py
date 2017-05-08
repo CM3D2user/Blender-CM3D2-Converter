@@ -4,9 +4,9 @@ from . import fileutil
 # アドオン情報
 bl_info = {
 	"name" : "CM3D2 Converter",
-	"author" : "",
-	"version" : (2017, 5, 8, 14, 43, 41),
-	"blender" : (2, 76, 0),
+	"author" : "@saidenka_cm3d2",
+	"version" : (2017, 5, 8, 16, 0, 13),
+	"blender" : (2, 78, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
 	"warning" : "",
