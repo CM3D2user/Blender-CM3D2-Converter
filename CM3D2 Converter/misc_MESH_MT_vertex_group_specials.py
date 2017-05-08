@@ -164,7 +164,7 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュの頂点グループを遠いほどぼかして転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_first_remove_all = bpy.props.BoolProperty(name="最初に全頂点グループを削除", default=True)
+	is_first_remove_all = bpy.props.BoolProperty(name="すでにある頂点グループを削除", default=True)
 	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
 	extend_range = bpy.props.FloatProperty(name="範囲倍率", default=1.1, min=1.0001, max=5.0, soft_min=1.0001, soft_max=5.0, step=10, precision=2)
 	is_remove_empty = bpy.props.BoolProperty(name="割り当てのない頂点グループを削除", default=True)
@@ -217,8 +217,9 @@ class precision_transfer_vertex_group(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_first_remove_all:
-			if bpy.ops.object.vertex_group_remove.poll():
-				bpy.ops.object.vertex_group_remove(all=True)
+			for vg in target_ob.vertex_groups[:]:
+				if not vg.lock_weight:
+					target_ob.vertex_groups.remove(vg)
 		
 		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
 		for vert in source_me.vertices:
