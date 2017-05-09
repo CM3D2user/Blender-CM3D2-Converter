@@ -6,12 +6,13 @@ from . import common
 def menu_func(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id
 	box = self.layout.box()
-	box.operator('mesh.selected_mesh_vertex_group_blur', text="選択部分をぼかし", icon_value=icon_id)
+	box.operator('mesh.selected_mesh_vertex_group_blur', text="選択部をぼかす", icon_value=icon_id)
+	box.operator('mesh.selected_mesh_vertex_group_calculation', text="選択部に四則演算", icon_value=icon_id)
 
 class selected_mesh_vertex_group_blur(bpy.types.Operator):
 	bl_idname = 'mesh.selected_mesh_vertex_group_blur'
-	bl_label = "選択部分の頂点グループをぼかす"
-	bl_description = "選択メッシュの頂点グループの影響をぼかします"
+	bl_label = "選択部の頂点グループをぼかす"
+	bl_description = "選択メッシュの頂点グループの割り当てをぼかします"
 	bl_options = {'REGISTER', 'UNDO'}
 	
 	items = [
@@ -234,6 +235,190 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		
 		if self.is_vertex_group_limit_total:
 			bpy.ops.object.vertex_group_limit_total(group_select_mode='ALL', limit=4)
+		
+		bpy.ops.object.mode_set(mode=pre_mode)
+		for selected_object in pre_selected_objects:
+			selected_object.select = True
+		return {'FINISHED'}
+
+class selected_mesh_vertex_group_calculation(bpy.types.Operator):
+	bl_idname = 'mesh.selected_mesh_vertex_group_calculation'
+	bl_label = "選択部の頂点グループに四則演算"
+	bl_description = "選択メッシュの頂点グループの割り当てに四則演算を施します"
+	bl_options = {'REGISTER', 'UNDO'}
+	
+	items = [
+		('LINER', "リニア", "", 'LINCURVE', 1),
+		('TRIGONOMETRIC', "スムーズ", "", 'SMOOTHCURVE', 2),
+		]
+	smooth_method = bpy.props.EnumProperty(items=items, name="減衰タイプ", default='TRIGONOMETRIC')
+	
+	selection_blur_range_multi = bpy.props.FloatProperty(name="選択をぼかす範囲倍率", default=4.0, min=0.0, max=100.0, soft_min=0.0, soft_max=100.0, step=50, precision=1)
+	selection_blur_accuracy = bpy.props.IntProperty(name="選択をぼかす分割精度", default=3, min=0, max=10, soft_min=1, soft_max=10)
+	
+	items = [
+		('ACTIVE', "アクティブのみ", "", 'LAYER_ACTIVE', 1),
+		]
+	target_vertex_group = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ACTIVE')
+	items = [
+		('ADD', "加算", "", 'ZOOMIN', 1),
+		('SUB', "減算", "", 'ZOOMOUT', 2),
+		('MULTI', "乗算", "", 'X', 3),
+		('DIV', "除算", "", 'FULLSCREEN_EXIT', 4),
+		]
+	calculation_mode = bpy.props.EnumProperty(items=items, name="四則演算モード", default='MULTI')
+	calculation_value = bpy.props.FloatProperty(name="値", default=1.0, min=-100.0, max=100.0, soft_min=-100.0, soft_max=100.0, step=10, precision=1)
+	
+	@classmethod
+	def poll(cls, context):
+		ob = context.active_object
+		if ob.type == 'MESH':
+			return bool(len(ob.vertex_groups))
+		return False
+	
+	def draw(self, context):
+		self.layout.label(text="選択をぼかす", icon='UV_SYNC_SELECT')
+		self.layout.prop(self, 'smooth_method')
+		self.layout.prop(self, 'selection_blur_range_multi', text="範囲 | 辺の長さの平均×")
+		self.layout.prop(self, 'selection_blur_accuracy', text="精度 (分割数)")
+		
+		self.layout.label(text="四則演算", icon='BRUSH_ADD')
+		self.layout.prop(self, 'target_vertex_group', text="対象グループ")
+		self.layout.prop(self, 'calculation_mode', text="モード")
+		self.layout.prop(self, 'calculation_value', text="値")
+		
+		calculation_text = "式： 元のウェイト "
+		if self.calculation_mode == 'ADD':
+			calculation_text += "＋"
+		elif self.calculation_mode == 'SUB':
+			calculation_text += "－"
+		elif self.calculation_mode == 'MULTI':
+			calculation_text += "×"
+		elif self.calculation_mode == 'DIV':
+			calculation_text += "÷"
+		calculation_text += " " + str(round(self.calculation_value, 1))
+		self.layout.label(text=calculation_text)
+	
+	def execute(self, context):
+		class EmptyClass: pass
+		
+		if self.calculation_mode == 'DIV' and self.calculation_value == 0.0:
+			self.report(type={'ERROR'}, message="0で除算することはできません、中止します")
+			return {'CANCELLED'}
+		
+		ob = context.active_object
+		me = ob.data
+		
+		pre_mode = ob.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		pre_selected_objects = context.selected_objects[:]
+		for selected_object in pre_selected_objects:
+			selected_object.select = False
+		ob.select = True
+		
+		bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
+		
+		selection_ob = context.active_object
+		selection_me = selection_ob.data
+		
+		for vert in selection_me.vertices:
+			if vert.hide:
+				vert.hide = False
+				vert.select = False
+		for edge in selection_me.edges:
+			if edge.hide:
+				edge.hide = False
+				edge.select = False
+		for poly in selection_me.polygons:
+			if poly.hide:
+				poly.hide = False
+				poly.select = False
+		
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_all(action='INVERT')
+		if context.tool_settings.mesh_select_mode[0]:
+			bpy.ops.mesh.delete(type='VERT')
+		elif context.tool_settings.mesh_select_mode[1]:
+			bpy.ops.mesh.delete(type='EDGE')
+		elif context.tool_settings.mesh_select_mode[2]:
+			bpy.ops.mesh.delete(type='FACE')
+		bpy.ops.mesh.select_all(action='SELECT')
+		if 1 <= self.selection_blur_accuracy:
+			bpy.ops.mesh.subdivide(number_cuts=self.selection_blur_accuracy, smoothness=0, quadtri=False, quadcorner='INNERVERT', fractal=0, fractal_along_normal=0, seed=0)
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		selection_kd = mathutils.kdtree.KDTree(len(selection_me.vertices))
+		for vert in selection_me.vertices:
+			selection_kd.insert(vert.co, vert.index)
+		selection_kd.balance()
+		common.remove_data([selection_ob, selection_me])
+		
+		ob.select = True
+		context.scene.objects.active = ob
+		
+		bm = bmesh.new()
+		bm.from_mesh(me)
+		edge_lengths = [e.calc_length() for e in bm.edges]
+		bm.free()
+		edge_lengths.sort()
+		edge_lengths_center_index = int( (len(edge_lengths) - 1) * 0.5 )
+		average_edge_length = edge_lengths[edge_lengths_center_index]
+		selection_blur_range = average_edge_length * self.selection_blur_range_multi
+		
+		vert_selection_values = []
+		for vert in me.vertices:
+			co, index, dist = selection_kd.find(vert.co)
+			if dist <= selection_blur_range + 0.00001:
+				if 0 < selection_blur_range:
+					if self.smooth_method == 'TRIGONOMETRIC': value = common.trigonometric_smooth(1.0 - (dist / selection_blur_range))
+					else: value = 1.0 - (dist / selection_blur_range)
+					vert_selection_values.append(value)
+				else:
+					vert_selection_values.append(1.0)
+			else:
+				vert_selection_values.append(None)
+		
+		# 頂点カラーで選択状態を確認
+		"""
+		preview_vertex_color = me.vertex_colors.new()
+		for loop in me.loops:
+			v = vert_selection_values[loop.vertex_index]
+			if v != None:
+				preview_vertex_color.data[loop.index].color = (v, v, v)
+			else:
+				preview_vertex_color.data[loop.index].color = (0, 0, 0)
+		"""
+		
+		for vert in me.vertices:
+			effect = vert_selection_values[vert.index]
+			if effect == None: continue
+			
+			pre_vert_weight = 0.0
+			for vge in vert.groups:
+				if ob.vertex_groups.active.index == vge.group:
+					pre_vert_weight = vge.weight
+			
+			if self.calculation_mode == 'ADD':
+				new_vert_weight = pre_vert_weight + self.calculation_value
+			elif self.calculation_mode == 'SUB':
+				new_vert_weight = pre_vert_weight - self.calculation_value
+			elif self.calculation_mode == 'MULTI':
+				new_vert_weight = pre_vert_weight * self.calculation_value
+			elif self.calculation_mode == 'DIV':
+				new_vert_weight = pre_vert_weight / self.calculation_value
+			
+			if new_vert_weight < 0.0:
+				new_vert_weight = 0.0
+			elif 1.0 < new_vert_weight:
+				new_vert_weight = 1.0
+			
+			new_vert_weight = (pre_vert_weight * (1.0 - effect)) + (new_vert_weight * effect)
+			
+			if 0.0 < new_vert_weight:
+				ob.vertex_groups.active.add([vert.index], new_vert_weight, 'REPLACE')
+			else:
+				ob.vertex_groups.active.remove([vert.index])
 		
 		bpy.ops.object.mode_set(mode=pre_mode)
 		for selected_object in pre_selected_objects:
