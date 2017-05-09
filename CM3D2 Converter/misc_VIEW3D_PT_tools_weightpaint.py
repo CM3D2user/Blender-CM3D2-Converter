@@ -6,8 +6,10 @@ from . import common
 def menu_func(self, context):
 	icon_id = common.preview_collections['main']['KISS'].icon_id
 	box = self.layout.box()
-	box.operator('mesh.selected_mesh_vertex_group_blur', text="選択部をぼかす", icon_value=icon_id)
-	box.operator('mesh.selected_mesh_vertex_group_calculation', text="選択部に四則演算", icon_value=icon_id)
+	column = box.column(align=False)
+	column.prop(context.active_object.data, 'use_paint_mask_vertex', icon='VERTEXSEL', text="頂点選択モード")
+	column.operator('mesh.selected_mesh_vertex_group_blur', text="選択部をぼかす", icon_value=icon_id)
+	column.operator('mesh.selected_mesh_vertex_group_calculation', text="選択部に四則演算", icon_value=icon_id)
 
 class selected_mesh_vertex_group_blur(bpy.types.Operator):
 	bl_idname = 'mesh.selected_mesh_vertex_group_blur'
@@ -83,18 +85,12 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		selection_ob = context.active_object
 		selection_me = selection_ob.data
 		
-		for vert in selection_me.vertices:
-			if vert.hide:
-				vert.hide = False
-				vert.select = False
-		for edge in selection_me.edges:
-			if edge.hide:
-				edge.hide = False
-				edge.select = False
-		for poly in selection_me.polygons:
-			if poly.hide:
-				poly.hide = False
-				poly.select = False
+		for v in selection_me.vertices:
+			if v.hide: v.hide, v.select = False, False
+		for e in selection_me.edges:
+			if e.hide: e.hide, e.select = False, False
+		for p in selection_me.polygons:
+			if p.hide: p.hide, p.select = False, False
 		
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.mesh.select_all(action='INVERT')
@@ -126,18 +122,18 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		average_edge_length = edge_lengths[edge_lengths_center_index]
 		selection_blur_range = average_edge_length * self.selection_blur_range_multi
 		
-		vert_selection_values = []
+		vert_selection_values = [None for v in me.vertices]
 		for vert in me.vertices:
 			co, index, dist = selection_kd.find(vert.co)
 			if dist <= selection_blur_range + 0.00001:
 				if 0 < selection_blur_range:
-					if self.smooth_method == 'TRIGONOMETRIC': value = common.trigonometric_smooth(1.0 - (dist / selection_blur_range))
-					else: value = 1.0 - (dist / selection_blur_range)
-					vert_selection_values.append(value)
+					if self.smooth_method == 'TRIGONOMETRIC':
+						value = common.trigonometric_smooth(1.0 - (dist / selection_blur_range))
+					else:
+						value = 1.0 - (dist / selection_blur_range)
+					vert_selection_values[vert.index] = value
 				else:
-					vert_selection_values.append(1.0)
-			else:
-				vert_selection_values.append(None)
+					vert_selection_values[vert.index] = 1.0
 		
 		"""
 		# 頂点カラーで選択状態を確認
@@ -301,18 +297,12 @@ class selected_mesh_vertex_group_calculation(bpy.types.Operator):
 		selection_ob = context.active_object
 		selection_me = selection_ob.data
 		
-		for vert in selection_me.vertices:
-			if vert.hide:
-				vert.hide = False
-				vert.select = False
-		for edge in selection_me.edges:
-			if edge.hide:
-				edge.hide = False
-				edge.select = False
-		for poly in selection_me.polygons:
-			if poly.hide:
-				poly.hide = False
-				poly.select = False
+		for v in selection_me.vertices:
+			if v.hide: v.hide, v.select = False, False
+		for e in selection_me.edges:
+			if e.hide: e.hide, e.select = False, False
+		for p in selection_me.polygons:
+			if p.hide: p.hide, p.select = False, False
 		
 		bpy.ops.object.mode_set(mode='EDIT')
 		bpy.ops.mesh.select_all(action='INVERT')
@@ -344,18 +334,18 @@ class selected_mesh_vertex_group_calculation(bpy.types.Operator):
 		average_edge_length = edge_lengths[edge_lengths_center_index]
 		selection_blur_range = average_edge_length * self.selection_blur_range_multi
 		
-		vert_selection_values = []
+		vert_selection_values = [None for v in me.vertices]
 		for vert in me.vertices:
 			co, index, dist = selection_kd.find(vert.co)
 			if dist <= selection_blur_range + 0.00001:
 				if 0 < selection_blur_range:
-					if self.smooth_method == 'TRIGONOMETRIC': value = common.trigonometric_smooth(1.0 - (dist / selection_blur_range))
-					else: value = 1.0 - (dist / selection_blur_range)
-					vert_selection_values.append(value)
+					if self.smooth_method == 'TRIGONOMETRIC':
+						value = common.trigonometric_smooth(1.0 - (dist / selection_blur_range))
+					else:
+						value = 1.0 - (dist / selection_blur_range)
+					vert_selection_values[vert.index] = value
 				else:
-					vert_selection_values.append(1.0)
-			else:
-				vert_selection_values.append(None)
+					vert_selection_values[vert.index] = 1.0
 		
 		"""
 		# 頂点カラーで選択状態を確認
