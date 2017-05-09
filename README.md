@@ -5,7 +5,16 @@
 　初めての人は[Blenderのチュートリアル](https://www.google.co.jp/#q=Blender+%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB)などから始めましょう。  
 　慣れてきたら[CM3D2 Converterのチュートリアル](http://seesaawiki.jp/eastpoint/d/blender_MOD01)もやってみましょう。  
 
-## インストール (Installation)
+## 目次
+* [インストール](#インストール)
+* [使い方](#使い方)
+* [メモ](#メモ)
+* [機能一覧](#機能一覧)
+* [規約](#規約)
+* [modelのフォーマット](#modelのフォーマット)
+* [課題](#課題)
+
+## インストール
 　まず、Blender2.7以上([2.76b](http://download.blender.org/release/Blender2.76/)推奨)がインストールされており[日本語化](http://ch.nicovideo.jp/hiiragik/blomaga/ar501365)している事が前提です。  
 　画面右上の緑色の「Clone or download」→「[Download ZIP](https://github.com/CM3Duser/Blender-CM3D2-Converter/archive/master.zip)」からファイルをダウンロード・解凍し、  
 　Windows7なら「C:\Users\ユーザー名\AppData\Roaming\Blender Foundation\  
@@ -19,7 +28,7 @@
 　一度インストールしてしまえば、アドオン設定画面かヘルプメニューからアップデート可能です。  
 　![更新](http://i.imgur.com/KFvMeH0.jpg)  
 
-## 使い方 (How to Use)
+## 使い方
 　各種ファイルは.arcファイルから[CM3D2 Tool](http://www.hongfire.com/forum/showthread.php/445616)等で取り出しておいて下さい。  
 　  
 　.modelの読み込みは  
@@ -42,7 +51,7 @@
 　  
 　どれもファイル選択時の左下にオプションがあります。  
 
-## メモ (Note)
+## メモ
 
 ### ボーン
 　ボーン情報は「BoneData」と「LocalBoneData」というテキストデータ、  
@@ -316,10 +325,10 @@
 	- 選択部の頂点グループに四則演算
 		* 選択メッシュの頂点グループの割り当てに四則演算を施します
 
-## 規約 (Agreement)
+## 規約
 [公式のMOD規約](http://kisskiss.tv/kiss/diary.php?no=558)を厳守して下さい。  
 
-## .modelのフォーマット (.model Format)
+## modelのフォーマット
 * (String) 「CM3D2_MESH」固定
 * (Int) バージョン番号
 * (String) モデル名
@@ -388,7 +397,7 @@
 	- else if 設定値タイプ == "end"
 		* break
 
-## 課題 (Assignment)
+## 課題
 * ボーン情報を人力で編集可能な形にする([有志のアドオンにより実現](https://github.com/trzr/Blender-CM3D2-BoneUtil))
 * 一部のmodelに含まれる「頂点数xFloatx4」分のデータを解析、入出力可能に
 * モーションファイル(.anm)関係の完全対応
