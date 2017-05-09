@@ -29,7 +29,13 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		('ACTIVE', "アクティブのみ", "", 'LAYER_ACTIVE', 2),
 		]
 	target_vertex_group = bpy.props.EnumProperty(items=items, name="対象頂点グループ", default='ALL')
-	blur_range_multi = bpy.props.FloatProperty(name="ウェイトをぼかす範囲倍率", default=2.0, min=0.0, max=100.0, soft_min=0.0, soft_max=100.0, step=50, precision=1)
+	items = [
+		('NORMAL', "通常・ぼかし", "", 'BRUSH_BLUR', 1),
+		('ADD', "増加・拡張", "", 'BRUSH_DARKEN', 2),
+		('SUB', "減少・縮小", "", 'BRUSH_LIGHTEN', 3),
+		]
+	blur_mode = bpy.props.EnumProperty(items=items, name="ぼかしモード", default='NORMAL')
+	blur_range_multi = bpy.props.FloatProperty(name="ウェイトをぼかす範囲倍率", default=4.0, min=0.0, max=100.0, soft_min=0.0, soft_max=100.0, step=50, precision=1)
 	blur_count = bpy.props.IntProperty(name="ウェイトをぼかす回数", default=1, min=1, max=100, soft_min=1, soft_max=100)
 	is_vertex_group_limit_total = bpy.props.BoolProperty(name="ウェイト数を4つに制限", default=True)
 	
@@ -53,6 +59,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		
 		self.layout.label(text="頂点グループをぼかす", icon='GROUP_VERTEX')
 		self.layout.prop(self, 'target_vertex_group', text="対象グループ")
+		self.layout.prop(self, 'blur_mode', text="モード")
 		self.layout.prop(self, 'blur_range_multi', text="範囲 | 辺の長さの平均×")
 		self.layout.prop(self, 'blur_count', text="実行回数")
 		self.layout.prop(self, 'is_vertex_group_limit_total', icon='IMGDISPLAY')
@@ -103,8 +110,7 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		selection_kd = mathutils.kdtree.KDTree(len(selection_me.vertices))
-		for vert in selection_me.vertices:
-			selection_kd.insert(vert.co, vert.index)
+		[selection_kd.insert(v.co, v.index) for v in selection_me.vertices]
 		selection_kd.balance()
 		common.remove_data([selection_ob, selection_me])
 		
@@ -133,8 +139,8 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 			else:
 				vert_selection_values.append(None)
 		
-		# 頂点カラーで選択状態を確認
 		"""
+		# 頂点カラーで選択状態を確認
 		preview_vertex_color = me.vertex_colors.new()
 		for loop in me.loops:
 			v = vert_selection_values[loop.vertex_index]
@@ -145,93 +151,70 @@ class selected_mesh_vertex_group_blur(bpy.types.Operator):
 		"""
 		
 		kd = mathutils.kdtree.KDTree(len(me.vertices))
-		for vert in me.vertices:
-			kd.insert(vert.co, vert.index)
+		[kd.insert(v.co, v.index) for v in me.vertices]
 		kd.balance()
 		
 		blur_range = average_edge_length * self.blur_range_multi
 		
 		for i in range(self.blur_count):
 			
-			pre_weights = []
+			pre_vert_weights = [[0.0 for vg in ob.vertex_groups] for v in me.vertices]
 			for vert in me.vertices:
-				pre_vges = []
 				for vge in vert.groups:
-					pre_vge = EmptyClass()
-					pre_vge.vertex_group = ob.vertex_groups[vge.group]
-					pre_vge.weight = vge.weight
-					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
-					if pre_vge.vertex_group.lock_weight: continue
-					pre_vges.append(pre_vge)
-				pre_weights.append(pre_vges)
+					pre_vert_weights[vert.index][vge.group] = vge.weight
 			
-			new_weights = []
 			for vert in me.vertices:
-				if vert_selection_values[vert.index] == None:
-					new_weights.append([])
-					continue
+				selection_value = vert_selection_values[vert.index]
+				if selection_value == None: continue
 				
-				kd_find_ranged = kd.find_range(vert.co, blur_range)
-				
-				effects = []
+				near_infos = []
 				total_effect = 0.0
-				for co, index, dist in kd_find_ranged:
-					effect = EmptyClass()
-					effect.index = index
+				for co, index, dist in kd.find_range(vert.co, blur_range):
+					ec = EmptyClass()
+					ec.index = index
 					if 0 < blur_range:
-						if self.smooth_method == 'TRIGONOMETRIC': effect.effect = common.trigonometric_smooth(1.0 - (dist / blur_range))
-						else: value = effect.effect = 1.0 - (dist / blur_range)
+						raw_effect = 1.0 - (dist / blur_range)
+						if self.smooth_method == 'TRIGONOMETRIC': ec.effect = common.trigonometric_smooth(raw_effect)
+						else: ec.effect = raw_effect
 					else:
-						effect.effect = 1.0
-					total_effect += effect.effect
-					effects.append(effect)
+						ec.effect = 1.0
+					total_effect += ec.effect
+					near_infos.append(ec)
 				
-				temp_weight_dict = {}
-				for effect in effects:
-					pre_vges = pre_weights[effect.index]
-					for pre_vge in pre_vges:
-						if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
-						if pre_vge.vertex_group.lock_weight: continue
-						weight_effect = pre_vge.weight * (effect.effect / total_effect)
-						if pre_vge.vertex_group.name in temp_weight_dict:
-							temp_weight_dict[pre_vge.vertex_group.name] += weight_effect
-						else:
-							temp_weight_dict[pre_vge.vertex_group.name] = weight_effect
+				new_vert_weight = [0.0 for vg in ob.vertex_groups]
+				for ec in near_infos:
+					pre_vert_weight = pre_vert_weights[ec.index]
+					weight_multi = ec.effect / total_effect
+					for vg_index, near_vert_pre_weight_value in enumerate(pre_vert_weight):
+						current_vert_pre_weight_value = pre_vert_weights[vert.index][vg_index]
+						
+						if self.blur_mode == 'NORMAL':
+							send_weight_value = near_vert_pre_weight_value
+						elif self.blur_mode == 'ADD':
+							if current_vert_pre_weight_value < near_vert_pre_weight_value:
+								send_weight_value = near_vert_pre_weight_value
+							else:
+								send_weight_value = current_vert_pre_weight_value
+						elif self.blur_mode == 'SUB':
+							if near_vert_pre_weight_value < current_vert_pre_weight_value:
+								send_weight_value = near_vert_pre_weight_value
+							else:
+								send_weight_value = current_vert_pre_weight_value
+						
+						new_vert_weight[vg_index] += send_weight_value * weight_multi
 				
-				new_vges = []
-				for key, value in temp_weight_dict.items():
-					new_vge = EmptyClass()
-					new_vge.vertex_group = ob.vertex_groups[key]
-					new_vge.weight = value
-					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != new_vge.vertex_group.name: continue
-					if new_vge.vertex_group.lock_weight: continue
-					new_vges.append(new_vge)
-				new_weights.append(new_vges)
-			
-			selected_vert_indices = [i for i, v in enumerate(vert_selection_values) if v != None]
-			for vg in ob.vertex_groups:
-				if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != vg.name: continue
-				if vg.lock_weight: continue
-				vg.remove(selected_vert_indices)
-			
-			for index, pre_vges in enumerate(pre_weights):
-				if vert_selection_values[index] == None: continue
-				for pre_vge in pre_vges:
-					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != pre_vge.vertex_group.name: continue
-					if pre_vge.vertex_group.lock_weight: continue
+				for vg in ob.vertex_groups:
+					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != vg.name: continue
+					if vg.lock_weight: continue
 					
-					multi = 1.0 - vert_selection_values[index]
-					pre_weight = pre_vge.weight * multi
-					pre_vge.vertex_group.add([index], pre_weight, 'ADD')
-			for index, new_vges in enumerate(new_weights):
-				if vert_selection_values[index] == None: continue
-				for new_vge in new_vges:
-					if self.target_vertex_group == 'ACTIVE' and ob.vertex_groups.active.name != new_vge.vertex_group.name: continue
-					if new_vge.vertex_group.lock_weight: continue
+					pre_weight = pre_vert_weights[vert.index][vg.index]
+					new_weight = new_vert_weight[vg.index]
+					result_weight = (pre_weight * (1.0 - selection_value)) + (new_weight * selection_value)
 					
-					multi = vert_selection_values[index]
-					new_weight = new_vge.weight * multi
-					new_vge.vertex_group.add([index], new_weight, 'ADD')
+					if 0.0 < result_weight:
+						vg.add([vert.index], result_weight, 'REPLACE')
+					else:
+						vg.remove([vert.index])
 		
 		if self.is_vertex_group_limit_total:
 			bpy.ops.object.vertex_group_limit_total(group_select_mode='ALL', limit=4)
@@ -266,7 +249,7 @@ class selected_mesh_vertex_group_calculation(bpy.types.Operator):
 		('MULTI', "乗算", "", 'X', 3),
 		('DIV', "除算", "", 'FULLSCREEN_EXIT', 4),
 		]
-	calculation_mode = bpy.props.EnumProperty(items=items, name="四則演算モード", default='MULTI')
+	calculation_mode = bpy.props.EnumProperty(items=items, name="四則演算モード", default='ADD')
 	calculation_value = bpy.props.FloatProperty(name="値", default=1.0, min=-100.0, max=100.0, soft_min=-100.0, soft_max=100.0, step=10, precision=1)
 	
 	@classmethod
@@ -288,14 +271,10 @@ class selected_mesh_vertex_group_calculation(bpy.types.Operator):
 		self.layout.prop(self, 'calculation_value', text="値")
 		
 		calculation_text = "式： 元のウェイト "
-		if self.calculation_mode == 'ADD':
-			calculation_text += "＋"
-		elif self.calculation_mode == 'SUB':
-			calculation_text += "－"
-		elif self.calculation_mode == 'MULTI':
-			calculation_text += "×"
-		elif self.calculation_mode == 'DIV':
-			calculation_text += "÷"
+		if self.calculation_mode == 'ADD': calculation_text += "＋"
+		elif self.calculation_mode == 'SUB': calculation_text += "－"
+		elif self.calculation_mode == 'MULTI': calculation_text += "×"
+		elif self.calculation_mode == 'DIV': calculation_text += "÷"
 		calculation_text += " " + str(round(self.calculation_value, 1))
 		self.layout.label(text=calculation_text)
 	
@@ -349,8 +328,7 @@ class selected_mesh_vertex_group_calculation(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		selection_kd = mathutils.kdtree.KDTree(len(selection_me.vertices))
-		for vert in selection_me.vertices:
-			selection_kd.insert(vert.co, vert.index)
+		[selection_kd.insert(v.co, v.index) for v in selection_me.vertices]
 		selection_kd.balance()
 		common.remove_data([selection_ob, selection_me])
 		
@@ -379,8 +357,8 @@ class selected_mesh_vertex_group_calculation(bpy.types.Operator):
 			else:
 				vert_selection_values.append(None)
 		
-		# 頂点カラーで選択状態を確認
 		"""
+		# 頂点カラーで選択状態を確認
 		preview_vertex_color = me.vertex_colors.new()
 		for loop in me.loops:
 			v = vert_selection_values[loop.vertex_index]
