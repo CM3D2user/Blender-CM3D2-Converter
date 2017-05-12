@@ -127,9 +127,27 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 				mvges.append(mvge)
 			old_vertex_groups.append(mvges)
 		
+		if self.is_remove_noassign:
+			pre_vertex_group_names = [vg.name for vg in target_ob.vertex_groups]
+		
 		bpy.ops.object.data_transfer(use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='NAME', layers_select_dst='ALL', mix_mode='REPLACE', mix_factor=1)
 		if self.is_clean: bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.00000000001)
-		if self.is_remove_noassign: bpy.ops.object.remove_noassign_vertex_groups(threshold=0.00000000001)
+		
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.object.mode_set(mode='OBJECT')
+		
+		if self.is_remove_noassign:
+			is_keeps = [False for i in range(len(ob.vertex_groups))]
+			for vert in target_me.vertices:
+				for vge in vert.groups:
+					if not is_keeps[vge.group]:
+						if 0.000001 < vge.weight:
+							is_keeps[vge.group] = True
+			copy_vertex_groups = target_ob.vertex_groups[:]
+			for i in range(len(copy_vertex_groups)):
+				if not is_keeps[i] and not copy_vertex_groups[i].lock_weight:
+					if copy_vertex_groups[i].name not in pre_vertex_group_names:
+						target_ob.vertex_groups.remove(copy_vertex_groups[i])
 		
 		if self.is_target_select_vert_only:
 			for vert in target_me.vertices:
