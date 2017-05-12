@@ -84,7 +84,8 @@ class forced_modifier_apply(bpy.types.Operator):
 					if self.is_applies[index]:
 						try:
 							bpy.ops.object.modifier_apply(override, modifier=mod.name)
-						except: pass
+						except:
+							ob.modifiers.remove(mod)
 				
 				new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
 				
@@ -95,10 +96,12 @@ class forced_modifier_apply(bpy.types.Operator):
 			ob.active_shape_key_index = 0
 			me.update()
 		
-		for index, mod in enumerate(ob.modifiers[:]):
-			if self.is_applies[index] and mod.type != "ARMATURE":
+		copy_modifiers = ob.modifiers[:]
+		
+		for index, mod in enumerate(copy_modifiers):
+			if self.is_applies[index] and mod.type != 'ARMATURE':
 				
-				if mod.type == "MIRROR":
+				if mod.type == 'MIRROR':
 					for vg in ob.vertex_groups[:]:
 						replace_list = ((r'\.L$', ".R"), (r'\.R$', ".L"), (r'\.l$', ".r"), (r'\.r$', ".l"), (r'_L$', "_R"), (r'_R$', "_L"), (r'_l$', "_r"), (r'_r$', "_l"))
 						for before, after in replace_list:
@@ -158,8 +161,8 @@ class forced_modifier_apply(bpy.types.Operator):
 				no.rotate(total_quat)
 				custom_normals.append(no)
 		
-		for index, mod in enumerate(ob.modifiers[:]):
-			if self.is_applies[index] and mod.type == "ARMATURE":
+		for index, mod in enumerate(copy_modifiers):
+			if self.is_applies[index] and mod.type == 'ARMATURE':
 				try:
 					bpy.ops.object.modifier_apply(modifier=mod.name)
 				except:
