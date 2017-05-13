@@ -21,48 +21,34 @@ class quick_shape_key_transfer(bpy.types.Operator):
 	bl_description = "アクティブなメッシュに他の選択メッシュのシェイプキーを高速で転送します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	is_remove_old_shapekeys = bpy.props.BoolProperty(name="すでにあるシェイプキーを削除 (ミュートで保護)", default=False)
-	is_source_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(参照)", default=False)
-	is_target_select_vert_only = bpy.props.BoolProperty(name="選択頂点のみ(対象)", default=False)
-	items = [
-		('NEAREST', "最も近い頂点", "", 'VERTEXSEL', 1),
-		('EDGEINTERP_NEAREST', "最も近い辺", "", 'EDGESEL', 2),
-		('POLYINTERP_NEAREST', "最も近い面", "", 'FACESEL', 3),
-		('POLYINTERP_VNORPROJ', "投影先", "", 'MOD_UVPROJECT', 4),
-		]
-	vert_mapping = bpy.props.EnumProperty(items=items, name="参照要素", default='POLYINTERP_NEAREST')
-	is_remove_noshape = bpy.props.BoolProperty(name="転送後に変形のないシェイプキーを削除", default=True)
+	is_first_remove_all = bpy.props.BoolProperty(name="最初に全シェイプキーを削除", default=True)
+	subdivide_number = bpy.props.IntProperty(name="参照元の分割", default=1, min=0, max=10, soft_min=0, soft_max=10)
+	is_remove_empty = bpy.props.BoolProperty(name="変形のないシェイプキーを削除", default=True)
 	
 	@classmethod
 	def poll(cls, context):
 		active_ob = context.active_object
 		obs = context.selected_objects
-		if len(obs) < 2: return False
+		if len(obs) != 2: return False
 		for ob in obs:
 			if ob.type != 'MESH':
 				return False
 			if ob.name != active_ob.name:
-				if not ob.data.shape_keys:
-					return False
-				elif not len(ob.data.shape_keys.key_blocks):
-					return False
-		return True
+				if ob.data.shape_keys:
+					return True
+		return False
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'is_remove_old_shapekeys', icon='ERROR')
-		
-		row = self.layout.row(align=True)
-		row.prop(self, 'is_source_select_vert_only', icon='UV_SYNC_SELECT')
-		row.prop(self, 'is_target_select_vert_only', icon='UV_SYNC_SELECT')
-		
-		self.layout.prop(self, 'vert_mapping')
-		self.layout.prop(self, 'is_remove_noshape', icon='X')
+		self.layout.prop(self, 'is_first_remove_all', icon='ERROR')
+		self.layout.prop(self, 'subdivide_number', icon='LATTICE_DATA')
+		self.layout.prop(self, 'is_remove_empty', icon='X')
 	
 	def execute(self, context):
-		class EmptyClass: pass
+		import mathutils, time
+		start_time = time.time()
 		
 		target_ob = context.active_object
 		target_me = target_ob.data
@@ -70,136 +56,90 @@ class quick_shape_key_transfer(bpy.types.Operator):
 		pre_mode = target_ob.mode
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		original_source_obs = []
 		for ob in context.selected_objects:
 			if ob.name != target_ob.name:
-				original_source_obs.append(ob)
-		
-		target_ob.select = False
-		context.scene.objects.active = original_source_obs[0]
-		bpy.ops.object.duplicate(linked=False, mode='TRANSLATION')
-		bpy.ops.object.join()
-		join_source_ob = context.selected_objects[0]
-		join_source_me = join_source_ob.data
-		target_ob.select = True
-		context.scene.objects.active = target_ob
-		
-		temp_source_ob = join_source_ob.copy()
-		temp_source_me = join_source_me.copy()
-		temp_source_ob.data = temp_source_me
-		context.scene.objects.link(temp_source_ob)
-		temp_source_ob.select = True
-		join_source_ob.select = False
-		context.scene.objects.active = temp_source_ob
-		if self.is_source_select_vert_only:
-			bpy.ops.object.mode_set(mode='EDIT')
-			bpy.ops.mesh.select_all(action='INVERT')
-			bpy.ops.mesh.delete(type='VERT')
-			bpy.ops.object.mode_set(mode='OBJECT')
-			context.scene.objects.active = target_ob
-		
-		temp_target_ob = target_ob.copy()
-		temp_target_me = target_me.copy()
-		temp_target_ob.data = temp_target_me
-		context.scene.objects.link(temp_target_ob)
-		target_ob.select = False
-		temp_target_ob.select = True
-		context.scene.objects.active = temp_target_ob
-		
-		for vg in temp_source_ob.vertex_groups[:]: temp_source_ob.vertex_groups.remove(vg)
-		for vg in temp_target_ob.vertex_groups[:]: temp_target_ob.vertex_groups.remove(vg)
-		for vert in temp_source_me.vertices:
-			vg = temp_source_ob.vertex_groups.new(name=str(vert.index))
-			vg.add([vert.index], 1.0, 'REPLACE')
-		
-		if self.vert_mapping == 'POLYINTERP_VNORPROJ' and len(temp_source_me.polygons) == 0:
-			self.vert_mapping = 'EDGEINTERP_NEAREST'
-			self.report(type={'WARNING'}, message="面がひとつも存在しません、辺モードに変更します")
-		if self.vert_mapping == 'POLYINTERP_NEAREST' and len(temp_source_me.polygons) == 0:
-			self.vert_mapping = 'EDGEINTERP_NEAREST'
-			self.report(type={'WARNING'}, message="面がひとつも存在しません、辺モードに変更します")
-		if self.vert_mapping == 'EDGEINTERP_NEAREST' and len(temp_source_me.edges) == 0:
-			self.vert_mapping = 'NEAREST'
-			self.report(type={'WARNING'}, message="辺がひとつも存在しません、頂点モードに変更します")
-		if self.vert_mapping == 'NEAREST' and len(temp_source_me.vertices) == 0:
-			self.report(type={'ERROR'}, message="頂点がひとつも存在しません、中止します")
-			return {'CANCELLED'}
-		
-		old_shape_keys = {}
-		if target_me.shape_keys:
-			for sk in target_me.shape_keys.key_blocks:
-				old_shape_keys[sk.name] = []
-				for d in sk.data:
-					old_shape_keys[sk.name].append(d.co.copy())
-		
-		if self.is_remove_old_shapekeys:
-			if target_me.shape_keys:
-				for sk in target_me.shape_keys.key_blocks[:]:
-					if not sk.mute and sk.relative_key.name != sk.name:
-						target_ob.shape_key_remove(sk)
-				for sk in target_me.shape_keys.key_blocks[:]:
-					if not sk.mute and sk.relative_key.name == sk.name:
-						target_ob.shape_key_remove(sk)
-		
-		if self.is_remove_noshape:
-			if target_me.shape_keys:
-				pre_shapekey_names = [sk.name for sk in target_me.shape_keys.key_blocks]
-			else:
-				pre_shapekey_names = []
-		
-		now_context = bpy.context.copy()
-		now_context['object'], now_context['active_object'] = temp_target_ob, temp_target_ob
-		now_context['selected_objects'] = (temp_target_ob, temp_source_ob)
-		bpy.ops.object.data_transfer(now_context, use_reverse_transfer=True, use_freeze=False, data_type='VGROUP_WEIGHTS', use_create=True, vert_mapping=self.vert_mapping, use_auto_transform=False, use_object_transform=True, use_max_distance=False, ray_radius=0, layers_select_src='NAME', layers_select_dst='ALL', mix_mode='REPLACE', mix_factor=1)
-		bpy.ops.object.vertex_group_clean(now_context, group_select_mode='ALL', limit=0.00000000001)
-		
+				source_original_ob = ob
+				break
+		source_ob = source_original_ob.copy()
+		source_me = source_original_ob.data.copy()
+		source_ob.data = source_me
+		context.scene.objects.link(source_ob)
+		context.scene.objects.active = source_ob
 		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.reveal()
+		bpy.ops.mesh.select_all(action='SELECT')
+		bpy.ops.mesh.subdivide(number_cuts=self.subdivide_number, smoothness=0.0, quadtri=False, quadcorner='STRAIGHT_CUT', fractal=0.0, fractal_along_normal=0.0, seed=0)
+		source_ob.active_shape_key_index = 0
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
-		for sk in temp_source_me.shape_keys.key_blocks:
-			target_ob.shape_key_add(name=sk.name, from_mix=False)
-		for vert in temp_target_me.vertices:
-			for vge in vert.groups:
-				for sk in temp_source_me.shape_keys.key_blocks:
-					if sk.mute: continue
-					diff_co = sk.data[vge.group].co - temp_source_me.vertices[vge.group].co
-					diff_co *= vge.weight
-					target_me.shape_keys.key_blocks[sk.name].data[vert.index].co = target_me.shape_keys.key_blocks[sk.name].data[vert.index].co + diff_co
+		if self.is_first_remove_all:
+			try:
+				target_ob.active_shape_key_index = 1
+				bpy.ops.object.shape_key_remove(all=True)
+			except:
+				pass
 		
-		if self.is_remove_noshape:
-			for sk in target_me.shape_keys.key_blocks[:]:
-				if sk.mute: continue
-				if sk.name in pre_shapekey_names: continue
-				if sk.relative_key.name == sk.name: continue
-				total_length = 0.0
-				for vert in target_me.vertices:
-					diff_co = sk.data[vert.index].co - vert.co
-					total_length += diff_co.length
-				if total_length < 0.000001:
-					target_ob.shape_key_remove(sk)
+		kd = mathutils.kdtree.KDTree(len(source_me.vertices))
+		for vert in source_me.vertices:
+			co = source_ob.matrix_world * vert.co
+			kd.insert(co, vert.index)
+		kd.balance()
 		
-		if self.is_target_select_vert_only:
-			for vert in target_me.vertices:
-				if not vert.select:
-					
-					for sk in target_me.shape_keys.key_blocks:
-						if sk.name in old_shape_keys:
-							sk.data[vert.index].co = old_shape_keys[sk.name]
-						else:
-							sk.data[vert.index].co = vert.co
+		near_vert_indexs = [kd.find(target_ob.matrix_world * v.co)[1] for v in target_me.vertices]
 		
-		common.remove_data([temp_source_ob, temp_source_me])
-		join_source_ob.select = True
+		is_shapeds = {}
+		relative_keys = []
+		context.window_manager.progress_begin(0, len(source_me.shape_keys.key_blocks))
+		context.window_manager.progress_update(0)
+		for source_shape_key_index, source_shape_key in enumerate(source_me.shape_keys.key_blocks):
+			
+			if target_me.shape_keys:
+				if source_shape_key.name in target_me.shape_keys.key_blocks:
+					target_shape_key = target_me.shape_keys.key_blocks[source_shape_key.name]
+				else:
+					target_shape_key = target_ob.shape_key_add(name=source_shape_key.name, from_mix=False)
+			else:
+				target_shape_key = target_ob.shape_key_add(name=source_shape_key.name, from_mix=False)
+			
+			relative_key_name = source_shape_key.relative_key.name
+			if relative_key_name not in relative_keys:
+				relative_keys.append(relative_key_name)
+			is_shapeds[source_shape_key.name] = False
+			
+			try:
+				target_shape_key.relative_key = target_me.shape_keys.key_blocks[relative_key_name]
+			except:
+				pass
+			
+			mat1, mat2 = source_ob.matrix_world, target_ob.matrix_world
+			source_shape_keys = [(mat1 * source_shape_key.data[v.index].co * mat2) - (mat1 * source_me.vertices[v.index].co * mat2) for v in source_me.vertices]
+			
+			for target_vert in target_me.vertices:
+				
+				near_vert_index = near_vert_indexs[target_vert.index]
+				near_shape_co = source_shape_keys[near_vert_index]
+				
+				target_shape_key.data[target_vert.index].co = target_me.vertices[target_vert.index].co + near_shape_co
+				if 0.01 < near_shape_co.length:
+					is_shapeds[source_shape_key.name] = True
+			
+			context.window_manager.progress_update(source_shape_key_index)
+		context.window_manager.progress_end()
 		
-		common.remove_data([join_source_ob, join_source_me])
-		for ob in original_source_obs:
-			ob.select = True
+		if self.is_remove_empty:
+			for source_shape_key_name, is_shaped in is_shapeds.items():
+				if source_shape_key_name not in relative_keys and not is_shaped:
+					target_shape_key = target_me.shape_keys.key_blocks[source_shape_key_name]
+					target_ob.shape_key_remove(target_shape_key)
 		
-		common.remove_data([temp_target_ob, temp_target_me])
-		target_ob.select = True
+		target_ob.active_shape_key_index = 0
 		
+		common.remove_data([source_ob, source_me])
 		context.scene.objects.active = target_ob
 		bpy.ops.object.mode_set(mode=pre_mode)
+		
+		diff_time = time.time() - start_time
+		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
 		return {'FINISHED'}
 
 class precision_shape_key_transfer(bpy.types.Operator):
