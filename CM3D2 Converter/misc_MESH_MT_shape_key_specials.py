@@ -135,7 +135,10 @@ class quick_shape_key_transfer(bpy.types.Operator):
 		if self.is_remove_old_shapekeys:
 			if target_me.shape_keys:
 				for sk in target_me.shape_keys.key_blocks[:]:
-					if not sk.mute:
+					if not sk.mute and sk.relative_key.name != sk.name:
+						target_ob.shape_key_remove(sk)
+				for sk in target_me.shape_keys.key_blocks[:]:
+					if not sk.mute and sk.relative_key.name == sk.name:
 						target_ob.shape_key_remove(sk)
 		
 		if self.is_remove_noshape:
