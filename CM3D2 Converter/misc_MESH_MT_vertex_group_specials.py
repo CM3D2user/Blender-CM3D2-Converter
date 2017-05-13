@@ -137,7 +137,7 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		
 		if self.is_remove_noassign:
-			is_keeps = [False for i in range(len(ob.vertex_groups))]
+			is_keeps = [False for i in range(len(target_ob.vertex_groups))]
 			for vert in target_me.vertices:
 				for vge in vert.groups:
 					if not is_keeps[vge.group]:
