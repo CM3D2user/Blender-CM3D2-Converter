@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "@saidenka_cm3d2",
-	"version" : (2017, 5, 13, 0, 7, 55),
+	"version" : (2017, 5, 13, 15, 3, 7),
 	"blender" : (2, 78, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",
@@ -53,6 +53,7 @@ if "bpy" in locals():
 	imp.reload(misc_VIEW3D_MT_edit_mesh_specials)
 	imp.reload(misc_VIEW3D_MT_pose_apply)
 	imp.reload(misc_VIEW3D_PT_tools_weightpaint)
+	imp.reload(misc_VIEW3D_PT_tools_mesh_shapekey)
 
 else:
 	from . import common
@@ -90,6 +91,7 @@ else:
 	from . import misc_VIEW3D_MT_edit_mesh_specials
 	from . import misc_VIEW3D_MT_pose_apply
 	from . import misc_VIEW3D_PT_tools_weightpaint
+	from . import misc_VIEW3D_PT_tools_mesh_shapekey
 
 import bpy, os.path, bpy.utils.previews
 

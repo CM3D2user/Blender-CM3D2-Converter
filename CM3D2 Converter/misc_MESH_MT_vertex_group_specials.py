@@ -44,9 +44,9 @@ class quick_transfer_vertex_group(bpy.types.Operator):
 			if ob.type != 'MESH':
 				return False
 			if ob.name != active_ob.name:
-				if len(ob.vertex_groups):
-					return True
-		return False
+				if not len(ob.vertex_groups):
+					return False
+		return True
 	
 	def invoke(self, context, event):
 		return context.window_manager.invoke_props_dialog(self)
