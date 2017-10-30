@@ -17,7 +17,7 @@ def menu_func(self, context):
 	row = col.row(align=True)
 	row.operator('object.quick_gradation_bake_image', icon='MESH_PLANE', text="グラデーション")
 	row.operator('object.quick_uv_border_bake_image', icon='MATCAP_24', text="UV縁")
-	row.operator('object.quick_mesh_border_bake_image', icon='EDIT_VEC', text="メッシュ縁")
+	row.operator('object.quick_mesh_border_bake_image', icon='OUTLINER_DATA_MESH', text="メッシュ縁")
 	row = col.row(align=True)
 	row.operator('object.quick_density_bake_image', icon='STICKY_UVS_LOC', text="密度")
 	row.operator('object.quick_bulge_bake_image', icon='BRUSH_INFLATE', text="膨らみ")
