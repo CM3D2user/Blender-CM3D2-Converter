@@ -20,7 +20,13 @@ class export_cm3d2_model(bpy.types.Operator):
 	
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
-	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	version = bpy.props.EnumProperty(
+		name="ファイルバージョン",
+		items=[
+			('2001', '2001', 'model version 2001 (available only for com3d2)', 'NONE', 0),
+			('2000', '2000', 'model version 2000 (com3d2 version)', 'NONE', 1),
+			('1000', '1000', 'model version 1000 (available for cm3d2/com3d2)', 'NONE', 2),
+		], default='1000')
 	model_name = bpy.props.StringProperty(name="model名", default="*")
 	base_bone_name = bpy.props.StringProperty(name="基点ボーン名", default="*")
 	
@@ -102,6 +108,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			if "LocalBoneData" in context.blend_data.texts:
 				self.bone_info_mode = 'TEXT'
 		if "BoneData:0" in ob:
+			if "ModelVersion" in ob:
+				self.version = str(ob['ModelVersion'])
 			if "LocalBoneData:0" in ob:
 				self.bone_info_mode = 'OBJECT_PROPERTY'
 		arm_ob = ob.parent
@@ -373,7 +381,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		
 		# ファイル先頭
 		common.write_str(file, 'CM3D2_MESH')
-		file.write(struct.pack('<i', self.version))
+		self.version_num = int(self.version)
+		file.write(struct.pack('<i', self.version_num))
 		
 		common.write_str(file, self.model_name)
 		common.write_str(file, self.base_bone_name)
@@ -390,6 +399,12 @@ class export_cm3d2_model(bpy.types.Operator):
 		for bone in bone_data:
 			file.write(struct.pack('<3f', bone['co'][0], bone['co'][1], bone['co'][2]))
 			file.write(struct.pack('<4f', bone['rot'][1], bone['rot'][2], bone['rot'][3], bone['rot'][0]))
+			if self.version_num >= 2001:
+				use_scale = ('scale' in bone)
+				file.write(struct.pack('<b', use_scale))
+				if use_scale:
+					bone_scale = bone['scale']
+					file.write(struct.pack('<3f', bone_scale[0], bone_scale[1], bone_scale[2]))
 		context.window_manager.progress_update(4)
 		
 		# 正しい頂点数などを取得
@@ -738,20 +753,28 @@ class export_cm3d2_model(bpy.types.Operator):
 		bone_name_indices = {}
 		for line in container:
 			data = line.split(',')
-			if len(data) != 5:
+			if len(data) < 5:
 				continue
+			
 			parent_name = data[2]
 			if parent_name.isdigit():
 				parent_index = int(parent_name)
 			else:
 				parent_index = bone_name_indices.get(parent_name, -1)
-			bone_data.append({
+
+			bone_datum = {
 				'name': data[0],
 				'unknown': int(data[1]),
 				'parent_index': parent_index,
 				'co': list(map(float, data[3].split())),
 				'rot': list(map(float, data[4].split())),
-				})
+				}
+			# scale info (for version 2001 or later)
+			if len(data) >= 7:
+				if data[5] == '1':
+					bone_scale = data[6]
+					bone_datum['scale'] = list(map(float, bone_scale.split()))
+			bone_data.append(bone_datum)
 			bone_name_indices[data[0]] = len(bone_name_indices)
 		return bone_data
 

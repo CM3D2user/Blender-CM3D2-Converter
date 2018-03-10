@@ -99,7 +99,7 @@ class import_cm3d2_model(bpy.types.Operator):
 		if ext != 'CM3D2_MESH':
 			self.report(type={'ERROR'}, message="これはカスタムメイド3D2のモデルファイルではありません")
 			return {'CANCELLED'}
-		struct.unpack('<i', file.read(4))[0]
+		model_ver = struct.unpack('<i', file.read(4))[0]
 		context.window_manager.progress_update(0.1)
 		
 		# 名前群を取得
@@ -128,6 +128,12 @@ class import_cm3d2_model(bpy.types.Operator):
 			x, y, z = struct.unpack('<3f', file.read(3*4))
 			w = struct.unpack('<f', file.read(4))[0]
 			bone_data[i]['rot'] = mathutils.Quaternion((w, x, y, z))
+			if model_ver >= 2001:
+				use_scale = struct.unpack('<B', file.read(1))[0]
+				if use_scale:
+					scale_x, scale_y, scale_z = struct.unpack('<3f', file.read(3*4))
+					bone_data[i]['scale'] = [scale_x, scale_y, scale_z]
+			
 		context.window_manager.progress_update(0.3)
 		
 		vertex_count, mesh_count, local_bone_count = struct.unpack('<3i', file.read(3*4))
@@ -609,6 +615,11 @@ class import_cm3d2_model(bpy.types.Operator):
 				s += "None" + ","
 			s += " ".join([str(data['co'][0]), str(data['co'][1]), str(data['co'][2])]) + ","
 			s += " ".join([str(data['rot'][0]), str(data['rot'][1]), str(data['rot'][2]), str(data['rot'][3])])
+			if model_ver >= 2001:
+				if 'scale' in data:
+					s += ",1," + " ".join(map(str, data['scale']))
+				else:
+					s += ",0"
 			
 			if self.is_bone_data_text:
 				txt.write(s + "\n")
@@ -651,8 +662,10 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		if self.is_mesh and self.is_bone_data_obj_property:
 			ob['BaseBone'] = model_name2
+			ob['ModelVersion'] = model_ver
 		if self.is_armature and self.is_bone_data_arm_property:
 			arm['BaseBone'] = model_name2
+			arm['ModelVersion'] = model_ver
 		context.window_manager.progress_end()
 		
 		require_time_str = str(round(time.time() - start_time, 1))
