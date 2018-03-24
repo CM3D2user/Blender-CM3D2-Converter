@@ -131,10 +131,10 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	new_mate_tex_color = bpy.props.FloatVectorProperty(name="テクスチャ設定値の色", default=(0, 0, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
 	
 	new_mate_toonramp_name = bpy.props.StringProperty(name="_ToonRamp 名前", default="toonGrayA1")
-	new_mate_toonramp_path = bpy.props.StringProperty(name="_ToonRamp パス", default=r"Assets\texture\texture\toon\toonGrayA1.png")
+	new_mate_toonramp_path = bpy.props.StringProperty(name="_ToonRamp パス", default="Assets/texture/texture/toon/toonGrayA1.png")
 	
 	new_mate_shadowratetoon_name = bpy.props.StringProperty(name="_ShadowRateToon 名前", default="toonDress_shadow")
-	new_mate_shadowratetoon_path = bpy.props.StringProperty(name="_ShadowRateToon パス", default=r"Assets\texture\texture\toon\toonDress_shadow.png")
+	new_mate_shadowratetoon_path = bpy.props.StringProperty(name="_ShadowRateToon パス", default="Assets/texture/texture/toon/toonDress_shadow.png")
 
 	new_mate_linetoonramp_name = bpy.props.StringProperty(name="_OutlineToonRamp 名前", default="toonGrayA1")
 	new_mate_linetoonramp_path = bpy.props.StringProperty(name="_OutlineToonRamp パス", default="Assets/texture/texture/toon/toonGrayA1.png")

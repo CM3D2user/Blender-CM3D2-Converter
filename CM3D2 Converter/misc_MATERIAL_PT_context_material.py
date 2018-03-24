@@ -200,7 +200,7 @@ class new_mate_opr():
 		context.material_slot.material = mate
 		tex_list, col_list, f_list = [], [], []
 		
-		base_path = "Assets\\texture\\texture\\"
+		base_path = "Assets/texture/texture/"
 		pref = common.preferences()
 		
 		_MainTex = ("_MainTex", ob_name, base_path + ob_name + ".png")
