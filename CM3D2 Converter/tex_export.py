@@ -21,7 +21,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 			('1010', '1010', 'CM3D2 1.49以降向け対応版', 'NONE', 0),
 			('1000', '1000', '旧版フォーマット', 'NONE', 1),
 		], default='1000')
-	path = bpy.props.StringProperty(name="パス", default="assets/texture/texture/*.png")
+	path = bpy.props.StringProperty(name="パス", default="Assets/texture/texture/*.png")
 	
 	@classmethod
 	def poll(cls, context):
@@ -43,7 +43,7 @@ class export_cm3d2_tex(bpy.types.Operator):
 		if 'cm3d2_path' in img:
 			self.path = img['cm3d2_path']
 		else:
-			self.path = "assets/texture/texture/" + os.path.basename(self.filepath)
+			self.path = "Assets/texture/texture/" + os.path.basename(self.filepath)
 		if 'tex Name' in img:
 			self.filepath = os.path.join(os.path.dirname(self.filepath), img['tex Name'])
 		context.window_manager.fileselect_add(self)

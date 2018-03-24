@@ -56,7 +56,7 @@ def menu_func(self, context):
 					row.label(text="テクスチャ名:")
 					row.template_ID(tex, 'image', open='image.open')
 					if 'cm3d2_path' not in img:
-						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
+						img['cm3d2_path'] = "Assets/texture/texture/" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
 					if base_name == "_ToonRamp":
@@ -579,7 +579,7 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		override = context.copy()
 		override['edit_image'] = img
 		filepath = os.path.splitext( bpy.path.abspath(img.filepath) )[0] + ".tex"
-		path = "assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
+		path = "Assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
 		version = '1000'
 		if 'cm3d2_path' in img:
 			path = img['cm3d2_path']
