@@ -62,6 +62,9 @@ def menu_func(self, context):
 						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp', icon='NLA')
 					elif base_name == "_ShadowRateToon":
 						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon', icon='NLA')
+					elif base_name == "_OutlineToonRamp":
+						sub_box.menu('TEXTURE_PT_context_texture_OutlineToonRamp', icon='NLA')
+
 					split = sub_box.split(percentage=0.333333333333, align=True)
 					split.label(text="オフセット:")
 					row = split.row(align=True)
@@ -142,6 +145,33 @@ def menu_func(self, context):
 			row.operator('texture.set_color_value', text="0.5").color = list(tex_slot.color) + [0.5]
 			row.operator('texture.set_color_value', text="0.75").color = list(tex_slot.color) + [0.75]
 			row.operator('texture.set_color_value', text="1.0", icon='FULLSCREEN_ENTER').color = list(tex_slot.color) + [1.0]
+
+		elif base_name == '_ZTest':
+			row.menu('TEXTURE_PT_context_texture_values_ZTest', icon='DOWNARROW_HLT', text="")
+			col = sub_box.column(align=True)
+			row = col.row(align=True)
+			row.operator('texture.set_color_value', text="Disabled").color = list(tex_slot.color) + [0]
+			row.operator('texture.set_color_value', text="Never").color = list(tex_slot.color) + [1]
+			row.operator('texture.set_color_value', text="Less ").color = list(tex_slot.color) + [2]
+			row.operator('texture.set_color_value', text="Equal").color = list(tex_slot.color) + [3]
+			row.operator('texture.set_color_value', text="LessEqual").color = list(tex_slot.color) + [4]
+			row = col.row(align=True)
+			row.operator('texture.set_color_value', text="Greater").color = list(tex_slot.color) + [5]
+			row.operator('texture.set_color_value', text="NotEqual").color = list(tex_slot.color) + [6]
+			row.operator('texture.set_color_value', text="GreaterEqual").color = list(tex_slot.color) + [7]
+			row.operator('texture.set_color_value', text="Always").color = list(tex_slot.color) + [8]
+
+		elif base_name == '_ZTest2':
+			row = sub_box.row(align=True)
+			row.operator('texture.set_color_value', text="0").color = list(tex_slot.color) + [0]
+			row.operator('texture.set_color_value', text="1").color = list(tex_slot.color) + [1]
+
+		elif base_name == '_ZTest2Alpha':
+			row.menu('TEXTURE_PT_context_texture_values_ZTest2Alpha', icon='DOWNARROW_HLT', text="")
+			row = sub_box.row(align=True)
+			row.operator('texture.set_color_value', text="0").color = list(tex_slot.color) + [0]
+			row.operator('texture.set_color_value', text="0.8").color = list(tex_slot.color) + [0.8]
+			row.operator('texture.set_color_value', text="1").color = list(tex_slot.color) + [1]
 	
 	box.operator('texture.sync_tex_color_ramps', icon='LINKED')
 	
@@ -154,6 +184,10 @@ def menu_func(self, context):
 		description = ["陰部分の面の色を決定するテクスチャを指定。", "「_ShadowRateToon」で範囲を指定します。"]
 	if base_name == '_ShadowRateToon':
 		description = ["「_ShadowTex」を有効にする部分を指定します。", "黒色で有効、白色で無効。"]
+	elif base_name == '_OutlineTex':
+		description = ["アウトラインを表現するためのテクスチャを指定。(未確認)"]
+	elif base_name == '_OutlineToonRamp':
+		description = ["_OutlineTexの暗い部分に乗算するグラデーション画像を指定します。(未確認)"]
 	elif base_name == '_Color':
 		description = ["面の色を指定。", "白色で無効。基本的に白色で良いでしょう。"]
 	elif base_name == '_ShadowColor':
@@ -174,6 +208,12 @@ def menu_func(self, context):
 		description = ["モザイクシェーダーにある設定値。", "特に設定の必要なし。"]
 	elif base_name == '_FloatValue1':
 		description = ["モザイクの大きさ？(未確認)"]
+	elif base_name == '_Cutoff':
+		description = ["アルファのカットオフ値。", "アルファ値がこの値より大きい部分だけがレンダリングされる"]
+	elif base_name == '_Cutout':
+		description = ["アルファのカットオフ値。", "アルファ値がこの値より大きい部分だけがレンダリングされる"]
+	elif base_name == '_ZTest':
+		description = ["デプステストの実行方法を指定する。"]
 	
 	if description != "":
 		sub_box = box.box()
@@ -181,6 +221,28 @@ def menu_func(self, context):
 		col.label(text="解説", icon='TEXT')
 		for line in description:
 			col.label(text=line)
+			
+
+toon_texes = [
+	"NoTex", "ToonBlueA1", "ToonBlueA2", "ToonBrownA1", "ToonGrayA1",
+	"ToonGreenA1", "ToonGreenA2", "ToonGreenA3",
+	"ToonOrangeA1",
+	"ToonPinkA1", "ToonPinkA2", "ToonPurpleA1",
+	"ToonRedA1", "ToonRedA2",
+	"ToonRedmmm1", "ToonRedmm1", "ToonRedm1",
+	"ToonYellowA1", "ToonYellowA2", "ToonYellowA3", "ToonYellowA4",
+	"ToonFace",  # "ToonFace002",
+	"ToonSkin",  # "ToonSkin002",
+	"ToonBlackA1",
+	"ToonFace_shadow",
+	"ToonDress_shadow",
+	"ToonSkin_Shadow",
+	"ToonBlackMM1", "ToonBlackM1", "ToonGrayMM1", "ToonGrayM1",
+	"ToonPurpleMM1", "ToonPurpleM1",
+	"ToonSilverA1",
+	"ToonDressMM_Shadow", "ToonDressM_Shadow",
+]
+
 
 # _ToonRamp設定メニュー
 class TEXTURE_PT_context_texture_ToonRamp(bpy.types.Menu):
@@ -248,6 +310,20 @@ class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
 		l.operator(cmd, text="ToonYellowA2", icon='LAYER_USED').name = "ToonYellowA2"
 		l.operator(cmd, text="ToonYellowA3", icon='LAYER_USED').name = "ToonYellowA3"
 
+
+# _OutlineToonRamp設定メニュー
+class TEXTURE_PT_context_texture_OutlineToonRamp(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_OutlineToonRamp'
+	bl_label = "_OutlineToonRamp 設定"
+	
+	def draw(self, context):
+		l = self.layout
+		cmd = 'texture.set_default_toon_textures'
+		for toon_tex in toon_texes:
+			icon = 'SPACE2' if 'Shadow' not in toon_tex else 'LAYER_USED'
+			l.operator(cmd, text=toon_tex, icon=icon).name = toon_tex
+
+
 # 0.0～1.0までの値設定メニュー
 class TEXTURE_PT_context_texture_values_normal(bpy.types.Menu):
 	bl_idname = 'TEXTURE_PT_context_texture_values_normal'
@@ -285,6 +361,19 @@ class TEXTURE_PT_context_texture_values_RimPower(bpy.types.Menu):
 			if value == 0:
 				icon = 'ERROR'
 			self.layout.operator('texture.set_color_value', text=str(value), icon=icon).color = list(tex_slot.color) + [value]
+
+
+# _ZTest用の値設定メニュー
+class TEXTURE_PT_context_texture_values_ZTest(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_values_ZTest'
+	bl_label = "値リスト"
+	
+	def draw(self, context):
+		tex_slot = context.texture_slot
+		for i in range(9):
+			value = round(i, 0)
+			self.layout.operator('texture.set_color_value', text=str(value)).color = list(tex_slot.color) + [value]
+
 
 class show_image(bpy.types.Operator):
 	bl_idname = 'image.show_image'
@@ -369,7 +458,7 @@ class set_default_toon_textures(bpy.types.Operator):
 		if 'texture_slot' in dir(context) and 'texture' in dir(context):
 			if context.texture_slot and context.texture:
 				name = common.remove_serial_number(context.texture.name)
-				return name == "_ToonRamp" or name == "_ShadowRateToon"
+				return name in ["_ToonRamp", "_ShadowRateToon", "_OutlineToonRamp"]
 		return False
 	
 	def execute(self, context):
