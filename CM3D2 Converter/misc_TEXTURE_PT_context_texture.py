@@ -178,11 +178,11 @@ def menu_func(self, context):
 	description = ""
 	if base_name == '_MainTex':
 		description = ["面の色を決定するテクスチャを指定。", "普段テスクチャと呼んでいるものは基本コレです。", "テクスチャパスは適当でも動きます。", "しかし、テクスチャ名はきちんと決めましょう。"]
-	if base_name == '_ToonRamp':
+	elif base_name == '_ToonRamp':
 		description = ["暗い部分に乗算するグラデーション画像を指定します。"]
 	elif base_name == '_ShadowTex':
 		description = ["陰部分の面の色を決定するテクスチャを指定。", "「_ShadowRateToon」で範囲を指定します。"]
-	if base_name == '_ShadowRateToon':
+	elif base_name == '_ShadowRateToon':
 		description = ["「_ShadowTex」を有効にする部分を指定します。", "黒色で有効、白色で無効。"]
 	elif base_name == '_OutlineTex':
 		description = ["アウトラインを表現するためのテクスチャを指定。(未確認)"]
@@ -207,7 +207,7 @@ def menu_func(self, context):
 	elif base_name == '_RenderTex':
 		description = ["モザイクシェーダーにある設定値。", "特に設定の必要なし。"]
 	elif base_name == '_FloatValue1':
-		description = ["モザイクの大きさ？(未確認)"]
+		description = ["モザイクの粗さ"]
 	elif base_name == '_Cutoff':
 		description = ["アルファのカットオフ値。", "アルファ値がこの値より大きい部分だけがレンダリングされる"]
 	elif base_name == '_Cutout':
@@ -252,30 +252,10 @@ class TEXTURE_PT_context_texture_ToonRamp(bpy.types.Menu):
 	def draw(self, context):
 		l = self.layout
 		cmd = 'texture.set_default_toon_textures'
-		l.operator(cmd, text="NoTex", icon='SPACE2').name = "NoTex"
-		l.operator(cmd, text="ToonBlackA1", icon='SPACE2').name = "ToonBlackA1"
-		l.operator(cmd, text="ToonBlueA1", icon='SPACE2').name = "ToonBlueA1"
-		l.operator(cmd, text="ToonBlueA2", icon='SPACE2').name = "ToonBlueA2"
-		l.operator(cmd, text="ToonBrownA1", icon='SPACE2').name = "ToonBrownA1"
-		l.operator(cmd, text="ToonDress_Shadow", icon='LAYER_USED').name = "ToonDress_Shadow"
-		l.operator(cmd, text="ToonFace", icon='SPACE2').name = "ToonFace"
-		l.operator(cmd, text="ToonFace_Shadow", icon='LAYER_USED').name = "ToonFace_Shadow"
-		l.operator(cmd, text="ToonFace002", icon='SPACE2').name = "ToonFace002"
-		l.operator(cmd, text="ToonGrayA1", icon='SPACE2').name = "ToonGrayA1"
-		l.operator(cmd, text="ToonGreenA1", icon='SPACE2').name = "ToonGreenA1"
-		l.operator(cmd, text="ToonGreenA2", icon='SPACE2').name = "ToonGreenA2"
-		l.operator(cmd, text="ToonOrangeA1", icon='SPACE2').name = "ToonOrangeA1"
-		l.operator(cmd, text="ToonPinkA1", icon='SPACE2').name = "ToonPinkA1"
-		l.operator(cmd, text="ToonPinkA2", icon='SPACE2').name = "ToonPinkA2"
-		l.operator(cmd, text="ToonPurpleA1", icon='SPACE2').name = "ToonPurpleA1"
-		l.operator(cmd, text="ToonRedA1", icon='SPACE2').name = "ToonRedA1"
-		l.operator(cmd, text="ToonRedA2", icon='SPACE2').name = "ToonRedA2"
-		l.operator(cmd, text="ToonSkin", icon='SPACE2').name = "ToonSkin"
-		l.operator(cmd, text="ToonSkin_Shadow", icon='LAYER_USED').name = "ToonSkin_Shadow"
-		l.operator(cmd, text="ToonSkin002", icon='SPACE2').name = "ToonSkin002"
-		l.operator(cmd, text="ToonYellowA1", icon='SPACE2').name = "ToonYellowA1"
-		l.operator(cmd, text="ToonYellowA2", icon='SPACE2').name = "ToonYellowA2"
-		l.operator(cmd, text="ToonYellowA3", icon='SPACE2').name = "ToonYellowA3"
+		for toon_tex in toon_texes:
+			icon = 'SPACE2' if 'Shadow' not in toon_tex else 'LAYER_USED'
+			l.operator(cmd, text=toon_tex, icon=icon).name = toon_tex
+
 
 # _ShadowRateToon設定メニュー
 class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
@@ -285,30 +265,9 @@ class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
 	def draw(self, context):
 		l = self.layout
 		cmd = 'texture.set_default_toon_textures'
-		l.operator(cmd, text="NoTex", icon='LAYER_USED').name = "NoTex"
-		l.operator(cmd, text="ToonBlackA1", icon='LAYER_USED').name = "ToonBlackA1"
-		l.operator(cmd, text="ToonBlueA1", icon='LAYER_USED').name = "ToonBlueA1"
-		l.operator(cmd, text="ToonBlueA2", icon='LAYER_USED').name = "ToonBlueA2"
-		l.operator(cmd, text="ToonBrownA1", icon='LAYER_USED').name = "ToonBrownA1"
-		l.operator(cmd, text="ToonDress_Shadow", icon='SPACE2').name = "ToonDress_Shadow"
-		l.operator(cmd, text="ToonFace", icon='LAYER_USED').name = "ToonFace"
-		l.operator(cmd, text="ToonFace_Shadow", icon='SPACE2').name = "ToonFace_Shadow"
-		l.operator(cmd, text="ToonFace002", icon='LAYER_USED').name = "ToonFace002"
-		l.operator(cmd, text="ToonGrayA1", icon='LAYER_USED').name = "ToonGrayA1"
-		l.operator(cmd, text="ToonGreenA1", icon='LAYER_USED').name = "ToonGreenA1"
-		l.operator(cmd, text="ToonGreenA2", icon='LAYER_USED').name = "ToonGreenA2"
-		l.operator(cmd, text="ToonOrangeA1", icon='LAYER_USED').name = "ToonOrangeA1"
-		l.operator(cmd, text="ToonPinkA1", icon='LAYER_USED').name = "ToonPinkA1"
-		l.operator(cmd, text="ToonPinkA2", icon='LAYER_USED').name = "ToonPinkA2"
-		l.operator(cmd, text="ToonPurpleA1", icon='LAYER_USED').name = "ToonPurpleA1"
-		l.operator(cmd, text="ToonRedA1", icon='LAYER_USED').name = "ToonRedA1"
-		l.operator(cmd, text="ToonRedA2", icon='LAYER_USED').name = "ToonRedA2"
-		l.operator(cmd, text="ToonSkin", icon='LAYER_USED').name = "ToonSkin"
-		l.operator(cmd, text="ToonSkin_Shadow", icon='SPACE2').name = "ToonSkin_Shadow"
-		l.operator(cmd, text="ToonSkin002", icon='LAYER_USED').name = "ToonSkin002"
-		l.operator(cmd, text="ToonYellowA1", icon='LAYER_USED').name = "ToonYellowA1"
-		l.operator(cmd, text="ToonYellowA2", icon='LAYER_USED').name = "ToonYellowA2"
-		l.operator(cmd, text="ToonYellowA3", icon='LAYER_USED').name = "ToonYellowA3"
+		for toon_tex in toon_texes:
+			icon = 'SPACE2' if 'Shadow' not in toon_tex else 'LAYER_USED'
+			l.operator(cmd, text=toon_tex, icon=icon).name = toon_tex
 
 
 # _OutlineToonRamp設定メニュー
