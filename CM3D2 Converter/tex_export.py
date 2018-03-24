@@ -15,7 +15,12 @@ class export_cm3d2_tex(bpy.types.Operator):
 	
 	is_backup = bpy.props.BoolProperty(name="ファイルをバックアップ", default=True, description="ファイルに上書きする場合にバックアップファイルを複製します")
 	
-	version = bpy.props.IntProperty(name="ファイルバージョン", default=1000, min=1000, max=1111, soft_min=1000, soft_max=1111, step=1)
+	version = bpy.props.EnumProperty(
+		name="ファイルバージョン",
+		items=[
+			('1010', '1010', 'CM3D2 1.49以降向け対応版', 'NONE', 0),
+			('1000', '1000', '旧版フォーマット', 'NONE', 1),
+		], default='1000')
 	path = bpy.props.StringProperty(name="パス", default="assets/texture/texture/*.png")
 	
 	@classmethod
@@ -61,16 +66,17 @@ class export_cm3d2_tex(bpy.types.Operator):
 			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
 			return {'CANCELLED'}
 		
+		version_num = int(self.version)
 		try:
 			with file:
-				self.write_texture(context, file)
+				self.write_texture(context, file, version_num)
 		except common.CM3D2ExportException as e:
 			self.report(type={'ERROR'}, message=str(e))
 			return {'CANCELLED'}
 		
 		return {'FINISHED'}
 
-	def write_texture(self, context, file):
+	def write_texture(self, context, file, version):
 		# とりあえずpngで保存
 		img = context.edit_image
 		if img.source != 'VIEWER':
@@ -105,8 +111,13 @@ class export_cm3d2_tex(bpy.types.Operator):
 		
 		# 本命ファイルに書き込み
 		common.write_str(file, 'CM3D2_TEX')
-		file.write(struct.pack('<i', self.version))
+		file.write(struct.pack('<i', version))
 		common.write_str(file, self.path)
+		if version >= 1010:
+			width, height = img.size
+			file.write(struct.pack('<i', width))
+			file.write(struct.pack('<i', height))
+			file.write(struct.pack('<i', 5))  # tex_format TODO ダイアログで指定
 		file.write(struct.pack('<i', len(temp_data)))
 		file.write(temp_data)
 

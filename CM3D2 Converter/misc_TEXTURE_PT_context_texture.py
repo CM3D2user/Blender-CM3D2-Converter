@@ -1,5 +1,6 @@
 # 「プロパティ」エリア → 「テクスチャ」タブ
-import os, re, sys, bpy, time, bmesh, mathutils
+import os, re, sys, struct, time
+import bpy, bmesh, mathutils
 from . import common
 
 # メニュー等に項目追加
@@ -562,7 +563,7 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 	bl_label = "texで保存"
 	bl_description = "テクスチャの画像を同フォルダにtexとして保存します"
 	bl_options = {'REGISTER'}
-	
+
 	def execute(self, context):
 		import os.path
 		
@@ -579,16 +580,17 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		override['edit_image'] = img
 		filepath = os.path.splitext( bpy.path.abspath(img.filepath) )[0] + ".tex"
 		path = "assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
+		version = '1000'
 		if 'cm3d2_path' in img:
 			path = img['cm3d2_path']
 		if os.path.exists(filepath):
 			file = open(filepath, 'rb')
 			header_ext = common.read_str(file)
 			if header_ext == 'CM3D2_TEX':
-				file.seek(4, 1)
+				version = str(struct.unpack('<i', file.read(4))[0])
 				path = common.read_str(file)
 			file.close()
-		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path)
+		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path, version=version)
 		
 		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました")
 		return {'FINISHED'}
