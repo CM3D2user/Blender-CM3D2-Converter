@@ -133,6 +133,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.is_backup = bool(common.preferences().backup_ext)
 		
 		self.scale = 1.0 / common.preferences().scale
+		self.custom_normal_blend = common.preferences().custom_normal_blend
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 
@@ -177,6 +178,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	def execute(self, context):
 		"""モデルファイルを出力"""
 		start_time = time.time()
+		common.preferences().custom_normal_blend = self.custom_normal_blend
 		
 		if not self.is_batch:
 			common.preferences().model_export_path = self.filepath
