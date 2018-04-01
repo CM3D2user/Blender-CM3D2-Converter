@@ -231,7 +231,6 @@ class new_mate_opr():
 		_ZTest = ("_ZTest", pref.new_mate_ztest)
 		_ZTest2 = ("_ZTest2", pref.new_mate_ztest2)
 		_ZTest2Alpha = ("_ZTest2Alpha", pref.new_mate_ztest2alpha)
-		use_com3d2_shader = False
 
 		if False:
 			pass
@@ -342,7 +341,6 @@ class new_mate_opr():
 			f_list.append(_ZTest)
 			f_list.append(_ZTest2)
 			f_list.append(_ZTest2Alpha)
-			use_com3d2_shader = True
 		elif self.type == 'CM3D2/Toony_Lighted_Outline_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline_Trans'
@@ -375,7 +373,6 @@ class new_mate_opr():
 			f_list.append(_OutlineWidth)
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
-			use_com3d2_shader = True
 		elif self.type == 'CM3D2/Lighted':
 			mate['shader1'] = 'CM3D2/Lighted'
 			mate['shader2'] = 'CM3D2__Lighted'
@@ -390,7 +387,6 @@ class new_mate_opr():
 			col_list.append(_Color)
 			col_list.append(_ShadowColor)
 			f_list.append(_Shininess)
-			use_com3d2_shader = True
 		elif self.type == 'CM3D2/Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Lighted_Trans'
@@ -494,11 +490,6 @@ class new_mate_opr():
 			slot.texture = tex
 			slot_count += 1
 		
-		if use_com3d2_shader:
-			model_ver = bpy.context.active_object.get('ModelVersion')
-			if model_ver is None or model_ver == 1000:
-				bpy.context.active_object['ModelVersion'] = 2000
-
 		common.decorate_material(mate, self.is_decorate, me, ob.active_material_index)
 		return {'FINISHED'}
 
