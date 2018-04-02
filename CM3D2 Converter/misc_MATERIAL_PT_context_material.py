@@ -4,10 +4,18 @@ from . import common
 
 # メニュー等に項目追加
 def menu_func(self, context):
+	# ModelVersionでCOM3D2のmodelか判断
+	model_ver = bpy.context.active_object.get('ModelVersion')
+	is_com_mode = model_ver and model_ver >= 2000
+
 	mate = context.material
 	if not mate:
 		col = self.layout.column(align=True)
-		col.operator('material.new_cm3d2', icon_value=common.preview_collections['main']['KISS'].icon_id)
+		if is_com_mode:
+			col.operator('material.new_com3d2', icon_value=common.preview_collections['main']['KISS'].icon_id)
+		else:
+			col.operator('material.new_cm3d2', icon_value=common.preview_collections['main']['KISS'].icon_id)
+			col.operator('material.new_com3d2', icon='ERROR')
 		row = col.row(align=True)
 		row.operator('material.import_cm3d2_mate', icon='FILE_FOLDER', text="mateから")
 		row.operator('material.paste_material', icon='PASTEDOWN', text="クリップボードから")
@@ -24,49 +32,71 @@ def menu_func(self, context):
 			
 			type_name = "不明"
 			icon = 'ERROR'
-			if mate['shader1'] == 'CM3D2/Toony_Lighted':
+			shader1 = mate['shader1']
+			if shader1 == 'CM3D2/Toony_Lighted':
 				type_name = "トゥーン"
 				icon = 'SOLID'
-			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Hair':
+			elif shader1 == 'CM3D2/Toony_Lighted_Hair':
 				type_name = "トゥーン 髪"
 				icon = 'PARTICLEMODE'
-			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Trans':
+			elif shader1 == 'CM3D2/Toony_Lighted_Trans':
 				type_name = "トゥーン 透過"
 				icon = 'WIRE'
-			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Trans_NoZ':
+			elif shader1 == 'CM3D2/Toony_Lighted_Trans_NoZ':
 				type_name = "トゥーン 透過 NoZ"
 				icon = 'DRIVER'
-			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Outline':
+			elif shader1 == 'CM3D2/Toony_Lighted_Trans_NoZTest':
+				type_name = "トゥーン 透過 NoZTest"
+				icon = 'ANIM_DATA'
+			elif shader1 == 'CM3D2/Toony_Lighted_Outline':
 				type_name = "トゥーン 輪郭線"
 				icon = 'ANTIALIASED'
-			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Hair_Outline':
+			elif shader1 == 'CM3D2/Toony_Lighted_Outline_Tex':
+				type_name = "トゥーン 輪郭線 Tex"
+				icon = 'MATSPHERE'
+			elif shader1 == 'CM3D2/Toony_Lighted_Hair_Outline':
 				type_name = "トゥーン 輪郭線 髪"
 				icon = 'PARTICLEMODE'
-			elif mate['shader1'] == 'CM3D2/Toony_Lighted_Outline_Trans':
+			# elif shader1 == 'CM3D2/Toony_Lighted_Hair_Outline_Tex':
+			# 	type_name = "トゥーン 輪郭線 Tex 髪"
+			# 	icon = 'PARTICLEMODE'
+			elif shader1 == 'CM3D2/Toony_Lighted_Outline_Trans':
 				type_name = "トゥーン 輪郭線 透過"
 				icon = 'PROP_OFF'
-			elif mate['shader1'] == 'CM3D2/Lighted_Trans':
-				type_name = "透過"
+			elif shader1 == 'CM3D2/Lighted_Trans':
+				type_name = "トゥーン無し 透過"
 				icon = 'VISIBLE_IPO_OFF'
-			elif mate['shader1'] == 'Unlit/Texture':
+			elif shader1 == 'CM3D2/Lighted':
+				type_name = "トゥーン無し"
+				icon = 'VISIBLE_IPO_ON'
+			elif shader1 == 'CM3D2/Lighted_Cutout_AtC':
+				type_name = "トゥーン無し Cutout"
+				icon = 'IPO_BACK'
+			elif shader1 == 'Unlit/Texture':
 				type_name = "発光"
 				icon = 'PARTICLES'
-			elif mate['shader1'] == 'Unlit/Transparent':
+			elif shader1 == 'Unlit/Transparent':
 				type_name = "発光 透過"
 				icon = 'MOD_PARTICLES'
-			elif mate['shader1'] == 'CM3D2/Mosaic':
+			elif shader1 == 'CM3D2/Mosaic':
 				type_name = "モザイク"
 				icon = 'ALIASED'
-			elif mate['shader1'] == 'CM3D2/Man':
+			elif shader1 == 'CM3D2/Man':
 				type_name = "ご主人様"
 				icon = 'ARMATURE_DATA'
-			elif mate['shader1'] == 'Diffuse':
+			elif shader1 == 'Diffuse':
 				type_name = "リアル"
 				icon = 'BRUSH_CLAY_STRIPS'
-			elif mate['shader1'] == 'Transparent/Diffuse':
+			elif shader1 == 'Legacy Shaders/Diffuse':
+				type_name = "リアル"
+				icon = 'BRUSH_CLAY_STRIPS'
+			elif shader1 == 'Transparent/Diffuse':
 				type_name = "リアル 透過"
 				icon = 'MATCAP_09'
-			elif mate['shader1'] == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
+			elif shader1 == 'Legacy Shaders/Transparent/Diffuse':
+				type_name = "リアル 透過"
+				icon = 'MATCAP_09'
+			elif shader1 == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
 				type_name = "法線"
 				icon = 'MATCAP_23'
 			
@@ -132,32 +162,13 @@ def menu_func(self, context):
 				row.label(text="簡易テクスチャ情報", icon_value=common.preview_collections['main']['KISS'].icon_id)
 		
 		else:
-			self.layout.operator('material.new_cm3d2', text="CM3D2用に変更", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			if is_com_mode:
+				self.layout.operator('material.new_com3d2', text="COM3D2用に変更", icon_value=common.preview_collections['main']['KISS'].icon_id)
+			else:
+				self.layout.operator('material.new_cm3d2', text="CM3D2用に変更", icon_value=common.preview_collections['main']['KISS'].icon_id)
 
-class new_cm3d2(bpy.types.Operator):
-	bl_idname = 'material.new_cm3d2'
-	bl_label = "CM3D2用マテリアルを新規作成"
-	bl_description = "Blender-CM3D2-Converterで使用できるマテリアルを新規で作成します"
-	bl_options = {'REGISTER', 'UNDO'}
-	
-	items = [
-		('CM3D2/Toony_Lighted', "トゥーン", "", 'SOLID', 0),
-		('CM3D2/Toony_Lighted_Hair', "トゥーン 髪", "", 'PARTICLEMODE', 1),
-		('CM3D2/Toony_Lighted_Trans', "トゥーン 透過", "", 'WIRE', 2),
-		('CM3D2/Toony_Lighted_Trans_NoZ', "トゥーン 透過 NoZ", "", 'DRIVER', 3),
-		('CM3D2/Toony_Lighted_Outline', "トゥーン 輪郭線", "", 'ANTIALIASED', 4),
-		('CM3D2/Toony_Lighted_Hair_Outline', "トゥーン 輪郭線 髪", "", 'PARTICLEMODE', 5),
-		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 'PROP_OFF', 6),
-		('CM3D2/Lighted_Trans', "透過", "", 'VISIBLE_IPO_OFF', 7),
-		('Unlit/Texture', "発光", "", 'PARTICLES', 8),
-		('Unlit/Transparent', "発光 透過", "", 'MOD_PARTICLES', 9),
-		('CM3D2/Mosaic', "モザイク", "", 'ALIASED', 10),
-		('CM3D2/Man', "ご主人様", "", 'ARMATURE_DATA', 11),
-		('Diffuse', "リアル", "", 'BRUSH_CLAY_STRIPS', 12),
-		('Transparent/Diffuse', "リアル 透過", "", 'MATCAP_09', 13),
-		('CM3D2_Debug/Debug_CM3D2_Normal2Color', "法線", "", 'MATCAP_23', 14),
-		]
-	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
+
+class new_mate_opr():
 	is_decorate = bpy.props.BoolProperty(name="種類に合わせてマテリアルを装飾", default=True)
 	is_replace_cm3d2_tex = bpy.props.BoolProperty(name="テクスチャを探す", default=False, description="CM3D2本体のインストールフォルダからtexファイルを探して開きます")
 	
@@ -193,7 +204,7 @@ class new_cm3d2(bpy.types.Operator):
 		context.material_slot.material = mate
 		tex_list, col_list, f_list = [], [], []
 		
-		base_path = "Assets\\texture\\texture\\"
+		base_path = "Assets/texture/texture/"
 		pref = common.preferences()
 		
 		_MainTex = ("_MainTex", ob_name, base_path + ob_name + ".png")
@@ -201,6 +212,8 @@ class new_cm3d2(bpy.types.Operator):
 		_ShadowTex = ("_ShadowTex", ob_name + "_shadow", base_path + ob_name + "_shadow.png")
 		_ShadowRateToon = ("_ShadowRateToon", pref.new_mate_shadowratetoon_name, pref.new_mate_shadowratetoon_path)
 		_HiTex = ("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png")
+		_OutlineTex = ("_OutliineTex", ob_name + "_line", base_path + ob_name + "_line.png")
+		_OutlineToonRamp = ("_OutliineToonRamp", pref.new_mate_linetoonramp_name, pref.new_mate_linetoonramp_path)
 		
 		_Color = ("_Color", pref.new_mate_color)
 		_ShadowColor = ("_ShadowColor", pref.new_mate_shadowcolor)
@@ -213,7 +226,12 @@ class new_cm3d2(bpy.types.Operator):
 		_RimShift = ("_RimShift", pref.new_mate_rimshift)
 		_HiRate = ("_HiRate", pref.new_mate_hirate)
 		_HiPow = ("_HiPow", pref.new_mate_hipow)
-		
+		_Cutoff = ("_Cutoff", pref.new_mate_cutoff)
+		_Cutout = ("_Cutout", pref.new_mate_cutout)
+		_ZTest = ("_ZTest", pref.new_mate_ztest)
+		_ZTest2 = ("_ZTest2", pref.new_mate_ztest2)
+		_ZTest2Alpha = ("_ZTest2Alpha", pref.new_mate_ztest2alpha)
+
 		if False:
 			pass
 		elif self.type == 'CM3D2/Toony_Lighted_Outline':
@@ -242,6 +260,7 @@ class new_cm3d2(bpy.types.Operator):
 			col_list.append(_ShadowColor)
 			col_list.append(_RimColor)
 			f_list.append(_Shininess)
+			f_list.append(_Cutoff)
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Toony_Lighted_Hair_Outline':
@@ -271,17 +290,17 @@ class new_cm3d2(bpy.types.Operator):
 			mate['shader1'] = 'Unlit/Texture'
 			mate['shader2'] = 'Unlit__Texture'
 			tex_list.append(_MainTex)
-			col_list.append(_Color)
+			# col_list.append(_Color)
 		elif self.type == 'Unlit/Transparent':
 			mate['shader1'] = 'Unlit/Transparent'
 			mate['shader2'] = 'Unlit__Transparent'
 			tex_list.append(_MainTex)
-			col_list.append(_Color)
-			col_list.append(_ShadowColor)
-			col_list.append(_RimColor)
-			f_list.append(_Shininess)
-			f_list.append(_RimPower)
-			f_list.append(_RimShift)
+			# col_list.append(_Color)
+			# col_list.append(_ShadowColor)
+			# col_list.append(_RimColor)
+			# f_list.append(_Shininess)
+			# f_list.append(_RimPower)
+			# f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Man':
 			mate['shader1'] = 'CM3D2/Man'
 			mate['shader2'] = 'CM3D2__Man'
@@ -289,8 +308,8 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(("_FloatValue2", 0.5))
 			f_list.append(("_FloatValue3", 1))
 		elif self.type == 'Diffuse':
-			mate['shader1'] = 'Diffuse'
-			mate['shader2'] = 'Diffuse'
+			mate['shader1'] = 'Legacy Shaders/Diffuse'
+			mate['shader2'] = 'Legacy Shaders__Diffuse'
 			tex_list.append(_MainTex)
 			col_list.append(_Color)
 		elif self.type == 'CM3D2/Toony_Lighted_Trans_NoZ':
@@ -303,11 +322,25 @@ class new_cm3d2(bpy.types.Operator):
 			col_list.append(_Color)
 			col_list.append(_ShadowColor)
 			col_list.append(_RimColor)
-			col_list.append(_OutlineColor)
 			f_list.append(_Shininess)
-			f_list.append(_OutlineWidth)
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
+		elif self.type == 'CM3D2/Toony_Lighted_Trans_NoZTest':
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Trans_NoZTest'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Trans_NoZTest'
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			f_list.append(_Shininess)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
+			f_list.append(_ZTest)
+			f_list.append(_ZTest2)
+			f_list.append(_ZTest2Alpha)
 		elif self.type == 'CM3D2/Toony_Lighted_Outline_Trans':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline_Trans'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline_Trans'
@@ -323,6 +356,37 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(_OutlineWidth)
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
+		elif self.type == 'CM3D2/Toony_Lighted_Outline_Tex':
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Outline_Tex'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Outline_Tex'
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			tex_list.append(_OutlineTex)
+			tex_list.append(_OutlineToonRamp)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			col_list.append(_OutlineColor)
+			f_list.append(_Shininess)
+			f_list.append(_OutlineWidth)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
+		elif self.type == 'CM3D2/Lighted':
+			mate['shader1'] = 'CM3D2/Lighted'
+			mate['shader2'] = 'CM3D2__Lighted'
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
+		elif self.type == 'CM3D2/Lighted_Cutout_AtC':
+			mate['shader1'] = 'CM3D2/Lighted_Cutout_AtC'
+			mate['shader2'] = 'CM3D2__Lighted_Cutout_AtC'
+			tex_list.append(_MainTex)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			f_list.append(_Shininess)
 		elif self.type == 'CM3D2/Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Lighted_Trans'
@@ -344,8 +408,8 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
 		elif self.type == 'CM3D2/Toony_Lighted_Hair':
-			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair_Outline'
-			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair_Outline'
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair'
 			tex_list.append(_MainTex)
 			tex_list.append(_ToonRamp)
 			tex_list.append(_ShadowTex)
@@ -360,17 +424,17 @@ class new_cm3d2(bpy.types.Operator):
 			f_list.append(_HiRate)
 			f_list.append(_HiPow)
 		elif self.type == 'Transparent/Diffuse':
-			mate['shader1'] = 'Transparent/Diffuse'
-			mate['shader2'] = 'Transparent__Diffuse'
+			mate['shader1'] = 'Legacy Shaders/Transparent/Diffuse'
+			mate['shader2'] = 'Legacy Shaders__Transparent__Diffuse'
 			tex_list.append(_MainTex)
 			col_list.append(_Color)
-			col_list.append(_ShadowColor)
-			col_list.append(_RimColor)
-			col_list.append(_OutlineColor)
-			f_list.append(_Shininess)
-			f_list.append(_OutlineWidth)
-			f_list.append(_RimPower)
-			f_list.append(_RimShift)
+			# col_list.append(_ShadowColor)
+			# col_list.append(_RimColor)
+			# col_list.append(_OutlineColor)
+			# f_list.append(_Shininess)
+			# f_list.append(_OutlineWidth)
+			# f_list.append(_RimPower)
+			# f_list.append(_RimShift)
 		elif self.type == 'CM3D2_Debug/Debug_CM3D2_Normal2Color':
 			mate['shader1'] = 'CM3D2_Debug/Debug_CM3D2_Normal2Color'
 			mate['shader2'] = 'CM3D2_Debug__Debug_CM3D2_Normal2Color'
@@ -428,6 +492,65 @@ class new_cm3d2(bpy.types.Operator):
 		
 		common.decorate_material(mate, self.is_decorate, me, ob.active_material_index)
 		return {'FINISHED'}
+
+
+class new_cm3d2(bpy.types.Operator, new_mate_opr):
+	bl_idname = 'material.new_cm3d2'
+	bl_label = "CM3D2用マテリアルを新規作成"
+	bl_description = "Blender-CM3D2-Converterで使用できるマテリアルを新規で作成します"
+	bl_options = {'REGISTER', 'UNDO'}
+
+	items = [
+		('CM3D2/Toony_Lighted', "トゥーン", "", 'SOLID', 0),
+		('CM3D2/Toony_Lighted_Hair', "トゥーン 髪", "", 'PARTICLEMODE', 1),
+		('CM3D2/Toony_Lighted_Trans', "トゥーン 透過", "", 'WIRE', 2),
+		('CM3D2/Toony_Lighted_Trans_NoZ', "トゥーン 透過 NoZ", "", 'DRIVER', 3),
+		('CM3D2/Toony_Lighted_Outline', "トゥーン 輪郭線", "", 'ANTIALIASED', 4),
+		('CM3D2/Toony_Lighted_Hair_Outline', "トゥーン 輪郭線 髪", "", 'PARTICLEMODE', 5),
+		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 'PROP_OFF', 6),
+		('CM3D2/Lighted_Trans', "トゥーン無し 透過", "", 'VISIBLE_IPO_OFF', 7),
+		('CM3D2/Lighted', "トゥーン無し", "", 'VISIBLE_IPO_ON', 8),
+		('Unlit/Texture', "発光", "", 'PARTICLES', 9),
+		('Unlit/Transparent', "発光 透過", "", 'MOD_PARTICLES', 10),
+		('CM3D2/Mosaic', "モザイク", "", 'ALIASED', 11),
+		('CM3D2/Man', "ご主人様", "", 'ARMATURE_DATA', 12),
+		('Diffuse', "リアル", "", 'BRUSH_CLAY_STRIPS', 13),
+		('Transparent/Diffuse', "リアル 透過", "", 'MATCAP_09', 14),
+		('CM3D2_Debug/Debug_CM3D2_Normal2Color', "法線", "", 'MATCAP_23', 15),
+	]
+	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
+
+
+class new_com3d2(bpy.types.Operator, new_mate_opr):
+	bl_idname = 'material.new_com3d2'
+	bl_label = "COM3D2用マテリアルを新規作成"
+	bl_description = "Blender-CM3D2-Converterで使用できるマテリアルを新規で作成します"
+	bl_options = {'REGISTER', 'UNDO'}
+
+	items = [
+		('CM3D2/Toony_Lighted', "トゥーン", "", 'SOLID', 0),
+		('CM3D2/Toony_Lighted_Hair', "トゥーン 髪", "", 'PARTICLEMODE', 1),
+		('CM3D2/Toony_Lighted_Trans', "トゥーン 透過", "", 'WIRE', 2),
+		('CM3D2/Toony_Lighted_Trans_NoZ', "トゥーン 透過 NoZ", "", 'DRIVER', 3),
+		('CM3D2/Toony_Lighted_Trans_NoZTest', "トゥーン 透過 NoZTest", "", 'ANIM_DATA', 4),
+		('CM3D2/Toony_Lighted_Outline', "トゥーン 輪郭線", "", 'ANTIALIASED', 5),
+		('CM3D2/Toony_Lighted_Outline_Tex', "トゥーン 輪郭線 Tex", "", 'MATSPHERE', 6),
+		('CM3D2/Toony_Lighted_Hair_Outline', "トゥーン 輪郭線 髪", "", 'PARTICLEMODE', 7),
+		# ('CM3D2/Toony_Lighted_Hair_Outline_Tex', "トゥーン 輪郭線 Tex 髪", "", 'PARTICLEMODE', 8),
+		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 'PROP_OFF', 9),
+		('CM3D2/Lighted_Cutout_AtC', "トゥーン無し Cutout", "", 'IPO_BACK', 10),
+		('CM3D2/Lighted_Trans', "トゥーン無し 透過", "", 'VISIBLE_IPO_OFF', 11),
+		('CM3D2/Lighted', "トゥーン無し", "", 'VISIBLE_IPO_ON', 12),
+		('Unlit/Texture', "発光", "", 'PARTICLES', 13),
+		('Unlit/Transparent', "発光 透過", "", 'MOD_PARTICLES', 14),
+		('CM3D2/Mosaic', "モザイク", "", 'ALIASED', 15),
+		('CM3D2/Man', "ご主人様", "", 'ARMATURE_DATA', 16),
+		('Diffuse', "リアル", "", 'BRUSH_CLAY_STRIPS', 17),
+		('Transparent/Diffuse', "リアル 透過", "", 'MATCAP_09', 18),
+		('CM3D2_Debug/Debug_CM3D2_Normal2Color', "法線", "", 'MATCAP_23', 19),
+	]
+	type = bpy.props.EnumProperty(items=items, name="種類", default='CM3D2/Toony_Lighted_Outline')
+	
 
 class paste_material(bpy.types.Operator):
 	bl_idname = 'material.paste_material'

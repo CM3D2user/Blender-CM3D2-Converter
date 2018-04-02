@@ -127,14 +127,18 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	default_tex_path2 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	default_tex_path3 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	
+	custom_normal_blend = bpy.props.FloatProperty(name="CM3D2用法線のブレンド率", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=3, precision=0)
 	
 	new_mate_tex_color = bpy.props.FloatVectorProperty(name="テクスチャ設定値の色", default=(0, 0, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
 	
 	new_mate_toonramp_name = bpy.props.StringProperty(name="_ToonRamp 名前", default="toonGrayA1")
-	new_mate_toonramp_path = bpy.props.StringProperty(name="_ToonRamp パス", default=r"Assets\texture\texture\toon\toonGrayA1.png")
+	new_mate_toonramp_path = bpy.props.StringProperty(name="_ToonRamp パス", default="Assets/texture/texture/toon/toonGrayA1.png")
 	
 	new_mate_shadowratetoon_name = bpy.props.StringProperty(name="_ShadowRateToon 名前", default="toonDress_shadow")
-	new_mate_shadowratetoon_path = bpy.props.StringProperty(name="_ShadowRateToon パス", default=r"Assets\texture\texture\toon\toonDress_shadow.png")
+	new_mate_shadowratetoon_path = bpy.props.StringProperty(name="_ShadowRateToon パス", default="Assets/texture/texture/toon/toonDress_shadow.png")
+
+	new_mate_linetoonramp_name = bpy.props.StringProperty(name="_OutlineToonRamp 名前", default="toonGrayA1")
+	new_mate_linetoonramp_path = bpy.props.StringProperty(name="_OutlineToonRamp パス", default="Assets/texture/texture/toon/toonGrayA1.png")
 	
 	new_mate_color = bpy.props.FloatVectorProperty(name="_Color", default=(1, 1, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
 	new_mate_shadowcolor = bpy.props.FloatVectorProperty(name="_ShadowColor", default=(0, 0, 0, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
@@ -147,6 +151,11 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	new_mate_rimshift = bpy.props.FloatProperty(name="_RimShift", default=0, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
 	new_mate_hirate = bpy.props.FloatProperty(name="_HiRate", default=0.5, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
 	new_mate_hipow = bpy.props.FloatProperty(name="_HiPow", default=0.001, min=-100, max=100, soft_min=-100, soft_max=100, step=1, precision=2)
+	new_mate_cutoff = bpy.props.FloatProperty(name="_Cutoff", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2)
+	new_mate_cutout = bpy.props.FloatProperty(name="_Cutout", default=0.482143, min=0, max=1, soft_min=0, soft_max=1, step=10, precision=6)
+	new_mate_ztest = bpy.props.FloatProperty(name="_ZTest", default=4, min=0, max=8, soft_min=0, soft_max=8, step=1)
+	new_mate_ztest2 = bpy.props.FloatProperty(name="_ZTest2", default=1, min=0, max=1, soft_min=0, soft_max=1, step=1)
+	new_mate_ztest2alpha = bpy.props.FloatProperty(name="_ZTest2Alpha", default=0.8, min=0, max=1, soft_min=0, soft_max=1, step=1, precision=2)
 	
 	def draw(self, context):
 		self.layout.label(text="ここの設定は「ユーザー設定の保存」ボタンを押すまで保存されていません", icon='QUESTION')

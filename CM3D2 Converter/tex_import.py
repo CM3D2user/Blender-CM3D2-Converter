@@ -40,8 +40,15 @@ class import_cm3d2_tex(bpy.types.Operator):
 			return {'CANCELLED'}
 		header_ext = common.read_str(file)
 		if header_ext == 'CM3D2_TEX':
-			file.seek(4, 1)
+			version = struct.unpack('<i', file.read(4))[0]
 			in_path = common.read_str(file)
+			if version >= 1010:
+				width = struct.unpack('<i', file.read(4))[0]
+				height = struct.unpack('<i', file.read(4))[0]
+				tex_format = struct.unpack('<i', file.read(4))[0]
+				if tex_format == 10 or tex_format == 12:
+					self.report(type={'ERROR'}, message="DXTフォーマットのtexは未対応です")
+					return {'CANCELLED'}
 			png_size = struct.unpack('<i', file.read(4))[0]
 			root, ext = os.path.splitext(self.filepath)
 			png_path = root + ".png"

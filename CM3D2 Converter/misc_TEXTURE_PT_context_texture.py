@@ -1,5 +1,6 @@
 # 「プロパティ」エリア → 「テクスチャ」タブ
-import os, re, sys, bpy, time, bmesh, mathutils
+import os, re, sys, struct, time
+import bpy, bmesh, mathutils
 from . import common
 
 # メニュー等に項目追加
@@ -55,13 +56,16 @@ def menu_func(self, context):
 					row.label(text="テクスチャ名:")
 					row.template_ID(tex, 'image', open='image.open')
 					if 'cm3d2_path' not in img:
-						img['cm3d2_path'] = "Assets\\texture\\texture\\" + os.path.basename(img.filepath)
+						img['cm3d2_path'] = "Assets/texture/texture/" + os.path.basename(img.filepath)
 					sub_box.prop(img, '["cm3d2_path"]', text="テクスチャパス")
 					
 					if base_name == "_ToonRamp":
 						sub_box.menu('TEXTURE_PT_context_texture_ToonRamp', icon='NLA')
 					elif base_name == "_ShadowRateToon":
 						sub_box.menu('TEXTURE_PT_context_texture_ShadowRateToon', icon='NLA')
+					elif base_name == "_OutlineToonRamp":
+						sub_box.menu('TEXTURE_PT_context_texture_OutlineToonRamp', icon='NLA')
+
 					split = sub_box.split(percentage=0.333333333333, align=True)
 					split.label(text="オフセット:")
 					row = split.row(align=True)
@@ -142,18 +146,49 @@ def menu_func(self, context):
 			row.operator('texture.set_color_value', text="0.5").color = list(tex_slot.color) + [0.5]
 			row.operator('texture.set_color_value', text="0.75").color = list(tex_slot.color) + [0.75]
 			row.operator('texture.set_color_value', text="1.0", icon='FULLSCREEN_ENTER').color = list(tex_slot.color) + [1.0]
+
+		elif base_name == '_ZTest':
+			row.menu('TEXTURE_PT_context_texture_values_ZTest', icon='DOWNARROW_HLT', text="")
+			col = sub_box.column(align=True)
+			row = col.row(align=True)
+			row.operator('texture.set_color_value', text="Disabled").color = list(tex_slot.color) + [0]
+			row.operator('texture.set_color_value', text="Never").color = list(tex_slot.color) + [1]
+			row.operator('texture.set_color_value', text="Less ").color = list(tex_slot.color) + [2]
+			row.operator('texture.set_color_value', text="Equal").color = list(tex_slot.color) + [3]
+			row.operator('texture.set_color_value', text="LessEqual").color = list(tex_slot.color) + [4]
+			row = col.row(align=True)
+			row.operator('texture.set_color_value', text="Greater").color = list(tex_slot.color) + [5]
+			row.operator('texture.set_color_value', text="NotEqual").color = list(tex_slot.color) + [6]
+			row.operator('texture.set_color_value', text="GreaterEqual").color = list(tex_slot.color) + [7]
+			row.operator('texture.set_color_value', text="Always").color = list(tex_slot.color) + [8]
+
+		elif base_name == '_ZTest2':
+			row = sub_box.row(align=True)
+			row.operator('texture.set_color_value', text="0").color = list(tex_slot.color) + [0]
+			row.operator('texture.set_color_value', text="1").color = list(tex_slot.color) + [1]
+
+		elif base_name == '_ZTest2Alpha':
+			row.menu('TEXTURE_PT_context_texture_values_ZTest2Alpha', icon='DOWNARROW_HLT', text="")
+			row = sub_box.row(align=True)
+			row.operator('texture.set_color_value', text="0").color = list(tex_slot.color) + [0]
+			row.operator('texture.set_color_value', text="0.8").color = list(tex_slot.color) + [0.8]
+			row.operator('texture.set_color_value', text="1").color = list(tex_slot.color) + [1]
 	
 	box.operator('texture.sync_tex_color_ramps', icon='LINKED')
 	
 	description = ""
 	if base_name == '_MainTex':
 		description = ["面の色を決定するテクスチャを指定。", "普段テスクチャと呼んでいるものは基本コレです。", "テクスチャパスは適当でも動きます。", "しかし、テクスチャ名はきちんと決めましょう。"]
-	if base_name == '_ToonRamp':
+	elif base_name == '_ToonRamp':
 		description = ["暗い部分に乗算するグラデーション画像を指定します。"]
 	elif base_name == '_ShadowTex':
 		description = ["陰部分の面の色を決定するテクスチャを指定。", "「_ShadowRateToon」で範囲を指定します。"]
-	if base_name == '_ShadowRateToon':
+	elif base_name == '_ShadowRateToon':
 		description = ["「_ShadowTex」を有効にする部分を指定します。", "黒色で有効、白色で無効。"]
+	elif base_name == '_OutlineTex':
+		description = ["アウトラインを表現するためのテクスチャを指定。(未確認)"]
+	elif base_name == '_OutlineToonRamp':
+		description = ["_OutlineTexの暗い部分に乗算するグラデーション画像を指定します。(未確認)"]
 	elif base_name == '_Color':
 		description = ["面の色を指定。", "白色で無効。基本的に白色で良いでしょう。"]
 	elif base_name == '_ShadowColor':
@@ -173,7 +208,13 @@ def menu_func(self, context):
 	elif base_name == '_RenderTex':
 		description = ["モザイクシェーダーにある設定値。", "特に設定の必要なし。"]
 	elif base_name == '_FloatValue1':
-		description = ["モザイクの大きさ？(未確認)"]
+		description = ["モザイクの粗さ"]
+	elif base_name == '_Cutoff':
+		description = ["アルファのカットオフ値。", "アルファ値がこの値より大きい部分だけがレンダリングされる"]
+	elif base_name == '_Cutout':
+		description = ["アルファのカットオフ値。", "アルファ値がこの値より大きい部分だけがレンダリングされる"]
+	elif base_name == '_ZTest':
+		description = ["デプステストの実行方法を指定する。"]
 	
 	if description != "":
 		sub_box = box.box()
@@ -181,6 +222,28 @@ def menu_func(self, context):
 		col.label(text="解説", icon='TEXT')
 		for line in description:
 			col.label(text=line)
+			
+
+toon_texes = [
+	"NoTex", "ToonBlueA1", "ToonBlueA2", "ToonBrownA1", "ToonGrayA1",
+	"ToonGreenA1", "ToonGreenA2", "ToonGreenA3",
+	"ToonOrangeA1",
+	"ToonPinkA1", "ToonPinkA2", "ToonPurpleA1",
+	"ToonRedA1", "ToonRedA2",
+	"ToonRedmmm1", "ToonRedmm1", "ToonRedm1",
+	"ToonYellowA1", "ToonYellowA2", "ToonYellowA3", "ToonYellowA4",
+	"ToonFace",  # "ToonFace002",
+	"ToonSkin",  # "ToonSkin002",
+	"ToonBlackA1",
+	"ToonFace_shadow",
+	"ToonDress_shadow",
+	"ToonSkin_Shadow",
+	"ToonBlackMM1", "ToonBlackM1", "ToonGrayMM1", "ToonGrayM1",
+	"ToonPurpleMM1", "ToonPurpleM1",
+	"ToonSilverA1",
+	"ToonDressMM_Shadow", "ToonDressM_Shadow",
+]
+
 
 # _ToonRamp設定メニュー
 class TEXTURE_PT_context_texture_ToonRamp(bpy.types.Menu):
@@ -190,30 +253,10 @@ class TEXTURE_PT_context_texture_ToonRamp(bpy.types.Menu):
 	def draw(self, context):
 		l = self.layout
 		cmd = 'texture.set_default_toon_textures'
-		l.operator(cmd, text="NoTex", icon='SPACE2').name = "NoTex"
-		l.operator(cmd, text="ToonBlackA1", icon='SPACE2').name = "ToonBlackA1"
-		l.operator(cmd, text="ToonBlueA1", icon='SPACE2').name = "ToonBlueA1"
-		l.operator(cmd, text="ToonBlueA2", icon='SPACE2').name = "ToonBlueA2"
-		l.operator(cmd, text="ToonBrownA1", icon='SPACE2').name = "ToonBrownA1"
-		l.operator(cmd, text="ToonDress_Shadow", icon='LAYER_USED').name = "ToonDress_Shadow"
-		l.operator(cmd, text="ToonFace", icon='SPACE2').name = "ToonFace"
-		l.operator(cmd, text="ToonFace_Shadow", icon='LAYER_USED').name = "ToonFace_Shadow"
-		l.operator(cmd, text="ToonFace002", icon='SPACE2').name = "ToonFace002"
-		l.operator(cmd, text="ToonGrayA1", icon='SPACE2').name = "ToonGrayA1"
-		l.operator(cmd, text="ToonGreenA1", icon='SPACE2').name = "ToonGreenA1"
-		l.operator(cmd, text="ToonGreenA2", icon='SPACE2').name = "ToonGreenA2"
-		l.operator(cmd, text="ToonOrangeA1", icon='SPACE2').name = "ToonOrangeA1"
-		l.operator(cmd, text="ToonPinkA1", icon='SPACE2').name = "ToonPinkA1"
-		l.operator(cmd, text="ToonPinkA2", icon='SPACE2').name = "ToonPinkA2"
-		l.operator(cmd, text="ToonPurpleA1", icon='SPACE2').name = "ToonPurpleA1"
-		l.operator(cmd, text="ToonRedA1", icon='SPACE2').name = "ToonRedA1"
-		l.operator(cmd, text="ToonRedA2", icon='SPACE2').name = "ToonRedA2"
-		l.operator(cmd, text="ToonSkin", icon='SPACE2').name = "ToonSkin"
-		l.operator(cmd, text="ToonSkin_Shadow", icon='LAYER_USED').name = "ToonSkin_Shadow"
-		l.operator(cmd, text="ToonSkin002", icon='SPACE2').name = "ToonSkin002"
-		l.operator(cmd, text="ToonYellowA1", icon='SPACE2').name = "ToonYellowA1"
-		l.operator(cmd, text="ToonYellowA2", icon='SPACE2').name = "ToonYellowA2"
-		l.operator(cmd, text="ToonYellowA3", icon='SPACE2').name = "ToonYellowA3"
+		for toon_tex in toon_texes:
+			icon = 'SPACE2' if 'Shadow' not in toon_tex else 'LAYER_USED'
+			l.operator(cmd, text=toon_tex, icon=icon).name = toon_tex
+
 
 # _ShadowRateToon設定メニュー
 class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
@@ -223,30 +266,23 @@ class TEXTURE_PT_context_texture_ShadowRateToon(bpy.types.Menu):
 	def draw(self, context):
 		l = self.layout
 		cmd = 'texture.set_default_toon_textures'
-		l.operator(cmd, text="NoTex", icon='LAYER_USED').name = "NoTex"
-		l.operator(cmd, text="ToonBlackA1", icon='LAYER_USED').name = "ToonBlackA1"
-		l.operator(cmd, text="ToonBlueA1", icon='LAYER_USED').name = "ToonBlueA1"
-		l.operator(cmd, text="ToonBlueA2", icon='LAYER_USED').name = "ToonBlueA2"
-		l.operator(cmd, text="ToonBrownA1", icon='LAYER_USED').name = "ToonBrownA1"
-		l.operator(cmd, text="ToonDress_Shadow", icon='SPACE2').name = "ToonDress_Shadow"
-		l.operator(cmd, text="ToonFace", icon='LAYER_USED').name = "ToonFace"
-		l.operator(cmd, text="ToonFace_Shadow", icon='SPACE2').name = "ToonFace_Shadow"
-		l.operator(cmd, text="ToonFace002", icon='LAYER_USED').name = "ToonFace002"
-		l.operator(cmd, text="ToonGrayA1", icon='LAYER_USED').name = "ToonGrayA1"
-		l.operator(cmd, text="ToonGreenA1", icon='LAYER_USED').name = "ToonGreenA1"
-		l.operator(cmd, text="ToonGreenA2", icon='LAYER_USED').name = "ToonGreenA2"
-		l.operator(cmd, text="ToonOrangeA1", icon='LAYER_USED').name = "ToonOrangeA1"
-		l.operator(cmd, text="ToonPinkA1", icon='LAYER_USED').name = "ToonPinkA1"
-		l.operator(cmd, text="ToonPinkA2", icon='LAYER_USED').name = "ToonPinkA2"
-		l.operator(cmd, text="ToonPurpleA1", icon='LAYER_USED').name = "ToonPurpleA1"
-		l.operator(cmd, text="ToonRedA1", icon='LAYER_USED').name = "ToonRedA1"
-		l.operator(cmd, text="ToonRedA2", icon='LAYER_USED').name = "ToonRedA2"
-		l.operator(cmd, text="ToonSkin", icon='LAYER_USED').name = "ToonSkin"
-		l.operator(cmd, text="ToonSkin_Shadow", icon='SPACE2').name = "ToonSkin_Shadow"
-		l.operator(cmd, text="ToonSkin002", icon='LAYER_USED').name = "ToonSkin002"
-		l.operator(cmd, text="ToonYellowA1", icon='LAYER_USED').name = "ToonYellowA1"
-		l.operator(cmd, text="ToonYellowA2", icon='LAYER_USED').name = "ToonYellowA2"
-		l.operator(cmd, text="ToonYellowA3", icon='LAYER_USED').name = "ToonYellowA3"
+		for toon_tex in toon_texes:
+			icon = 'SPACE2' if 'Shadow' not in toon_tex else 'LAYER_USED'
+			l.operator(cmd, text=toon_tex, icon=icon).name = toon_tex
+
+
+# _OutlineToonRamp設定メニュー
+class TEXTURE_PT_context_texture_OutlineToonRamp(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_OutlineToonRamp'
+	bl_label = "_OutlineToonRamp 設定"
+	
+	def draw(self, context):
+		l = self.layout
+		cmd = 'texture.set_default_toon_textures'
+		for toon_tex in toon_texes:
+			icon = 'SPACE2' if 'Shadow' not in toon_tex else 'LAYER_USED'
+			l.operator(cmd, text=toon_tex, icon=icon).name = toon_tex
+
 
 # 0.0～1.0までの値設定メニュー
 class TEXTURE_PT_context_texture_values_normal(bpy.types.Menu):
@@ -285,6 +321,19 @@ class TEXTURE_PT_context_texture_values_RimPower(bpy.types.Menu):
 			if value == 0:
 				icon = 'ERROR'
 			self.layout.operator('texture.set_color_value', text=str(value), icon=icon).color = list(tex_slot.color) + [value]
+
+
+# _ZTest用の値設定メニュー
+class TEXTURE_PT_context_texture_values_ZTest(bpy.types.Menu):
+	bl_idname = 'TEXTURE_PT_context_texture_values_ZTest'
+	bl_label = "値リスト"
+	
+	def draw(self, context):
+		tex_slot = context.texture_slot
+		for i in range(9):
+			value = round(i, 0)
+			self.layout.operator('texture.set_color_value', text=str(value)).color = list(tex_slot.color) + [value]
+
 
 class show_image(bpy.types.Operator):
 	bl_idname = 'image.show_image'
@@ -369,7 +418,7 @@ class set_default_toon_textures(bpy.types.Operator):
 		if 'texture_slot' in dir(context) and 'texture' in dir(context):
 			if context.texture_slot and context.texture:
 				name = common.remove_serial_number(context.texture.name)
-				return name == "_ToonRamp" or name == "_ShadowRateToon"
+				return name in ["_ToonRamp", "_ShadowRateToon", "_OutlineToonRamp"]
 		return False
 	
 	def execute(self, context):
@@ -514,7 +563,7 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 	bl_label = "texで保存"
 	bl_description = "テクスチャの画像を同フォルダにtexとして保存します"
 	bl_options = {'REGISTER'}
-	
+
 	def execute(self, context):
 		import os.path
 		
@@ -530,17 +579,18 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		override = context.copy()
 		override['edit_image'] = img
 		filepath = os.path.splitext( bpy.path.abspath(img.filepath) )[0] + ".tex"
-		path = "assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
+		path = "Assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
+		version = '1000'
 		if 'cm3d2_path' in img:
 			path = img['cm3d2_path']
 		if os.path.exists(filepath):
 			file = open(filepath, 'rb')
 			header_ext = common.read_str(file)
 			if header_ext == 'CM3D2_TEX':
-				file.seek(4, 1)
+				version = str(struct.unpack('<i', file.read(4))[0])
 				path = common.read_str(file)
 			file.close()
-		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path)
+		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path, version=version)
 		
 		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました")
 		return {'FINISHED'}

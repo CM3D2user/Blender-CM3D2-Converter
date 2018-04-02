@@ -365,7 +365,6 @@ def file_backup(filepath, enable=True):
 # サブフォルダを再帰的に検索してリスト化
 def fild_tex_all_files(dir):
 	for root, dirs, files in os.walk(dir):
-		yield root
 		for file in files:
 			if os.path.splitext(file)[1].lower() == ".tex":
 				yield os.path.join(root, file)
@@ -437,8 +436,14 @@ def replace_cm3d2_tex(img, pre_files=[]):
 				
 				header_ext = read_str(file)
 				if header_ext == 'CM3D2_TEX':
-					file.seek(4, 1)
+					version = struct.unpack('<i', file.read(4))[0]
 					read_str(file)
+					if version >= 1010:
+						width = struct.unpack('<i', file.read(4))[0]
+						height = struct.unpack('<i', file.read(4))[0]
+						tex_format = struct.unpack('<i', file.read(4))[0]
+						if tex_format == 10 or tex_format == 12:
+							return False
 					png_size = struct.unpack('<i', file.read(4))[0]
 					png_path = os.path.splitext(path)[0] + ".png"
 					try:

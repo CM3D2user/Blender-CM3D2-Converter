@@ -29,6 +29,8 @@ class forced_modifier_apply(bpy.types.Operator):
 		ob = context.active_object
 		if len(ob.modifiers) == 0:
 			return {'CANCELLED'}
+
+		self.custom_normal_blend = common.preferences().custom_normal_blend
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
@@ -46,6 +48,8 @@ class forced_modifier_apply(bpy.types.Operator):
 				self.is_applies[index] = True
 	
 	def execute(self, context):
+		common.preferences().custom_normal_blend = self.custom_normal_blend
+
 		bpy.ops.object.mode_set(mode='OBJECT')
 		ob = context.active_object
 		me = ob.data
