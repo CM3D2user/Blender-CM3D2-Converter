@@ -212,8 +212,8 @@ class new_mate_opr():
 		_ShadowTex = ("_ShadowTex", ob_name + "_shadow", base_path + ob_name + "_shadow.png")
 		_ShadowRateToon = ("_ShadowRateToon", pref.new_mate_shadowratetoon_name, pref.new_mate_shadowratetoon_path)
 		_HiTex = ("_HiTex", ob_name + "_s", base_path + ob_name + "_s.png")
-		_OutlineTex = ("_OutliineTex", ob_name + "_line", base_path + ob_name + "_line.png")
-		_OutlineToonRamp = ("_OutliineToonRamp", pref.new_mate_linetoonramp_name, pref.new_mate_linetoonramp_path)
+		_OutlineTex = ("_OutlineTex", ob_name + "_line", base_path + ob_name + "_line.png")
+		_OutlineToonRamp = ("_OutlineToonRamp", pref.new_mate_linetoonramp_name, pref.new_mate_linetoonramp_path)
 		
 		_Color = ("_Color", pref.new_mate_color)
 		_ShadowColor = ("_ShadowColor", pref.new_mate_shadowcolor)
