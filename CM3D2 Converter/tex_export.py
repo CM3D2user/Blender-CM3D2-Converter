@@ -18,9 +18,10 @@ class export_cm3d2_tex(bpy.types.Operator):
 	version = bpy.props.EnumProperty(
 		name="ファイルバージョン",
 		items=[
-			('1010', '1010', 'CM3D2 1.49以降向け対応版', 'NONE', 0),
-			('1000', '1000', '旧版フォーマット', 'NONE', 1),
-		], default='1000')
+			('1011', '1011', 'COM3D2 1.13 or later', 'NONE', 0),
+			('1010', '1010', 'CM3D2 1.49以降向け対応版', 'NONE', 1),
+			('1000', '1000', '旧版フォーマット', 'NONE', 2),
+		], default='1010')
 	path = bpy.props.StringProperty(name="パス", default="Assets/texture/texture/*.png")
 	
 	@classmethod
@@ -61,17 +62,16 @@ class export_cm3d2_tex(bpy.types.Operator):
 		common.preferences().tex_export_path = self.filepath
 		
 		try:
-			file = common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup)
-		except:
-			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可の可能性があります")
-			return {'CANCELLED'}
-		
-		version_num = int(self.version)
-		try:
-			with file:
+			with common.open_temporary(self.filepath, 'wb', is_backup=self.is_backup) as file:
+				version_num = int(self.version)
 				self.write_texture(context, file, version_num)
+			self.report(type={'INFO'}, message="texファイルを出力しました。" + self.filepath)
+
 		except common.CM3D2ExportException as e:
 			self.report(type={'ERROR'}, message=str(e))
+			return {'CANCELLED'}
+		except Exception as e:
+			self.report(type={'ERROR'}, message="texファイルの出力に失敗しました。" + str(e))
 			return {'CANCELLED'}
 		
 		return {'FINISHED'}
@@ -114,6 +114,14 @@ class export_cm3d2_tex(bpy.types.Operator):
 		file.write(struct.pack('<i', version))
 		common.write_str(file, self.path)
 		if version >= 1010:
+			if version >= 1011:
+				uv_rects = bpy.types.Scene.MyUVRects if hasattr(bpy.types.Scene, 'MyUVRects') else None
+				num_rects = len(uv_rects) if uv_rects else 0
+				file.write(struct.pack('<i', num_rects))
+				if num_rects > 0:
+					for uv_rect in uv_rects:
+						file.write( struct.pack('<4f', uv_rect[0], uv_rect[1], uv_rect[2], uv_rect[3]) )
+
 			width, height = img.size
 			file.write(struct.pack('<i', width))
 			file.write(struct.pack('<i', height))

@@ -34,43 +34,39 @@ class import_cm3d2_tex(bpy.types.Operator):
 	def execute(self, context):
 		common.preferences().tex_import_path = self.filepath
 		try:
-			file = open(self.filepath, 'rb')
-		except:
-			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません")
-			return {'CANCELLED'}
-		header_ext = common.read_str(file)
-		if header_ext == 'CM3D2_TEX':
-			version = struct.unpack('<i', file.read(4))[0]
-			in_path = common.read_str(file)
-			if version >= 1010:
-				width = struct.unpack('<i', file.read(4))[0]
-				height = struct.unpack('<i', file.read(4))[0]
-				tex_format = struct.unpack('<i', file.read(4))[0]
-				if tex_format == 10 or tex_format == 12:
-					self.report(type={'ERROR'}, message="DXTフォーマットのtexは未対応です")
-					return {'CANCELLED'}
-			png_size = struct.unpack('<i', file.read(4))[0]
+			tex_data = common.load_cm3d2tex(self.filepath)
+			if tex_data is None:
+				# bpy.ops.image.open(filepath=self.filepath)
+				# img = context.edit_image
+				self.report(type={'ERROR'}, message="texファイルのヘッダが正しくありません。" + self.fielpath)
+				return {'CANCELLED'}
+
+			tex_format = tex_data[1]
+			if not (tex_format == 3 or tex_format == 5):
+				self.report(type={'ERROR'}, message="未対応フォーマットのtexです。format=" + str(tex_format))
+				return {'CANCELLED'}
+
 			root, ext = os.path.splitext(self.filepath)
 			png_path = root + ".png"
 			is_png_overwrite = os.path.exists(png_path)
 			if self.mode == 'PACK' and is_png_overwrite:
 				png_path += ".temp.png"
-			png_file = open(png_path, 'wb')
-			png_file.write(file.read(png_size))
-			png_file.close()
+			with open(png_path, 'wb') as png_file:
+				png_file.write(tex_data[-1])
 			bpy.ops.image.open(filepath=png_path)
 			img = context.edit_image
 			img.name = os.path.basename(self.filepath)
 			img['cm3d2_path'] = in_path
-		else:
-			bpy.ops.image.open(filepath=self.filepath)
-			img = context.edit_image
-		file.close()
-		if self.mode == 'PACK':
-			img.pack(as_png=True)
-			if header_ext == 'CM3D2_TEX':
+
+			if self.mode == 'PACK':
+				img.pack(as_png=True)
 				os.remove(png_path)
-		return {'FINISHED'}
+			return {'FINISHED'}
+
+		except:
+			self.report(type={'ERROR'}, message="ファイルを開くのに失敗しました、アクセス不可かファイルが存在しません。"+ self.filepath)
+			return {'CANCELLED'}
+
 
 # メニューを登録する関数
 def menu_func(self, context):
