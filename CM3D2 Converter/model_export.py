@@ -108,8 +108,9 @@ class export_cm3d2_model(bpy.types.Operator):
 			if "LocalBoneData" in context.blend_data.texts:
 				self.bone_info_mode = 'TEXT'
 		if "BoneData:0" in ob:
-			if "ModelVersion" in ob:
-				self.version = str(ob['ModelVersion'])
+			ver = ob.get("ModelVersion")
+			if ver and ver >= 1000:
+				self.version = str(ver)
 			if "LocalBoneData:0" in ob:
 				self.bone_info_mode = 'OBJECT_PROPERTY'
 		arm_ob = ob.parent
