@@ -128,6 +128,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
 	default_tex_path3 = bpy.props.StringProperty(name="texファイル置き場", subtype='DIR_PATH', description="texファイルを探す時はここから探します")
 	
 	custom_normal_blend = bpy.props.FloatProperty(name="CM3D2用法線のブレンド率", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=3, precision=0)
+	skip_shapekey = bpy.props.BoolProperty(name="無変更シェイプキーをスキップ", default=True, description="ベースと同じシェイプキーを出力しない")
 	
 	new_mate_tex_color = bpy.props.FloatVectorProperty(name="テクスチャ設定値の色", default=(0, 0, 1, 1), min=0, max=1, soft_min=0, soft_max=1, step=10, precision=2, subtype='COLOR', size=4)
 	

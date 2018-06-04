@@ -50,7 +50,6 @@ class export_cm3d2_model(bpy.types.Operator):
 	is_normalize_weight = bpy.props.BoolProperty(name="ウェイトの合計を1.0に", default=True, description="4つのウェイトの合計値が1.0になるように正規化します")
 	is_convert_bone_weight_names = bpy.props.BoolProperty(name="頂点グループ名をCM3D2用に変換", default=True, description="全ての頂点グループ名をCM3D2で使える名前にしてからエクスポートします")
 	is_apply_modifiers = bpy.props.BoolProperty(name="モディファイアを適用", default=False)
-	custom_normal_blend = bpy.props.FloatProperty(name="CM3D2用法線のブレンド率", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=3, precision=0)
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
 	
@@ -134,7 +133,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		self.is_backup = bool(common.preferences().backup_ext)
 		
 		self.scale = 1.0 / common.preferences().scale
-		self.custom_normal_blend = common.preferences().custom_normal_blend
 		context.window_manager.fileselect_add(self)
 		return {'RUNNING_MODAL'}
 
@@ -156,6 +154,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if self.base_bone_name == 'Auto':
 			row.enabled = False
 		
+		prefs = common.preferences()
 		box = self.layout.box()
 		col = box.column(align=True)
 		col.label(text="ボーン情報元", icon='BONE_DATA')
@@ -166,24 +165,25 @@ class export_cm3d2_model(bpy.types.Operator):
 		box = self.layout.box()
 		box.label("メッシュオプション")
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
+		box.prop(prefs, 'skip_shapekey', icon='SHAPEKEY_DATA')
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
 		sub_box.prop(self, 'is_convert_bone_weight_names', icon_value=common.preview_collections['main']['KISS'].icon_id)
 		sub_box = box.box()
 		sub_box.prop(self, 'is_apply_modifiers', icon='MODIFIER')
 		row = sub_box.row()
-		row.prop(self, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
+		row.prop(prefs, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
 		row.enabled = self.is_apply_modifiers
 
 
 	def execute(self, context):
 		"""モデルファイルを出力"""
 		start_time = time.time()
-		common.preferences().custom_normal_blend = self.custom_normal_blend
+		prefs = common.preferences()
 		
 		if not self.is_batch:
-			common.preferences().model_export_path = self.filepath
-			common.preferences().scale = 1.0 / self.scale
+			prefs.model_export_path = self.filepath
+			prefs.scale = 1.0 / self.scale
 			bpy.ops.object.mode_set(mode='OBJECT')
 		
 		
@@ -214,7 +214,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			ob = new_ob
 			me = new_me
 			
-			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=self.custom_normal_blend)
+			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=prefs.custom_normal_blend)
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'ARMATURE':
@@ -381,6 +381,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		"""モデルデータをファイルオブジェクトに書き込む"""
 		ob = context.active_object
 		me = ob.data
+		prefs = common.preferences()
 		
 		# ファイル先頭
 		common.write_str(file, 'CM3D2_MESH')
@@ -658,7 +659,8 @@ class export_cm3d2_model(bpy.types.Operator):
 								vert_index += 1
 						else:
 							vert_index += len(vert_uvs[i])
-					if not len(morph):
+					if prefs.skip_shapekey and not len(morph):
+
 						continue
 					common.write_str(file, 'morph')
 					common.write_str(file, shape_key.name)

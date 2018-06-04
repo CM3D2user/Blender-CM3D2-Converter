@@ -26,9 +26,9 @@ class export_cm3d2_tex(bpy.types.Operator):
 	
 	@classmethod
 	def poll(cls, context):
-		img = context.edit_image
-		if img:
-			if len(img.pixels) or img.source == 'VIEWER':
+		if hasattr(context, 'edit_image'):
+			img = context.edit_image
+			if img and (len(img.pixels) or img.source == 'VIEWER'):
 				return True
 		return False
 	
