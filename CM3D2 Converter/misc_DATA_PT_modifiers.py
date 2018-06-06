@@ -78,23 +78,23 @@ class forced_modifier_apply(bpy.types.Operator):
 				temp_me = me.copy()
 				temp_ob.data = temp_me
 				context.scene.objects.link(temp_ob)
+				try:
+					for vert in temp_me.vertices:
+						vert.co = deforms[vert.index].copy()
+					
+					override = context.copy()
+					override['object'] = temp_ob
+					for index, mod in enumerate(temp_ob.modifiers):
+						if self.is_applies[index]:
+							try:
+								bpy.ops.object.modifier_apply(override, modifier=mod.name)
+							except:
+								ob.modifiers.remove(mod)
 				
-				for vert in temp_me.vertices:
-					vert.co = deforms[vert.index].copy()
-				
-				override = context.copy()
-				override['object'] = temp_ob
-				for index, mod in enumerate(temp_ob.modifiers):
-					if self.is_applies[index]:
-						try:
-							bpy.ops.object.modifier_apply(override, modifier=mod.name)
-						except:
-							ob.modifiers.remove(mod)
-				
-				new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
-				
-				common.remove_data(temp_ob)
-				common.remove_data(temp_me)
+					new_shape_deforms.append([v.co.copy() for v in temp_me.vertices])
+				finally:
+					common.remove_data(temp_ob)
+					common.remove_data(temp_me)
 		
 		if ob.active_shape_key_index != 0:
 			ob.active_shape_key_index = 0

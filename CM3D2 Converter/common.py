@@ -431,36 +431,52 @@ def replace_cm3d2_tex(img, pre_files=[]):
 			
 			elif file_name == source_tex_name:
 				try:
-					file = open(path, 'rb')
-				except: return False
-				
-				header_ext = read_str(file)
-				if header_ext == 'CM3D2_TEX':
-					version = struct.unpack('<i', file.read(4))[0]
-					read_str(file)
-					if version >= 1010:
-						width = struct.unpack('<i', file.read(4))[0]
-						height = struct.unpack('<i', file.read(4))[0]
-						tex_format = struct.unpack('<i', file.read(4))[0]
-						if tex_format == 10 or tex_format == 12:
-							return False
-					png_size = struct.unpack('<i', file.read(4))[0]
-					png_path = os.path.splitext(path)[0] + ".png"
-					try:
-						png_file = open(png_path, 'wb')
-					except: return False
-					png_file.write(file.read(png_size))
-					png_file.close() ; file.close()
+					tex_data = load_cm3d2tex(path)
+					if tex_data is None:
+						return False
+
+					with open(png_path, 'wb') as png_file:
+						png_file.write(tex_data[-1])
 					img.filepath = png_path
 					img.reload()
 					return True
-				else:
-					file.close()
-					return False
+				except: return False
 		
 		if len(pre_files):
 			return False
 	return False
+
+# texファイルの読み込み
+def load_cm3d2tex(path, skip_data=False):
+
+	with open(path, 'rb') as file:
+		header_ext = read_str(file)
+		if header_ext != 'CM3D2_TEX':
+			return None
+		version = struct.unpack('<i', file.read(4))[0]
+		read_str(file)
+
+		# default value
+		tex_format = 5
+		uv_rects = None
+		data = None
+		if version >= 1010:
+			if version >= 1011:
+				num_rect = struct.unpack('<i', file.read(4))[0]
+				uv_rects = []
+				for i in range(num_rect):
+					# x, y, w, h
+					uv_rects.append( struct.unpack('<4f', file.read(4 * 4)) )
+
+			width  = struct.unpack('<i', file.read(4))[0]
+			height = struct.unpack('<i', file.read(4))[0]
+			tex_format = struct.unpack('<i', file.read(4))[0]
+			# if tex_format == 10 or tex_format == 12: return None
+		if not skip_data:
+			png_size = struct.unpack('<i', file.read(4))[0]
+			data = file.read(png_size)
+		return version, tex_format, uv_rects, data
+
 
 # col f タイプの設定値を値に合わせて着色
 def set_texture_color(slot):

@@ -824,9 +824,10 @@ class copy_material(bpy.types.Operator):
 		
 		mate = context.material
 		
+		mate_name = common.remove_serial_number(mate.name)
 		output_text = "1000" + "\n"
-		output_text += mate.name.lower() + "\n"
-		output_text += mate.name + "\n"
+		output_text += mate_name.lower() + "\n"
+		output_text += mate_name + "\n"
 		output_text += mate['shader1'] + "\n"
 		output_text += mate['shader2'] + "\n"
 		output_text += "\n"

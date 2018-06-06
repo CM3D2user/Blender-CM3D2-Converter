@@ -430,16 +430,14 @@ class set_default_toon_textures(bpy.types.Operator):
 		tex_path = os.path.splitext(png_path)[0] + ".tex"
 		if not os.path.exists(png_path):
 			if os.path.exists(tex_path):
-				tex_file = open(tex_path, 'rb')
-				header_ext = common.read_str(tex_file)
-				if header_ext == 'CM3D2_TEX':
-					tex_file.seek(4, 1)
-					common.read_str(tex_file)
-					png_size = struct.unpack('<i', tex_file.read(4))[0]
-					png_file = open(png_path, 'wb')
-					png_file.write(tex_file.read(png_size))
-					png_file.close()
-				tex_file.close()
+				tex_data = common.load_cm3d2tex(tex_path)
+				if tex_data is None:
+					return {'CANCELLED'}
+				tex_format = tex_data[1]
+				if not (tex_format == 3 or tex_format == 5):
+					return {'CANCELLED'}
+				with open(png_path, 'wb') as png_file:
+					png_file.write(tex_data[-1])
 		img.filepath = png_path
 		img.reload()
 		
@@ -581,18 +579,18 @@ class quick_export_cm3d2_tex(bpy.types.Operator):
 		filepath = os.path.splitext( bpy.path.abspath(img.filepath) )[0] + ".tex"
 		path = "Assets/texture/texture/" + os.path.basename( bpy.path.abspath(img.filepath) )
 		version = '1000'
+		uv_rects = None
 		if 'cm3d2_path' in img:
 			path = img['cm3d2_path']
 		if os.path.exists(filepath):
-			file = open(filepath, 'rb')
-			header_ext = common.read_str(file)
-			if header_ext == 'CM3D2_TEX':
-				version = str(struct.unpack('<i', file.read(4))[0])
-				path = common.read_str(file)
-			file.close()
+			tex_data = common.load_cm3d2tex(filepath, skip_data=True)
+			if tex_data:
+				version = str(tex_data[0])
+				uv_rects = tex_data[2]
+		bpy.types.Scene.MyUVRects = uv_rects
 		bpy.ops.image.export_cm3d2_tex(override, filepath=filepath, path=path, version=version)
-		
-		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました")
+
+		self.report(type={'INFO'}, message="同フォルダにtexとして保存しました。" + filepath)
 		return {'FINISHED'}
 
 class set_color_value(bpy.types.Operator):

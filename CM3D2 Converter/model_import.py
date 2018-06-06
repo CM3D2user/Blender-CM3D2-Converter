@@ -662,10 +662,12 @@ class import_cm3d2_model(bpy.types.Operator):
 		
 		if self.is_mesh and self.is_bone_data_obj_property:
 			ob['BaseBone'] = model_name2
-			ob['ModelVersion'] = model_ver
+			if model_ver >= 1000:
+				ob['ModelVersion'] = model_ver
 		if self.is_armature and self.is_bone_data_arm_property:
 			arm['BaseBone'] = model_name2
-			arm['ModelVersion'] = model_ver
+			if model_ver >= 1000:
+				arm['ModelVersion'] = model_ver
 		context.window_manager.progress_end()
 		
 		require_time_str = str(round(time.time() - start_time, 1))
