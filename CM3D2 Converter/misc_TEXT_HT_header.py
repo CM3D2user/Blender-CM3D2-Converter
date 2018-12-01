@@ -103,8 +103,6 @@ class paste_text_bone_data(bpy.types.Operator):
 		return 'BoneData:' in clipboard and 'LocalBoneData:' in clipboard
 	
 	def execute(self, context):
-		import re
-		clipboard = context.window_manager.clipboard
 		if "BoneData" in context.blend_data.texts:
 			bone_data_text = context.blend_data.texts["BoneData"]
 			bone_data_text.clear()
@@ -115,22 +113,21 @@ class paste_text_bone_data(bpy.types.Operator):
 			local_bone_data_text.clear()
 		else:
 			local_bone_data_text = context.blend_data.texts.new("LocalBoneData")
-		
-		for line in context.window_manager.clipboard.split("\n"):
-			r = re.search('^BaseBone:(.+)$', line)
-			if r:
-				bone_data_text['BaseBone'] = r.groups()[0]
-				local_bone_data_text['BaseBone'] = r.groups()[0]
-			r = re.search('^BoneData:(.+)$', line)
-			if r:
-				if line.count(',') == 4:
-					info = r.groups()[0]
-					bone_data_text.write(info + "\n")
-			r = re.search('^LocalBoneData:(.+)$', line)
-			if r:
+
+		clipboard = context.window_manager.clipboard
+		for line in clipboard.split("\n"):
+			if line.startswith('BaseBone:'):
+				info = line[9:]  # len('BaseData:') == 9
+				bone_data_text['BaseBone'] = info
+				local_bone_data_text['BaseBone'] = info
+				continue
+			if line.startswith('BoneData:'):
+				if line.count(',') >= 4:
+					bone_data_text.write(line[9:] + "\n")  # len('BoneData:') == 9
+				continue
+			if line.startswith('LocalBoneData:'):
 				if line.count(',') == 1:
-					info = r.groups()[0]
-					local_bone_data_text.write(info + "\n")
+					local_bone_data_text.write(line[14:] + "\n")  # len('LocalBoneData:') == 14
 		bone_data_text.current_line_index = 0
 		local_bone_data_text.current_line_index = 0
 		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
