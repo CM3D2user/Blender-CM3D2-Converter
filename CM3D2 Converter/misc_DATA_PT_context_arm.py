@@ -209,7 +209,6 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		return False
 	
 	def execute(self, context):
-		import re
 		ob = context.active_object.data
 		pass_count = 0
 		for i in range(99999):
@@ -232,23 +231,23 @@ class paste_armature_bone_data_property(bpy.types.Operator):
 		bone_data_count = 0
 		local_bone_data_count = 0
 		for line in context.window_manager.clipboard.split("\n"):
-			r = re.search('^BaseBone:(.+)$', line)
-			if r:
-				ob['BaseBone'] = r.groups()[0]
-			r = re.search('^BoneData:(.+)$', line)
-			if r:
-				if line.count(',') == 4:
-					info = r.groups()[0]
+			if line.startswith('BaseBone:'):
+				ob['BaseBone'] = line[9:]  # len('BaseData:') == 9
+				continue
+
+			if line.startswith('BoneData:'):
+				if line.count(',') >= 4:
 					name = "BoneData:" + str(bone_data_count)
-					ob[name] = info
+					ob[name] = line[9:]  # len('BoneData:') == 9
 					bone_data_count += 1
-			r = re.search('^LocalBoneData:(.+)$', line)
-			if r:
+				continue
+
+			if line.startswith('LocalBoneData:'):
 				if line.count(',') == 1:
-					info = r.groups()[0]
 					name = "LocalBoneData:" + str(local_bone_data_count)
-					ob[name] = info
+					ob[name] = line[14:]  # len('LocalBoneData:') == 14
 					local_bone_data_count += 1
+
 		self.report(type={'INFO'}, message="ボーン情報をクリップボードから貼り付けました")
 		return {'FINISHED'}
 
