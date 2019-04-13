@@ -52,6 +52,7 @@ class export_cm3d2_model(bpy.types.Operator):
 	is_apply_modifiers = bpy.props.BoolProperty(name="モディファイアを適用", default=False)
 	
 	is_batch = bpy.props.BoolProperty(name="バッチモード", default=False, description="モードの切替やエラー個所の選択を行いません")
+	export_tangent = bpy.props.BoolProperty(name="接空間情報出力", default=False, description="接空間情報(binormals, tangents)を出力する")
 	
 	@classmethod
 	def poll(cls, context):
@@ -166,6 +167,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		box.label("メッシュオプション")
 		box.prop(self, 'is_convert_tris', icon='MESH_DATA')
 		box.prop(prefs, 'skip_shapekey', icon='SHAPEKEY_DATA')
+		box.prop(self, 'export_tangent', icon='CURVE_BEZCIRCLE')
 		sub_box = box.box()
 		sub_box.prop(self, 'is_normalize_weight', icon='MOD_VERTEX_WEIGHT')
 		sub_box.prop(self, 'is_convert_bone_weight_names', icon_value=common.preview_collections['main']['KISS'].icon_id)
@@ -421,13 +423,13 @@ class export_cm3d2_model(bpy.types.Operator):
 		vert_indices = {}
 		vert_count = 0
 		for vert in bm.verts:
-			vert_uvs_append([])
+			vert_uv = []
+			vert_uvs_append(vert_uv)
 			for loop in vert.link_loops:
 				uv = loop[uv_lay].uv
-				if uv not in vert_uvs[-1]:
-					vert_uvs[-1].append(uv)
-					iuv_hash = hash(repr([vert.index, uv.x, uv.y]))
-					vert_iuv[iuv_hash] = vert_count
+				if uv not in vert_uv:
+					vert_uv.append(uv)
+					vert_iuv[hash((vert.index, uv.x, uv.y))] = vert_count
 					vert_indices[vert.index] = vert_count
 					vert_count += 1
 		if 65535 < vert_count:
@@ -452,6 +454,10 @@ class export_cm3d2_model(bpy.types.Operator):
 			me.calc_normals_split()
 			for loop in me.loops:
 				custom_normals[loop.vertex_index] = loop.normal.copy()
+
+		cm_verts = []
+		cm_norms = []
+		cm_uvs = []
 		# 頂点情報を書き出し
 		for i, vert in enumerate(bm.verts):
 			co = vert.co * self.scale
@@ -460,14 +466,24 @@ class export_cm3d2_model(bpy.types.Operator):
 			else:
 				no = vert.normal.copy()
 			for uv in vert_uvs[i]:
+				cm_verts.append(co)
+				cm_norms.append(no)
+				cm_uvs.append(uv)
 				file.write(struct.pack('<3f', -co.x, co.y, co.z))
 				file.write(struct.pack('<3f', -no.x, no.y, no.z))
 				file.write(struct.pack('<2f', uv.x, uv.y))
 		context.window_manager.progress_update(6)
 
-		# 不明な情報を書き出し
-		unknown_count = 0
-		file.write(struct.pack('<i', unknown_count))
+		cm_tris = self.parse_triangles(bm, ob, uv_lay, vert_iuv, vert_indices)
+
+		# 接空間情報を書き出し
+		if self.export_tangent:
+			tangents = self.calc_tangents(cm_tris, cm_verts, cm_norms, cm_uvs)
+			file.write(struct.pack('<i', len(tangents)))
+			for t in tangents:
+				file.write(struct.pack('<4f', *t))
+		else:
+			file.write(struct.pack('<i', 0))
 
 		# ウェイト情報を書き出し
 		for vert in vertices:
@@ -477,72 +493,10 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.window_manager.progress_update(7)
 		
 		# 面情報を書き出し
-		progress_plus_value = 1.0 / (len(ob.material_slots) * len(bm.faces))
-		progress_count = 7.0
-		progress_reduce = (len(ob.material_slots) * len(bm.faces)) // 200 + 1
-		
-		def vert_index_from_loops(loops):
-			"""vert_index generator"""
-			for loop in loops:
-				uv = loop[uv_lay].uv
-				index = loop.vert.index
-				iuv_hash = hash(repr([index, uv.x, uv.y]))
-				vert_index = vert_iuv.get(iuv_hash)
-				if vert_index is None:
-					vert_index = vert_indices.get(index, 0)
-				yield vert_index
-		
-		for mate_index, slot in enumerate(ob.material_slots):
-			tris_faces = []
-			for face in bm.faces:
-				progress_count += progress_plus_value
-				if face.index % progress_reduce == 0:
-					context.window_manager.progress_update(progress_count)
-				if face.material_index != mate_index:
-					continue
-				if len(face.verts) == 3:
-					tris_faces.extend(vert_index_from_loops(reversed(face.loops)))
-				elif len(face.verts) == 4 and self.is_convert_tris:
-					v1 = face.loops[0].vert.co - face.loops[2].vert.co
-					v2 = face.loops[1].vert.co - face.loops[3].vert.co
-					if v1.length < v2.length:
-						f1 = [0, 1, 2]
-						f2 = [0, 2, 3]
-					else:
-						f1 = [0, 1, 3]
-						f2 = [1, 2, 3]
-					faces, faces2 = [], []
-					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
-						if i in f1:
-							faces.append(vert_index)
-						if i in f2:
-							faces2.append(vert_index)
-					tris_faces.extend(faces)
-					tris_faces.extend(faces2)
-				elif 5 <= len(face.verts) and self.is_convert_tris:
-					face_count = len(face.verts) - 2
-					
-					tris = []
-					seek_min, seek_max = 0, len(face.verts) - 1
-					for i in range(face_count):
-						if not i % 2:
-							tris.append([seek_min, seek_min+1, seek_max])
-							seek_min += 1
-						else:
-							tris.append([seek_min, seek_max-1, seek_max])
-							seek_max -= 1
-					
-					tris_indexs = [[] for _ in range(len(tris))]
-					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
-						for tris_index, points in enumerate(tris):
-							if i in points:
-								tris_indexs[tris_index].append(vert_index)
-					
-					tris_faces.extend(p for ps in tris_indexs for p in ps)
-			
-			file.write(struct.pack('<i', len(tris_faces)))
-			for face_index in tris_faces:
-				file.write(struct.pack('<H', face_index))
+		for tri in cm_tris:
+			file.write(struct.pack('<i', len(tri)))
+			for vert_index in tri:
+				file.write(struct.pack('<H', vert_index))
 		context.window_manager.progress_update(8)
 		
 		# マテリアルを書き出し
@@ -665,14 +619,122 @@ class export_cm3d2_model(bpy.types.Operator):
 					common.write_str(file, 'morph')
 					common.write_str(file, shape_key.name)
 					file.write(struct.pack('<i', len(morph)))
-					for index, vec, normal in morph:
-						file.write(struct.pack('<H', index))
+					for v_index, vec, normal in morph:
+						file.write(struct.pack('<H', v_index))
 						file.write(struct.pack('<3f', -vec.x, vec.y, vec.z))
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
  
  
+	def parse_triangles(self, bm, ob, uv_lay, vert_iuv, vert_indices):
+		def vert_index_from_loops(loops):
+			"""vert_index generator"""
+			for loop in loops:
+				uv = loop[uv_lay].uv
+				v_index = loop.vert.index
+				vert_index = vert_iuv.get(hash((v_index, uv.x, uv.y)))
+				if vert_index is None:
+					vert_index = vert_indices.get(v_index, 0)
+				yield vert_index
+
+		triangles = []
+		for mate_index, slot in enumerate(ob.material_slots):
+			tris_faces = []
+			for face in bm.faces:
+				if face.material_index != mate_index:
+					continue
+				if len(face.verts) == 3:
+					tris_faces.extend(vert_index_from_loops(reversed(face.loops)))
+				elif len(face.verts) == 4 and self.is_convert_tris:
+					v1 = face.loops[0].vert.co - face.loops[2].vert.co
+					v2 = face.loops[1].vert.co - face.loops[3].vert.co
+					if v1.length < v2.length:
+						f1 = [0, 1, 2]
+						f2 = [0, 2, 3]
+					else:
+						f1 = [0, 1, 3]
+						f2 = [1, 2, 3]
+					faces, faces2 = [], []
+					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
+						if i in f1:
+							faces.append(vert_index)
+						if i in f2:
+							faces2.append(vert_index)
+					tris_faces.extend(faces)
+					tris_faces.extend(faces2)
+				elif 5 <= len(face.verts) and self.is_convert_tris:
+					face_count = len(face.verts) - 2
+
+					tris = []
+					seek_min, seek_max = 0, len(face.verts) - 1
+					for i in range(face_count):
+						if not i % 2:
+							tris.append([seek_min, seek_min + 1, seek_max])
+							seek_min += 1
+						else:
+							tris.append([seek_min, seek_max - 1, seek_max])
+							seek_max -= 1
+
+					tris_indexs = [[] for _ in range(len(tris))]
+					for i, vert_index in enumerate(vert_index_from_loops(reversed(face.loops))):
+						for tris_index, points in enumerate(tris):
+							if i in points:
+								tris_indexs[tris_index].append(vert_index)
+
+					tris_faces.extend(p for ps in tris_indexs for p in ps)
+
+			triangles.append(tris_faces)
+		return triangles
+
+
+	def calc_tangents(self, cm_tris, cm_verts, cm_norms, cm_uvs):
+		count = len(cm_verts)
+		tan1 = [None] * count
+		tan2 = [None] * count
+		for i in range(0, count):
+			tan1[i] = mathutils.Vector((0, 0, 0))
+			tan2[i] = mathutils.Vector((0, 0, 0))
+
+		for tris in cm_tris:
+			tri_len = len(tris)
+			tri_idx = 0
+			while tri_idx < tri_len:
+				i1, i2, i3 = tris[tri_idx], tris[tri_idx + 1], tris[tri_idx + 2]
+				v1, v2, v3 = cm_verts[i1], cm_verts[i2], cm_verts[i3]
+				w1, w2, w3 = cm_uvs[i1], cm_uvs[i2], cm_uvs[i3]
+
+				a1 = v2 - v1
+				a2 = v3 - v1
+				s1 = w2 - w1
+				s2 = w3 - w1
+
+				r = 1.0 / (s1.x * s2.y - s2.x * s1.y)
+				sdir = mathutils.Vector(((s2.y * a1.x - s1.y * a2.x) * r, (s2.y * a1.y - s1.y * a2.y) * r, (s2.y * a1.z - s1.y * a2.z) * r))
+				tan1[i1] += sdir
+				tan1[i2] += sdir
+				tan1[i3] += sdir
+
+				tdir = mathutils.Vector(((s1.x * a2.x - s2.x * a1.x) * r, (s1.x * a2.y - s2.x * a1.y) * r, (s1.x * a2.z - s2.x * a1.z) * r))
+				tan2[i1] += tdir
+				tan2[i2] += tdir
+				tan2[i3] += tdir
+
+				tri_idx += 3
+
+		tangents = [None] * count
+		for i in range(0, count):
+			n = cm_norms[i]
+			ti = tan1[i]
+			t = (ti - n * n.dot(ti)).normalized()
+
+			c = n.cross(ti)
+			val = c.dot(tan2[i])
+			w = 1.0 if val < 0 else -1.0
+			tangents[i] = (-t.x, t.y, t.z, w)
+
+		return tangents
+
 	def select_no_weight_vertices(self, context, local_bone_name_indices):
 		"""ウェイトが割り当てられていない頂点を選択する"""
 		ob = context.active_object
