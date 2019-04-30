@@ -177,10 +177,51 @@ class export_cm3d2_model(bpy.types.Operator):
 		row.prop(prefs, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
 		row.enabled = self.is_apply_modifiers
 
-
 	def execute(self, context):
-		"""モデルファイルを出力"""
 		start_time = time.time()
+
+		prev_mode = context.active_object.mode
+		bpy.ops.object.mode_set(mode='OBJECT')
+
+		selected_objs = context.selected_objects
+		source_objs = []
+		for selected in selected_objs:
+			if selected.type == 'MESH':
+				new_ob = selected.copy()
+				new_me = selected.data.copy()
+				new_ob.data = new_me
+				context.scene.objects.link(new_ob)
+				context.scene.objects.active = new_ob
+				new_ob.select = True
+
+			selected.select = False
+			source_objs.append(selected)
+		if len(selected_objs) > 1:
+			bpy.ops.object.join()
+			self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % len(selected_objs))
+
+		try:
+			ob = context.active_object
+			ret = self.export(context, ob)
+
+			context.window_manager.progress_update(10)
+			diff_time = time.time() - start_time
+			self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
+			self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
+			return ret
+		finally:
+			bpy.ops.object.mode_set(mode=prev_mode)
+			if ob:
+				me = ob.data
+				context.blend_data.objects.remove(ob, do_unlink=True)
+				context.blend_data.meshes.remove(me, do_unlink=True)
+
+			for obj in source_objs:
+				obj.select = True
+				context.scene.objects.active = obj
+
+	def export(self, context, ob):
+		"""モデルファイルを出力"""
 		prefs = common.preferences()
 		
 		if not self.is_batch:
@@ -188,34 +229,19 @@ class export_cm3d2_model(bpy.types.Operator):
 			prefs.scale = 1.0 / self.scale
 			bpy.ops.object.mode_set(mode='OBJECT')
 		
-		
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
 		
 		res = self.precheck(context)
 		if res: return res
-
-		ob = context.active_object
 		me = ob.data
-		
+
 		if ob.active_shape_key_index != 0:
 			ob.active_shape_key_index = 0
 			me.update()
 		
 		# モディファイアを適用する場合
 		if self.is_apply_modifiers:
-			new_ob = ob.copy()
-			new_me = ob.data.copy()
-			new_ob.data = new_me
-			context.scene.objects.link(new_ob)
-			context.scene.objects.active = new_ob
-			new_ob.select = True
-			
-			source_ob = ob
-			source_me = me
-			ob = new_ob
-			me = new_me
-			
 			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=prefs.custom_normal_blend)
 		
 		# データの成否チェック
@@ -365,19 +391,8 @@ class export_cm3d2_model(bpy.types.Operator):
 		except common.CM3D2ExportException as e:
 			self.report(type={'ERROR'}, message=str(e))
 			return {'CANCELLED'}
-		
-		# モディファイアを適用する場合
-		if self.is_apply_modifiers:
-			context.blend_data.objects.remove(new_ob, do_unlink=True)
-			context.blend_data.meshes.remove(new_me, do_unlink=True)
-			context.scene.objects.active = source_ob
-		
-		context.window_manager.progress_update(10)
-		diff_time = time.time() - start_time
-		self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
-		self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
-		return {'FINISHED'}
 
+		return {'FINISHED'}
 
 	def write_model(self, context, file, bone_data=[], local_bone_data=[], vertices=[]):
 		"""モデルデータをファイルオブジェクトに書き込む"""
