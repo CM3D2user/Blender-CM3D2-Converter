@@ -177,7 +177,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		row.prop(prefs, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
 		row.enabled = self.is_apply_modifiers
 
-	def copy_ob(self, context, ob):
+	def copy_and_activate_ob(self, context, ob):
 		new_ob = ob.copy()
 		new_me = ob.data.copy()
 		new_ob.data = new_me
@@ -193,19 +193,25 @@ class export_cm3d2_model(bpy.types.Operator):
 		selected_count = 0
 		prev_mode = None
 		try:
+			source_ob = context.active_object
 			if self.is_batch:
 				# アクティブオブジェクトを１つコピーするだけでjoinしない
-				ob = context.active_object
-				source_objs.append(ob)
-				ob.select = False
-				self.copy_ob(context, ob)
+				source_objs.append(source_ob)
+				source_ob.select = False
+				self.copy_and_activate_ob(context, source_ob)
+
+				if self.is_apply_modifiers:
+					bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)])
 			else:
 				# 選択されたMESHオブジェクトをコピーしてjoin
+				# 必要に応じて、モディファイアの強制適用を行う
 				for selected in selected_objs:
 					source_objs.append(selected)
 					selected.select = False
 					if selected.type == 'MESH':
-						self.copy_ob(context, selected)
+						self.copy_and_activate_ob(context, selected)
+						if self.is_apply_modifiers:
+							bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)])
 						selected_count += 1
 
 				mode = context.active_object.mode
@@ -222,10 +228,10 @@ class export_cm3d2_model(bpy.types.Operator):
 
 			context.window_manager.progress_update(10)
 			diff_time = time.time() - start_time
-			self.report(type={'INFO'}, message="modelのエクスポートが完了しました。%.2f Seconds file=%s" % (diff_time, self.filepath))
+			self.report(type={'INFO'}, message="modelのエクスポートが完了しました。%.2f 秒 file=%s" % (diff_time, self.filepath))
 			return ret
 		finally:
-			# 作業データの破棄（コピーデータを削除、選択状態の復元、モードの復元）
+			# 作業データの破棄（コピーデータを削除、選択状態の復元、アクティブオブジェクト、モードの復元）
 			if ob_copied:
 				me_copied = ob_copied.data
 				context.blend_data.objects.remove(ob_copied, do_unlink=True)
@@ -234,6 +240,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			for obj in source_objs:
 				obj.select = True
 				context.scene.objects.active = obj
+			if source_ob:
+				context.scene.objects.active = source_ob
 
 			if prev_mode:
 				bpy.ops.object.mode_set(mode=prev_mode)
@@ -256,10 +264,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		if ob.active_shape_key_index != 0:
 			ob.active_shape_key_index = 0
 			me.update()
-		
-		# モディファイアを適用する場合
-		if self.is_apply_modifiers:
-			bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)], custom_normal_blend=prefs.custom_normal_blend)
 		
 		# データの成否チェック
 		if self.bone_info_mode == 'ARMATURE':
