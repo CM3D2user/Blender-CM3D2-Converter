@@ -180,37 +180,40 @@ class export_cm3d2_model(bpy.types.Operator):
 	def execute(self, context):
 		start_time = time.time()
 
-		prev_mode = context.active_object.mode
-		bpy.ops.object.mode_set(mode='OBJECT')
-
 		selected_objs = context.selected_objects
 		source_objs = []
-		for selected in selected_objs:
-			if selected.type == 'MESH':
-				new_ob = selected.copy()
-				new_me = selected.data.copy()
-				new_ob.data = new_me
-				context.scene.objects.link(new_ob)
-				context.scene.objects.active = new_ob
-				new_ob.select = True
-
-			selected.select = False
-			source_objs.append(selected)
-		if len(selected_objs) > 1:
-			bpy.ops.object.join()
-			self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % len(selected_objs))
-
+		selected_count = 0
+		prev_mode = None
 		try:
+			for selected in selected_objs:
+				source_objs.append(selected)
+				selected.select = False
+				if selected.type == 'MESH':
+					new_ob = selected.copy()
+					new_me = selected.data.copy()
+					new_ob.data = new_me
+					context.scene.objects.link(new_ob)
+					context.scene.objects.active = new_ob
+					new_ob.select = True
+					selected_count += 1
+
+			mode = context.active_object.mode
+			if mode != 'OBJECT':
+				prev_mode = mode
+				bpy.ops.object.mode_set(mode='OBJECT')
+
+			if selected_count > 1:
+				bpy.ops.object.join()
+				self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % selected_count)
+
 			ob = context.active_object
 			ret = self.export(context, ob)
 
 			context.window_manager.progress_update(10)
 			diff_time = time.time() - start_time
-			self.report(type={'INFO'}, message=str(round(diff_time, 1)) + " Seconds")
-			self.report(type={'INFO'}, message="modelのエクスポートが完了しました")
+			self.report(type={'INFO'}, message="modelのエクスポートが完了しました。%.2f Seconds file=%s" % (diff_time, self.filepath))
 			return ret
 		finally:
-			bpy.ops.object.mode_set(mode=prev_mode)
 			if ob:
 				me = ob.data
 				context.blend_data.objects.remove(ob, do_unlink=True)
@@ -220,6 +223,8 @@ class export_cm3d2_model(bpy.types.Operator):
 				obj.select = True
 				context.scene.objects.active = obj
 
+			if prev_mode:
+				bpy.ops.object.mode_set(mode=prev_mode)
 	def export(self, context, ob):
 		"""モデルファイルを出力"""
 		prefs = common.preferences()
@@ -227,7 +232,6 @@ class export_cm3d2_model(bpy.types.Operator):
 		if not self.is_batch:
 			prefs.model_export_path = self.filepath
 			prefs.scale = 1.0 / self.scale
-			bpy.ops.object.mode_set(mode='OBJECT')
 		
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
