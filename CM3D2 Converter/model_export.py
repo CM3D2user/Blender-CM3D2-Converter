@@ -177,6 +177,14 @@ class export_cm3d2_model(bpy.types.Operator):
 		row.prop(prefs, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
 		row.enabled = self.is_apply_modifiers
 
+	def copy_ob(self, context, ob):
+		new_ob = ob.copy()
+		new_me = ob.data.copy()
+		new_ob.data = new_me
+		context.scene.objects.link(new_ob)
+		context.scene.objects.active = new_ob
+		new_ob.select = True
+
 	def execute(self, context):
 		start_time = time.time()
 
@@ -185,39 +193,43 @@ class export_cm3d2_model(bpy.types.Operator):
 		selected_count = 0
 		prev_mode = None
 		try:
-			for selected in selected_objs:
-				source_objs.append(selected)
-				selected.select = False
-				if selected.type == 'MESH':
-					new_ob = selected.copy()
-					new_me = selected.data.copy()
-					new_ob.data = new_me
-					context.scene.objects.link(new_ob)
-					context.scene.objects.active = new_ob
-					new_ob.select = True
-					selected_count += 1
+			if self.is_batch:
+				# アクティブオブジェクトを１つコピーするだけでjoinしない
+				ob = context.active_object
+				source_objs.append(ob)
+				ob.select = False
+				self.copy_ob(context, ob)
+			else:
+				# 選択されたMESHオブジェクトをコピーしてjoin
+				for selected in selected_objs:
+					source_objs.append(selected)
+					selected.select = False
+					if selected.type == 'MESH':
+						self.copy_ob(context, selected)
+						selected_count += 1
 
-			mode = context.active_object.mode
-			if mode != 'OBJECT':
-				prev_mode = mode
-				bpy.ops.object.mode_set(mode='OBJECT')
+				mode = context.active_object.mode
+				if mode != 'OBJECT':
+					prev_mode = mode
+					bpy.ops.object.mode_set(mode='OBJECT')
 
-			if selected_count > 1:
-				bpy.ops.object.join()
-				self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % selected_count)
+				if selected_count > 1:
+					bpy.ops.object.join()
+					self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % selected_count)
 
-			ob = context.active_object
-			ret = self.export(context, ob)
+			ob_copied = context.active_object
+			ret = self.export(context, ob_copied)
 
 			context.window_manager.progress_update(10)
 			diff_time = time.time() - start_time
 			self.report(type={'INFO'}, message="modelのエクスポートが完了しました。%.2f Seconds file=%s" % (diff_time, self.filepath))
 			return ret
 		finally:
-			if ob:
-				me = ob.data
-				context.blend_data.objects.remove(ob, do_unlink=True)
-				context.blend_data.meshes.remove(me, do_unlink=True)
+			# 作業データの破棄（コピーデータを削除、選択状態の復元、モードの復元）
+			if ob_copied:
+				me_copied = ob_copied.data
+				context.blend_data.objects.remove(ob_copied, do_unlink=True)
+				context.blend_data.meshes.remove(me_copied, do_unlink=True)
 
 			for obj in source_objs:
 				obj.select = True
@@ -225,6 +237,7 @@ class export_cm3d2_model(bpy.types.Operator):
 
 			if prev_mode:
 				bpy.ops.object.mode_set(mode=prev_mode)
+
 	def export(self, context, ob):
 		"""モデルファイルを出力"""
 		prefs = common.preferences()
