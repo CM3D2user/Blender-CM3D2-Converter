@@ -184,6 +184,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		context.scene.objects.link(new_ob)
 		context.scene.objects.active = new_ob
 		new_ob.select = True
+		return new_ob
 
 	def execute(self, context):
 		start_time = time.time()
@@ -193,12 +194,13 @@ class export_cm3d2_model(bpy.types.Operator):
 		selected_count = 0
 		prev_mode = None
 		try:
-			source_ob = context.active_object
+			ob_source = context.active_object
+			ob_main = None
 			if self.is_batch:
 				# アクティブオブジェクトを１つコピーするだけでjoinしない
-				source_objs.append(source_ob)
-				source_ob.select = False
-				self.copy_and_activate_ob(context, source_ob)
+				source_objs.append(ob_source)
+				ob_source.select = False
+				self.copy_and_activate_ob(context, ob_source)
 
 				if self.is_apply_modifiers:
 					bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)])
@@ -207,11 +209,15 @@ class export_cm3d2_model(bpy.types.Operator):
 				# 必要に応じて、モディファイアの強制適用を行う
 				for selected in selected_objs:
 					source_objs.append(selected)
+
 					selected.select = False
 					if selected.type == 'MESH':
-						self.copy_and_activate_ob(context, selected)
+						ob_created = self.copy_and_activate_ob(context, selected)
+						if selected == ob_source:
+							ob_main = ob_created
 						if self.is_apply_modifiers:
 							bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)])
+
 						selected_count += 1
 
 				mode = context.active_object.mode
@@ -220,6 +226,8 @@ class export_cm3d2_model(bpy.types.Operator):
 					bpy.ops.object.mode_set(mode='OBJECT')
 
 				if selected_count > 1:
+					if ob_main:
+						context.scene.objects.active = ob_main
 					bpy.ops.object.join()
 					self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % selected_count)
 
@@ -240,8 +248,8 @@ class export_cm3d2_model(bpy.types.Operator):
 			for obj in source_objs:
 				obj.select = True
 				context.scene.objects.active = obj
-			if source_ob:
-				context.scene.objects.active = source_ob
+			if ob_source:
+				context.scene.objects.active = ob_source
 
 			if prev_mode:
 				bpy.ops.object.mode_set(mode=prev_mode)
@@ -249,14 +257,14 @@ class export_cm3d2_model(bpy.types.Operator):
 	def export(self, context, ob):
 		"""モデルファイルを出力"""
 		prefs = common.preferences()
-		
+
 		if not self.is_batch:
 			prefs.model_export_path = self.filepath
 			prefs.scale = 1.0 / self.scale
-		
+
 		context.window_manager.progress_begin(0, 10)
 		context.window_manager.progress_update(0)
-		
+
 		res = self.precheck(context)
 		if res: return res
 		me = ob.data
@@ -264,7 +272,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		if ob.active_shape_key_index != 0:
 			ob.active_shape_key_index = 0
 			me.update()
-		
+
 		# データの成否チェック
 		if self.bone_info_mode == 'ARMATURE':
 			arm_ob = ob.parent
