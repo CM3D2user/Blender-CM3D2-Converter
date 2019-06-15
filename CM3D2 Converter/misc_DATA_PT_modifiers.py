@@ -17,7 +17,6 @@ class forced_modifier_apply(bpy.types.Operator):
 	bl_description = "シェイプキーのあるメッシュのモディファイアでも強制的に適用します"
 	bl_options = {'REGISTER', 'UNDO'}
 	
-	custom_normal_blend = bpy.props.FloatProperty(name="CM3D2用法線のブレンド率", default=0.5, min=0, max=1, soft_min=0, soft_max=1, step=3, precision=0)
 	is_applies = bpy.props.BoolVectorProperty(name="適用するモディファイア", size=32, options={'SKIP_SAVE'})
 	
 	@classmethod
@@ -30,11 +29,11 @@ class forced_modifier_apply(bpy.types.Operator):
 		if len(ob.modifiers) == 0:
 			return {'CANCELLED'}
 
-		self.custom_normal_blend = common.preferences().custom_normal_blend
 		return context.window_manager.invoke_props_dialog(self)
 	
 	def draw(self, context):
-		self.layout.prop(self, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
+		prefs = common.preferences()
+		self.layout.prop(prefs, 'custom_normal_blend', icon='SNAP_NORMAL', slider=True)
 		self.layout.label("適用するモディファイア")
 		ob = context.active_object
 		for index, mod in enumerate(ob.modifiers):
@@ -48,7 +47,7 @@ class forced_modifier_apply(bpy.types.Operator):
 				self.is_applies[index] = True
 	
 	def execute(self, context):
-		common.preferences().custom_normal_blend = self.custom_normal_blend
+		custom_normal_blend = common.preferences().custom_normal_blend
 
 		bpy.ops.object.mode_set(mode='OBJECT')
 		ob = context.active_object
@@ -209,7 +208,7 @@ class forced_modifier_apply(bpy.types.Operator):
 				except:
 					continue
 				original_rot = mathutils.Vector((0.0, 0.0, 1.0)).rotation_difference(no)
-				output_rot = original_rot.slerp(custom_rot, self.custom_normal_blend)
+				output_rot = original_rot.slerp(custom_rot, custom_normal_blend)
 				
 				output_no = mathutils.Vector((0.0, 0.0, 1.0))
 				output_no.rotate(output_rot)

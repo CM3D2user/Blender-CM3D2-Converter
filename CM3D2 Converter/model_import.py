@@ -670,14 +670,16 @@ class import_cm3d2_model(bpy.types.Operator):
 				arm['ModelVersion'] = model_ver
 		context.window_manager.progress_end()
 		
-		require_time_str = str(round(time.time() - start_time, 1))
+		require_time = time.time() - start_time
 		filesize = os.path.getsize(self.filepath)
-		filesize_str = str(filesize) + " バイト"
+		filesize_str = "バイト"
 		if 1024 * 1024 < filesize:
-			filesize_str = str(round(filesize / (1024 * 1024.0), 1)) + " MB"
+			filesize = filesize / (1024 * 1024.0)
+			filesize_str = "MB"
 		elif 1024 < filesize:
-			filesize_str = str(round(filesize / 1024.0, 1)) + " KB"
-		self.report(type={'INFO'}, message="modelのインポートが完了しました (" + filesize_str + " / " + require_time_str + " 秒)")
+			filesize = filesize / 1024.0
+			filesize_str = "KB"
+		self.report(type={'INFO'}, message="modelのインポートが完了しました (%d %s/ %.2f 秒)" % (filesize, filesize_str, require_time))
 		
 		return {'FINISHED'}
 
