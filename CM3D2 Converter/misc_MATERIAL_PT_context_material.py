@@ -63,6 +63,9 @@ def menu_func(self, context):
 			elif shader1 == 'CM3D2/Toony_Lighted_Outline_Trans':
 				type_name = "トゥーン 輪郭線 透過"
 				icon = 'PROP_OFF'
+			elif shader1 == 'CM3D2/Toony_Lighted_Cutout_AtC':
+				type_name = "トゥーン Cutout"
+				icon = 'IPO_BACK'
 			elif shader1 == 'CM3D2/Lighted_Trans':
 				type_name = "トゥーン無し 透過"
 				icon = 'VISIBLE_IPO_OFF'
@@ -227,7 +230,6 @@ class new_mate_opr():
 		_HiRate = ("_HiRate", pref.new_mate_hirate)
 		_HiPow = ("_HiPow", pref.new_mate_hipow)
 		_Cutoff = ("_Cutoff", pref.new_mate_cutoff)
-		_Cutout = ("_Cutout", pref.new_mate_cutout)
 		_ZTest = ("_ZTest", pref.new_mate_ztest)
 		_ZTest2 = ("_ZTest2", pref.new_mate_ztest2)
 		_ZTest2Alpha = ("_ZTest2Alpha", pref.new_mate_ztest2alpha)
@@ -387,6 +389,7 @@ class new_mate_opr():
 			col_list.append(_Color)
 			col_list.append(_ShadowColor)
 			f_list.append(_Shininess)
+			f_list.append(_Cutoff)
 		elif self.type == 'CM3D2/Lighted_Trans':
 			mate['shader1'] = 'CM3D2/Lighted_Trans'
 			mate['shader2'] = 'CM3D2__Lighted_Trans'
@@ -407,6 +410,20 @@ class new_mate_opr():
 			f_list.append(_Shininess)
 			f_list.append(_RimPower)
 			f_list.append(_RimShift)
+		elif self.type == 'CM3D2/Toony_Lighted_Cutout_AtC':
+			mate['shader1'] = 'CM3D2/Toony_Lighted_Cutout_AtC'
+			mate['shader2'] = 'CM3D2__Toony_Lighted_Cutout_AtC'
+			tex_list.append(_MainTex)
+			tex_list.append(_ToonRamp)
+			tex_list.append(_ShadowTex)
+			tex_list.append(_ShadowRateToon)
+			col_list.append(_Color)
+			col_list.append(_ShadowColor)
+			col_list.append(_RimColor)
+			f_list.append(_Shininess)
+			f_list.append(_RimPower)
+			f_list.append(_RimShift)
+			f_list.append(_Cutoff)
 		elif self.type == 'CM3D2/Toony_Lighted_Hair':
 			mate['shader1'] = 'CM3D2/Toony_Lighted_Hair'
 			mate['shader2'] = 'CM3D2__Toony_Lighted_Hair'
@@ -537,7 +554,8 @@ class new_com3d2(bpy.types.Operator, new_mate_opr):
 		('CM3D2/Toony_Lighted_Outline_Tex', "トゥーン 輪郭線 Tex", "", 'MATSPHERE', 6),
 		('CM3D2/Toony_Lighted_Hair_Outline', "トゥーン 輪郭線 髪", "", 'PARTICLEMODE', 7),
 		# ('CM3D2/Toony_Lighted_Hair_Outline_Tex', "トゥーン 輪郭線 Tex 髪", "", 'PARTICLEMODE', 8),
-		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 'PROP_OFF', 9),
+		('CM3D2/Toony_Lighted_Outline_Trans', "トゥーン 輪郭線 透過", "", 'PROP_OFF', 8),
+		('CM3D2/Toony_Lighted_Cutout_AtC', "トゥーン Cutout", "", 'IPO_BACK', 9),
 		('CM3D2/Lighted_Cutout_AtC', "トゥーン無し Cutout", "", 'IPO_BACK', 10),
 		('CM3D2/Lighted_Trans', "トゥーン無し 透過", "", 'VISIBLE_IPO_OFF', 11),
 		('CM3D2/Lighted', "トゥーン無し", "", 'VISIBLE_IPO_ON', 12),
