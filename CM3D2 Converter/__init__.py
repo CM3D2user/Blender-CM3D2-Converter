@@ -4,7 +4,7 @@
 bl_info = {
 	"name" : "CM3D2 Converter",
 	"author" : "@saidenka_cm3d2",
-	"version": (2019, 6, 15, 18, 46, 00),
+	"version": (2019, 10, 14, 11, 59, 20),
 	"blender" : (2, 78, 0),
 	"location" : "ファイル > インポート/エクスポート > CM3D2 Model (.model)",
 	"description" : "カスタムメイド3D2の専用ファイルのインポート/エクスポートを行います",

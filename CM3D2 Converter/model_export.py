@@ -233,6 +233,8 @@ class export_cm3d2_model(bpy.types.Operator):
 
 			ob_copied = context.active_object
 			ret = self.export(context, ob_copied)
+			if 'FINISHED' not in ret:
+				return ret
 
 			context.window_manager.progress_update(10)
 			diff_time = time.time() - start_time
