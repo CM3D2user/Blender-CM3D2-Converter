@@ -189,10 +189,13 @@ class export_cm3d2_model(bpy.types.Operator):
 	def execute(self, context):
 		start_time = time.time()
 
+		selected_layers = bpy.context.scene.layers[:]
+		bpy.context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
 		selected_objs = context.selected_objects
 		source_objs = []
 		selected_count = 0
 		prev_mode = None
+		selected_meshes = []
 		try:
 			ob_source = context.active_object
 			ob_main = None
@@ -212,12 +215,13 @@ class export_cm3d2_model(bpy.types.Operator):
 
 					selected.select = False
 					if selected.type == 'MESH':
+						selected_meshes.append(selected)
 						ob_created = self.copy_and_activate_ob(context, selected)
 						if selected == ob_source:
 							ob_main = ob_created
 						if self.is_apply_modifiers:
 							bpy.ops.object.forced_modifier_apply(is_applies=[True for i in range(32)])
-
+						
 						selected_count += 1
 
 				mode = context.active_object.mode
@@ -232,7 +236,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % selected_count)
 
 			ob_copied = context.active_object
-			ret = self.export(context, ob_copied)
+			ret = self.export(context, ob_copied,selected_meshes)
 			if 'FINISHED' not in ret:
 				return ret
 
@@ -255,8 +259,10 @@ class export_cm3d2_model(bpy.types.Operator):
 
 			if prev_mode:
 				bpy.ops.object.mode_set(mode=prev_mode)
-
-	def export(self, context, ob):
+			bpy.context.scene.layers = selected_layers
+			
+		
+	def export(self, context, ob, selected_meshes):
 		"""モデルファイルを出力"""
 		prefs = common.preferences()
 
@@ -380,7 +386,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vgs.append([index, vg.weight])
 			if len(vgs) == 0:
 				if not self.is_batch:
-					self.select_no_weight_vertices(context, local_bone_name_indices)
+					self.select_no_weight_vertices(context, local_bone_name_indices, selected_meshes)
 				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
 			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
 			total = sum(vg[1] for vg in vgs)
@@ -781,21 +787,25 @@ class export_cm3d2_model(bpy.types.Operator):
 
 		return tangents
 
-	def select_no_weight_vertices(self, context, local_bone_name_indices):
+	def select_no_weight_vertices(self, context, local_bone_name_indices,selected_meshes):
 		"""ウェイトが割り当てられていない頂点を選択する"""
-		ob = context.active_object
-		me = ob.data
-		bpy.ops.object.mode_set(mode='EDIT')
-		bpy.ops.mesh.select_all(action='DESELECT')
-		bpy.ops.object.mode_set(mode='OBJECT')
-		context.tool_settings.mesh_select_mode = (True, False, False)
-		for vert in me.vertices:
-			for vg in vert.groups:
-				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-				if name in local_bone_name_indices and 0.0 < vg.weight:
-					break
-			else:
-				vert.select = True
+		error_ob = selected_meshes[0]
+		for ob in selected_meshes:
+			bpy.context.scene.objects.active = ob
+			me = ob.data
+			bpy.ops.object.mode_set(mode='EDIT')
+			bpy.ops.mesh.select_all(action='DESELECT')
+			bpy.ops.object.mode_set(mode='OBJECT')		
+			context.tool_settings.mesh_select_mode = (True, False, False)
+			for vert in me.vertices:
+				for vg in vert.groups:
+					name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
+					if name in local_bone_name_indices and 0.0 < vg.weight:
+						break
+				else:
+					vert.select = True
+					error_ob = ob
+		bpy.context.scene.objects.active = error_ob
 		bpy.ops.object.mode_set(mode='EDIT')
 
 	def armature_bone_data_parser(self, ob):
