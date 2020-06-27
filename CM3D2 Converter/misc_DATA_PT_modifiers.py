@@ -101,26 +101,32 @@ class forced_modifier_apply(bpy.types.Operator):
 		
 		copy_modifiers = ob.modifiers[:]
 		
+		is_selected_armature = False
+		
 		for index, mod in enumerate(copy_modifiers):
-			if self.is_applies[index] and mod.type != 'ARMATURE':
-				
-				if mod.type == 'MIRROR':
-					for vg in ob.vertex_groups[:]:
-						replace_list = ((r'\.L$', ".R"), (r'\.R$', ".L"), (r'\.l$', ".r"), (r'\.r$', ".l"), (r'_L$', "_R"), (r'_R$', "_L"), (r'_l$', "_r"), (r'_r$', "_l"))
-						for before, after in replace_list:
-							mirrored_name = re.sub(before, after, vg.name)
-							if mirrored_name not in ob.vertex_groups:
-								ob.vertex_groups.new(mirrored_name)
-				
-				try:
-					bpy.ops.object.modifier_apply(modifier=mod.name)
-				except:
-					ob.modifiers.remove(mod)
+			if self.is_applies[index]:
+				if mod.type == 'ARMATURE':
+					is_selected_armature = True
+				else:
+					if mod.type == 'MIRROR':
+						for vg in ob.vertex_groups[:]:
+							replace_list = ((r'\.L$', ".R"), (r'\.R$', ".L"), (r'\.l$', ".r"), (r'\.r$', ".l"), (r'_L$', "_R"), (r'_R$', "_L"), (r'_l$', "_r"), (r'_r$', "_l"))
+							for before, after in replace_list:
+								mirrored_name = re.sub(before, after, vg.name)
+								if mirrored_name not in ob.vertex_groups:
+									ob.vertex_groups.new(mirrored_name)
+					
+					try:
+						bpy.ops.object.modifier_apply(modifier=mod.name)
+					except:
+						ob.modifiers.remove(mod)
 		
 		arm_ob = None
-		for mod in ob.modifiers:
-			if mod.type == "ARMATURE":
-				arm_ob = mod.object
+		
+		if is_selected_armature:
+			for mod in ob.modifiers:
+				if mod.type == "ARMATURE":
+					arm_ob = mod.object
 		
 		if arm_ob:
 			bpy.ops.object.mode_set(mode='EDIT')
