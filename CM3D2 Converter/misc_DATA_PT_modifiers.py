@@ -100,7 +100,6 @@ class forced_modifier_apply(bpy.types.Operator):
 			me.update()
 		
 		copy_modifiers = ob.modifiers[:]
-		
 		is_selected_armature = False
 		
 		for index, mod in enumerate(copy_modifiers):
@@ -122,7 +121,6 @@ class forced_modifier_apply(bpy.types.Operator):
 						ob.modifiers.remove(mod)
 		
 		arm_ob = None
-		
 		if is_selected_armature:
 			for mod in ob.modifiers:
 				if mod.type == "ARMATURE":

@@ -195,7 +195,7 @@ class export_cm3d2_model(bpy.types.Operator):
 		source_objs = []
 		selected_count = 0
 		prev_mode = None
-		selected_meshes = []
+		selected_mesh_obs = []
 		try:
 			ob_source = context.active_object
 			ob_main = None
@@ -215,7 +215,7 @@ class export_cm3d2_model(bpy.types.Operator):
 
 					selected.select = False
 					if selected.type == 'MESH':
-						selected_meshes.append(selected)
+						selected_mesh_obs.append(selected)
 						ob_created = self.copy_and_activate_ob(context, selected)
 						if selected == ob_source:
 							ob_main = ob_created
@@ -236,7 +236,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					self.report(type={'INFO'}, message="%d個のオブジェクトをマージしました" % selected_count)
 
 			ob_copied = context.active_object
-			ret = self.export(context, ob_copied,selected_meshes)
+			ret = self.export(context, ob_copied, selected_mesh_obs)
 			if 'FINISHED' not in ret:
 				return ret
 
@@ -262,7 +262,7 @@ class export_cm3d2_model(bpy.types.Operator):
 			bpy.context.scene.layers = selected_layers
 			
 		
-	def export(self, context, ob, selected_meshes):
+	def export(self, context, ob, selected_mesh_obs):
 		"""モデルファイルを出力"""
 		prefs = common.preferences()
 
@@ -386,7 +386,7 @@ class export_cm3d2_model(bpy.types.Operator):
 					vgs.append([index, vg.weight])
 			if len(vgs) == 0:
 				if not self.is_batch:
-					self.select_no_weight_vertices(context, local_bone_name_indices, selected_meshes)
+					self.select_no_weight_vertices(context, local_bone_name_indices, selected_mesh_obs)
 				return self.report_cancel("ウェイトが割り当てられていない頂点が見つかりました、中止します")
 			vgs = sorted(vgs, key=itemgetter(1), reverse=True)[0:4]
 			total = sum(vg[1] for vg in vgs)
@@ -677,8 +677,8 @@ class export_cm3d2_model(bpy.types.Operator):
 						file.write(struct.pack('<3f', -normal.x, normal.y, normal.z))
 			context.blend_data.meshes.remove(temp_me)
 		common.write_str(file, 'end')
- 
- 
+
+
 	def parse_triangles(self, bm, ob, uv_lay, vert_iuv, vert_indices):
 		def vert_index_from_loops(loops):
 			"""vert_index generator"""
@@ -787,25 +787,36 @@ class export_cm3d2_model(bpy.types.Operator):
 
 		return tangents
 
-	def select_no_weight_vertices(self, context, local_bone_name_indices,selected_meshes):
+	def __select_no_weight_vertices(self, context, local_bone_name_indices, ob):
 		"""ウェイトが割り当てられていない頂点を選択する"""
-		error_ob = selected_meshes[0]
-		for ob in selected_meshes:
-			bpy.context.scene.objects.active = ob
-			me = ob.data
-			bpy.ops.object.mode_set(mode='EDIT')
-			bpy.ops.mesh.select_all(action='DESELECT')
-			bpy.ops.object.mode_set(mode='OBJECT')		
-			context.tool_settings.mesh_select_mode = (True, False, False)
-			for vert in me.vertices:
-				for vg in vert.groups:
-					name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
-					if name in local_bone_name_indices and 0.0 < vg.weight:
-						break
-				else:
-					vert.select = True
-					error_ob = ob
-		bpy.context.scene.objects.active = error_ob
+		me = ob.data
+		bpy.ops.object.mode_set(mode='EDIT')
+		bpy.ops.mesh.select_all(action='DESELECT')
+		bpy.ops.object.mode_set(mode='OBJECT')
+		context.tool_settings.mesh_select_mode = (True, False, False)
+		for vert in me.vertices:
+			for vg in vert.groups:
+				name = common.encode_bone_name(ob.vertex_groups[vg.group].name, self.is_convert_bone_weight_names)
+				if name in local_bone_name_indices and 0.0 < vg.weight:
+					break
+			else:
+				vert.select = True
+
+	def select_no_weight_vertices(self, context, local_bone_name_indices, selected_obs):
+		"""ウェイトが割り当てられていない頂点を選択する."""
+
+		if len(selected_obs) == 0:
+			ob = context.active_object
+			self.__select_no_weight_vertices(context, local_bone_name_indices, ob)
+		else:
+			active_ob = bpy.context.scene.objects.active
+
+			for ob in selected_obs:
+				bpy.context.scene.objects.active = ob
+				self.__select_no_weight_vertices(context, local_bone_name_indices, ob)
+
+			bpy.context.scene.objects.active = active_ob
+
 		bpy.ops.object.mode_set(mode='EDIT')
 
 	def armature_bone_data_parser(self, ob):
